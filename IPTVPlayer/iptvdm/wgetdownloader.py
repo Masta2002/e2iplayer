@@ -304,7 +304,7 @@ class WgetDownloader(BaseDownloader):
         return BaseDownloader.CODE_OK
 
     def _dataAvail(self, data):
-        if None is not data:
+        if data is None:
             return
 
         text = ensureText(data)
