@@ -50,8 +50,8 @@ config.plugins.iptvplayer.youtube_ui_language = ConfigSelection(
     default="system",
     choices=[
         ("system", _("System language")),
-        ("de", "Deutsch"),
-        ("en", "English"),
+        ("de", _("German")),
+        ("en", _("English")),
     ],
 )
 

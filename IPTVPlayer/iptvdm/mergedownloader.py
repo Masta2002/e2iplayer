@@ -617,7 +617,11 @@ class MergeDownloader(BaseDownloader):
         self.console = eConsoleAppContainer()
         self.console_appClosed_conn = eConnectCallback(self.console.appClosed, self._cmdFinished)
         self.console_stderrAvail_conn = eConnectCallback(self.console.stderrAvail, self._dataAvail)
-        self.console.execute(E2PrioFix(cmd))
+        if hasattr(self.console, "setNice"):
+            self.console.setNice(GetNice() + 2)
+            self.console.execute(cmd)
+        else:
+            self.console.execute(E2PrioFix(cmd))
 
         self.status = DMHelper.STS.DOWNLOADING
         self.onStart()
