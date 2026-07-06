@@ -35,7 +35,12 @@ class YouTubeParser:
 
     def __init__(self):
         self.cm = common()
-        self.HTTP_HEADER = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36", "X-YouTube-Client-Name": "1", "X-YouTube-Client-Version": "2.20201112.04.01", "X-Requested-With": "XMLHttpRequest"}
+        self.HTTP_HEADER = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+            "X-YouTube-Client-Name": "1",
+            "X-YouTube-Client-Version": "2.20201112.04.01",
+            "X-Requested-With": "XMLHttpRequest"
+        }
         self.http_params = {"header": self.HTTP_HEADER, "return_data": True}
         self.postdata = {}
         self.sessionToken = ""
@@ -840,7 +845,14 @@ class YouTubeParser:
                     hl, gl = self._getDefaultLangAndRegion()
 
                     urlNextPage = "https://www.youtube.com/youtubei/v1/browse?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8"
-                    post_data = {"context": {"client": {"hl": hl, "gl": gl, "clientName": "WEB", "clientVersion": "2.20201021.03.00"}}}
+                    post_data = {
+                        "context": {
+                            "client": {
+                                "clientName": "WEB",
+                                "clientVersion": "2.20201021.03.00",
+                            }
+                        },
+                    }
                     post_data["continuation"] = ctoken
                     post_data["context"]["clickTracking"] = {"clickTrackingParams": ctit}
                     post_data = json_dumps(post_data).encode("utf-8")
@@ -972,7 +984,15 @@ class YouTubeParser:
                                         icon = self._normalizeThumbnailUrl(icon)
                                 except Exception:
                                     pass
-                            params = {"type": "category", "category": "playlist", "title": title, "url": ensure_str(url), "icon": icon, "time": "", "desc": ""}
+                            params = {
+                                "type": "category",
+                                "category": "playlist",
+                                "title": title,
+                                "url": ensure_str(url),
+                                "icon": icon,
+                                "time": "",
+                                "desc": ""
+                            }
                             printDBG(str(params))
                             currList.append(params)
                     except Exception:
@@ -991,7 +1011,15 @@ class YouTubeParser:
                                     icon = self._normalizeThumbnailUrl(icon)
                             except Exception:
                                 pass
-                            params = {"type": "category", "category": "channel", "title": title, "url": ensure_str(url), "icon": icon, "time": "", "desc": ""}
+                            params = {
+                                "type": "category",
+                                "category": "channel",
+                                "title": title,
+                                "url": ensure_str(url),
+                                "icon": icon,
+                                "time": "",
+                                "desc": ""
+                            }
                             printDBG(str(params))
                             currList.append(params)
                     except Exception:
@@ -1021,7 +1049,14 @@ class YouTubeParser:
                 label = _("Next page")
                 hl, gl = self._getDefaultLangAndRegion()
                 urlNextPage = "https://www.youtube.com/youtubei/v1/search?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8"
-                post_data = {"context": {"client": {"hl": hl, "gl": gl, "clientName": "WEB", "clientVersion": "2.20201021.03.00"}}}
+                post_data = {
+                    "context": {
+                        "client": {
+                            "clientName": "WEB",
+                            "clientVersion": "2.20201021.03.00",
+                        }
+                    },
+                }
                 post_data["continuation"] = ctoken
                 post_data["context"]["clickTracking"] = {"clickTrackingParams": itct}
                 post_data = json_dumps(post_data).encode("utf-8")
