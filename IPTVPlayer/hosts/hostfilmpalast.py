@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-# Last Modified: 03.06.2025 - Mr.X
-# Merged: 08.07.2026 - Sidecar files (.txt + .jpg) extended after HLS download, IMDb rating added as the first line in .txt - Kamikaze24
+# Last Modified: 19.07.2026 - MKV FFmpeg postprocess meta for HLSDownloader/WgetDownloader - Kamikaze24
 ###################################################
 # LOCAL import
 ###################################################
@@ -22,10 +21,14 @@ from Plugins.Extensions.IPTVPlayer.p2p3.UrlParse import urljoin
 ###################################################
 
 config.plugins.iptvplayer.filmpalast_sidecar = ConfigYesNo(default=True)
+config.plugins.iptvplayer.filmpalast_mkv = ConfigYesNo(default=True)
 
 
 def GetConfigList():
-    return [getConfigListEntry(_("Create sidecar files (.txt/.jpg)") + ":", config.plugins.iptvplayer.filmpalast_sidecar)]
+    return [
+        getConfigListEntry(_("Create sidecar files (.txt/.jpg)") + ":", config.plugins.iptvplayer.filmpalast_sidecar),
+        getConfigListEntry(_("Create MKV") + ":", config.plugins.iptvplayer.filmpalast_mkv)
+    ]
 
 
 def gettytul():
@@ -268,6 +271,9 @@ class FilmPalastTo(CBaseHostClass):
         sidecarImg = ""
         sidecarEnabled = config.plugins.iptvplayer.filmpalast_sidecar.value
         imdb_rating = cItem.get("imdb_rating", "")
+        sidecarYear = ""
+        sidecarDuration = ""
+        sidecarGenre = ""
 
         try:
             article = self.getArticleContent(cItem)
@@ -277,8 +283,13 @@ class FilmPalastTo(CBaseHostClass):
                 images = articleItem.get("images", [])
                 if images and images[0].get("url"):
                     sidecarImg = images[0].get("url")
+
+                otherInfo = articleItem.get("other_info", {})
                 if not imdb_rating or imdb_rating == "-":
-                    imdb_rating = articleItem.get("other_info", {}).get("imdb_rating", "")
+                    imdb_rating = otherInfo.get("imdb_rating", "")
+                sidecarYear = otherInfo.get("year", "") or otherInfo.get("released", "")
+                sidecarDuration = otherInfo.get("duration", "")
+                sidecarGenre = otherInfo.get("genre", "")
         except Exception:
             printExc("getArticleContent for sidecar failed")
 
@@ -287,13 +298,29 @@ class FilmPalastTo(CBaseHostClass):
         if not sidecarImg:
             sidecarImg = cItem.get("icon", "")
 
+        sidecarLines = []
+
         if imdb_rating and imdb_rating != "-":
-            imdb_line = u"IMDb: %s" % imdb_rating
+            sidecarLines.append(u"IMDb: %s" % imdb_rating)
+
+        infoLine = []
+        if sidecarYear:
+            infoLine.append(u"Jahr: %s" % sidecarYear)
+        if sidecarDuration:
+            infoLine.append(u"Spielzeit: %s" % sidecarDuration)
+        if infoLine:
+            sidecarLines.append(u" / ".join(infoLine))
+
+        if sidecarGenre:
+            sidecarLines.append(sidecarGenre)
+
+        if sidecarLines:
+            prefix = u"\n".join(sidecarLines)
             if sidecarTxt:
                 if not sidecarTxt.startswith("IMDb:"):
-                    sidecarTxt = imdb_line + u"\n" + sidecarTxt
+                    sidecarTxt = prefix + u"\n\n" + sidecarTxt
             else:
-                sidecarTxt = imdb_line
+                sidecarTxt = prefix
 
         linksTab = self.cacheLinks.get(cItem["url"], [])
         if len(linksTab) > 0:
@@ -359,7 +386,7 @@ class FilmPalastTo(CBaseHostClass):
         sidecarTxt = videoUrl.meta.get("e2i_sidecar_txt", "") if sidecarEnabled else ""
         sidecarImg = videoUrl.meta.get("e2i_sidecar_img", "") if sidecarEnabled else ""
 
-        def _addSidecarMeta(videoLinks):
+        def _addFinalMeta(videoLinks):
             outTab = []
             for item in videoLinks:
                 try:
@@ -380,6 +407,26 @@ class FilmPalastTo(CBaseHostClass):
                         itemMeta.pop("e2i_sidecar_enabled", None)
                         itemMeta.pop("e2i_sidecar_txt", None)
                         itemMeta.pop("e2i_sidecar_img", None)
+
+                    if config.plugins.iptvplayer.filmpalast_mkv.value:
+                        proto = str(itemMeta.get("iptv_proto", "")).lower()
+                        testUrl = str(itemUrl).lower()
+                        cleanUrl = testUrl.split("?", 1)[0]
+
+                        isHls = (proto == "m3u8" or ".m3u8" in testUrl)
+                        isDirectHttp = (proto in ("http", "https"))
+
+                        if isHls or isDirectHttp:
+                            itemMeta["e2i_download_ext"] = "mkv"
+                            itemMeta["e2i_postprocess_ffmpeg"] = "1"
+                            itemMeta["e2i_postprocess_container"] = "mkv"
+                            printDBG("FilmPalastTo MKV meta enabled url[%s] proto[%s] hls[%s] direct[%s]" % (
+                                itemUrl, proto, isHls, isDirectHttp
+                            ))
+                    else:
+                        itemMeta.pop("e2i_download_ext", None)
+                        itemMeta.pop("e2i_postprocess_ffmpeg", None)
+                        itemMeta.pop("e2i_postprocess_container", None)
 
                     newItem["url"] = strwithmeta(str(itemUrl), itemMeta)
                     outTab.append(newItem)
@@ -414,12 +461,12 @@ class FilmPalastTo(CBaseHostClass):
                 data = json_loads(data)
                 url = data.get("url", "")
                 if self.cm.isValidUrl(url):
-                    return _addSidecarMeta(self.up.getVideoLinkExt(url))
+                    return _addFinalMeta(self.up.getVideoLinkExt(url))
                 SetIPTVPlayerLastHostError(data["msg"])
             except Exception:
                 printExc()
         else:
-            linksTab = _addSidecarMeta(self.up.getVideoLinkExt(videoUrl))
+            linksTab = _addFinalMeta(self.up.getVideoLinkExt(videoUrl))
 
         return linksTab
 
