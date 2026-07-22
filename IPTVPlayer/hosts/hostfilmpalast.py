@@ -398,7 +398,7 @@ class FilmPalastTo(CBaseHostClass):
             linksTab = _addFinalMeta(self.up.getVideoLinkExt(videoUrl))
 
         return linksTab
-    
+
     def getArticleContent(self, cItem):
         printDBG("FilmPalastTo.getArticleContent [%s]" % cItem)
         retTab = []
