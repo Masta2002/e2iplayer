@@ -999,7 +999,7 @@ class IPTVHost(CHostBase):
         except Exception:
             printExc()
         return False
-    
+
     def withArticleContent(self, cItem):
         try:
             category = cItem.get("category", "")

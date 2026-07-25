@@ -47,7 +47,7 @@ except NameError:
 
 class YouTubeUserLinksEditorScreen(Screen):
     skin = """
-    <screen name="YouTubeUserLinksEditorScreen" position="center,center" size="1120,650" title="YouTube Benutzerlinks Editor">
+    <screen name="YouTubeUserLinksEditorScreen" position="center,center" size="1120,650" title=_("YouTube User Links Editor")>
         <widget name="status" position="20,18" size="1080,30" font="Regular;24" halign="left" valign="center" transparent="1" />
         <widget name="list" position="20,58" size="1080,502" itemHeight="36" scrollbarMode="showOnDemand" transparent="1" />
         <widget name="hint" position="20,570" size="1080,28" font="Regular;22" halign="center" valign="center" foregroundColor="#00b0b0b0" transparent="1" />
@@ -79,10 +79,10 @@ class YouTubeUserLinksEditorScreen(Screen):
         self["key_blue"] = Label("")
         self["list"] = MenuList([])
 
-        self.setTitle(self.forceUiText("YouTube Benutzer-Links Editor"))
+        self.setTitle(self.forceUiText(_("YouTube User Links Editor")))
 
         self.safeSetText(self["status"], "")
-        self.safeSetText(self["hint"], "OK=Edit RED=%s YELLOW=%s EXIT=Exit" % (_("Delete"), _("Move")))
+        self.safeSetText(self["hint"], _("OK=Edit RED=%s YELLOW=%s EXIT=Exit") % (_("Delete"), _("Move")))
         self.safeSetText(self["key_red"], _("Delete"))
         self.safeSetText(self["key_green"], "")
         self.safeSetText(self["key_yellow"], _("Move"))
@@ -161,12 +161,12 @@ class YouTubeUserLinksEditorScreen(Screen):
                 displayList.append(self.forceUiText(self.formatDisplayLine(item)))
 
             self["list"].setList(displayList)
-            self.safeSetText(self["status"], "Benutzer-Links: %d" % len(displayList))
+            self.safeSetText(self["status"], _("User-Links: %d") % len(displayList))
         except Exception:
             printExc()
             self.entries = []
             self["list"].setList([])
-            self.safeSetText(self["status"], "Loading failed.")
+            self.safeSetText(self["status"], _("Loading failed."))
 
     def getCurrentItem(self):
         try:
@@ -262,7 +262,7 @@ class YouTubeUserLinksEditorScreen(Screen):
             self.manager.selectTargetGroup(self.session, item, self.moveFinished)
         except Exception:
             printExc()
-            self.openInfoMessage("Move failed.")
+            self.openInfoMessage(_("Move failed."))
 
     def moveFinished(self, sts, msg):
         self.openInfoMessage(msg)
@@ -279,7 +279,7 @@ class YouTubeUserLinksEditorScreen(Screen):
             self.manager.editRaw(self.session, item, self.editFinished)
         except Exception:
             printExc()
-            self.openInfoMessage("Edit failed.")
+            self.openInfoMessage(_("Edit failed."))
 
     def editFinished(self, sts, msg):
         self.openInfoMessage(msg)
@@ -568,7 +568,7 @@ class YouTubeUserLinksManager(object):
                 return False, _("Invalid name.")
 
             if self.existsUrlAnywhere(url):
-                return False, _("Channel existiert bereits in Benutzer-Links.")
+                return False, _("The channel already exists in User Links.")
 
             entries = self.read()
             newItem = {
@@ -591,11 +591,11 @@ class YouTubeUserLinksManager(object):
             entries.insert(insertIdx, newItem)
 
             if self.write(entries):
-                return True, _("Benutzer-Link hinzugefügt.")
+                return True, _("User link added.")
         except Exception:
             printExc()
 
-        return False, _("Benutzer-Link konnte nicht hinzugefügt werden.")
+        return False, _("Could not add the user link.")
 
     def update(self, oldItem, newGroup, newTitle, newUrl):
         try:
@@ -610,7 +610,7 @@ class YouTubeUserLinksManager(object):
                 return False, _("Invalid name.")
 
             if self.existsUrlAnywhere(newUrl, skipItem=oldItem):
-                return False, _("Element existiert bereits in Benutzer-Links.")
+                return False, _("The element already exists in User Links.")
 
             for idx in range(len(entries)):
                 item = entries[idx]
@@ -627,11 +627,11 @@ class YouTubeUserLinksManager(object):
                 return False, _("File Not Found.")
 
             if self.write(entries):
-                return True, _("Benutzer-Link aktualisiert.")
+                return True, _("User link updated.")
         except Exception:
             printExc()
 
-        return False, _("Benutzer-Link konnte nicht aktualisiert werden.")
+        return False, _("The user link could not be updated.")
 
     def delete(self, itemToDelete):
         try:
@@ -647,11 +647,11 @@ class YouTubeUserLinksManager(object):
                 return False, _("File Not Found.")
 
             if self.write(newEntries):
-                return True, _("Benutzer-Link gelöscht.")
+                return True, _("User link deleted.")
         except Exception:
             printExc()
 
-        return False, _("Benutzer-Link konnte nicht gelöscht werden.")
+        return False, _("The user link could not be deleted.")
 
     def askNewGroup(self, session, callback):
         session.openWithCallback(
@@ -769,16 +769,17 @@ class YouTubeUserLinksManager(object):
             callback(sts, msg)
         except Exception:
             printExc()
-            callback(False, _("Benutzer-Link konnte nicht aktualisiert werden."))
+            callback(False, _("The user link could not be updated."))
 
     def openAddCurrentItem(self, session, cItem=None, callback=None):
         if callback is None:
-            callback = lambda sts, msg: session.open(
-                MessageBox,
-                msg,
-                type=MessageBox.TYPE_INFO,
-                timeout=5
-            )
+            def callback(sts, msg):
+                session.open(
+                    MessageBox,
+                    msg,
+                    type=MessageBox.TYPE_INFO,
+                    timeout=5
+                )
 
         item = self.getCandidateFromItem(cItem)
         if item is None:
