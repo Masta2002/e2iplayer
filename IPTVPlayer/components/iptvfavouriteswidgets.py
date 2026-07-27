@@ -459,7 +459,7 @@ class IPTVFavouritesMainWidget(Screen):
 
     def _groupEdited(self, retArg):
         sel = self.getSelectedItem()
-        if None == sel or not retArg or 2 != len(retArg):
+        if None is sel or not retArg or 2 != len(retArg):
             return
 
         group = self.favourites.getGroup(sel.privateData)

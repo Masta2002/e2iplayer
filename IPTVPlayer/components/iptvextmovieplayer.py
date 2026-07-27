@@ -960,7 +960,7 @@ class IPTVExtMoviePlayer(Screen):
         return False
 
     def _detectSubtitleFile(self, filePath):
-        if None == filePath or '' == filePath:
+        if None is filePath or '' == filePath:
             return False, 'empty path'
         if not fileExists(filePath):
             return False, 'missing file'
