@@ -395,7 +395,7 @@ class IPTVFavouritesMainWidget(Screen):
         if self.duringMoving:
             return
         sel = self.getSelectedItem()
-        if None == sel:
+        if None is sel:
             return
 
         from copy import deepcopy
@@ -405,7 +405,7 @@ class IPTVFavouritesMainWidget(Screen):
 
         if ":groups:" == self.menu:
             group = self.favourites.getGroup(sel.privateData)
-            if None == group:
+            if None is group:
                 return
 
             params['title'] = _("Edit favourite group")
@@ -463,7 +463,7 @@ class IPTVFavouritesMainWidget(Screen):
             return
 
         group = self.favourites.getGroup(sel.privateData)
-        if None == group:
+        if None is group:
             return
 
         group['title'] = retArg[0]
@@ -473,7 +473,7 @@ class IPTVFavouritesMainWidget(Screen):
 
     def _itemEdited(self, retArg):
         sel = self.getSelectedItem()
-        if None == sel or not retArg or 1 > len(retArg):
+        if None is sel or not retArg or 1 > len(retArg):
             return
         if not self.loadGroupItems(self.menu):
             return

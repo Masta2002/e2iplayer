@@ -168,7 +168,7 @@ class ExtPlayerCommandsDispatcher():
             printDBG(">> extPlayerSendCommand owner NONE")
             return False
 
-        if getStatus and None != self.owner:
+        if getStatus and None is not self.owner:
             try:
                 self.owner.extPlayerSendCommand("PLAYBACK_INFO", '')
             except Exception:

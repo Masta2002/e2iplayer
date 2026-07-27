@@ -781,8 +781,6 @@ class E2iPlayerWidget(Screen):
         if self.visible and not self.isInWorkThread() and 'favourites' == self.hostName:
             currSelIndex = self.getSelIndex()
             if currSelIndex < 0:
-                               
-                       
                 return
 
             groupId = self.favouritesCurrentGroupId
