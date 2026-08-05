@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-# Last Modified: 25.07.2026  - Change added YouTube user links support for channel search results, including add-to-user-links action,
-# folder selection or new folder creation, and user links editor integration via ytlist.txt; moved to separate youtubeuserlinks.py
-# to keep hostyoutube.py cleaner, URL meta helper for sidecar and MKV postprocess handling - Kamikaze24
+# Last Modified: 05.08.2026  - Centralized watched helper integration incl. favourite hash sync - Kamikaze24
 ###################################################
 # LOCAL import
 ###################################################
@@ -14,6 +12,7 @@ from Plugins.Extensions.IPTVPlayer.libs.youtubeparser import YouTubeParser
 from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote_plus
 from Plugins.Extensions.IPTVPlayer.libs.urlmetahelper import buildSidecar, buildYoutubeOptions, decorateYoutubeUrl, decorateYoutubeLinkItems
 from Plugins.Extensions.IPTVPlayer.libs.youtubeuserlinks import YouTubeUserLinksManager
+from Plugins.Extensions.IPTVPlayer.tools.iptvwatchedhelper import IPTVWatchedHelper
 
 ###################################################
 
@@ -61,6 +60,7 @@ config.plugins.iptvplayer.youtube_ui_language = ConfigSelection(
         ("en", _("English")),
     ],
 )
+config.plugins.iptvplayer.favourites_use_watched_flag = ConfigYesNo(default=True)
 
 
 try:
@@ -88,6 +88,9 @@ def GetConfigList():
     optionList.append(getConfigListEntry(_("Create sidecar files (.txt/.jpg)") + ":", config.plugins.iptvplayer.youtube_sidecar))
     optionList.append(getConfigListEntry(_("Create MKV with chapter marks from description") + ":", config.plugins.iptvplayer.youtube_mkv_chapters))
     optionList.append(getConfigListEntry(_("Create Enigma2 .cuts chapter marks") + ":", config.plugins.iptvplayer.youtube_enigma2_cuts))
+    optionList.append(getConfigListEntry(_("Allow watched flag to be set"), config.plugins.iptvplayer.favourites_use_watched_flag))
+    if config.plugins.iptvplayer.favourites_use_watched_flag.value:
+        optionList.append(getConfigListEntry(_("The color of the viewed item"), config.plugins.iptvplayer.watched_item_color))
     # temporary, the ffmpeg must be in right version to be able to merge file without transcoding
     # checking should be moved to setup
     if IsExecutable("ffmpeg"):
@@ -232,6 +235,7 @@ class Youtube(CBaseHostClass):
         self.ytp = YouTubeParser()
         self.currFileHost = None
         self.userLinks = YouTubeUserLinksManager(self._getUserLinksPath, self._getCategory, self._extractChannelNameFromItem)
+        self.watchedHelper = IPTVWatchedHelper('youtube')
 
     def _getCategory(self, url):
         # printDBG("Youtube._getCategory")
@@ -266,7 +270,7 @@ class Youtube(CBaseHostClass):
         return videoId
 
     def _getVideoIdFromItem(self, cItem):
-        printDBG("Youtube._getVideoIdFromItem")
+        #printDBG("Youtube._getVideoIdFromItem")
         videoId = ""
         try:
             videoId = cItem.get("video_id", "")
@@ -403,6 +407,29 @@ class Youtube(CBaseHostClass):
     def _getUserLinksPath(self):
         return os.path.join(config.plugins.iptvplayer.Sciezkaurllist.value, self.UTLIST_FILE)
 
+    def _getWatchedKeyForItem(self, cItem):
+        #printDBG("Youtube._getWatchedKeyForItem")
+        try:
+            if not isinstance(cItem, dict):
+                return ""
+            if cItem.get("is_pagination", False):
+                return ""
+            if cItem.get("type", "") == "more" or cItem.get("image_type", "") == "NEXT":
+                return ""
+            category = cItem.get("category", "")
+            if category not in ["video", "movie", "traylist"] and cItem.get("type", "") not in ["video", "audio"]:
+                if "watch?v=" not in cItem.get("url", "") and not cItem.get("video_id", ""):
+                    return ""
+            videoId = self._getVideoIdFromItem(cItem)
+            if videoId:
+                return "videoid:%s" % videoId
+            url = str(cItem.get("url", "") or "").strip().replace("&amp;", "&")
+            if url:
+                return "url:%s" % url
+        except Exception:
+            printExc()
+        return ""
+
     def readUserLinks(self):
         return self.userLinks.read()
 
@@ -515,6 +542,7 @@ class Youtube(CBaseHostClass):
                     params = dict(cItem)
                     category = self._getCategory(item["url"])
                     params.update({"good_for_fav": True, "title": item["full_title"], "url": item["url"], "desc": item["url"], "category": category})
+                    self.watchedHelper.updateHostItemFlag(self, params, self._getWatchedKeyForItem)
                     if "video" == category:
                         self.addVideo(params)
                     elif "more" == category:
@@ -532,6 +560,7 @@ class Youtube(CBaseHostClass):
                     params = dict(cItem)
                     category = self._getCategory(item["url"])
                     params.update({"good_for_fav": True, "title": title, "url": item["url"], "desc": item["url"], "category": category})
+                    self.watchedHelper.updateHostItemFlag(self, params, self._getWatchedKeyForItem)
                     if "video" == category:
                         self.addVideo(params)
                     elif "more" == category:
@@ -619,6 +648,7 @@ class Youtube(CBaseHostClass):
                 desc += E2ColoR("yellow") + _("Views") + E2ColoR("white") + ":" + self.cm.ph.getDataBeetwenMarkers(item, '"viewCountText":{"simpleText":"', '"},"navigationEndpoint":', False)[1]
                 params = {"title": title, "url": url, "icon": icon, "desc": desc, "video_id": self._extractVideoId(url)}
                 self._injectChannelNameToItem(params)
+                self.watchedHelper.updateHostItemFlag(self, params, self._getWatchedKeyForItem)
                 self.addVideo(params)
             return
 
@@ -656,6 +686,7 @@ class Youtube(CBaseHostClass):
                 tmp = self.ytp.getVideosFromChannelList(url, category, page, cItem)
                 if len(tmp) > 0:
                     self._injectChannelNameToItems(tmp, defaultChannel)
+                    self.watchedHelper.updateHostListFlags(self, tmp, self._getWatchedKeyForItem)
                     params = {"good_for_fav": False, "category": "sub_items", "title": _("Videos"), "sub_items": tmp}
                     self.addDir(params)
 
@@ -663,11 +694,13 @@ class Youtube(CBaseHostClass):
                 tmp = self.ytp.getVideosFromChannelList(url, category, page, cItem)
                 if len(tmp) > 0:
                     self._injectChannelNameToItems(tmp, defaultChannel)
+                    self.watchedHelper.updateHostListFlags(self, tmp, self._getWatchedKeyForItem)
                     params = {"good_for_fav": False, "category": "sub_items", "title": _("Live streams"), "sub_items": tmp}
                     self.addDir(params)
             else:
                 self.currList = self.ytp.getVideosFromChannelList(url, category, page, cItem)
                 self._injectChannelNameToItems(self.currList, defaultChannel)
+                self.watchedHelper.updateHostListFlags(self, self.currList, self._getWatchedKeyForItem)
         elif "playlist" == category:
             self.currList = self.ytp.getVideosApiPlayList(url, category, page, cItem)
         elif "traylist" == category:
@@ -688,6 +721,7 @@ class Youtube(CBaseHostClass):
         for item in tmpList:
             item.update({"name": "category"})
             if "video" == item["type"]:
+                self.watchedHelper.updateHostItemFlag(self, item, self._getWatchedKeyForItem)
                 self.addVideo(item)
             elif "more" == item["type"]:
                 item.update({"image_type": "NEXT"})
@@ -709,6 +743,12 @@ class Youtube(CBaseHostClass):
         channelName = ""
 
         workItem = dict(cItem)
+
+        try:
+            self.watchedHelper.markHostItemAsWatched(self, workItem, self._getWatchedKeyForItem)
+            self.watchedHelper.markHostItemAsWatched(self, cItem, self._getWatchedKeyForItem)
+        except Exception:
+            printExc()
 
         try:
             if workItem.get("is_pagination", False) or workItem.get("type", "") == "more" or workItem.get("image_type", "") == "NEXT":
@@ -971,6 +1011,24 @@ class IPTVHost(CHostBase):
 
     def __init__(self):
         CHostBase.__init__(self, Youtube(), True, [CDisplayListItem.TYPE_VIDEO, CDisplayListItem.TYPE_AUDIO])
+        self.cachedRet = None
+        self.refreshAfterWatchedFlagChange = False
+        self.watchedHelper = IPTVWatchedHelper('youtube')
+
+    def getFavouriteHostName(self, index, displayItem):
+        return "youtube"
+
+    def fixWatchedFlag(self, ret):
+        if config.plugins.iptvplayer.favourites_use_watched_flag.value:
+            ret = self.watchedHelper.fixHostRet(ret, self.host.currList, self.host._getWatchedKeyForItem, self.getFavouriteHostName)
+        self.cachedRet = ret
+        return ret
+
+    def syncWatchedToFavouriteHash(self, Index=0):
+        if config.plugins.iptvplayer.favourites_use_watched_flag.value and self.watchedHelper.syncFavouriteFromRet(self.cachedRet, Index, self.getFavouriteHostName):
+            self.refreshAfterWatchedFlagChange = True
+            return True
+        return False
 
     def getSearchTypes(self):
         return self.host.SEARCH_TYPES
@@ -999,7 +1057,7 @@ class IPTVHost(CHostBase):
         except Exception:
             printExc()
         return False
-
+    
     def withArticleContent(self, cItem):
         try:
             category = cItem.get("category", "")
@@ -1020,3 +1078,36 @@ class IPTVHost(CHostBase):
             printExc()
             retCode = RetHost.ERROR
         return RetHost(retCode, value=retlist)
+
+    def getLinksForVideo(self, Index=0, selItem=None):
+        try:
+            if config.plugins.iptvplayer.favourites_use_watched_flag.value and Index < len(self.host.currList):
+                self.watchedHelper.markHostItemAsWatched(self.host, self.host.currList[Index], self.host._getWatchedKeyForItem)
+        except Exception:
+            printExc()
+        try:
+            self.syncWatchedToFavouriteHash(Index)
+        except Exception:
+            printExc()
+        return CHostBase.getLinksForVideo(self, Index, selItem)
+
+    def getListForItem(self, Index=0, refresh=0, selItem=None):
+        ret = CHostBase.getListForItem(self, Index, refresh, selItem)
+        return self.fixWatchedFlag(ret)
+
+    def getPrevList(self, refresh=0):
+        ret = CHostBase.getPrevList(self, refresh)
+        return self.fixWatchedFlag(ret)
+
+    def getCurrentList(self, refresh=0):
+        if refresh == 1 and self.refreshAfterWatchedFlagChange and self.cachedRet is not None:
+            ret = self.cachedRet
+        else:
+            ret = CHostBase.getCurrentList(self, refresh)
+        ret = self.fixWatchedFlag(ret)
+        self.refreshAfterWatchedFlagChange = False
+        return ret
+
+    def getMoreForItem(self, Index=0):
+        ret = CHostBase.getMoreForItem(self, Index)
+        return self.fixWatchedFlag(ret)
