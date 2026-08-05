@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Last Modified: 23.07.2026 - Kamikaze24 - Optional legacy title format added for old favorites/seen markers compatibility
+# Last Modified: 05.08.2026 - Centralized watched helper integration incl. favourite hash sync - Kamikaze24
 import re
 import json
 
@@ -12,6 +12,7 @@ from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote_plus
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.libs.urlmetahelper import buildSidecar, sidecarFromUrlMeta, decorateUrl, decorateResolvedLinkItems
+from Plugins.Extensions.IPTVPlayer.tools.iptvwatchedhelper import IPTVWatchedHelper
 
 
 config.plugins.iptvplayer.serienstreamto_hosts = ConfigSelection(default="http://186.2.175.5/", choices=[("http://186.2.175.5/", "186.2.175.5"), ("https://serienstream.to/", "serienstream.to"), ("https://serienstream.cx/", "serienstream.cx")])  # NOSONAR
@@ -22,17 +23,22 @@ config.plugins.iptvplayer.serienstreamto_omdb_apikey = ConfigText(default="", fi
 config.plugins.iptvplayer.serienstreamto_sidecar = ConfigYesNo(default=True)
 config.plugins.iptvplayer.serienstreamto_mkv = ConfigYesNo(default=True)
 config.plugins.iptvplayer.serienstreamto_legacy_titles = ConfigYesNo(default=False)
+config.plugins.iptvplayer.favourites_use_watched_flag = ConfigYesNo(default=True)
 
 
 def GetConfigList():
-    return [getConfigListEntry(_("Use login") + ":", config.plugins.iptvplayer.serienstreamto_uselogin),
-            getConfigListEntry(_("e-mail") + ":", config.plugins.iptvplayer.serienstreamto_login),
-            getConfigListEntry(_("password") + ":", config.plugins.iptvplayer.serienstreamto_password),
-            getConfigListEntry(_("OMDb API Key") + ":", config.plugins.iptvplayer.serienstreamto_omdb_apikey),
-            getConfigListEntry(_("Create sidecar files (.txt/.jpg)") + ":", config.plugins.iptvplayer.serienstreamto_sidecar),
-            getConfigListEntry(_("Create MKV") + ":", config.plugins.iptvplayer.serienstreamto_mkv),
-            getConfigListEntry(_("Use legacy title format") + ":", config.plugins.iptvplayer.serienstreamto_legacy_titles),
-            getConfigListEntry(_("host") + ":", config.plugins.iptvplayer.serienstreamto_hosts)]
+    optionList = [getConfigListEntry(_("Use login") + ":", config.plugins.iptvplayer.serienstreamto_uselogin),
+                  getConfigListEntry(_("e-mail") + ":", config.plugins.iptvplayer.serienstreamto_login),
+                  getConfigListEntry(_("password") + ":", config.plugins.iptvplayer.serienstreamto_password),
+                  getConfigListEntry(_("OMDb API Key") + ":", config.plugins.iptvplayer.serienstreamto_omdb_apikey),
+                  getConfigListEntry(_("Create sidecar files (.txt/.jpg)") + ":", config.plugins.iptvplayer.serienstreamto_sidecar),
+                  getConfigListEntry(_("Create MKV") + ":", config.plugins.iptvplayer.serienstreamto_mkv),
+                  getConfigListEntry(_("Use legacy title format") + ":", config.plugins.iptvplayer.serienstreamto_legacy_titles),
+                  getConfigListEntry(_("Allow watched flag to be set"), config.plugins.iptvplayer.favourites_use_watched_flag)]
+    if config.plugins.iptvplayer.favourites_use_watched_flag.value:
+        optionList.append(getConfigListEntry(_("The color of the viewed item"), config.plugins.iptvplayer.watched_item_color))
+    optionList.append(getConfigListEntry(_("host") + ":", config.plugins.iptvplayer.serienstreamto_hosts))
+    return optionList
 
 
 def gettytul():
@@ -54,6 +60,7 @@ class SerienStreamTo(CBaseHostClass):
         self.DEFAULT_ICON_URL = "https://raw.githubusercontent.com/oe-mirrors/e2iplayer/gh-pages/Thumbnails/serienstream.to.png"
         self.imdb_cache = {}
         self.sessionEx = MainSessionWrapper()
+        self.watchedHelper = IPTVWatchedHelper('serienstreamto')
         self.MENU = [{"category": "list_items", "title": _("Series"), "url": self.getFullUrl("suche")},
                      {"category": "list_newepisodes", "title": "Neueste Episoden"},
                      {"category": "list_items", "title": _("Collections"), "url": self.getFullUrl("sammlungen")},
@@ -66,13 +73,46 @@ class SerienStreamTo(CBaseHostClass):
     def _useLegacyTitles(self):
         return config.plugins.iptvplayer.serienstreamto_legacy_titles.value
 
+    def _getWatchedKeyForItem(self, cItem):
+        #printDBG("SerienStreamTo._getWatchedKeyForItem")
+        try:
+            if not isinstance(cItem, dict):
+                return ""
+            itemType = str(cItem.get("type", "") or "").strip()
+            category = str(cItem.get("category", "") or "").strip()
+            if itemType in ["video", "audio"]:
+                url = str(cItem.get("url", "") or "").strip()
+                if url == "":
+                    return ""
+                return "url:%s" % url
+            if category == "list_episodes":
+                seriesUrl = str(cItem.get("series_url", "") or "").strip()
+                seasonNum = str(cItem.get("season_num", "") or "").strip()
+                if seriesUrl == "" or seasonNum == "":
+                    return ""
+                return "season:%s|%s" % (seriesUrl, seasonNum)
+            if category == "list_seasons":
+                url = str(cItem.get("url", "") or "").strip()
+                if url == "":
+                    return ""
+                return "series:%s" % url
+            if category == "list_newepisodes":
+                url = str(cItem.get("url", "") or "").strip()
+                if url == "":
+                    return ""
+                return "url:%s" % url
+            return ""
+        except Exception:
+            printExc()
+            return ""
+
     def getPage(self, baseUrl, addParams=None, post_data=None):
         if addParams is None:
             addParams = dict(self.defaultParams)
         return self.cm.getPageCFProtection(baseUrl, addParams, post_data)
 
     def getJumpItem(self, max_page, page, url, name):
-        name = (name or "category").split("-")[0] + "-JUMP"
+        name = (name or "category").split('-')[0] + "-JUMP"
         if max_page:
             return {"good_for_fav": False, "title": "%s %s/%s" % (_("Jump"), page, max_page),
                     "desc": _("Jump to a selected page, max: {}").format(max_page),
@@ -207,6 +247,7 @@ class SerienStreamTo(CBaseHostClass):
             params.update({"good_for_fav": True, "category": "list_seasons", "title": self.cleanHtmlStr(title), "url": url, "icon": icon, "desc": ""})
             if "sammlung" in url:
                 params.update({"category": "list_items"})
+            self.watchedHelper.updateHostItemFlag(self, params, self._getWatchedKeyForItem)
             self.addDir(params)
         if max_page and max_page > 1:
             self.addDir({"title": "************************", "category": "empty"})
@@ -237,7 +278,7 @@ class SerienStreamTo(CBaseHostClass):
         printDBG("IMDb DEBUG listSeasons id=[%s]" % imdb_id)
         imdb_rating = self.getIMDBRating(imdb_id) if imdb_id else "-"
         printDBG("IMDb DEBUG listSeasons rating=[%s]" % imdb_rating)
-        data = self.cm.ph.getAllItemsBeetwenMarkers(data, 'id="season-nav">', "</nav>")
+        data = self.cm.ph.getAllItemsBeetwenMarkers(data, 'id="season-nav">', "</ul>")
         if not data:
             return
         data = re.compile(r'href="([^"]+).*?data-season-pill="(\d+)', re.DOTALL).findall(data[0])
@@ -247,10 +288,12 @@ class SerienStreamTo(CBaseHostClass):
             desc_show = desc + imdb_text
             params = dict(cItem)
             params.update({"good_for_fav": True, "category": "list_episodes", "title": title,
-                           "url": self.getFullUrl(url), "icon": icon, "desc": desc_show,
-                           "imdb_rating": imdb_rating, "imdb_id": imdb_id, "imdb_lookup_url": self.getFullUrl(url)})
+            "url": self.getFullUrl(url), "icon": icon, "desc": desc_show,
+            "imdb_rating": imdb_rating, "imdb_id": imdb_id, "imdb_lookup_url": self.getFullUrl(url),
+            "series_url": cItem.get("url", ""), "season_num": str(se)})
             if trailer:
                 params.update({"trailer": trailer})
+            self.watchedHelper.updateHostItemFlag(self, params, self._getWatchedKeyForItem)
             self.addDir(params)
 
     def listEpisodes(self, cItem):
@@ -269,10 +312,12 @@ class SerienStreamTo(CBaseHostClass):
                 ep_prefix = "" if ("Episode" in name or "Folge" in name) else "%s %s - " % (_("Episode"), ep)
                 title = "%s - %s%s %s" % (cItem["title"], ep_prefix, name, language(item))
             else:
-                season_num = self.cm.ph.getSearchGroups(cItem.get("title", ""), r"Staffel\s+(\d+)")[0]
+                season_num = str(cItem.get("season_num", ""))
                 if not season_num:
-                    season_num = self.cm.ph.getSearchGroups(cItem.get("url", ""), r"/staffel-(\d+)")[0]
-                season_num = int(season_num) if season_num.isdigit() else 0
+                    season_num = self.cm.ph.getSearchGroups(cItem.get("title", ""), r'Staffel\s+(\d+)')[0]
+                if not season_num:
+                    season_num = self.cm.ph.getSearchGroups(cItem.get("url", ""), r'/staffel-(\d+)')[0]
+                season_num = int(season_num) if str(season_num).isdigit() else 0
                 series_title = cItem.get("title", "").split(" - Staffel")[0].strip()
                 ep_num = int(ep) if ep.isdigit() else 0
                 se_tag = "S%02dE%02d" % (season_num, ep_num) if season_num > 0 and ep_num > 0 else ""
@@ -280,7 +325,11 @@ class SerienStreamTo(CBaseHostClass):
                 lang_suffix = " - %s" % lang if lang else ""
                 title = "%s - %s - %s%s" % (series_title, se_tag, name, lang_suffix) if se_tag else "%s - %s%s" % (series_title, name, lang_suffix)
             params = dict(cItem)
-            params.update({"good_for_fav": True, "title": title, "url": url, "imdb_lookup_url": cItem.get("imdb_lookup_url", "") or cItem.get("url", "")})
+            params.update({"good_for_fav": True, "title": title, "url": url, "type": "video",
+            "imdb_lookup_url": cItem.get("imdb_lookup_url", "") or cItem.get("url", ""),
+            "series_url": cItem.get("series_url", "") or cItem.get("url", ""),
+            "season_num": str(cItem.get("season_num", ""))})
+            self.watchedHelper.updateHostItemFlag(self, params, self._getWatchedKeyForItem)
             self.addVideo(params)
 
     def listNewEpisodes(self, cItem):
@@ -300,13 +349,14 @@ class SerienStreamTo(CBaseHostClass):
                 if self._useLegacyTitles():
                     title = "%s - %s - %s%s" % (name, se, ep, (" %s" % lang if lang else ""))
                 else:
-                    season_num = self.cm.ph.getSearchGroups(se, r"(\d+)")[0]
-                    episode_num = self.cm.ph.getSearchGroups(ep, r"(\d+)")[0]
+                    season_num = self.cm.ph.getSearchGroups(se, r'(\d+)')[0]
+                    episode_num = self.cm.ph.getSearchGroups(ep, r'(\d+)')[0]
                     season_ep = "S%sE%s" % (season_num.zfill(2), episode_num.zfill(2)) if season_num and episode_num else "%s %s" % (se, ep)
                     title = "%s - %s%s" % (name, season_ep, (" - %s" % lang) if lang else "")
-                imdb_lookup_url = re.sub(r"/staffel-\d+/episode-\d+/?$", "/", url)
+                imdb_lookup_url = re.sub(r'/staffel-\d+/episode-\d+/?$', '/', url)
                 params = dict(cItem)
                 params.update({"good_for_fav": False, "title": title, "url": url, "icon": icon, "imdb_id": "", "imdb_rating": "-", "imdb_lookup_url": imdb_lookup_url})
+                self.watchedHelper.updateHostItemFlag(self, params, self._getWatchedKeyForItem)
                 self.addVideo(params)
 
     def listValue(self, cItem):
@@ -324,6 +374,7 @@ class SerienStreamTo(CBaseHostClass):
                 dub.add(url)
                 params = dict(cItem)
                 params.update({"good_for_fav": True, "category": "list_items", "title": self.cleanHtmlStr(title), "url": self.getFullUrl(url)})
+                self.watchedHelper.updateHostItemFlag(self, params, self._getWatchedKeyForItem)
                 self.addDir(params)
 
     def listSearchResult(self, cItem, searchPattern, searchType):
@@ -334,6 +385,10 @@ class SerienStreamTo(CBaseHostClass):
 
     def getLinksForVideo(self, cItem):
         printDBG("SerienStreamTo.getLinksForVideo [%s]" % cItem)
+        try:
+            self.watchedHelper.markHostItemAsWatched(self, cItem, self._getWatchedKeyForItem)
+        except Exception:
+            printExc()
         urltab = []
         sidecarTxt = ""
         sidecarImg = ""
@@ -423,10 +478,8 @@ class SerienStreamTo(CBaseHostClass):
         cfgSidecarEnabled = config.plugins.iptvplayer.serienstreamto_sidecar.value
         cfgMkvEnabled = config.plugins.iptvplayer.serienstreamto_mkv.value
         sidecar = sidecarFromUrlMeta(url, cfgSidecarEnabled)
-
         def _addFinalMeta(videoLinks):
             return decorateResolvedLinkItems(videoLinks, sidecar=sidecar, mkvEnabled=cfgMkvEnabled)
-
         if "youtube" in url:
             return _addFinalMeta(self.up.getVideoLinkExt(url))
         params = dict(self.defaultParams)
@@ -548,6 +601,57 @@ class SerienStreamTo(CBaseHostClass):
 class IPTVHost(CHostBase):
     def __init__(self):
         CHostBase.__init__(self, SerienStreamTo(), True, [])
+        self.cachedRet = None
+        self.refreshAfterWatchedFlagChange = False
+        self.watchedHelper = IPTVWatchedHelper('serienstreamto')
+
+    def getFavouriteHostName(self, index, displayItem):
+        return 'serienstreamto'
+
+    def fixWatchedFlag(self, ret):
+        if config.plugins.iptvplayer.favourites_use_watched_flag.value:
+            ret = self.watchedHelper.fixHostRet(ret, self.host.currList, self.host._getWatchedKeyForItem, self.getFavouriteHostName)
+        self.cachedRet = ret
+        return ret
+
+    def syncWatchedToFavouriteHash(self, Index=0):
+        if config.plugins.iptvplayer.favourites_use_watched_flag.value and self.watchedHelper.syncFavouriteFromRet(self.cachedRet, Index, self.getFavouriteHostName):
+            self.refreshAfterWatchedFlagChange = True
+            return True
+        return False
+
+    def getLinksForVideo(self, Index=0, selItem=None):
+        try:
+            if config.plugins.iptvplayer.favourites_use_watched_flag.value and Index < len(self.host.currList):
+                self.watchedHelper.markHostItemAsWatched(self.host, self.host.currList[Index], self.host._getWatchedKeyForItem)
+        except Exception:
+            printExc()
+        try:
+            self.syncWatchedToFavouriteHash(Index)
+        except Exception:
+            printExc()
+        return CHostBase.getLinksForVideo(self, Index, selItem)
+
+    def getListForItem(self, Index=0, refresh=0, selItem=None):
+        ret = CHostBase.getListForItem(self, Index, refresh, selItem)
+        return self.fixWatchedFlag(ret)
+
+    def getPrevList(self, refresh=0):
+        ret = CHostBase.getPrevList(self, refresh)
+        return self.fixWatchedFlag(ret)
+
+    def getCurrentList(self, refresh=0):
+        if refresh == 1 and self.refreshAfterWatchedFlagChange and self.cachedRet is not None:
+            ret = self.cachedRet
+        else:
+            ret = CHostBase.getCurrentList(self, refresh)
+        ret = self.fixWatchedFlag(ret)
+        self.refreshAfterWatchedFlagChange = False
+        return ret
+
+    def getMoreForItem(self, Index=0):
+        ret = CHostBase.getMoreForItem(self, Index)
+        return self.fixWatchedFlag(ret)
 
     def withArticleContent(self, cItem):
         return cItem["category"] in ["video", "list_seasons", "list_episodes", "list_newepisodes"]
