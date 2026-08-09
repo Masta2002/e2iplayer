@@ -13,6 +13,7 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.libs.urlmetahelper import buildSidecar, sidecarFromUrlMeta, decorateUrl, decorateResolvedLinkItems
 from Plugins.Extensions.IPTVPlayer.tools.iptvwatchedhelper import IPTVWatchedHelper
+from Plugins.Extensions.IPTVPlayer.tools.iptvwatchedhostmixin import WatchedFlagHostMixin
 
 
 config.plugins.iptvplayer.serienstreamto_hosts = ConfigSelection(default="http://186.2.175.5/", choices=[("http://186.2.175.5/", "186.2.175.5"), ("https://serienstream.to/", "serienstream.to"), ("https://serienstream.cx/", "serienstream.cx")])  # NOSONAR
@@ -23,20 +24,18 @@ config.plugins.iptvplayer.serienstreamto_omdb_apikey = ConfigText(default="", fi
 config.plugins.iptvplayer.serienstreamto_sidecar = ConfigYesNo(default=True)
 config.plugins.iptvplayer.serienstreamto_mkv = ConfigYesNo(default=True)
 config.plugins.iptvplayer.serienstreamto_legacy_titles = ConfigYesNo(default=False)
-config.plugins.iptvplayer.favourites_use_watched_flag = ConfigYesNo(default=True)
 
 
 def GetConfigList():
+    # "Allow watched flag to be set" / "The color of the viewed item" now live in the
+    # global E2iPlayer settings (components/iptvconfigmenu.py), not per-host
     optionList = [getConfigListEntry(_("Use login") + ":", config.plugins.iptvplayer.serienstreamto_uselogin),
                   getConfigListEntry(_("e-mail") + ":", config.plugins.iptvplayer.serienstreamto_login),
                   getConfigListEntry(_("password") + ":", config.plugins.iptvplayer.serienstreamto_password),
                   getConfigListEntry(_("OMDb API Key") + ":", config.plugins.iptvplayer.serienstreamto_omdb_apikey),
                   getConfigListEntry(_("Create sidecar files (.txt/.jpg)") + ":", config.plugins.iptvplayer.serienstreamto_sidecar),
                   getConfigListEntry(_("Create MKV") + ":", config.plugins.iptvplayer.serienstreamto_mkv),
-                  getConfigListEntry(_("Use legacy title format") + ":", config.plugins.iptvplayer.serienstreamto_legacy_titles),
-                  getConfigListEntry(_("Allow watched flag to be set"), config.plugins.iptvplayer.favourites_use_watched_flag)]
-    if config.plugins.iptvplayer.favourites_use_watched_flag.value:
-        optionList.append(getConfigListEntry(_("The color of the viewed item"), config.plugins.iptvplayer.watched_item_color))
+                  getConfigListEntry(_("Use legacy title format") + ":", config.plugins.iptvplayer.serienstreamto_legacy_titles)]
     optionList.append(getConfigListEntry(_("host") + ":", config.plugins.iptvplayer.serienstreamto_hosts))
     return optionList
 
@@ -306,12 +305,17 @@ class SerienStreamTo(CBaseHostClass):
             self.addDir(params)
             self.cacheSeriesSeasons[seriesUrl].append({"category": "list_episodes", "url": self.getFullUrl(url), "series_url": seriesUrl, "season_num": str(se)})
 
+        seasonItems = self.cacheSeriesSeasons.get(seriesUrl, [])
+        if seasonItems:
+            self.watchedHelper.updateParentWatchedState({"category": "list_seasons", "url": seriesUrl}, seasonItems, self._getWatchedKeyForItem)
+
     def listEpisodes(self, cItem):
         printDBG("SerienStreamTo.listEpisodes")
         sts, data = self.getPage(cItem["url"])
         if not sts:
             return
         data = self.cm.ph.getAllItemsBeetwenMarkers(data, 'class="episode-row', "</tr>")
+        episodeItems = []
         for item in data:
             url = self.getFullUrl(self.cm.ph.getSearchGroups(item, "location='([^']+)'")[0])
             name = self.cleanHtmlStr(self.cm.ph.getSearchGroups(item, 'title="([^"]+)">')[0])
@@ -341,6 +345,11 @@ class SerienStreamTo(CBaseHostClass):
             "season_num": str(cItem.get("season_num", ""))})
             self.watchedHelper.updateHostItemFlag(self, params, self._getWatchedKeyForItem)
             self.addVideo(params)
+            episodeItems.append(params)
+
+        if episodeItems:
+            seasonParent = {"category": "list_episodes", "series_url": episodeItems[0].get("series_url", ""), "season_num": episodeItems[0].get("season_num", "")}
+            self.watchedHelper.updateParentWatchedState(seasonParent, episodeItems, self._getWatchedKeyForItem)
 
     def listNewEpisodes(self, cItem):
         printDBG("SerienStreamTo.listNewEpisodes")
@@ -620,27 +629,12 @@ class SerienStreamTo(CBaseHostClass):
         CBaseHostClass.endHandleService(self, index, refresh)
 
 
-class IPTVHost(CHostBase):
+class IPTVHost(WatchedFlagHostMixin, CHostBase):
     def __init__(self):
         CHostBase.__init__(self, SerienStreamTo(), True, [])
         self.cachedRet = None
         self.refreshAfterWatchedFlagChange = False
         self.watchedHelper = IPTVWatchedHelper('serienstreamto')
-
-    def getFavouriteHostName(self, index, displayItem):
-        return 'serienstreamto'
-
-    def fixWatchedFlag(self, ret):
-        if config.plugins.iptvplayer.favourites_use_watched_flag.value:
-            ret = self.watchedHelper.fixHostRet(ret, self.host.currList, self.host._getWatchedKeyForItem, self.getFavouriteHostName)
-        self.cachedRet = ret
-        return ret
-
-    def syncWatchedToFavouriteHash(self, Index=0):
-        if config.plugins.iptvplayer.favourites_use_watched_flag.value and self.watchedHelper.syncFavouriteFromRet(self.cachedRet, Index, self.getFavouriteHostName):
-            self.refreshAfterWatchedFlagChange = True
-            return True
-        return False
 
     def _setWatchedStateForSeasonItem(self, seasonItem, action):
         try:
@@ -718,21 +712,6 @@ class IPTVHost(CHostBase):
             printExc()
             return False
 
-    def getLinksForVideo(self, Index=0, selItem=None):
-        try:
-            if config.plugins.iptvplayer.favourites_use_watched_flag.value and Index < len(self.host.currList):
-                self.watchedHelper.markHostItemAsWatched(self.host, self.host.currList[Index], self.host._getWatchedKeyForItem)
-        except Exception:
-            printExc()
-        try:
-            self.syncWatchedToFavouriteHash(Index)
-        except Exception:
-            printExc()
-        return CHostBase.getLinksForVideo(self, Index, selItem)
-
-    def getCustomActions(self, Index=0):
-        return self.watchedHelper.getCustomActionsForRet(self.cachedRet, self.host.currList, self.host._getWatchedKeyForItem, Index)
-
     def performCustomAction(self, privateData):
         ret = self.watchedHelper.performCustomAction(privateData)
         if ret.status == RetHost.OK:
@@ -770,27 +749,6 @@ class IPTVHost(CHostBase):
             except Exception:
                 printExc()
         return ret
-
-    def getListForItem(self, Index=0, refresh=0, selItem=None):
-        ret = CHostBase.getListForItem(self, Index, refresh, selItem)
-        return self.fixWatchedFlag(ret)
-
-    def getPrevList(self, refresh=0):
-        ret = CHostBase.getPrevList(self, refresh)
-        return self.fixWatchedFlag(ret)
-
-    def getCurrentList(self, refresh=0):
-        if refresh == 1 and self.refreshAfterWatchedFlagChange and self.cachedRet is not None:
-            ret = self.cachedRet
-        else:
-            ret = CHostBase.getCurrentList(self, refresh)
-        ret = self.fixWatchedFlag(ret)
-        self.refreshAfterWatchedFlagChange = False
-        return ret
-
-    def getMoreForItem(self, Index=0):
-        ret = CHostBase.getMoreForItem(self, Index)
-        return self.fixWatchedFlag(ret)
 
     def withArticleContent(self, cItem):
         return cItem["category"] in ["video", "list_seasons", "list_episodes", "list_newepisodes"]

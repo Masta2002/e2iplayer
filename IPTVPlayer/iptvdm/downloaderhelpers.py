@@ -84,6 +84,54 @@ def writeUtf8TextFile(path, data):
         return False
 
 
+def readUtf8TextFile(path):
+    try:
+        f = open(fsPath(path), 'rb')
+        try:
+            data = f.read()
+        finally:
+            f.close()
+        return ensureText(data)
+    except Exception:
+        return None
+
+
+def filesAreIdentical(pathA, pathB):
+    try:
+        pathA = fsPath(pathA)
+        pathB = fsPath(pathB)
+        if not os.path.isfile(pathA) or not os.path.isfile(pathB):
+            return False
+        if os.path.getsize(pathA) != os.path.getsize(pathB):
+            return False
+        fa = open(pathA, 'rb')
+        try:
+            fb = open(pathB, 'rb')
+            try:
+                while True:
+                    chunkA = fa.read(65536)
+                    chunkB = fb.read(65536)
+                    if chunkA != chunkB:
+                        return False
+                    if not chunkA:
+                        return True
+            finally:
+                fb.close()
+        finally:
+            fa.close()
+    except Exception:
+        return False
+
+
+def safeRemoveFile(path):
+    try:
+        path = fsPath(path)
+        if os.path.isfile(path):
+            os.remove(path)
+    except Exception:
+        printExc()
+
+
 class SidecarMixin(object):
     """
     Shared .txt / .jpg sidecar handling plus the generic "finish download"
@@ -109,6 +157,7 @@ class SidecarMixin(object):
         self.sidecarTxt = ''
         self.sidecarImg = ''
         self.waitingForSidecar = False
+        self.sidecarImgTmpPath = ''
 
     def _clearSidecarData(self):
         self.sidecarEnabled = False
@@ -135,12 +184,15 @@ class SidecarMixin(object):
 
             basePath = ensureText(filePath).rsplit('.', 1)[0]
             txtPath = basePath + '.txt'
+            newContent = ensureText(self.sidecarTxt)
 
             if os.path.isfile(fsPath(txtPath)):
-                printDBG("%s sidecar TXT already exists [%s]" % (self.__class__.__name__, txtPath))
-                return
+                if readUtf8TextFile(txtPath) == newContent:
+                    printDBG("%s sidecar TXT unchanged, skipping rewrite [%s]" % (self.__class__.__name__, txtPath))
+                    return
+                printDBG("%s sidecar TXT content changed, rewriting [%s]" % (self.__class__.__name__, txtPath))
 
-            if writeUtf8TextFile(txtPath, self.sidecarTxt):
+            if writeUtf8TextFile(txtPath, newContent):
                 printDBG("%s sidecar TXT saved [%s]" % (self.__class__.__name__, txtPath))
             else:
                 printDBG("%s sidecar TXT save failed [%s]" % (self.__class__.__name__, txtPath))
@@ -153,17 +205,26 @@ class SidecarMixin(object):
     def _imgSidecarFinished(self, jpgPath, code):
         printDBG("%s._imgSidecarFinished code[%r]" % (self.__class__.__name__, code))
 
+        tmpPath = self.sidecarImgTmpPath
         try:
             # break circular references
             self.sidecarConsole_appClosed_conn = None
             self.sidecarConsole_stderrAvail_conn = None
             self.sidecarConsole = None
             self.waitingForSidecar = False
+            self.sidecarImgTmpPath = ''
 
-            if os.path.isfile(fsPath(jpgPath)):
-                printDBG("%s sidecar JPG saved [%s]" % (self.__class__.__name__, jpgPath))
+            if os.path.isfile(fsPath(tmpPath)) and os.path.getsize(fsPath(tmpPath)) > 0:
+                if filesAreIdentical(tmpPath, jpgPath):
+                    printDBG("%s sidecar JPG unchanged, discarding re-download [%s]" % (self.__class__.__name__, jpgPath))
+                    safeRemoveFile(tmpPath)
+                else:
+                    safeRemoveFile(jpgPath)
+                    os.rename(fsPath(tmpPath), fsPath(jpgPath))
+                    printDBG("%s sidecar JPG saved [%s]" % (self.__class__.__name__, jpgPath))
             else:
                 printDBG("%s sidecar JPG failed [%s]" % (self.__class__.__name__, jpgPath))
+                safeRemoveFile(tmpPath)
         except Exception:
             printExc()
 
@@ -178,13 +239,10 @@ class SidecarMixin(object):
 
             basePath = ensureText(filePath).rsplit('.', 1)[0]
             jpgPath = basePath + '.jpg'
+            tmpPath = jpgPath + '.new'
+            self.sidecarImgTmpPath = tmpPath
 
-            if os.path.isfile(fsPath(jpgPath)):
-                printDBG("%s sidecar JPG already exists [%s]" % (self.__class__.__name__, jpgPath))
-                self._finishDownloadFlow()
-                return
-
-            cmd = 'wget --header "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36" --no-check-certificate "%s" -O "%s" > /dev/null 2>&1' % (shellQuote(self.sidecarImg), shellQuote(jpgPath))
+            cmd = 'wget --header "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36" --no-check-certificate "%s" -O "%s" > /dev/null 2>&1' % (shellQuote(self.sidecarImg), shellQuote(tmpPath))
             printDBG("%s sidecar JPG cmd[%s]" % (self.__class__.__name__, cmd))
 
             self.waitingForSidecar = True
@@ -214,6 +272,9 @@ class SidecarMixin(object):
             self.sidecarConsole = None
             self.sidecarConsole_appClosed_conn = None
             self.sidecarConsole_stderrAvail_conn = None
+            if self.sidecarImgTmpPath:
+                safeRemoveFile(self.sidecarImgTmpPath)
+                self.sidecarImgTmpPath = ''
 
     def _finishDownloadFlow(self):
         # Generic finish-flow used by all three downloaders. Relies on

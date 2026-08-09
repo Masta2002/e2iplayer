@@ -13,6 +13,7 @@ from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote_plus
 from Plugins.Extensions.IPTVPlayer.libs.urlmetahelper import buildSidecar, buildYoutubeOptions, decorateYoutubeUrl, decorateYoutubeLinkItems
 from Plugins.Extensions.IPTVPlayer.libs.youtubeuserlinks import YouTubeUserLinksManager
 from Plugins.Extensions.IPTVPlayer.tools.iptvwatchedhelper import IPTVWatchedHelper
+from Plugins.Extensions.IPTVPlayer.tools.iptvwatchedhostmixin import WatchedFlagHostMixin
 
 ###################################################
 
@@ -60,7 +61,6 @@ config.plugins.iptvplayer.youtube_ui_language = ConfigSelection(
         ("en", _("English")),
     ],
 )
-config.plugins.iptvplayer.favourites_use_watched_flag = ConfigYesNo(default=True)
 
 
 try:
@@ -88,9 +88,8 @@ def GetConfigList():
     optionList.append(getConfigListEntry(_("Create sidecar files (.txt/.jpg)") + ":", config.plugins.iptvplayer.youtube_sidecar))
     optionList.append(getConfigListEntry(_("Create MKV with chapter marks from description") + ":", config.plugins.iptvplayer.youtube_mkv_chapters))
     optionList.append(getConfigListEntry(_("Create Enigma2 .cuts chapter marks") + ":", config.plugins.iptvplayer.youtube_enigma2_cuts))
-    optionList.append(getConfigListEntry(_("Allow watched flag to be set"), config.plugins.iptvplayer.favourites_use_watched_flag))
-    if config.plugins.iptvplayer.favourites_use_watched_flag.value:
-        optionList.append(getConfigListEntry(_("The color of the viewed item"), config.plugins.iptvplayer.watched_item_color))
+    # "Allow watched flag to be set" / "The color of the viewed item" now live in the
+    # global E2iPlayer settings (components/iptvconfigmenu.py), not per-host
     # temporary, the ffmpeg must be in right version to be able to merge file without transcoding
     # checking should be moved to setup
     if IsExecutable("ffmpeg"):
@@ -745,7 +744,6 @@ class Youtube(CBaseHostClass):
         workItem = dict(cItem)
 
         try:
-            self.watchedHelper.markHostItemAsWatched(self, workItem, self._getWatchedKeyForItem)
             self.watchedHelper.markHostItemAsWatched(self, cItem, self._getWatchedKeyForItem)
         except Exception:
             printExc()
@@ -1007,28 +1005,13 @@ class Youtube(CBaseHostClass):
         return SuggestionsProvider(True)
 
 
-class IPTVHost(CHostBase):
+class IPTVHost(WatchedFlagHostMixin, CHostBase):
 
     def __init__(self):
         CHostBase.__init__(self, Youtube(), True, [CDisplayListItem.TYPE_VIDEO, CDisplayListItem.TYPE_AUDIO])
         self.cachedRet = None
         self.refreshAfterWatchedFlagChange = False
         self.watchedHelper = IPTVWatchedHelper('youtube')
-
-    def getFavouriteHostName(self, index, displayItem):
-        return "youtube"
-
-    def fixWatchedFlag(self, ret):
-        if config.plugins.iptvplayer.favourites_use_watched_flag.value:
-            ret = self.watchedHelper.fixHostRet(ret, self.host.currList, self.host._getWatchedKeyForItem, self.getFavouriteHostName)
-        self.cachedRet = ret
-        return ret
-
-    def syncWatchedToFavouriteHash(self, Index=0):
-        if config.plugins.iptvplayer.favourites_use_watched_flag.value and self.watchedHelper.syncFavouriteFromRet(self.cachedRet, Index, self.getFavouriteHostName):
-            self.refreshAfterWatchedFlagChange = True
-            return True
-        return False
 
     def getSearchTypes(self):
         return self.host.SEARCH_TYPES
@@ -1079,44 +1062,8 @@ class IPTVHost(CHostBase):
             retCode = RetHost.ERROR
         return RetHost(retCode, value=retlist)
 
-    def getLinksForVideo(self, Index=0, selItem=None):
-        try:
-            if config.plugins.iptvplayer.favourites_use_watched_flag.value and Index < len(self.host.currList):
-                self.watchedHelper.markHostItemAsWatched(self.host, self.host.currList[Index], self.host._getWatchedKeyForItem)
-        except Exception:
-            printExc()
-        try:
-            self.syncWatchedToFavouriteHash(Index)
-        except Exception:
-            printExc()
-        return CHostBase.getLinksForVideo(self, Index, selItem)
-
-    def getCustomActions(self, Index=0):
-        return self.watchedHelper.getCustomActionsForRet(self.cachedRet, self.host.currList, self.host._getWatchedKeyForItem, Index)
-
     def performCustomAction(self, privateData):
         ret = self.watchedHelper.performCustomAction(privateData)
         if ret.status == RetHost.OK:
             self.refreshAfterWatchedFlagChange = True
         return ret
-
-    def getListForItem(self, Index=0, refresh=0, selItem=None):
-        ret = CHostBase.getListForItem(self, Index, refresh, selItem)
-        return self.fixWatchedFlag(ret)
-
-    def getPrevList(self, refresh=0):
-        ret = CHostBase.getPrevList(self, refresh)
-        return self.fixWatchedFlag(ret)
-
-    def getCurrentList(self, refresh=0):
-        if refresh == 1 and self.refreshAfterWatchedFlagChange and self.cachedRet is not None:
-            ret = self.cachedRet
-        else:
-            ret = CHostBase.getCurrentList(self, refresh)
-        ret = self.fixWatchedFlag(ret)
-        self.refreshAfterWatchedFlagChange = False
-        return ret
-
-    def getMoreForItem(self, Index=0):
-        ret = CHostBase.getMoreForItem(self, Index)
-        return self.fixWatchedFlag(ret)

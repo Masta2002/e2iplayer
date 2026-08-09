@@ -19,6 +19,8 @@ from Tools.Directories import fileExists
 from binascii import hexlify
 import os
 from Components.config import config
+# favourites_use_watched_flag / watched_item_color are defined centrally in
+# components/iptvconfigmenu.py (global E2iPlayer settings)
 
 
 class IPTVWatchedHelper(object):
@@ -350,112 +352,17 @@ class IPTVWatchedHelper(object):
         return False
 
     ###################################################
-    # favourite helpers
-    ###################################################
-    def getFavouriteHashData(self, hostName, displayItem):
-        self._dbgCall('getFavouriteHashData')
-        try:
-            hostName = self._normalizeHostName(hostName)
-            if hostName == '' or displayItem is None:
-                return None
-            hashSrc = '%s_%s' % (str(displayItem.name), str(displayItem.type))
-            hashData = self._hashString(hashSrc)
-            if hashData == '':
-                return None
-            return (hostName, hashData)
-        except Exception:
-            printExc()
-        return None
-
-    def getFavouriteHashFilePath(self, hostName, displayItem):
-        self._dbgCall('getFavouriteHashFilePath')
-        try:
-            hashData = self.getFavouriteHashData(hostName, displayItem)
-            if hashData is None:
-                return ''
-            baseDir = self._getWatchedBaseDir()
-            if baseDir == '':
-                return ''
-            return os.path.join(baseDir, hashData[0], '.%s.iptvhash' % hashData[1])
-        except Exception:
-            printExc()
-        return ''
-
-    def isFavouriteItemWatched(self, hostName, displayItem):
-        self._dbgCall('isFavouriteItemWatched')
-        try:
-            flagFilePath = self.getFavouriteHashFilePath(hostName, displayItem)
-            if flagFilePath != '':
-                return fileExists(flagFilePath)
-        except Exception:
-            printExc()
-        return False
-
-    def markFavouriteItemWatched(self, hostName, displayItem):
-        self._dbgCall('markFavouriteItemWatched')
-        try:
-            if not self.isMarkingAllowed():
-                return False
-            hostName = self._normalizeHostName(hostName)
-            if hostName == '' or displayItem is None:
-                return False
-            if not self._ensureWatchedDir(hostName):
-                return False
-            flagFilePath = self.getFavouriteHashFilePath(hostName, displayItem)
-            if flagFilePath == '':
-                return False
-            return touch(flagFilePath)
-        except Exception:
-            printExc()
-        return False
-
-    def unmarkFavouriteItemWatched(self, hostName, displayItem):
-        self._dbgCall('unmarkFavouriteItemWatched')
-        try:
-            flagFilePath = self.getFavouriteHashFilePath(hostName, displayItem)
-            if flagFilePath == '':
-                return False
-            return rm(flagFilePath)
-        except Exception:
-            printExc()
-        return False
-
-    ###################################################
     # ret/favourite sync helpers
+    #
+    # Host list items are keyed by their own stable url-based key
+    # (keyProvider/_getWatchedKeyForItem), so fixHostRet()/syncFavouriteFromRet()
+    # only need that key - there used to be a second, separate lookup here keyed
+    # by display title+type, but its result was always immediately overwritten
+    # by the key-based one below, so it never actually affected what was shown
+    # and has been removed instead of also switching it to a stable key.
     ###################################################
-    def updateFavouriteDisplayItemFlag(self, hostName, displayItem):
-        self._dbgCall('updateFavouriteDisplayItemFlag')
-        try:
-            displayItem.isWatched = self.isFavouriteItemWatched(hostName, displayItem)
-        except Exception:
-            printExc()
-        return displayItem
-
-    def updateFavouriteRetHostFlags(self, ret, hostNameProvider):
-        self._dbgCall('updateFavouriteRetHostFlags')
-        try:
-            if ret is None:
-                return ret
-            if not hasattr(ret, 'value') or ret.value is None:
-                return ret
-            for idx in range(len(ret.value)):
-                try:
-                    hostName = hostNameProvider(idx, ret.value[idx])
-                except Exception:
-                    hostName = ''
-                    printExc()
-                if hostName != '':
-                    self.updateFavouriteDisplayItemFlag(hostName, ret.value[idx])
-        except Exception:
-            printExc()
-        return ret
-
-    def fixHostRet(self, ret, currList, keyProvider, hostNameProvider):
+    def fixHostRet(self, ret, currList, keyProvider):
         self._dbgCall('fixHostRet')
-        try:
-            ret = self.updateFavouriteRetHostFlags(ret, hostNameProvider)
-        except Exception:
-            printExc()
         try:
             if ret is None or not hasattr(ret, 'value') or ret.value is None:
                 self.dumpDebugCalls()
@@ -476,19 +383,19 @@ class IPTVWatchedHelper(object):
         self.dumpDebugCalls()
         return ret
 
-    def syncFavouriteFromRet(self, cachedRet, index, hostNameProvider):
+    def syncFavouriteFromRet(self, cachedRet, index):
+        # the item was already marked watched via its stable key just before this
+        # runs (see markHostItemAsWatched in the host's own getLinksForVideo); this
+        # only reflects that into the cached display list for instant UI feedback
         self._dbgCall('syncFavouriteFromRet')
         try:
             if cachedRet is None or not hasattr(cachedRet, 'value'):
                 return False
             if index < 0 or index >= len(cachedRet.value):
                 return False
-            displayItem = cachedRet.value[index]
-            hostName = hostNameProvider(index, displayItem)
-            if self.markFavouriteItemWatched(hostName, displayItem):
-                cachedRet.value[index].isWatched = True
-                self.dumpDebugCalls()
-                return True
+            cachedRet.value[index].isWatched = True
+            self.dumpDebugCalls()
+            return True
         except Exception:
             printExc()
         return False

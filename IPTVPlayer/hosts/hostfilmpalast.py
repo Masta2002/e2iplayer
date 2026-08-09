@@ -12,6 +12,7 @@ from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads
 from Plugins.Extensions.IPTVPlayer.libs import ph
 from Plugins.Extensions.IPTVPlayer.libs.urlmetahelper import buildSidecar, sidecarFromUrlMeta, decorateUrl, decorateCachedLinkItems, decorateResolvedLinkItems
 from Plugins.Extensions.IPTVPlayer.tools.iptvwatchedhelper import IPTVWatchedHelper
+from Plugins.Extensions.IPTVPlayer.tools.iptvwatchedhostmixin import WatchedFlagHostMixin
 
 ###################################################
 from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote
@@ -24,17 +25,15 @@ from Plugins.Extensions.IPTVPlayer.p2p3.UrlParse import urljoin
 
 config.plugins.iptvplayer.filmpalast_sidecar = ConfigYesNo(default=True)
 config.plugins.iptvplayer.filmpalast_mkv = ConfigYesNo(default=True)
-config.plugins.iptvplayer.favourites_use_watched_flag = ConfigYesNo(default=True)
 
 
 def GetConfigList():
+    # "Allow watched flag to be set" / "The color of the viewed item" now live in the
+    # global E2iPlayer settings (components/iptvconfigmenu.py), not per-host
     optionList = [
         getConfigListEntry(_("Create sidecar files (.txt/.jpg)") + ":", config.plugins.iptvplayer.filmpalast_sidecar),
         getConfigListEntry(_("Create MKV") + ":", config.plugins.iptvplayer.filmpalast_mkv),
-        getConfigListEntry(_("Allow watched flag to be set"), config.plugins.iptvplayer.favourites_use_watched_flag)
     ]
-    if config.plugins.iptvplayer.favourites_use_watched_flag.value:
-        optionList.append(getConfigListEntry(_("The color of the viewed item"), config.plugins.iptvplayer.watched_item_color))
     return optionList
 
 
@@ -590,28 +589,13 @@ class FilmPalastTo(CBaseHostClass):
         CBaseHostClass.endHandleService(self, index, refresh)
 
 
-class IPTVHost(CHostBase):
+class IPTVHost(WatchedFlagHostMixin, CHostBase):
 
     def __init__(self):
         CHostBase.__init__(self, FilmPalastTo(), True, [])
         self.cachedRet = None
         self.refreshAfterWatchedFlagChange = False
         self.watchedHelper = IPTVWatchedHelper('filmpalastto')
-
-    def getFavouriteHostName(self, index, displayItem):
-        return 'filmpalastto'
-
-    def fixWatchedFlag(self, ret):
-        if config.plugins.iptvplayer.favourites_use_watched_flag.value:
-            ret = self.watchedHelper.fixHostRet(ret, self.host.currList, self.host._getWatchedKeyForItem, self.getFavouriteHostName)
-        self.cachedRet = ret
-        return ret
-
-    def syncWatchedToFavouriteHash(self, Index=0):
-        if config.plugins.iptvplayer.favourites_use_watched_flag.value and self.watchedHelper.syncFavouriteFromRet(self.cachedRet, Index, self.getFavouriteHostName):
-            self.refreshAfterWatchedFlagChange = True
-            return True
-        return False
 
     def _setWatchedStateForSeasonItem(self, seasonItem, action):
         try:
@@ -685,21 +669,6 @@ class IPTVHost(CHostBase):
         except Exception:
             printExc()
 
-    def getLinksForVideo(self, Index=0, selItem=None):
-        try:
-            if config.plugins.iptvplayer.favourites_use_watched_flag.value and Index < len(self.host.currList):
-                self.watchedHelper.markHostItemAsWatched(self.host, self.host.currList[Index], self.host._getWatchedKeyForItem)
-        except Exception:
-            printExc()
-        try:
-            self.syncWatchedToFavouriteHash(Index)
-        except Exception:
-            printExc()
-        return CHostBase.getLinksForVideo(self, Index, selItem)
-
-    def getCustomActions(self, Index=0):
-        return self.watchedHelper.getCustomActionsForRet(self.cachedRet, self.host.currList, self.host._getWatchedKeyForItem, Index)
-
     def performCustomAction(self, privateData):
         ret = self.watchedHelper.performCustomAction(privateData)
         if ret.status == RetHost.OK:
@@ -719,27 +688,6 @@ class IPTVHost(CHostBase):
             except Exception:
                 printExc()
         return ret
-
-    def getListForItem(self, Index=0, refresh=0, selItem=None):
-        ret = CHostBase.getListForItem(self, Index, refresh, selItem)
-        return self.fixWatchedFlag(ret)
-
-    def getPrevList(self, refresh=0):
-        ret = CHostBase.getPrevList(self, refresh)
-        return self.fixWatchedFlag(ret)
-
-    def getCurrentList(self, refresh=0):
-        if refresh == 1 and self.refreshAfterWatchedFlagChange and self.cachedRet is not None:
-            ret = self.cachedRet
-        else:
-            ret = CHostBase.getCurrentList(self, refresh)
-        ret = self.fixWatchedFlag(ret)
-        self.refreshAfterWatchedFlagChange = False
-        return ret
-
-    def getMoreForItem(self, Index=0):
-        ret = CHostBase.getMoreForItem(self, Index)
-        return self.fixWatchedFlag(ret)
 
     def withArticleContent(self, cItem):
         if "video" == cItem.get("type", "") or "explore_item" == cItem.get("category", ""):

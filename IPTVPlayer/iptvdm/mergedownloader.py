@@ -66,6 +66,8 @@ class MergeDownloader(BaseDownloader, SidecarMixin):
         self.finalizedPath = ''
         self.postProcessMode = 'merge'
         self.mergedFileDurationMs = 0
+        self.probeOutData = ''
+        self._pendingChapters = []
 
         self.channelName = ''
         self.downloadChannelName = ''
@@ -364,28 +366,38 @@ class MergeDownloader(BaseDownloader, SidecarMixin):
             return []
         return out
 
-    def _probeDurationMs(self, filePath):
-        durationMs = 0
+    def _parseProbeDuration(self, data):
         try:
-            inPath = shellQuote(filePath)
-            cmd = DMHelper.GET_FFMPEG_PATH() + ' -i "{0}" 2>&1 '.format(inPath)
-            data = os.popen(cmd).read()
             data = ensureText(data)
             m = re.search(r'Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)', data)
             if m:
                 hh = int(m.group(1))
                 mm = int(m.group(2))
                 ss = float(m.group(3))
-                durationMs = int((((hh * 3600) + (mm * 60)) + ss) * 1000.0)
+                return int((((hh * 3600) + (mm * 60)) + ss) * 1000.0)
         except Exception:
             printExc()
-            durationMs = 0
+        return 0
 
-        if durationMs <= 0 and self.knownDurationMs > 0:
-            printDBG("MergeDownloader duration probe failed/N-A, falling back to duration from stream URL metadata [%d ms]" % self.knownDurationMs)
-            durationMs = self.knownDurationMs
+    def _probeDataAvail(self, data):
+        if data is None:
+            return
+        self.probeOutData += ensureText(data)
 
-        return durationMs
+    def _startDurationProbe(self, filePath):
+        self.postProcessMode = 'probe_duration'
+        self.probeOutData = ''
+        inPath = shellQuote(filePath)
+        cmd = DMHelper.GET_FFMPEG_PATH() + ' -i "{0}"'.format(inPath)
+        printDBG("MergeDownloader _startDurationProbe cmd[%s]" % cmd)
+        self.console = eConsoleAppContainer()
+        self.console_appClosed_conn = eConnectCallback(self.console.appClosed, self._cmdFinished)
+        self.console_stderrAvail_conn = eConnectCallback(self.console.stderrAvail, self._probeDataAvail)
+        if hasattr(self.console, "setNice"):
+            self.console.setNice(GetNice() + 2)
+            self.console.execute(cmd)
+        else:
+            self.console.execute(E2PrioFix(cmd))
 
     def _buildFfmetadata(self, chapters, durationMs):
         lines = [';FFMETADATA1']
@@ -413,14 +425,26 @@ class MergeDownloader(BaseDownloader, SidecarMixin):
 
         return '\n'.join(lines) + '\n'
 
-    def _writeChapterMetadataFile(self):
+    def _startChapterMetadataFlow(self):
+        # kicks off the async duration probe; the actual ffmeta file is written
+        # from _cmdFinished once the probe process closes (see 'probe_duration' mode)
         try:
             chapters = self._extractChaptersFromText(self.sidecarTxt)
             if len(chapters) < 2:
                 printDBG("MergeDownloader no usable chapters found in description")
                 return False
 
-            durationMs = self._probeDurationMs(self.tempMergePath)
+            self._pendingChapters = chapters
+            self._startDurationProbe(self.tempMergePath)
+            return True
+        except Exception:
+            printExc("MergeDownloader _startChapterMetadataFlow failed")
+        return False
+
+    def _finishChapterMetadataFlow(self, durationMs):
+        try:
+            chapters = self._pendingChapters
+            self._pendingChapters = []
             self.mergedFileDurationMs = durationMs
             if durationMs <= 0:
                 printDBG("MergeDownloader duration probe failed")
@@ -440,7 +464,7 @@ class MergeDownloader(BaseDownloader, SidecarMixin):
             else:
                 printDBG("MergeDownloader chapter metadata save failed [%s]" % self.chapterMetaPath)
         except Exception:
-            printExc("MergeDownloader _writeChapterMetadataFile failed")
+            printExc("MergeDownloader _finishChapterMetadataFlow failed")
         return False
 
     def _writeCutsFile(self, finalPath):
@@ -477,6 +501,8 @@ class MergeDownloader(BaseDownloader, SidecarMixin):
         self.finalizedPath = ''
         self.postProcessMode = 'merge'
         self.mergedFileDurationMs = 0
+        self.probeOutData = ''
+        self._pendingChapters = []
         self.knownDurationMs = -1
         self.originalFilePath = ensureText(filePath)
         self.preCheckOnly = False
@@ -671,8 +697,7 @@ class MergeDownloader(BaseDownloader, SidecarMixin):
                 printDBG("POSTPROCESSING merge finished tempMergePath[%s] localFileSize[%r] code[%r]" % (self.tempMergePath, mergedSize, code))
 
                 if mergedSize > 0 and code == 0:
-                    if self.makeMkvChapters and self._writeChapterMetadataFile():
-                        self._startMkvChapterMux()
+                    if self.makeMkvChapters and self._startChapterMetadataFlow():
                         return
 
                     if self._finalizeMp4Fallback():
@@ -680,6 +705,21 @@ class MergeDownloader(BaseDownloader, SidecarMixin):
                     self.status = DMHelper.STS.INTERRUPTED
                 else:
                     self.status = DMHelper.STS.INTERRUPTED
+
+            elif self.postProcessMode == 'probe_duration':
+                durationMs = self._parseProbeDuration(self.probeOutData)
+                self.probeOutData = ''
+                if durationMs <= 0 and self.knownDurationMs > 0:
+                    printDBG("MergeDownloader duration probe failed/N-A, falling back to duration from stream URL metadata [%d ms]" % self.knownDurationMs)
+                    durationMs = self.knownDurationMs
+
+                if self._finishChapterMetadataFlow(durationMs):
+                    self._startMkvChapterMux()
+                    return
+
+                if self._finalizeMp4Fallback():
+                    return
+                self.status = DMHelper.STS.INTERRUPTED
 
             elif self.postProcessMode == 'chapters':
                 mkvPath = self._getMkvPath()

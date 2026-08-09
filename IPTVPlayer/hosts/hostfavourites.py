@@ -21,21 +21,14 @@ try:
 except Exception:
     import json
 from binascii import hexlify
-from Components.config import config, ConfigYesNo, getConfigListEntry
+from Components.config import config
 ###################################################
-
-###################################################
-# Config options for HOST
-###################################################
-config.plugins.iptvplayer.favourites_use_watched_flag = ConfigYesNo(default=True)
 
 
 def GetConfigList():
-    optionList = []
-    optionList.append(getConfigListEntry(_("Allow watched flag to be set"), config.plugins.iptvplayer.favourites_use_watched_flag))
-    if config.plugins.iptvplayer.favourites_use_watched_flag.value:
-        optionList.append(getConfigListEntry(_("The color of the viewed item"), config.plugins.iptvplayer.watched_item_color))
-    return optionList
+    # "Allow watched flag to be set" / "The color of the viewed item" now live in the
+    # global E2iPlayer settings (components/iptvconfigmenu.py), not per-host
+    return []
 ###################################################
 
 
@@ -102,7 +95,17 @@ class Favourites(CBaseHostClass):
         for idx in range(len(data)):
             item = data[idx]
             addFun = typesMap.get(item.type, None)
-            params = {'name': 'item', 'title': item.name, 'host': item.hostName, 'icon': item.iconimage, 'desc': item.description, 'group_id': cItem['group_id'], 'item_idx': idx}
+            favUrl = ''
+            try:
+                if item.resolver in (CFavItem.RESOLVER_DIRECT_LINK, CFavItem.RESOLVER_URLLPARSER):
+                    favUrl = str(item.data or '')
+                else:
+                    favItemData = json.loads(item.data)
+                    if isinstance(favItemData, dict):
+                        favUrl = str(favItemData.get('url', '') or '')
+            except Exception:
+                favUrl = ''
+            params = {'name': 'item', 'title': item.name, 'host': item.hostName, 'icon': item.iconimage, 'desc': item.description, 'group_id': cItem['group_id'], 'item_idx': idx, 'fav_url': favUrl}
             if None is not addFun:
                 addFun(params)
 
@@ -191,74 +194,6 @@ class Favourites(CBaseHostClass):
     def getCurrentGuestHostName(self):
         return self.hostName
 
-    def _getGuestParentState(self, guestHost):
-        try:
-            if guestHost is None:
-                return None, []
-            currItem = getattr(guestHost, 'currItem', {})
-            if not isinstance(currItem, dict) or not currItem:
-                return None, []
-            category = str(currItem.get('category', '') or '').strip()
-            seriesUrl = str(currItem.get('series_url', '') or '').strip()
-            seasonNum = str(currItem.get('season_num', '') or '').strip()
-            if category in ['list_episodes', 'list_seasons']:
-                return currItem, list(getattr(guestHost, 'currList', []) or [])
-            if seriesUrl != '' and seasonNum != '':
-                childItems = []
-                for childItem in getattr(guestHost, 'currList', []) or []:
-                    if isinstance(childItem, dict) and childItem.get('type', '') in ['video', 'audio']:
-                        childItems.append(childItem)
-                return {'category': 'list_episodes', 'url': currItem.get('url', ''), 'series_url': seriesUrl, 'season_num': seasonNum}, childItems
-            if seriesUrl != '':
-                childItems = []
-                for childItem in getattr(guestHost, 'currList', []) or []:
-                    if isinstance(childItem, dict) and childItem.get('category', '') == 'list_episodes':
-                        childItems.append(childItem)
-                return {'category': 'list_seasons', 'url': seriesUrl}, childItems
-        except Exception:
-            printExc()
-        return None, []
-
-    def _syncGuestParentFavoriteState(self, ret):
-        try:
-            if self.host is None or not self.host.isQuestMode():
-                return ret
-            guestHost = self.host.getCurrentGuestHost()
-            if guestHost is None:
-                return ret
-            keyProvider = getattr(guestHost, '_getWatchedKeyForItem', None)
-            if not callable(keyProvider):
-                return ret
-            parentItem, childItems = self._getGuestParentState(guestHost)
-            if parentItem is None or len(childItems) == 0:
-                return ret
-            guestHost.watchedHelper.updateParentWatchedState(parentItem, childItems, keyProvider)
-            parentKey = keyProvider(parentItem)
-            if parentKey == '':
-                return ret
-            if self.cachedRet is not None and hasattr(self.cachedRet, 'value'):
-                for idx in range(len(self.cachedRet.value)):
-                    displayItem = self.cachedRet.value[idx]
-                    try:
-                        if displayItem.name == parentItem.get('title', ''):
-                            isWatched = guestHost.watchedHelper.isWatched(parentKey)
-                            displayItem.isWatched = isWatched
-                            hashData = self.getItemHashData(idx, displayItem)
-                            if hashData is not None:
-                                flagPath = GetFavouritesDir('IPTVWatched/%s/.%s.iptvhash' % hashData)
-                                if isWatched:
-                                    if not fileExists(flagPath):
-                                        self._createViewedFile(hashData)
-                                elif fileExists(flagPath):
-                                    rm(flagPath)
-                            break
-                    except Exception:
-                        printExc()
-            return ret
-        except Exception:
-            printExc()
-            return ret
-
 
 class IPTVHost(CHostBase):
 
@@ -268,27 +203,33 @@ class IPTVHost(CHostBase):
         self.useWatchedFlag = config.plugins.iptvplayer.favourites_use_watched_flag.value
         self.refreshAfterWatchedFlagChange = False
 
+    def _getRawGuestHost(self, guestHost):
+        # guestHost is the per-site IPTVHost wrapper; currItem/currList/_getWatchedKeyForItem
+        # only exist on the raw host it wraps (guestHost.host), not on the wrapper itself
+        return getattr(guestHost, 'host', None)
+
     def _getGuestParentState(self, guestHost):
         try:
-            if guestHost is None:
+            rawGuestHost = self._getRawGuestHost(guestHost)
+            if rawGuestHost is None:
                 return None, []
-            currItem = getattr(guestHost, 'currItem', {})
+            currItem = getattr(rawGuestHost, 'currItem', {})
             if not isinstance(currItem, dict) or not currItem:
                 return None, []
             category = str(currItem.get('category', '') or '').strip()
             seriesUrl = str(currItem.get('series_url', '') or '').strip()
             seasonNum = str(currItem.get('season_num', '') or '').strip()
             if category in ['list_episodes', 'list_seasons']:
-                return currItem, list(getattr(guestHost, 'currList', []) or [])
+                return currItem, list(getattr(rawGuestHost, 'currList', []) or [])
             if seriesUrl != '' and seasonNum != '':
                 childItems = []
-                for childItem in getattr(guestHost, 'currList', []) or []:
+                for childItem in getattr(rawGuestHost, 'currList', []) or []:
                     if isinstance(childItem, dict) and childItem.get('type', '') in ['video', 'audio']:
                         childItems.append(childItem)
                 return {'category': 'list_episodes', 'url': currItem.get('url', ''), 'series_url': seriesUrl, 'season_num': seasonNum}, childItems
             if seriesUrl != '':
                 childItems = []
-                for childItem in getattr(guestHost, 'currList', []) or []:
+                for childItem in getattr(rawGuestHost, 'currList', []) or []:
                     if isinstance(childItem, dict) and childItem.get('category', '') == 'list_episodes':
                         childItems.append(childItem)
                 return {'category': 'list_seasons', 'url': seriesUrl}, childItems
@@ -303,7 +244,8 @@ class IPTVHost(CHostBase):
             guestHost = self.host.getCurrentGuestHost()
             if guestHost is None:
                 return ret
-            keyProvider = getattr(guestHost, '_getWatchedKeyForItem', None)
+            rawGuestHost = self._getRawGuestHost(guestHost)
+            keyProvider = getattr(rawGuestHost, '_getWatchedKeyForItem', None)
             if not callable(keyProvider):
                 return ret
             parentItem, childItems = self._getGuestParentState(guestHost)
@@ -314,27 +256,70 @@ class IPTVHost(CHostBase):
             if parentKey == '':
                 return ret
             if self.cachedRet is not None and hasattr(self.cachedRet, 'value'):
-                for idx in range(len(self.cachedRet.value)):
-                    displayItem = self.cachedRet.value[idx]
-                    try:
-                        if displayItem.name == parentItem.get('title', ''):
-                            isWatched = guestHost.watchedHelper.isWatched(parentKey)
-                            displayItem.isWatched = isWatched
-                            hashData = self.getItemHashData(idx, displayItem)
-                            if hashData is not None:
-                                flagPath = GetFavouritesDir('IPTVWatched/%s/.%s.iptvhash' % hashData)
-                                if isWatched:
-                                    if not fileExists(flagPath):
-                                        self._createViewedFile(hashData)
-                                elif fileExists(flagPath):
-                                    rm(flagPath)
-                            break
-                    except Exception:
-                        printExc()
+                # the list shown just before navigating into the current one (where parentItem
+                # itself, e.g. the season/series row, is displayed) mirrors self.cachedRet
+                # positionally - use it to find the matching row by key, not by title, so that
+                # two rows sharing the same display title don't get each other's state
+                prevList = list(guestHost.listOfprevList[-1]) if getattr(guestHost, 'listOfprevList', None) else []
+                matchIdx = -1
+                for idx in range(min(len(prevList), len(self.cachedRet.value))):
+                    rawItem = prevList[idx]
+                    if isinstance(rawItem, dict):
+                        try:
+                            if keyProvider(rawItem) == parentKey:
+                                matchIdx = idx
+                                break
+                        except Exception:
+                            printExc()
+                if matchIdx >= 0:
+                    displayItem = self.cachedRet.value[matchIdx]
+                    isWatched = guestHost.watchedHelper.isWatched(parentKey)
+                    displayItem.isWatched = isWatched
+                    hashData = self.getItemHashData(matchIdx, displayItem)
+                    if hashData is not None:
+                        flagPath = GetFavouritesDir('IPTVWatched/%s/.%s.iptvhash' % hashData)
+                        if isWatched:
+                            if not fileExists(flagPath):
+                                self._createViewedFile(hashData)
+                        elif fileExists(flagPath):
+                            rm(flagPath)
             return ret
         except Exception:
             printExc()
             return ret
+
+    def _getStableItemHashSource(self, index):
+        # prefer a stable url-based identity over the display title, so items with
+        # identical titles (e.g. same-named episodes in different shows) don't collide
+        try:
+            if self.host.isQuestMode():
+                guestHost = self.host.getCurrentGuestHost()
+                rawGuestHost = self._getRawGuestHost(guestHost)
+                keyProvider = getattr(rawGuestHost, '_getWatchedKeyForItem', None)
+                guestList = getattr(rawGuestHost, 'currList', None) or []
+                if callable(keyProvider) and 0 <= index < len(guestList):
+                    return keyProvider(guestList[index]) or ''
+            else:
+                favUrl = str(self.host.currList[index].get('fav_url', '') or '')
+                if favUrl != '':
+                    return 'url:%s' % favUrl
+        except Exception:
+            printExc()
+        return ''
+
+    def _getLegacyItemHashData(self, index, displayItem):
+        # pre-stable-id hash scheme (title+type), kept only to read state written before this fix
+        if self.host.isQuestMode():
+            hostName = str(self.host.getCurrentGuestHostName())
+        else:
+            hostName = str(self.host.getHostNameFromItem(index))
+        if hostName in [None, '']:
+            return None
+        hashAlg = MD5()
+        hashData = hexlify(hashAlg('%s_%s' % (str(displayItem.name), str(displayItem.type))))
+        if not isPY2():
+            hashData = hashData.decode()
+        return (hostName, hashData)
 
     def getItemHashData(self, index, displayItem):
         if self.host.isQuestMode():
@@ -344,10 +329,11 @@ class IPTVHost(CHostBase):
 
         ret = None
         if hostName not in [None, '']:
-            # prepare item hash
+            hashSrc = self._getStableItemHashSource(index)
+            if hashSrc == '':
+                hashSrc = '%s_%s' % (str(displayItem.name), str(displayItem.type))
             hashAlg = MD5()
-            hashData = ('%s_%s' % (str(displayItem.name), str(displayItem.type)))
-            hashData = hexlify(hashAlg(hashData))
+            hashData = hexlify(hashAlg(hashSrc))
             if not isPY2():
                 hashData = hashData.decode()
             return (hostName, hashData)
@@ -355,10 +341,16 @@ class IPTVHost(CHostBase):
 
     def isItemWatched(self, index, displayItem):
         ret = self.getItemHashData(index, displayItem)
-        if ret is not None:
-            return fileExists(GetFavouritesDir('IPTVWatched/%s/.%s.iptvhash' % ret))
-        else:
+        if ret is None:
             return False
+        if fileExists(GetFavouritesDir('IPTVWatched/%s/.%s.iptvhash' % ret)):
+            return True
+        # backward compatibility: favourites marked watched before the stable-id hash existed
+        legacyRet = self._getLegacyItemHashData(index, displayItem)
+        if legacyRet is not None and legacyRet != ret and fileExists(GetFavouritesDir('IPTVWatched/%s/.%s.iptvhash' % legacyRet)):
+            self._createViewedFile(ret)
+            return True
+        return False
 
     def fixWatchedFlag(self, ret):
         if self.useWatchedFlag:
@@ -399,14 +391,15 @@ class IPTVHost(CHostBase):
             if self.host.isQuestMode():
                 guestHost = self.host.getCurrentGuestHost()
                 if guestHost is not None:
-                    currItem = getattr(guestHost, 'currItem', {})
+                    rawGuestHost = self._getRawGuestHost(guestHost)
+                    currItem = getattr(rawGuestHost, 'currItem', {})
                     if not isinstance(currItem, dict) or not currItem:
-                        currList = getattr(guestHost, 'currList', []) or []
+                        currList = getattr(rawGuestHost, 'currList', []) or []
                         if 0 <= Index < len(currList):
                             currItem = currList[Index]
                     category = str(currItem.get('category', '') or '').strip()
                     if category in ['list_episodes', 'list_seasons']:
-                        keyProvider = getattr(guestHost, '_getWatchedKeyForItem', None)
+                        keyProvider = getattr(rawGuestHost, '_getWatchedKeyForItem', None)
                         if callable(keyProvider):
                             watchedKey = keyProvider(currItem)
                             if watchedKey != '':
@@ -434,11 +427,12 @@ class IPTVHost(CHostBase):
             if privateData.get('guest_parent_category') in ['list_episodes', 'list_seasons']:
                 guestHost = self.host.getCurrentGuestHost()
                 if guestHost is not None:
+                    rawGuestHost = self._getRawGuestHost(guestHost)
                     category = privateData.get('guest_parent_category', '')
                     action = privateData.get('action', '')
-                    currItem = privateData.get('guest_item') or getattr(guestHost, 'currItem', {})
+                    currItem = privateData.get('guest_item') or getattr(rawGuestHost, 'currItem', {})
                     if not isinstance(currItem, dict) or not currItem:
-                        currList = getattr(guestHost, 'currList', []) or []
+                        currList = getattr(rawGuestHost, 'currList', []) or []
                         guestIndex = int(privateData.get('guest_item_index', 0) or 0)
                         if 0 <= guestIndex < len(currList):
                             currItem = currList[guestIndex]
