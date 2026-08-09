@@ -112,6 +112,28 @@ class SerienStreamTo(CBaseHostClass):
     def _buildSeriesItem(self, seriesUrl):
         return {"category": "list_seasons", "url": seriesUrl}
 
+    def _propagateEpisodeWatchedState(self, item):
+        # recomputes season+series state right when an episode's own watched/started
+        # state changes, instead of relying on listEpisodes()/listSeasons() being
+        # re-run later - the "refresh from cache" shortcut used after playback/marking
+        # often skips that
+        try:
+            if not isinstance(item, dict):
+                return
+            seriesUrl = str(item.get("series_url", "") or "").strip()
+            seasonNum = str(item.get("season_num", "") or "").strip()
+            if seriesUrl == "" or seasonNum == "":
+                return
+            seasonParent = {"category": "list_episodes", "series_url": seriesUrl, "season_num": seasonNum}
+            seasonEpisodes = [child for child in self.currList if isinstance(child, dict) and child.get("type", "") in ["video", "audio"]]
+            if seasonEpisodes:
+                self.watchedHelper.updateParentWatchedState(seasonParent, seasonEpisodes, self._getWatchedKeyForItem)
+            seasonChildren = self.cacheSeriesSeasons.get(seriesUrl, [])
+            if seasonChildren:
+                self.watchedHelper.updateParentWatchedState({"category": "list_seasons", "url": seriesUrl}, seasonChildren, self._getWatchedKeyForItem)
+        except Exception:
+            printExc()
+
     def getPage(self, baseUrl, addParams=None, post_data=None):
         if addParams is None:
             addParams = dict(self.defaultParams)
@@ -411,6 +433,7 @@ class SerienStreamTo(CBaseHostClass):
             # mark "started" on play; leaveMoviePlayer() upgrades to fully watched once
             # playback actually reaches the completion threshold
             self.watchedHelper.markHostItemAsStarted(self, cItem, self._getWatchedKeyForItem)
+            self._propagateEpisodeWatchedState(cItem)
         except Exception:
             printExc()
         urltab = []
@@ -751,6 +774,7 @@ class IPTVHost(WatchedFlagHostMixin, CHostBase):
                                 self.watchedHelper.updateParentWatchedState({'category': 'list_seasons', 'url': seriesUrl}, seasonItems, self.host._getWatchedKeyForItem)
                     elif item.get('type', '') in ['video', 'audio']:
                         self.watchedHelper.updateItemFlag(item, self.host._getWatchedKeyForItem(item))
+                        self.host._propagateEpisodeWatchedState(item)
             except Exception:
                 printExc()
         return ret

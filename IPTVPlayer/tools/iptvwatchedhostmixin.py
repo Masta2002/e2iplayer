@@ -53,6 +53,9 @@ class WatchedFlagHostMixin(object):
             if config.plugins.iptvplayer.favourites_use_watched_flag.value and 0 <= Index < len(self.host.currList):
                 cItem = self.host.currList[Index]
                 if self.watchedHelper.markHostItemAsWatched(self.host, cItem, self.host._getWatchedKeyForItem):
+                    propagate = getattr(self.host, '_propagateEpisodeWatchedState', None)
+                    if callable(propagate):
+                        propagate(cItem)
                     self.refreshAfterWatchedFlagChange = True
                     retCode = RetHost.OK
                     retlist = ['refresh']

@@ -259,6 +259,28 @@ class FilmPalastTo(CBaseHostClass):
     def _buildSeasonItem(self, seasonId):
         return {"category": "list_episodes", "url": self.currItem.get("url", ""), "f_season": seasonId}
 
+    def _propagateEpisodeWatchedState(self, item):
+        # recomputes season+series state right when an episode's own watched/started
+        # state changes, instead of relying on exploreItem() being re-run later - the
+        # "refresh from cache" shortcut used after playback/marking often skips that
+        try:
+            if not isinstance(item, dict):
+                return
+            seasonId = str(item.get("season_num", "") or item.get("f_season", "") or "").strip()
+            if seasonId == "":
+                return
+            seriesUrl = str(item.get("series_url", "") or item.get("url", "") or self.currItem.get("url", "") or "").strip()
+            seasonParent = {"category": "list_episodes", "url": seriesUrl, "series_url": seriesUrl, "season_num": seasonId}
+            seasonEpisodes = self.cacheSeasons.get(seasonId, [])
+            if seasonEpisodes:
+                self.watchedHelper.updateParentWatchedState(seasonParent, seasonEpisodes, self._getWatchedKeyForItem)
+            if seriesUrl != "":
+                seriesParent = {"category": "list_seasons", "url": seriesUrl}
+                seasonChildren = [{"category": "list_episodes", "url": seriesUrl, "series_url": seriesUrl, "season_num": str(sid)} for sid in list(self.cacheSeasons.keys())]
+                self.watchedHelper.updateParentWatchedState(seriesParent, seasonChildren, self._getWatchedKeyForItem)
+        except Exception:
+            printExc()
+
     def exploreItem(self, cItem, nextCategory):
         printDBG("FilmPalastTo.exploreItem")
         url = cItem["url"]
@@ -331,6 +353,7 @@ class FilmPalastTo(CBaseHostClass):
             # playback actually reaches the completion threshold
             if config.plugins.iptvplayer.favourites_use_watched_flag.value:
                 self.watchedHelper.markHostItemAsStarted(self, cItem, self._getWatchedKeyForItem)
+                self._propagateEpisodeWatchedState(cItem)
         except Exception:
             printExc()
         linksTab = []
@@ -671,6 +694,10 @@ class IPTVHost(WatchedFlagHostMixin, CHostBase):
                     seriesParent = {'category': 'list_seasons', 'url': seriesUrl}
                     seasonChildren = [{'category': 'list_episodes', 'url': seriesUrl, 'series_url': seriesUrl, 'season_num': str(sid)} for sid in list(self.host.cacheSeasons.keys())]
                     self.watchedHelper.updateParentWatchedState(seriesParent, seasonChildren, self.host._getWatchedKeyForItem)
+            elif str(item.get('type', '') or '').strip() in ['video', 'audio']:
+                # item is a single episode (category is intentionally empty for these,
+                # see listEpisodes()) - recompute its season+series from current state
+                self.host._propagateEpisodeWatchedState(item)
         except Exception:
             printExc()
 
