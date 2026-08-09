@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-# Last Modified: 2026-07-26 Updated to ignore non-subtitle sidecar text files during automatic subtitle detection
-# and to safely handle PLAYBACK_STOP when the exteplayer3 control socket is already gone. - Kamikaze24
 #
 #  IPTVExtMoviePlayer
 #
@@ -40,6 +38,13 @@ from Components.Label import Label
 from Components.ProgressBar import ProgressBar
 
 from Screens.MessageBox import MessageBox
+
+try:
+    from Plugins.Extensions.IPTVPlayer.tools.ailivesubtitles.overlay import AISubtitlesUI
+    from Plugins.Extensions.IPTVPlayer.tools.ailivesubtitles.engine import AIEngine
+    AI_LIVE_SUBS_AVAILABLE = True
+except Exception:
+    AI_LIVE_SUBS_AVAILABLE = False
 from Tools.LoadPixmap import LoadPixmap
 from Tools.BoundFunction import boundFunction
 from Tools.Directories import fileExists
@@ -155,31 +160,15 @@ class ExtPlayerCommandsDispatcher():
     def extPlayerSendCommand(self, cmd, arg='', getStatus=True):
         ret = False
         if None is not self.owner:
-            try:
-                ret = self.owner.extPlayerSendCommand(cmd, arg)
-            except Exception:
-                printExc()
-                if 'PLAYBACK_STOP' == cmd:
-                    return False
-                if getStatus:
-                    self.owner = None
-                    return False
+            ret = self.owner.extPlayerSendCommand(cmd, arg)
+            if getStatus:
+                self.owner.extPlayerSendCommand("PLAYBACK_INFO", '')
         else:
             printDBG(">> extPlayerSendCommand owner NONE")
-            return False
-
-        if getStatus and None is not self.owner:
-            try:
-                self.owner.extPlayerSendCommand("PLAYBACK_INFO", '')
-            except Exception:
-                printExc()
-                self.owner = None
         return ret
 
 
 class IPTVExtMoviePlayer(Screen):
-    NON_SUBTITLE_SIDE_EXTENSIONS = ['txt', 'sub', 'srt', 'vtt']
-
     Y_CROPPING_GUARD = 0
     playback = {}
 
@@ -305,6 +294,25 @@ class IPTVExtMoviePlayer(Screen):
             subSkin
         )  # 00000000 bottom
 
+        # AI live subtitles labels (inside player skin — no separate dialog / no black bar)
+        try:
+            dw = getDesktop(0).size().width()
+            dh = getDesktop(0).size().height()
+            # aiSubBg = dark strip BEHIND subtitle text (separate widget — reliable on Vu+/OE)
+            # aiSubtitles = text only on top (transparent). Label bg needs transparent=0 + content to paint.
+            ai_widgets = (
+                '<widget name="aiStatus" position="20,20" size="%d,32" zPosition="33" font="Regular;20" '
+                'foregroundColor="#FFFF00" backgroundColor="#00000000" transparent="1" halign="left" valign="center" />'
+                '<widget name="aiSubBg" position="0,%d" size="%d,%d" zPosition="30" font="Regular;1" '
+                'foregroundColor="#00000000" backgroundColor="#B0000000" transparent="0" halign="center" valign="center" />'
+                '<widget name="aiSubtitles" position="20,%d" size="%d,%d" zPosition="32" font="Regular;36" '
+                'foregroundColor="#FFFFFF" backgroundColor="#00000000" transparent="1" halign="center" valign="center" />'
+            ) % (dw - 40, dh - 130, dw, 120, dh - 130, dw - 40, 120)
+            if "</screen>" in skin:
+                skin = skin.replace("</screen>", ai_widgets + "</screen>", 1)
+        except Exception:
+            printExc()
+
         sub = None
         return skin
 
@@ -403,7 +411,7 @@ class IPTVExtMoviePlayer(Screen):
 
         self.extPlayerCmddDispatcher = ExtPlayerCommandsDispatcher(self)
 
-        self["actions"] = ActionMap(['IPTVAlternateVideoPlayer', 'MoviePlayerActions', 'MediaPlayerActions', 'MediaPlayerSeekActions', 'WizardActions'],
+        self["actions"] = ActionMap(['IPTVAlternateVideoPlayer', 'MoviePlayerActions', 'MediaPlayerActions', 'MediaPlayerSeekActions', 'WizardActions', 'ColorActions'],
             {
                 "leavePlayer": self.key_stop,
                 'play': self.key_play,
@@ -436,6 +444,8 @@ class IPTVExtMoviePlayer(Screen):
                 'menu': self.key_menu,
                 'loop': self.key_loop,
                 'record': self.key_record,
+                'yellow': self.toggleAISubtitles,
+                'blue': self.toggleAISubtitles,
             }, -1)
 
         self.onClose.append(self.__onClose)
@@ -443,6 +453,12 @@ class IPTVExtMoviePlayer(Screen):
         # self.onLayoutFinish.append(self.onStart)
 
         self.console = None
+
+        # AI Live Subtitles
+        self.ai_engine = None
+        self.ai_overlay = None
+        self.ai_running = False
+        self.ai_srt_loaded = False
 
         self.isClosing = False
         self.responseData = ""
@@ -477,6 +493,17 @@ class IPTVExtMoviePlayer(Screen):
             # printf('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ' % ('subLabel%d'%(idx+1)))
             self['subLabel%d' % (idx + 1)] = Label(" ")
         self.hideSubtitles()
+
+        # AI live subtitles (embedded in player, not a separate dialog)
+        self['aiStatus'] = Label("")
+        self['aiSubtitles'] = Label("")
+        self['aiSubBg'] = Label(" ")  # non-empty so backgroundColor paints on OE images
+        try:
+            self['aiStatus'].hide()
+            self['aiSubtitles'].hide()
+            self['aiSubBg'].hide()
+        except Exception:
+            pass
         self.subHandler = {}
         self.subHandler['current_sub_time_ms'] = -1
         self.subHandler['handler'] = IPTVSubtitlesHandler()
@@ -598,6 +625,9 @@ class IPTVExtMoviePlayer(Screen):
         options = []
         options.append(IPTVChoiceBoxItem(_("Configuration"), "", "menu"))
         options.append(IPTVChoiceBoxItem(_("Subtitles"), "", "subtitles"))
+        options.append(IPTVChoiceBoxItem(_("AI Live Subtitles (ON/OFF)"), "", "ai_subtitles"))
+        options.append(IPTVChoiceBoxItem(_("Download SRT (SubsSupport / Pro)"), "", "open_external_subs"))
+        options.append(IPTVChoiceBoxItem(_("Load local subtitles (SRT/VTT/ASS)"), "", "load_local_srt"))
         if len(self.playback['AudioTracks']):
             options.append(IPTVChoiceBoxItem(_("Audio tracks"), "", "audio_tracks"))
         options.append(IPTVChoiceBoxItem(_("Video options"), "", "video_options"))
@@ -616,6 +646,12 @@ class IPTVExtMoviePlayer(Screen):
             self.runConfigMoviePlayer()
         elif "subtitles" == ret.privateData:
             self.selectSubtitle()
+        elif "ai_subtitles" == ret.privateData:
+            self.toggleAISubtitles()
+        elif "open_external_subs" == ret.privateData:
+            self.openExternalSubsDownloader()
+        elif "load_local_srt" == ret.privateData:
+            self.loadLocalSrtFile()
         elif "audio_tracks" == ret.privateData:
             self.selectAudioTrack()
         elif "video_options" == ret.privateData:
@@ -949,66 +985,6 @@ class IPTVExtMoviePlayer(Screen):
                 self.subHandler['embedded_handler'].flushSubtitles()
                 self.enableSubtitles()
 
-    def _looksLikeSubtitleFile(self, filePath):
-        try:
-            sts, reason = self._detectSubtitleFile(filePath)
-            if not sts:
-                printDBG("IPTVExtMoviePlayer._looksLikeSubtitleFile skip file[%s] reason[%s]" % (filePath, reason))
-            return sts
-        except Exception:
-            printExc()
-        return False
-
-    def _detectSubtitleFile(self, filePath):
-        if None is filePath or '' == filePath:
-            return False, 'empty path'
-        if not fileExists(filePath):
-            return False, 'missing file'
-
-        ext = os_path.splitext(filePath)[1].lower().lstrip('.')
-        if ext not in self.NON_SUBTITLE_SIDE_EXTENSIONS:
-            return False, 'unsupported extension'
-
-        try:
-            with open(filePath, 'rb') as f:
-                data = f.read(8192)
-        except Exception:
-            printExc()
-            return False, 'read error'
-
-        if not data:
-            return False, 'empty file'
-
-        try:
-            text = ensure_str(data)
-        except Exception:
-            try:
-                text = data.decode('utf-8', 'ignore')
-            except Exception:
-                printExc()
-                return False, 'decode error'
-
-        lines = [line.strip() for line in text.replace('\r', '\n').split('\n') if line.strip()]
-        if not lines:
-            return False, 'no text lines'
-
-        score = 0
-        for line in lines[:40]:
-            if '-->' in line:
-                score += 3
-            elif re.match(r'^\d+$', line):
-                score += 1
-            elif re.match(r'^\d{2}:\d{2}:\d{2}[,.]\d{1,3}', line):
-                score += 2
-            elif re.match(r'^\{\d+\}\{\d*\}', line):
-                score += 3
-            elif 'vtt' == ext and line.upper().startswith('WEBVTT'):
-                score += 3
-
-        if score >= 3:
-            return True, 'subtitle markers detected'
-        return False, 'no subtitle markers detected'
-
     def openSubtitlesFromFile(self):
         printDBG("openSubtitlesFromFile")
         currDir = GetSubtitlesDir()
@@ -1029,9 +1005,6 @@ class IPTVExtMoviePlayer(Screen):
     def openSubtitlesFromFileCallback(self, filePath=None):
         printDBG("openSubtitlesFromFileCallback filePath[%s]" % filePath)
         if None is not filePath:
-            if not self._looksLikeSubtitleFile(filePath):
-                printDBG("openSubtitlesFromFileCallback rejected non subtitle file[%s]" % filePath)
-                return
             self.subHandler['handler'].removeCacheFile(filePath)
             cmd = '/usr/bin/uchardet "%s"' % filePath
             self.workconsole = iptv_system(cmd, boundFunction(self.enableSubtitlesFromFile, filePath))
@@ -1585,6 +1558,322 @@ class IPTVExtMoviePlayer(Screen):
     def key_subtitles(self):
         self.selectSubtitle()
 
+    def openExternalSubsDownloader(self):
+        """Open SubsSupport or SubsSupport Pro subtitle search with current title."""
+        try:
+            from Plugins.Extensions.IPTVPlayer.tools.ailivesubtitles.srt_fetch import (
+                detect_subssupport, open_subssupport_search
+            )
+        except Exception as e:
+            self.session.open(MessageBox, _("SRT module missing: %s") % str(e), MessageBox.TYPE_ERROR, timeout=4)
+            return
+        kind = detect_subssupport()
+        if not kind:
+            self.session.open(
+                MessageBox,
+                _("SubsSupport / SubsSupport Pro not installed.\nInstall one of them to download SRT online."),
+                MessageBox.TYPE_INFO,
+                timeout=5,
+            )
+            return
+        title = getattr(self, "title", "") or ""
+        ok = open_subssupport_search(self.session, title)
+        if not ok:
+            self.session.open(
+                MessageBox,
+                _("Could not open SubsSupport.\nCheck that the plugin is installed correctly."),
+                MessageBox.TYPE_ERROR,
+                timeout=4,
+            )
+
+    def loadLocalSrtFile(self):
+        """Load local .srt/.vtt/.ass — multi-match picker + encoding fix + delay."""
+        try:
+            from Plugins.Extensions.IPTVPlayer.tools.ailivesubtitles.srt_fetch import (
+                find_all_local_subs, prepare_sub_file, HDD_SUB_DIRS
+            )
+        except Exception as e:
+            self.session.open(MessageBox, _("SRT module missing: %s") % str(e), MessageBox.TYPE_ERROR, timeout=4)
+            return
+        title = getattr(self, "title", "") or ""
+        local_file = ""
+        try:
+            src = str(self.fileSRC)
+            if src:
+                src = src.replace("file://", "")
+                if not src.startswith("http") and not src.startswith("ext://") and not src.startswith("rtmp"):
+                    local_file = src.split("?")[0]
+        except Exception:
+            pass
+        extra = []
+        try:
+            if title and "." in title:
+                import os as _os
+                name, ext = _os.path.splitext(title)
+                if ext.lower() in (".ts", ".mp4", ".mkv", ".avi", ".mpg", ".mpeg", ".m2ts"):
+                    extra.append(name)
+        except Exception:
+            pass
+        items = find_all_local_subs(title, local_file=local_file, extra_titles=extra)
+        if not items:
+            dirs = " / ".join(HDD_SUB_DIRS[:4])
+            self.session.open(MessageBox, _("No matching subtitle for:\n%s\n\n%s") % (title or "?", dirs), MessageBox.TYPE_INFO, timeout=6)
+            return
+        if len(items) == 1:
+            self._applyLocalSubFile(items[0][1])
+            return
+        # Multiple matches → let user choose
+        options = []
+        self._local_sub_candidates = [path for (_sc, path) in items]
+        for sc, path in items[:12]:
+            import os as _os
+            label = "%s  (%.0f)" % (_os.path.basename(path), sc)
+            options.append(IPTVChoiceBoxItem(label, "", path))
+        self.openChild(
+            boundFunction(self.childClosed, self._localSubPickCallback),
+            IPTVChoiceBoxWidget,
+            {'width': 700, 'height': 420, 'current_idx': 0, 'title': _("Choose subtitle file"), 'options': options}
+        )
+
+    def _localSubPickCallback(self, ret=None):
+        if not isinstance(ret, IPTVChoiceBoxItem):
+            return
+        path = ret.privateData
+        if path:
+            self._applyLocalSubFile(path)
+
+    def _applyLocalSubFile(self, path):
+        try:
+            from Plugins.Extensions.IPTVPlayer.tools.ailivesubtitles.srt_fetch import prepare_sub_file
+        except Exception:
+            prepare_sub_file = None
+        use_path = path
+        if prepare_sub_file:
+            try:
+                use_path = prepare_sub_file(path, delay_ms=0) or path
+            except Exception as e:
+                printDBG("prepare_sub_file: %s" % str(e))
+                use_path = path
+        try:
+            self.enableSubtitlesFromFile(use_path)
+            self.ai_srt_loaded = True
+            self.session.open(MessageBox, _("Loaded: %s") % use_path, MessageBox.TYPE_INFO, timeout=3)
+        except Exception as e:
+            self.session.open(MessageBox, _("Load failed: %s") % str(e), MessageBox.TYPE_ERROR, timeout=4)
+
+    def toggleAISubtitles(self):
+
+        """Toggle AI Live Subtitles on/off during playback (Yellow / Blue / Menu)."""
+        if not AI_LIVE_SUBS_AVAILABLE:
+            self.session.open(MessageBox, _("AI Live Subtitles module not available."), MessageBox.TYPE_INFO, timeout=3)
+            return
+        try:
+            if not config.plugins.iptvplayer.ailivesubs.enabled.value:
+                self.session.open(MessageBox, _("AI Live Subtitles is disabled.\nEnable it in E2iPlayer settings first."), MessageBox.TYPE_INFO, timeout=4)
+                return
+        except Exception:
+            self.session.open(MessageBox, _("AI Live Subtitles config not found."), MessageBox.TYPE_INFO, timeout=3)
+            return
+
+        if self.ai_running or getattr(self, "ai_srt_loaded", False):
+            try:
+                if self.ai_engine:
+                    self.ai_engine.stop()
+            except Exception:
+                pass
+            try:
+                if self.ai_overlay:
+                    self.ai_overlay.clear()
+            except Exception:
+                pass
+            from enigma import ePoint, eSize
+            for _name in ("aiStatus", "aiSubtitles", "aiSubBg"):
+                try:
+                    w = self[_name]
+                    w.setText("")
+                    try:
+                        from skin import parseColor
+                        w.instance.setBackgroundColor(parseColor("#00000000"))
+                    except Exception:
+                        pass
+                    try:
+                        w.move(ePoint(-2000, -2000))
+                        w.instance.move(ePoint(-2000, -2000))
+                        w.resize(eSize(0, 0))
+                        w.instance.resize(eSize(0, 0))
+                    except Exception:
+                        pass
+                    w.hide()
+                except Exception:
+                    pass
+            if getattr(self, "ai_srt_loaded", False):
+                try:
+                    self.disableSubtitles()
+                except Exception:
+                    pass
+                self.ai_srt_loaded = False
+            self.ai_engine = None
+            self.ai_overlay = None
+            self.ai_running = False
+            return
+
+        try:
+            stream_url = ""
+            local_file = ""
+            headers = {}
+            try:
+                from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
+                src = self.fileSRC
+                src_str = str(src)
+                if src_str.startswith("http"):
+                    stream_url = src_str
+                elif src_str and not src_str.startswith("ext://"):
+                    local_file = src_str.replace("file://", "")
+                if isinstance(src, strwithmeta) or hasattr(src, "meta"):
+                    meta = getattr(src, "meta", {}) or {}
+                    if "User-Agent" in meta:
+                        headers["User-Agent"] = meta["User-Agent"]
+                    if "Referer" in meta:
+                        headers["Referer"] = meta["Referer"]
+                    if "Origin" in meta:
+                        headers["Origin"] = meta["Origin"]
+                    if "header" in meta and isinstance(meta["header"], dict):
+                        headers.update(meta["header"])
+            except Exception:
+                src_str = str(self.fileSRC)
+                if src_str.startswith("http"):
+                    stream_url = src_str
+                else:
+                    local_file = src_str.replace("file://", "")
+
+            # If downloader is active, prefer its remote URL + keep local buffer path
+            try:
+                if self.downloader is not None:
+                    durl = self.downloader.getUrl()
+                    if durl and str(durl).startswith("http"):
+                        stream_url = str(durl)
+                        try:
+                            dmeta = getattr(durl, "meta", {}) or {}
+                            if "User-Agent" in dmeta:
+                                headers["User-Agent"] = dmeta["User-Agent"]
+                            if "Referer" in dmeta:
+                                headers["Referer"] = dmeta["Referer"]
+                            if "Origin" in dmeta:
+                                headers["Origin"] = dmeta["Origin"]
+                        except Exception:
+                            pass
+                    # local buffer path while buffering
+                    try:
+                        if hasattr(self.downloader, "getLocalFilePath"):
+                            lp = self.downloader.getLocalFilePath()
+                            if lp:
+                                local_file = lp
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+
+            # Default buffer path used by e2iplayer
+            if not local_file:
+                for p in ("/hdd/movie/.iptv_buffering.flv", "/hdd/movie//.iptv_buffering.flv"):
+                    try:
+                        if os_path.exists(p):
+                            local_file = p
+                            break
+                    except Exception:
+                        pass
+
+            # ---- Priority 1: local SRT on HDD; online via SubsSupport / Pro ----
+            prefer_srt = True
+            try:
+                prefer_srt = config.plugins.iptvplayer.ailivesubs.prefer_srt.value
+            except Exception:
+                pass
+            if prefer_srt:
+                try:
+                    from Plugins.Extensions.IPTVPlayer.tools.ailivesubtitles.srt_fetch import (
+                        fetch_best_srt, detect_subssupport, open_subssupport_search
+                    )
+                    movie_title = getattr(self, "title", "") or ""
+                    self.ai_overlay = AISubtitlesUI(self)
+                    try:
+                        self.ai_overlay.reactivate()
+                    except Exception:
+                        pass
+                    self.ai_overlay.setStatus("Searching local SRT...")
+                    srt_path = fetch_best_srt(movie_title, local_file=local_file, extra_titles=None)
+                    if srt_path:
+                        try:
+                            self.ai_overlay.clear()
+                        except Exception:
+                            pass
+                        self.enableSubtitlesFromFile(srt_path)
+                        self.ai_srt_loaded = True
+                        self.ai_running = False
+                        self.ai_engine = None
+                        try:
+                            self.session.open(MessageBox, _("Local SRT loaded.\n%s") % srt_path, MessageBox.TYPE_INFO, timeout=3)
+                        except Exception:
+                            pass
+                        return
+                    # No local file — if SubsSupport* installed, open it for online download
+                    kind, _mod = detect_subssupport()
+                    if kind:
+                        try:
+                            self.ai_overlay.clear()
+                        except Exception:
+                            pass
+                        opened = open_subssupport_search(self.session, movie_title)
+                        if opened:
+                            # User downloads via SubsSupport; save into /hdd/subtitles then re-toggle
+                            self.ai_srt_loaded = False
+                            self.ai_running = False
+                            self.ai_engine = None
+                            self.ai_overlay = None
+                            return
+                    try:
+                        self.ai_overlay.setStatus("No SRT — starting AI...")
+                    except Exception:
+                        pass
+                except Exception as e:
+                    printDBG("SRT fetch failed: %s" % str(e))
+
+            # ---- Priority 2: AI live translation ----
+            if self.ai_overlay is None:
+                self.ai_overlay = AISubtitlesUI(self)
+                try:
+                    self.ai_overlay.reactivate()
+                except Exception:
+                    pass
+            self.ai_overlay.setStatus("AI Subtitles starting...")
+
+            def _ai_get_time():
+                try:
+                    t = self.playback.get("ConfirmedCTime", 0) or self.playback.get("CurrentTime", 0)
+                    return int(t) if t else 0
+                except Exception:
+                    return 0
+
+            self.ai_engine = AIEngine(
+                self.ai_overlay,
+                stream_url=stream_url,
+                headers=headers,
+                local_file=local_file,
+                get_time_callback=_ai_get_time,
+            )
+            self.ai_engine.start()
+            self.ai_running = True
+        except Exception as e:
+            try:
+                if self.ai_overlay:
+                    self.ai_overlay.clear()
+            except Exception:
+                pass
+            self.ai_engine = None
+            self.ai_overlay = None
+            self.ai_running = False
+            self.session.open(MessageBox, _("Failed to start AI Subtitles:\n%s") % str(e), MessageBox.TYPE_ERROR, timeout=5)
+
     def key_audio(self):
         self.selectAudioTrack()
 
@@ -1897,6 +2186,43 @@ class IPTVExtMoviePlayer(Screen):
     def __onClose(self):
         printDBG(">>>>>>>>>>>>>>>>>>>>>> __onClose")
         self.isClosing = True
+
+        # Stop AI Live Subtitles if running
+        if self.ai_running:
+            try:
+                if self.ai_engine:
+                    self.ai_engine.stop()
+            except Exception:
+                pass
+            try:
+                if self.ai_overlay:
+                    self.ai_overlay.clear()
+            except Exception:
+                pass
+            from enigma import ePoint, eSize
+            for _name in ("aiStatus", "aiSubtitles", "aiSubBg"):
+                try:
+                    w = self[_name]
+                    w.setText("")
+                    try:
+                        from skin import parseColor
+                        w.instance.setBackgroundColor(parseColor("#00000000"))
+                    except Exception:
+                        pass
+                    try:
+                        w.move(ePoint(-2000, -2000))
+                        w.instance.move(ePoint(-2000, -2000))
+                        w.resize(eSize(0, 0))
+                        w.instance.resize(eSize(0, 0))
+                    except Exception:
+                        pass
+                    w.hide()
+                except Exception:
+                    pass
+            self.ai_engine = None
+            self.ai_overlay = None
+            self.ai_running = False
+
         if None is not self.workconsole:
             self.workconsole.kill()
         self.workconsole = None

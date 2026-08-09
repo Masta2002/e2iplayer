@@ -173,6 +173,80 @@ config.plugins.iptvplayer.usepycurl = ConfigYesNo(default=False)
 config.plugins.iptvplayer.prefer_hlsdl_for_pls_with_alt_media = ConfigYesNo(default=True)
 
 ###################################################
+# AI Live Subtitles configuration
+###################################################
+try:
+    from Plugins.Extensions.IPTVPlayer.tools.ailivesubtitles.config import *
+except Exception:
+    config.plugins.iptvplayer.ailivesubs = ConfigSubsection()
+    config.plugins.iptvplayer.ailivesubs.enabled = ConfigYesNo(default=False)
+    config.plugins.iptvplayer.ailivesubs.provider = ConfigSelection(default="groq", choices=[
+        ("groq", "Groq (Recommended - Free)"),
+        ("gemini", "Google Gemini"),
+    ])
+    config.plugins.iptvplayer.ailivesubs.api_key_groq = ConfigText(default="", fixed_size=False)
+    config.plugins.iptvplayer.ailivesubs.api_key_gemini = ConfigText(default="", fixed_size=False)
+    config.plugins.iptvplayer.ailivesubs.target_lang = ConfigSelection(default="ar", choices=[
+        ("ar", "العربية"),
+        ("en", "English"),
+        ("fr", "Français"),
+        ("tr", "Türkçe"),
+        ("de", "Deutsch"),
+        ("es", "Español"),
+        ("it", "Italiano"),
+        ("ru", "Русский"),
+        ("pl", "Polski"),
+        ("pt", "Português"),
+    ])
+    config.plugins.iptvplayer.ailivesubs.chunk = ConfigSelection(default="2", choices=[
+        ("2", "2 seconds (best sync)"),
+        ("3", "3 seconds (balanced)"),
+        ("4", "4 seconds"),
+        ("5", "5 seconds (more accurate)"),
+    ])
+    config.plugins.iptvplayer.ailivesubs.position = ConfigSelection(default="bottom", choices=[
+        ("bottom", "Bottom of screen"),
+        ("top", "Top of screen"),
+    ])
+    config.plugins.iptvplayer.ailivesubs.font_name = ConfigSelection(default="Regular", choices=[
+        ("Regular", "Regular"),
+        ("Regular;Bold", "Bold"),
+        ("Arial", "Arial"),
+        ("Verdana", "Verdana"),
+        ("DejaVuSans", "DejaVu Sans"),
+        ("FreeSans", "FreeSans"),
+        ("lcd", "LCD"),
+    ])
+    config.plugins.iptvplayer.ailivesubs.font_size = ConfigInteger(default=34, limits=(18, 72))
+    config.plugins.iptvplayer.ailivesubs.font_color = ConfigSelection(default="#FFFFFF", choices=[
+        ("#FFFFFF", "White"),
+        ("#FFFF00", "Yellow"),
+        ("#00FF00", "Green"),
+        ("#00FFFF", "Cyan"),
+        ("#FFD700", "Gold"),
+        ("#FFA500", "Orange"),
+        ("#FF69B4", "Pink"),
+        ("#ADFF2F", "GreenYellow"),
+        ("#87CEEB", "SkyBlue"),
+        ("#F5F5DC", "Beige"),
+    ])
+    config.plugins.iptvplayer.ailivesubs.border_enabled = ConfigYesNo(default=True)
+    config.plugins.iptvplayer.ailivesubs.prefer_srt = ConfigYesNo(default=True)
+    config.plugins.iptvplayer.ailivesubs.economy_mode = ConfigYesNo(default=False)
+    config.plugins.iptvplayer.ailivesubs.stt_language = ConfigSelection(default="auto", choices=[
+        ("auto", "Auto detect"), ("en", "English"), ("ar", "Arabic"),
+        ("fr", "French"), ("tr", "Turkish"), ("de", "German"), ("es", "Spanish")])
+    config.plugins.iptvplayer.ailivesubs.ai_time_shift = ConfigSelection(default="0", choices=[
+        ("-2", "-2 sec"), ("-1", "-1 sec"), ("0", "0 (normal)"),
+        ("1", "+1 sec"), ("2", "+2 sec"), ("3", "+3 sec")])
+    config.plugins.iptvplayer.ailivesubs.border_color = ConfigSelection(default="#000000", choices=[
+        ("#000000", "Black"),
+        ("#222222", "Dark gray"),
+        ("#FFFFFF", "White"),
+        ("#0000AA", "Dark blue"),
+    ])
+
+###################################################
 
 config.plugins.iptvplayer.extplayer_summary = ConfigSelection(default="yes", choices=[('auto', _('Auto')), ('yes', _('Yes')), ('no', _('No'))])
 config.plugins.iptvplayer.use_clear_iframe = ConfigYesNo(default=False)
@@ -384,6 +458,24 @@ class ConfigMenu(ConfigBaseWidget):
         list.append(getConfigListEntry("http://vk.com/ " + _("password"), config.plugins.iptvplayer.vkcom_password))
         list.append(getConfigListEntry("http://1fichier.com/ " + _("e-mail"), config.plugins.iptvplayer.fichiercom_login))
         list.append(getConfigListEntry("http://1fichier.com/ " + _("password"), config.plugins.iptvplayer.fichiercom_password))
+
+        list.append(getConfigListEntry(_("----- AI LIVE SUBTITLES -----"), ))
+        list.append(getConfigListEntry(_("Enable AI Live Subtitles"), config.plugins.iptvplayer.ailivesubs.enabled))
+        list.append(getConfigListEntry(_("SRT first: local HDD then SubsSupport (before AI)"), config.plugins.iptvplayer.ailivesubs.prefer_srt))
+        list.append(getConfigListEntry(_("AI translation time shift"), config.plugins.iptvplayer.ailivesubs.ai_time_shift))
+        list.append(getConfigListEntry(_("AI economy mode (fewer API calls)"), config.plugins.iptvplayer.ailivesubs.economy_mode))
+        list.append(getConfigListEntry(_("Speech language (Whisper)"), config.plugins.iptvplayer.ailivesubs.stt_language))
+        list.append(getConfigListEntry(_("AI Provider"), config.plugins.iptvplayer.ailivesubs.provider))
+        list.append(getConfigListEntry(_("Groq API Key (or use /etc/enigma2/ailivesubs.keys)"), config.plugins.iptvplayer.ailivesubs.api_key_groq))
+        list.append(getConfigListEntry(_("Gemini API Key (or use /etc/enigma2/ailivesubs.keys)"), config.plugins.iptvplayer.ailivesubs.api_key_gemini))
+        list.append(getConfigListEntry(_("Target language"), config.plugins.iptvplayer.ailivesubs.target_lang))
+        list.append(getConfigListEntry(_("Audio chunk duration"), config.plugins.iptvplayer.ailivesubs.chunk))
+        list.append(getConfigListEntry(_("Subtitle position"), config.plugins.iptvplayer.ailivesubs.position))
+        list.append(getConfigListEntry(_("Subtitle font"), config.plugins.iptvplayer.ailivesubs.font_name))
+        list.append(getConfigListEntry(_("Subtitle font size"), config.plugins.iptvplayer.ailivesubs.font_size))
+        list.append(getConfigListEntry(_("Subtitle font color"), config.plugins.iptvplayer.ailivesubs.font_color))
+        list.append(getConfigListEntry(_("Subtitle border / strip enabled"), config.plugins.iptvplayer.ailivesubs.border_enabled))
+        list.append(getConfigListEntry(_("Subtitle border color"), config.plugins.iptvplayer.ailivesubs.border_color))
 
         list.append(getConfigListEntry(_("----- PLAYERS & PLAYBACK CONFIGURATION -----"), ))
         list.append(getConfigListEntry(_("Autoplay start delay"), config.plugins.iptvplayer.autoplay_start_delay))
