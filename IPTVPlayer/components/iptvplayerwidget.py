@@ -1933,9 +1933,9 @@ class E2iPlayerWidget(Screen):
         if not config.plugins.iptvplayer.disable_live.value and not self.autoPlaySeqStarted:
             self.session.nav.playService(self.currentService)
 
-        if 'favourites' == self.hostName and lastPosition is not None and clipLength is not None:
+        if lastPosition is not None and clipLength is not None and clipLength > 0:
             try:
-                if config.plugins.iptvplayer.favourites_use_watched_flag.value and (lastPosition * 100 / clipLength) > 80:
+                if config.plugins.iptvplayer.favourites_use_watched_flag.value and (lastPosition * 100 / clipLength) > 95 and hasattr(self.host, 'markItemAsViewed'):
                     currSelIndex = self["list"].getCurrentIndex()
                     self.requestListFromHost('MarkItemAsViewed', currSelIndex)
                     return
@@ -2310,6 +2310,14 @@ class E2iPlayerWidget(Screen):
                     for item in hRet.value:
                         if isinstance(item, IPTVChoiceBoxItem):
                             options.append(item)
+
+                try:
+                    if -1 < self.canByAddedToFavourites()[0]:
+                        options.append(IPTVChoiceBoxItem(_("Add item to favourites"), "", {'e2i_menu_action': 'ADD_FAV'}))
+                    elif 'favourites' == self.hostName:
+                        options.append(IPTVChoiceBoxItem(_("Remove from favourites"), "", {'e2i_menu_action': 'DELETE_FAV'}))
+                except Exception:
+                    printExc()
             if len(options):
                 self.stopAutoPlaySequencer()
                 self.session.openWithCallback(self.requestCustomActionFromHost, IPTVChoiceBoxWidget, {'width': 600, 'current_idx': 0, 'title': _("Select action"), 'options': options})
@@ -2319,6 +2327,14 @@ class E2iPlayerWidget(Screen):
     def requestCustomActionFromHost(self, ret):
         printDBG("E2iPlayerWidget.requestCustomActionFromHost ret[%r]" % [ret])
         if isinstance(ret, IPTVChoiceBoxItem):
+            menuAction = ret.privateData.get('e2i_menu_action') if isinstance(ret.privateData, dict) else None
+            if menuAction == 'ADD_FAV':
+                currSelIndex = self.canByAddedToFavourites()[0]
+                self.requestListFromHost('ForFavItem', currSelIndex, '')
+                return
+            elif menuAction == 'DELETE_FAV':
+                self.session.openWithCallback(self.deleteFavouriteItem, MessageBox, _('Definitely remove from favorites?'), type=MessageBox.TYPE_YESNO, timeout=10)
+                return
             self.requestListFromHost('PerformCustomAction', -1, ret.privateData)
 
     def performCustomActionCallback(self, thread, ret):

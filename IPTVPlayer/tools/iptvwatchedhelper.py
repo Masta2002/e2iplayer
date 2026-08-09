@@ -3,7 +3,7 @@
 ###################################################
 # LOCAL import
 ###################################################
-from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, GetFavouritesDir, mkdirs, touch, rm
+from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, GetFavouritesDir, mkdirs, rm
 from Plugins.Extensions.IPTVPlayer.libs.crypto.hash.md5Hash import MD5
 from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT as _
 from Plugins.Extensions.IPTVPlayer.components.ihost import RetHost, CDisplayListItem
@@ -24,6 +24,10 @@ from Components.config import config
 
 
 class IPTVWatchedHelper(object):
+
+    # marker file content that means "started but not fully watched yet";
+    # any other content (incl. empty, the historic touch()-created files) means "watched"
+    STARTED_MARKER = 'started'
 
     def __init__(self, hostName=''):
         self.hostName = str(hostName or '')
@@ -107,6 +111,38 @@ class IPTVWatchedHelper(object):
         except Exception:
             printExc()
 
+    def _setItemStartedFlag(self, item, value):
+        try:
+            if isinstance(item, dict):
+                item['isStarted'] = value
+            else:
+                item.isStarted = value
+        except Exception:
+            printExc()
+
+    def _writeMarkerFile(self, path, content):
+        try:
+            f = open(path, 'w')
+            try:
+                f.write(content)
+            finally:
+                f.close()
+            return True
+        except Exception:
+            printExc()
+        return False
+
+    def _readMarkerFile(self, path):
+        try:
+            f = open(path, 'r')
+            try:
+                return f.read().strip()
+            finally:
+                f.close()
+        except Exception:
+            pass
+        return ''
+
     ###################################################
     # path helpers
     ###################################################
@@ -183,15 +219,26 @@ class IPTVWatchedHelper(object):
     ###################################################
     # watched state helpers
     ###################################################
-    def isWatched(self, watchedKey):
-        self._dbgCall('isWatched')
+    def getWatchedState(self, watchedKey):
+        # returns 'watched', 'started' or 'none' - single source of truth for
+        # both isWatched()/isStarted() and for reading the marker file content
+        self._dbgCall('getWatchedState')
         try:
             flagFilePath = self.getWatchedFilePath(watchedKey)
-            if flagFilePath != '':
-                return fileExists(flagFilePath)
+            if flagFilePath != '' and fileExists(flagFilePath):
+                content = self._readMarkerFile(flagFilePath)
+                return 'started' if content == self.STARTED_MARKER else 'watched'
         except Exception:
             printExc()
-        return False
+        return 'none'
+
+    def isWatched(self, watchedKey):
+        self._dbgCall('isWatched')
+        return self.getWatchedState(watchedKey) == 'watched'
+
+    def isStarted(self, watchedKey):
+        self._dbgCall('isStarted')
+        return self.getWatchedState(watchedKey) == 'started'
 
     def markItemWatched(self, item, watchedKey):
         self._dbgCall('markItemWatched')
@@ -206,8 +253,35 @@ class IPTVWatchedHelper(object):
             flagFilePath = self.getWatchedFilePath(watchedKey)
             if flagFilePath == '':
                 return False
-            if touch(flagFilePath):
+            # write (not touch): must overwrite a possible "started" marker
+            if self._writeMarkerFile(flagFilePath, ''):
                 self._setItemWatchedFlag(item, True)
+                self._setItemStartedFlag(item, False)
+                return True
+        except Exception:
+            printExc()
+        return False
+
+    def markItemStarted(self, item, watchedKey):
+        self._dbgCall('markItemStarted')
+        try:
+            if not self.isMarkingAllowed():
+                return False
+            watchedKey = self._normalizeKey(watchedKey)
+            if watchedKey == '':
+                return False
+            # never downgrade an already fully-watched item back to "started"
+            if self.isWatched(watchedKey):
+                self._setItemWatchedFlag(item, True)
+                self._setItemStartedFlag(item, False)
+                return False
+            if not self._ensureWatchedDir():
+                return False
+            flagFilePath = self.getWatchedFilePath(watchedKey)
+            if flagFilePath == '':
+                return False
+            if self._writeMarkerFile(flagFilePath, self.STARTED_MARKER):
+                self._setItemStartedFlag(item, True)
                 return True
         except Exception:
             printExc()
@@ -224,6 +298,7 @@ class IPTVWatchedHelper(object):
                 return False
             if rm(flagFilePath):
                 self._setItemWatchedFlag(item, False)
+                self._setItemStartedFlag(item, False)
                 return True
         except Exception:
             printExc()
@@ -235,11 +310,14 @@ class IPTVWatchedHelper(object):
     def updateItemFlag(self, item, watchedKey):
         self._dbgCall('updateItemFlag')
         try:
-            item['isWatched'] = self.isWatched(watchedKey)
+            state = self.getWatchedState(watchedKey)
+            item['isWatched'] = (state == 'watched')
+            item['isStarted'] = (state == 'started')
         except Exception:
             printExc()
             try:
                 item['isWatched'] = False
+                item['isStarted'] = False
             except Exception:
                 printExc()
         return item
@@ -256,6 +334,7 @@ class IPTVWatchedHelper(object):
                 if watchedKey == '':
                     try:
                         item['isWatched'] = False
+                        item['isStarted'] = False
                     except Exception:
                         printExc()
                 else:
@@ -270,6 +349,7 @@ class IPTVWatchedHelper(object):
             watchedKey = keyProvider(cItem)
             if watchedKey == '':
                 cItem['isWatched'] = False
+                cItem['isStarted'] = False
             else:
                 self.updateItemFlag(cItem, watchedKey)
         except Exception:
@@ -304,11 +384,28 @@ class IPTVWatchedHelper(object):
                     childKeys.append(childKey)
             if len(childKeys) == 0:
                 return False
-            allWatched = all(self.isWatched(childKey) for childKey in childKeys)
+            childStates = [self.getWatchedState(childKey) for childKey in childKeys]
+            allWatched = all(state == 'watched' for state in childStates)
+            anyProgress = any(state != 'none' for state in childStates)
             if allWatched:
                 self.markItemWatched(parentItem, parentKey)
+            elif anyProgress:
+                self.markItemStarted(parentItem, parentKey)
             else:
                 self.unmarkItemWatched(parentItem, parentKey)
+            return True
+        except Exception:
+            printExc()
+        return False
+
+    def markHostItemAsStarted(self, host, cItem, keyProvider):
+        self._dbgCall('markHostItemAsStarted')
+        try:
+            if not self.isMarkingAllowed():
+                return False
+            watchedKey = keyProvider(cItem)
+            if watchedKey != '':
+                self.markItemStarted(cItem, watchedKey)
             return True
         except Exception:
             printExc()
@@ -372,7 +469,9 @@ class IPTVWatchedHelper(object):
                     try:
                         watchedKey = keyProvider(currList[idx])
                         if watchedKey != '':
-                            ret.value[idx].isWatched = self.isWatched(watchedKey)
+                            state = self.getWatchedState(watchedKey)
+                            ret.value[idx].isWatched = (state == 'watched')
+                            ret.value[idx].isStarted = (state == 'started')
                     except Exception:
                         printExc()
         except Exception:
@@ -384,16 +483,18 @@ class IPTVWatchedHelper(object):
         return ret
 
     def syncFavouriteFromRet(self, cachedRet, index):
-        # the item was already marked watched via its stable key just before this
-        # runs (see markHostItemAsWatched in the host's own getLinksForVideo); this
-        # only reflects that into the cached display list for instant UI feedback
+        # the item was already marked started via its stable key just before this
+        # runs (see markHostItemAsStarted in the host's own getLinksForVideo); this
+        # only reflects that into the cached display list for instant UI feedback -
+        # don't downgrade an already fully-watched item back to merely "started"
         self._dbgCall('syncFavouriteFromRet')
         try:
             if cachedRet is None or not hasattr(cachedRet, 'value'):
                 return False
             if index < 0 or index >= len(cachedRet.value):
                 return False
-            cachedRet.value[index].isWatched = True
+            if not cachedRet.value[index].isWatched:
+                cachedRet.value[index].isStarted = True
             self.dumpDebugCalls()
             return True
         except Exception:
@@ -485,9 +586,13 @@ class IPTVWatchedHelper(object):
                 return False
             if len(childKeys) == 0:
                 return self.unmarkItemWatched(parentItem, parentKey)
-            allWatched = all(self.isWatched(childKey) for childKey in childKeys)
+            childStates = [self.getWatchedState(childKey) for childKey in childKeys]
+            allWatched = all(state == 'watched' for state in childStates)
+            anyProgress = any(state != 'none' for state in childStates)
             if allWatched:
                 return self.markItemWatched(parentItem, parentKey)
+            elif anyProgress:
+                return self.markItemStarted(parentItem, parentKey)
             else:
                 return self.unmarkItemWatched(parentItem, parentKey)
         except Exception:

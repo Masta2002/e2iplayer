@@ -249,6 +249,9 @@ class FilmPalastTo(CBaseHostClass):
             params = dict(cItem)
             params.update(item)
             params.pop("isWatched", None)
+            # cItem is the season item (category="list_episodes") - clear it here so this
+            # episode isn't mistaken for its own season/series container elsewhere
+            params.pop("category", None)
             # params['icon'] = self.getFullIconUrl('/files/movies/450/%s.jpg' % item['url'].split('/')[-1])
             self.watchedHelper.updateHostItemFlag(self, params, self._getWatchedKeyForItem)
             self.addVideo(params)
@@ -324,8 +327,10 @@ class FilmPalastTo(CBaseHostClass):
     def getLinksForVideo(self, cItem):
         printDBG("FilmPalastTo.getLinksForVideo [%s]" % cItem)
         try:
+            # mark "started" on play; leaveMoviePlayer() upgrades to fully watched once
+            # playback actually reaches the completion threshold
             if config.plugins.iptvplayer.favourites_use_watched_flag.value:
-                self.watchedHelper.markHostItemAsWatched(self, cItem, self._getWatchedKeyForItem)
+                self.watchedHelper.markHostItemAsStarted(self, cItem, self._getWatchedKeyForItem)
         except Exception:
             printExc()
         linksTab = []

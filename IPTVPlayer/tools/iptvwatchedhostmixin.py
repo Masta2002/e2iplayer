@@ -3,7 +3,7 @@
 # LOCAL import
 ###################################################
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printExc
-from Plugins.Extensions.IPTVPlayer.components.ihost import CHostBase
+from Plugins.Extensions.IPTVPlayer.components.ihost import CHostBase, RetHost
 ###################################################
 # FOREIGN import
 ###################################################
@@ -43,6 +43,22 @@ class WatchedFlagHostMixin(object):
 
     def getCustomActions(self, Index=0):
         return self.watchedHelper.getCustomActionsForRet(self.cachedRet, self.host.currList, self.host._getWatchedKeyForItem, Index)
+
+    def markItemAsViewed(self, Index=0):
+        # called from leaveMoviePlayer() once playback crosses the completion
+        # threshold, to upgrade an item from "started" to fully watched
+        retCode = RetHost.ERROR
+        retlist = []
+        try:
+            if config.plugins.iptvplayer.favourites_use_watched_flag.value and 0 <= Index < len(self.host.currList):
+                cItem = self.host.currList[Index]
+                if self.watchedHelper.markHostItemAsWatched(self.host, cItem, self.host._getWatchedKeyForItem):
+                    self.refreshAfterWatchedFlagChange = True
+                    retCode = RetHost.OK
+                    retlist = ['refresh']
+        except Exception:
+            printExc()
+        return RetHost(retCode, value=retlist)
 
     def getListForItem(self, Index=0, refresh=0, selItem=None):
         ret = CHostBase.getListForItem(self, Index, refresh, selItem)

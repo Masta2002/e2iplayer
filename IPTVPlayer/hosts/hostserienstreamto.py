@@ -340,6 +340,9 @@ class SerienStreamTo(CBaseHostClass):
                 title = "%s - %s - %s%s" % (series_title, se_tag, name, lang_suffix) if se_tag else "%s - %s%s" % (series_title, name, lang_suffix)
             params = dict(cItem)
             params.update({"good_for_fav": True, "title": title, "url": url, "type": "video",
+            # cItem is the season item (category="list_episodes") - clear it here so this
+            # episode isn't mistaken for its own season/series container elsewhere
+            "category": "",
             "imdb_lookup_url": cItem.get("imdb_lookup_url", "") or cItem.get("url", ""),
             "series_url": cItem.get("series_url", "") or cItem.get("url", ""),
             "season_num": str(cItem.get("season_num", ""))})
@@ -405,7 +408,9 @@ class SerienStreamTo(CBaseHostClass):
     def getLinksForVideo(self, cItem):
         printDBG("SerienStreamTo.getLinksForVideo [%s]" % cItem)
         try:
-            self.watchedHelper.markHostItemAsWatched(self, cItem, self._getWatchedKeyForItem)
+            # mark "started" on play; leaveMoviePlayer() upgrades to fully watched once
+            # playback actually reaches the completion threshold
+            self.watchedHelper.markHostItemAsStarted(self, cItem, self._getWatchedKeyForItem)
         except Exception:
             printExc()
         urltab = []

@@ -73,6 +73,7 @@ class CDisplayListItem:
                 pinLocked=False,
                 isGoodForFavourites=False,
                 isWatched=False,
+                isStarted=False,
                 textColor='',
                 pinCode='',
                 imageType=None):
@@ -118,6 +119,11 @@ class CDisplayListItem:
         else:
             self.isWatched = False
 
+        if isStarted:
+            self.isStarted = True
+        else:
+            self.isStarted = False
+
         self.textColor = str(textColor)
 
         # used only for TYPE_VIDEO item
@@ -132,6 +138,8 @@ class CDisplayListItem:
     def getDisplayTitle(self):
         if self.isWatched:
             return '*' + self.name
+        elif self.isStarted:
+            return '~' + self.name
         else:
             return self.name
 
@@ -141,6 +149,8 @@ class CDisplayListItem:
                 return parseColor(self.textColor).argb()
             if self.isWatched:
                 return parseColor(config.plugins.iptvplayer.watched_item_color.value).argb()
+            if self.isStarted:
+                return parseColor(config.plugins.iptvplayer.started_item_color.value).argb()
         except Exception:
             printExc()
         return None

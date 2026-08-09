@@ -5,7 +5,7 @@
 ###################################################
 from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT as _
 from Plugins.Extensions.IPTVPlayer.components.ihost import IHost, CHostBase, CBaseHostClass, CDisplayListItem, RetHost, CUrlItem, CFavItem
-from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, GetLogoDir, GetFavouritesDir, mkdirs, rm, touch
+from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, GetLogoDir, GetFavouritesDir, mkdirs, rm
 from Plugins.Extensions.IPTVPlayer.tools.iptvfavourites import IPTVFavourites
 from Plugins.Extensions.IPTVPlayer.tools.iptvwatchedhelper import IPTVWatchedHelper
 from Plugins.Extensions.IPTVPlayer.components.iptvchoicebox import IPTVChoiceBoxItem
@@ -96,16 +96,18 @@ class Favourites(CBaseHostClass):
             item = data[idx]
             addFun = typesMap.get(item.type, None)
             favUrl = ''
+            favItem = None
             try:
                 if item.resolver in (CFavItem.RESOLVER_DIRECT_LINK, CFavItem.RESOLVER_URLLPARSER):
                     favUrl = str(item.data or '')
                 else:
                     favItemData = json.loads(item.data)
                     if isinstance(favItemData, dict):
+                        favItem = favItemData
                         favUrl = str(favItemData.get('url', '') or '')
             except Exception:
                 favUrl = ''
-            params = {'name': 'item', 'title': item.name, 'host': item.hostName, 'icon': item.iconimage, 'desc': item.description, 'group_id': cItem['group_id'], 'item_idx': idx, 'fav_url': favUrl}
+            params = {'name': 'item', 'title': item.name, 'host': item.hostName, 'icon': item.iconimage, 'desc': item.description, 'group_id': cItem['group_id'], 'item_idx': idx, 'fav_url': favUrl, 'fav_item': favItem}
             if None is not addFun:
                 addFun(params)
 
@@ -202,11 +204,33 @@ class IPTVHost(CHostBase):
         self.cachedRet = None
         self.useWatchedFlag = config.plugins.iptvplayer.favourites_use_watched_flag.value
         self.refreshAfterWatchedFlagChange = False
+        self._rawHostCache = {}
 
     def _getRawGuestHost(self, guestHost):
         # guestHost is the per-site IPTVHost wrapper; currItem/currList/_getWatchedKeyForItem
         # only exist on the raw host it wraps (guestHost.host), not on the wrapper itself
         return getattr(guestHost, 'host', None)
+
+    def _getRawHostForName(self, hostName):
+        # standalone lookup of a raw per-site host by name, independent of guest-mode
+        # navigation state (Favourites.host/hostName) - used so favourites hashing can
+        # call the host's own _getWatchedKeyForItem() (e.g. YouTube prefers a videoid
+        # key over the url) instead of guessing a generic "url:%s" key that may not
+        # match what the host itself actually uses
+        hostName = str(hostName or '').strip()
+        if hostName == '':
+            return None
+        if hostName in self._rawHostCache:
+            return self._rawHostCache[hostName]
+        rawHost = None
+        try:
+            module = __import__('Plugins.Extensions.IPTVPlayer.hosts.host' + hostName, globals(), locals(), ['IPTVHost'], 0)
+            wrapper = module.IPTVHost()
+            rawHost = getattr(wrapper, 'host', None)
+        except Exception:
+            printExc()
+        self._rawHostCache[hostName] = rawHost
+        return rawHost
 
     def _getGuestParentState(self, guestHost):
         try:
@@ -272,17 +296,14 @@ class IPTVHost(CHostBase):
                         except Exception:
                             printExc()
                 if matchIdx >= 0:
+                    # updateParentWatchedState() above already wrote the marker file via
+                    # guestHost.watchedHelper (same path/hash scheme as this host's own
+                    # getItemHashData) - just reflect that into the cached display item,
+                    # no need to (and don't) recompute/rewrite the file from here again
                     displayItem = self.cachedRet.value[matchIdx]
-                    isWatched = guestHost.watchedHelper.isWatched(parentKey)
-                    displayItem.isWatched = isWatched
-                    hashData = self.getItemHashData(matchIdx, displayItem)
-                    if hashData is not None:
-                        flagPath = GetFavouritesDir('IPTVWatched/%s/.%s.iptvhash' % hashData)
-                        if isWatched:
-                            if not fileExists(flagPath):
-                                self._createViewedFile(hashData)
-                        elif fileExists(flagPath):
-                            rm(flagPath)
+                    watchState = guestHost.watchedHelper.getWatchedState(parentKey)
+                    displayItem.isWatched = (watchState == 'watched')
+                    displayItem.isStarted = (watchState == 'started')
             return ret
         except Exception:
             printExc()
@@ -300,7 +321,17 @@ class IPTVHost(CHostBase):
                 if callable(keyProvider) and 0 <= index < len(guestList):
                     return keyProvider(guestList[index]) or ''
             else:
-                favUrl = str(self.host.currList[index].get('fav_url', '') or '')
+                item = self.host.currList[index]
+                favItem = item.get('fav_item')
+                hostName = str(item.get('host', '') or '')
+                if isinstance(favItem, dict) and hostName != '':
+                    rawHost = self._getRawHostForName(hostName)
+                    keyProvider = getattr(rawHost, '_getWatchedKeyForItem', None)
+                    if callable(keyProvider):
+                        key = keyProvider(favItem)
+                        if key:
+                            return key
+                favUrl = str(item.get('fav_url', '') or '')
                 if favUrl != '':
                     return 'url:%s' % favUrl
         except Exception:
@@ -339,18 +370,39 @@ class IPTVHost(CHostBase):
             return (hostName, hashData)
         return ret
 
+    def _readMarkerContent(self, hashData):
+        # None = no file at all, '' or any other text = watched, STARTED_MARKER = started
+        if hashData is None:
+            return None
+        flagFilePath = GetFavouritesDir('IPTVWatched/%s/.%s.iptvhash' % hashData)
+        if not fileExists(flagFilePath):
+            return None
+        try:
+            f = open(flagFilePath, 'r')
+            try:
+                return f.read().strip()
+            finally:
+                f.close()
+        except Exception:
+            printExc()
+        return ''
+
     def isItemWatched(self, index, displayItem):
         ret = self.getItemHashData(index, displayItem)
-        if ret is None:
-            return False
-        if fileExists(GetFavouritesDir('IPTVWatched/%s/.%s.iptvhash' % ret)):
-            return True
+        content = self._readMarkerContent(ret)
+        if content is not None:
+            return content != IPTVWatchedHelper.STARTED_MARKER
         # backward compatibility: favourites marked watched before the stable-id hash existed
         legacyRet = self._getLegacyItemHashData(index, displayItem)
-        if legacyRet is not None and legacyRet != ret and fileExists(GetFavouritesDir('IPTVWatched/%s/.%s.iptvhash' % legacyRet)):
+        legacyContent = self._readMarkerContent(legacyRet)
+        if legacyRet is not None and legacyRet != ret and legacyContent is not None and legacyContent != IPTVWatchedHelper.STARTED_MARKER:
             self._createViewedFile(ret)
             return True
         return False
+
+    def isItemStarted(self, index, displayItem):
+        ret = self.getItemHashData(index, displayItem)
+        return self._readMarkerContent(ret) == IPTVWatchedHelper.STARTED_MARKER
 
     def fixWatchedFlag(self, ret):
         if self.useWatchedFlag:
@@ -359,15 +411,26 @@ class IPTVHost(CHostBase):
                 if ret.value[idx].type in [CDisplayListItem.TYPE_VIDEO, CDisplayListItem.TYPE_AUDIO] and not ret.value[idx].isWatched:
                     if self.isItemWatched(idx, ret.value[idx]):
                         ret.value[idx].isWatched = True
+                        ret.value[idx].isStarted = False
                         ret.value[idx].name = ret.value[idx].name
+                    elif self.isItemStarted(idx, ret.value[idx]):
+                        ret.value[idx].isStarted = True
             self.cachedRet = ret
         return ret
 
     def _createViewedFile(self, hashData):
         if hashData is not None and mkdirs(GetFavouritesDir('IPTVWatched') + ('/%s/' % hashData[0])):
             flagFilePath = GetFavouritesDir('IPTVWatched/%s/.%s.iptvhash' % hashData)
-            if touch(flagFilePath):
+            try:
+                # write (not touch): must overwrite a possible "started" marker
+                f = open(flagFilePath, 'w')
+                try:
+                    f.write('')
+                finally:
+                    f.close()
                 return True
+            except Exception:
+                printExc()
         return False
 
     def markItemAsViewed(self, Index=0):
@@ -379,6 +442,7 @@ class IPTVHost(CHostBase):
                 hashData = self.getItemHashData(Index, ret.value[Index])
                 if self._createViewedFile(hashData):
                     self.cachedRet.value[Index].isWatched = True
+                    self.cachedRet.value[Index].isStarted = False
                     retCode = RetHost.OK
                     retlist = ['refresh']
                     self.refreshAfterWatchedFlagChange = True
@@ -462,10 +526,12 @@ class IPTVHost(CHostBase):
                     flagFilePath = GetFavouritesDir('IPTVWatched/%s/.%s.iptvhash' % hashData)
                     if rm(flagFilePath):
                         self.cachedRet.value[Index].isWatched = False
+                        self.cachedRet.value[Index].isStarted = False
                         retCode = RetHost.OK
                 elif privateData['action'] == 'set_watched_flag':
                     if self._createViewedFile(hashData):
                         self.cachedRet.value[Index].isWatched = True
+                        self.cachedRet.value[Index].isStarted = False
                         retCode = RetHost.OK
 
                 if retCode == RetHost.OK:

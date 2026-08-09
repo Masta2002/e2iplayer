@@ -744,7 +744,9 @@ class Youtube(CBaseHostClass):
         workItem = dict(cItem)
 
         try:
-            self.watchedHelper.markHostItemAsWatched(self, cItem, self._getWatchedKeyForItem)
+            # mark "started" on play; leaveMoviePlayer() upgrades to fully watched once
+            # playback actually reaches the completion threshold
+            self.watchedHelper.markHostItemAsStarted(self, cItem, self._getWatchedKeyForItem)
         except Exception:
             printExc()
 
