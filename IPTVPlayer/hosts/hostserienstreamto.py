@@ -304,7 +304,7 @@ class SerienStreamTo(CBaseHostClass):
                 params.update({"trailer": trailer})
             self.watchedHelper.updateHostItemFlag(self, params, self._getWatchedKeyForItem)
             self.addDir(params)
-            self.cacheSeriesSeasons[seriesUrl].append({"category": "list_episodes", "series_url": seriesUrl, "season_num": str(se)})
+            self.cacheSeriesSeasons[seriesUrl].append({"category": "list_episodes", "url": self.getFullUrl(url), "series_url": seriesUrl, "season_num": str(se)})
 
     def listEpisodes(self, cItem):
         printDBG("SerienStreamTo.listEpisodes")
@@ -642,6 +642,82 @@ class IPTVHost(CHostBase):
             return True
         return False
 
+    def _setWatchedStateForSeasonItem(self, seasonItem, action):
+        try:
+            seasonKey = self.host._getWatchedKeyForItem(seasonItem)
+            if seasonKey == '':
+                return False
+            seasonUrl = str(seasonItem.get('url', '') or '').strip()
+            if seasonUrl == '':
+                return False
+            sts, data = self.host.getPage(seasonUrl)
+            if not sts:
+                return False
+            data = self.host.cm.ph.getAllItemsBeetwenMarkers(data, 'class="episode-row', "</tr>")
+            changed = False
+            for item in data:
+                url = self.host.getFullUrl(self.host.cm.ph.getSearchGroups(item, "location='([^']+)'") [0])
+                name = self.host.cleanHtmlStr(self.host.cm.ph.getSearchGroups(item, 'title="([^"]+)">')[0])
+                ep = self.host.cleanHtmlStr(self.host.cm.ph.getSearchGroups(item, r'cell">(\d+)')[0])
+                if "Releases soon" in name:
+                    continue
+                if self.host._useLegacyTitles():
+                    ep_prefix = "" if ("Episode" in name or "Folge" in name) else "%s %s - " % (_("Episode"), ep)
+                    title = "%s - %s%s %s" % (seasonItem.get('title', '') or self.host.currItem.get('title', ''), ep_prefix, name, language(item))
+                else:
+                    season_num = str(seasonItem.get('season_num', ''))
+                    if not season_num:
+                        season_num = self.host.cm.ph.getSearchGroups(seasonItem.get('title', ''), r'Staffel\s+(\d+)')[0]
+                    if not season_num:
+                        season_num = self.host.cm.ph.getSearchGroups(seasonItem.get('url', ''), r'/staffel-(\d+)')[0]
+                    season_num = int(season_num) if str(season_num).isdigit() else 0
+                    series_title = (seasonItem.get('title', '') or self.host.currItem.get('title', '')).split(" - Staffel")[0].strip()
+                    ep_num = int(ep) if ep.isdigit() else 0
+                    se_tag = "S%02dE%02d" % (season_num, ep_num) if season_num > 0 and ep_num > 0 else ""
+                    lang = language(item)
+                    lang_suffix = " - %s" % lang if lang else ""
+                    title = "%s - %s - %s%s" % (series_title, se_tag, name, lang_suffix) if se_tag else "%s - %s%s" % (series_title, name, lang_suffix)
+                params = dict(seasonItem)
+                params.update({"good_for_fav": True, "title": title, "url": url, "type": "video",
+                "imdb_lookup_url": seasonItem.get("imdb_lookup_url", "") or seasonItem.get("url", ""),
+                "series_url": seasonItem.get("series_url", "") or seasonItem.get("url", ""),
+                "season_num": str(seasonItem.get("season_num", ""))})
+                episodeKey = self.host._getWatchedKeyForItem(params)
+                if episodeKey == '':
+                    continue
+                if action == 'set_watched_flag':
+                    changed = self.watchedHelper.markItemWatched(params, episodeKey) or changed
+                else:
+                    changed = self.watchedHelper.unmarkItemWatched(params, episodeKey) or changed
+            if action == 'set_watched_flag':
+                changed = self.watchedHelper.markItemWatched(seasonItem, seasonKey) or changed
+            else:
+                changed = self.watchedHelper.unmarkItemWatched(seasonItem, seasonKey) or changed
+            return changed
+        except Exception:
+            printExc()
+            return False
+
+    def _setWatchedStateForSeriesItem(self, seriesItem, action):
+        try:
+            seriesUrl = str(seriesItem.get('url', '') or '').strip()
+            if seriesUrl == '':
+                return False
+            changed = False
+            for seasonItem in self.host.cacheSeriesSeasons.get(seriesUrl, []):
+                if seasonItem.get('url', ''):
+                    changed = self._setWatchedStateForSeasonItem(seasonItem, action) or changed
+            seriesKey = self.host._getWatchedKeyForItem(seriesItem)
+            if seriesKey != '':
+                if action == 'set_watched_flag':
+                    changed = self.watchedHelper.markItemWatched(seriesItem, seriesKey) or changed
+                else:
+                    changed = self.watchedHelper.unmarkItemWatched(seriesItem, seriesKey) or changed
+            return changed
+        except Exception:
+            printExc()
+            return False
+
     def getLinksForVideo(self, Index=0, selItem=None):
         try:
             if config.plugins.iptvplayer.favourites_use_watched_flag.value and Index < len(self.host.currList):
@@ -663,13 +739,34 @@ class IPTVHost(CHostBase):
             self.refreshAfterWatchedFlagChange = True
             try:
                 action = privateData.get('action', '')
-                if action in ('unset_watched_flag', 'set_watched_flag') and self.host.currItem.get('category', '') == 'list_episodes':
-                    seriesUrl = self.host.currItem.get('series_url', '')
-                    self.watchedHelper.recomputeGroupWatched(self.host.currList, self.host._getWatchedKeyForItem, self.host._buildCurrentSeasonItem())
-                    if seriesUrl != '':
-                        seasonItems = self.host.cacheSeriesSeasons.get(seriesUrl, [])
+                if action in ('unset_watched_flag', 'set_watched_flag'):
+                    idx = privateData.get('item_index', -1)
+                    item = self.host.currList[idx] if 0 <= idx < len(self.host.currList) else {}
+                    category = item.get('category', '')
+                    if category == 'list_episodes':
+                        self._setWatchedStateForSeasonItem(item, action)
+                        seasonParent = dict(item)
+                        seasonParent.pop('isWatched', None)
+                        seasonItems = []
+                        for child in self.host.currList:
+                            if isinstance(child, dict) and child.get('type', '') in ['video', 'audio']:
+                                seasonItems.append(child)
                         if seasonItems:
-                            self.watchedHelper.recomputeGroupWatched(seasonItems, self.host._getWatchedKeyForItem, self.host._buildSeriesItem(seriesUrl))
+                            self.watchedHelper.updateParentWatchedState(seasonParent, seasonItems, self.host._getWatchedKeyForItem)
+                        seriesUrl = str(item.get('series_url', '') or '').strip()
+                        if seriesUrl != '':
+                            seasonItems = self.host.cacheSeriesSeasons.get(seriesUrl, [])
+                            if seasonItems:
+                                self.watchedHelper.updateParentWatchedState({'category': 'list_seasons', 'url': seriesUrl}, seasonItems, self.host._getWatchedKeyForItem)
+                    elif category == 'list_seasons':
+                        self._setWatchedStateForSeriesItem(item, action)
+                        seriesUrl = str(item.get('url', '') or '').strip()
+                        if seriesUrl != '':
+                            seasonItems = self.host.cacheSeriesSeasons.get(seriesUrl, [])
+                            if seasonItems:
+                                self.watchedHelper.updateParentWatchedState({'category': 'list_seasons', 'url': seriesUrl}, seasonItems, self.host._getWatchedKeyForItem)
+                    elif item.get('type', '') in ['video', 'audio']:
+                        self.watchedHelper.updateItemFlag(item, self.host._getWatchedKeyForItem(item))
             except Exception:
                 printExc()
         return ret

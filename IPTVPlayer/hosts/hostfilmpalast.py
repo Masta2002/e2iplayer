@@ -110,10 +110,15 @@ class FilmPalastTo(CBaseHostClass):
                     return "url:%s" % url
                 return ""
             if category == "list_episodes":
-                baseUrl = str(cItem.get("url", "") or "").strip()
-                seasonId = str(cItem.get("f_season", "") or "").strip()
+                baseUrl = str(cItem.get("series_url", "") or "").strip() or str(cItem.get("url", "") or "").strip()
+                seasonId = str(cItem.get("season_num", "") or "").strip() or str(cItem.get("f_season", "") or "").strip()
                 if baseUrl != "" and seasonId != "":
                     return "season:%s|%s" % (baseUrl, seasonId)
+                return ""
+            if category == "list_seasons":
+                url = str(cItem.get("url", "") or "").strip()
+                if url != "":
+                    return "series:%s" % url
                 return ""
             return ""
         except Exception:
@@ -298,14 +303,18 @@ class FilmPalastTo(CBaseHostClass):
                     params["isWatched"] = False
                     seasonParams[seasonId] = params
                     self.addDir(params)
-                episodeParams = {"good_for_fav": True, "title": title, "url": url, "type": "video"}
+                episodeParams = {"good_for_fav": True, "title": title, "url": url, "type": "video", "series_url": cItem.get("url", ""), "season_num": str(seasonId)}
                 self.cacheSeasons[seasonId].append(episodeParams)
-                epKey = self._getWatchedKeyForItem(episodeParams)
-                if epKey != "" and self.watchedHelper.isWatched(epKey):
-                    seasonParams[seasonId]["isWatched"] = True
-                    seasonKey = self._getWatchedKeyForItem(seasonParams[seasonId])
-                    if seasonKey != "":
-                        self.watchedHelper.markItemWatched(seasonParams[seasonId], seasonKey)
+
+        for seasonId, seasonEpisodes in self.cacheSeasons.items():
+            if seasonId not in seasonParams:
+                continue
+            self.watchedHelper.updateParentWatchedState(seasonParams[seasonId], seasonEpisodes, self._getWatchedKeyForItem)
+
+        seriesItem = {"category": "list_seasons", "url": cItem.get("url", "")}
+        seriesKey = self._getWatchedKeyForItem(seriesItem)
+        if seriesKey != "":
+            self.watchedHelper.updateParentWatchedState(seriesItem, [seasonParams[seasonId] for seasonId in seasonParams], self._getWatchedKeyForItem)
 
     def listSearchResult(self, cItem, searchPattern, searchType):
         printDBG("FilmPalastTo.listSearchResult cItem[%s], searchPattern[%s] searchType[%s]" % (cItem, searchPattern, searchType))
@@ -604,6 +613,78 @@ class IPTVHost(CHostBase):
             return True
         return False
 
+    def _setWatchedStateForSeasonItem(self, seasonItem, action):
+        try:
+            seasonId = str(seasonItem.get('season_num', '') or seasonItem.get('f_season', '') or '').strip()
+            seasonKey = self.host._getWatchedKeyForItem(seasonItem)
+            if seasonKey == '':
+                return False
+            changed = False
+            for episodeItem in self.host.cacheSeasons.get(seasonId, []):
+                episodeKey = self.host._getWatchedKeyForItem(episodeItem)
+                if episodeKey == '':
+                    continue
+                if action == 'set_watched_flag':
+                    changed = self.watchedHelper.markItemWatched(episodeItem, episodeKey) or changed
+                else:
+                    changed = self.watchedHelper.unmarkItemWatched(episodeItem, episodeKey) or changed
+            if action == 'set_watched_flag':
+                changed = self.watchedHelper.markItemWatched(seasonItem, seasonKey) or changed
+            else:
+                changed = self.watchedHelper.unmarkItemWatched(seasonItem, seasonKey) or changed
+            return changed
+        except Exception:
+            printExc()
+            return False
+
+    def _setWatchedStateForSeriesItem(self, seriesItem, action):
+        try:
+            seriesUrl = str(seriesItem.get('url', '') or '').strip()
+            if seriesUrl == '':
+                return False
+            changed = False
+            for seasonId in list(self.host.cacheSeasons.keys()):
+                seasonItem = {'category': 'list_episodes', 'url': seriesUrl, 'series_url': seriesUrl, 'season_num': str(seasonId)}
+                changed = self._setWatchedStateForSeasonItem(seasonItem, action) or changed
+            seriesKey = self.host._getWatchedKeyForItem(seriesItem)
+            if seriesKey == '':
+                return changed
+            if action == 'set_watched_flag':
+                changed = self.watchedHelper.markItemWatched(seriesItem, seriesKey) or changed
+            else:
+                changed = self.watchedHelper.unmarkItemWatched(seriesItem, seriesKey) or changed
+            return changed
+        except Exception:
+            printExc()
+            return False
+
+    def _refreshParentStateAfterAction(self, item, action):
+        try:
+            if not isinstance(item, dict):
+                return
+            category = str(item.get('category', '') or '').strip()
+            if category == 'list_episodes':
+                seasonId = str(item.get('season_num', '') or item.get('f_season', '') or '').strip()
+                if seasonId != '':
+                    seasonParent = dict(item)
+                    seasonParent.pop('isWatched', None)
+                    seasonEpisodes = self.host.cacheSeasons.get(seasonId, [])
+                    if seasonEpisodes:
+                        self.watchedHelper.updateParentWatchedState(seasonParent, seasonEpisodes, self.host._getWatchedKeyForItem)
+                    seriesUrl = str(item.get('series_url', '') or self.host.currItem.get('url', '') or '').strip()
+                    if seriesUrl != '':
+                        seriesParent = {'category': 'list_seasons', 'url': seriesUrl}
+                        seasonChildren = [{'category': 'list_episodes', 'url': seriesUrl, 'series_url': seriesUrl, 'season_num': str(sid)} for sid in list(self.host.cacheSeasons.keys())]
+                        self.watchedHelper.updateParentWatchedState(seriesParent, seasonChildren, self.host._getWatchedKeyForItem)
+            elif category == 'list_seasons':
+                seriesUrl = str(item.get('url', '') or '').strip()
+                if seriesUrl != '':
+                    seriesParent = {'category': 'list_seasons', 'url': seriesUrl}
+                    seasonChildren = [{'category': 'list_episodes', 'url': seriesUrl, 'series_url': seriesUrl, 'season_num': str(sid)} for sid in list(self.host.cacheSeasons.keys())]
+                    self.watchedHelper.updateParentWatchedState(seriesParent, seasonChildren, self.host._getWatchedKeyForItem)
+        except Exception:
+            printExc()
+
     def getLinksForVideo(self, Index=0, selItem=None):
         try:
             if config.plugins.iptvplayer.favourites_use_watched_flag.value and Index < len(self.host.currList):
@@ -626,6 +707,14 @@ class IPTVHost(CHostBase):
             try:
                 action = privateData.get('action', '')
                 if action in ('unset_watched_flag', 'set_watched_flag'):
+                    idx = privateData.get('item_index', -1)
+                    item = self.host.currList[idx] if 0 <= idx < len(self.host.currList) else {}
+                    category = item.get('category', '')
+                    if category == 'list_episodes':
+                        self._setWatchedStateForSeasonItem(item, action)
+                    elif category == 'list_seasons':
+                        self._setWatchedStateForSeriesItem(item, action)
+                    self._refreshParentStateAfterAction(item, action)
                     self.watchedHelper.recomputeAllGroupsWatched(self.host.cacheSeasons, self.host._getWatchedKeyForItem, self.host._buildSeasonItem)
             except Exception:
                 printExc()

@@ -283,6 +283,35 @@ class IPTVWatchedHelper(object):
         self.dumpDebugCalls()
         return itemList
 
+    def updateParentWatchedState(self, parentItem, childItems, keyProvider):
+        self._dbgCall('updateParentWatchedState')
+        try:
+            if not isinstance(parentItem, dict):
+                return False
+            parentKey = keyProvider(parentItem)
+            if parentKey == '':
+                return False
+            childKeys = []
+            for childItem in childItems or []:
+                try:
+                    childKey = keyProvider(childItem)
+                except Exception:
+                    printExc()
+                    childKey = ''
+                if childKey != '':
+                    childKeys.append(childKey)
+            if len(childKeys) == 0:
+                return False
+            allWatched = all(self.isWatched(childKey) for childKey in childKeys)
+            if allWatched:
+                self.markItemWatched(parentItem, parentKey)
+            else:
+                self.unmarkItemWatched(parentItem, parentKey)
+            return True
+        except Exception:
+            printExc()
+        return False
+
     def markHostItemAsWatched(self, host, cItem, keyProvider):
         self._dbgCall('markHostItemAsWatched')
         try:
@@ -291,19 +320,6 @@ class IPTVWatchedHelper(object):
             watchedKey = keyProvider(cItem)
             if watchedKey != '':
                 self.markItemWatched(cItem, watchedKey)
-            if isinstance(cItem, dict):
-                seriesUrl = str(cItem.get('series_url', '') or '').strip()
-                seasonNum = str(cItem.get('season_num', '') or '').strip()
-                if seriesUrl != '' and seasonNum != '':
-                    seasonItem = {'category': 'list_episodes', 'url': cItem.get('url', ''), 'series_url': seriesUrl, 'season_num': seasonNum}
-                    seasonKey = keyProvider(seasonItem)
-                    if seasonKey != '':
-                        self.markItemWatched(seasonItem, seasonKey)
-                if seriesUrl != '':
-                    seriesItem = {'category': 'list_seasons', 'url': seriesUrl}
-                    seriesKey = keyProvider(seriesItem)
-                    if seriesKey != '':
-                        self.markItemWatched(seriesItem, seriesKey)
             return True
         except Exception:
             printExc()
@@ -313,9 +329,22 @@ class IPTVWatchedHelper(object):
         self._dbgCall('unmarkHostItemAsWatched')
         try:
             watchedKey = keyProvider(cItem)
-            if watchedKey == '':
-                return False
-            return self.unmarkItemWatched(cItem, watchedKey)
+            if watchedKey != '':
+                self.unmarkItemWatched(cItem, watchedKey)
+            if isinstance(cItem, dict):
+                seriesUrl = str(cItem.get('series_url', '') or '').strip()
+                seasonNum = str(cItem.get('season_num', '') or '').strip()
+                if seriesUrl != '' and seasonNum != '':
+                    seasonItem = {'category': 'list_episodes', 'url': cItem.get('url', ''), 'series_url': seriesUrl, 'season_num': seasonNum}
+                    seasonKey = keyProvider(seasonItem)
+                    if seasonKey != '':
+                        self.unmarkItemWatched(seasonItem, seasonKey)
+                if seriesUrl != '':
+                    seriesItem = {'category': 'list_seasons', 'url': seriesUrl}
+                    seriesKey = keyProvider(seriesItem)
+                    if seriesKey != '':
+                        self.unmarkItemWatched(seriesItem, seriesKey)
+            return True
         except Exception:
             printExc()
         return False
@@ -475,14 +504,17 @@ class IPTVWatchedHelper(object):
             if self.isMarkingAllowed():
                 if ret is not None and hasattr(ret, 'value') and ret.value is not None and 0 <= Index < len(ret.value):
                     displayItem = ret.value[Index]
-                    if displayItem.type in [CDisplayListItem.TYPE_VIDEO, CDisplayListItem.TYPE_AUDIO]:
-                        watchedKey = ''
-                        if keyProvider is not None and currList is not None and Index < len(currList):
-                            try:
-                                watchedKey = keyProvider(currList[Index])
-                            except Exception:
-                                watchedKey = ''
-                                printExc()
+                    watchedKey = ''
+                    itemDict = None
+                    if keyProvider is not None and currList is not None and Index < len(currList):
+                        try:
+                            itemDict = currList[Index]
+                            watchedKey = keyProvider(itemDict)
+                        except Exception:
+                            watchedKey = ''
+                            printExc()
+                    isGroupItem = isinstance(itemDict, dict) and itemDict.get('category', '') in ['list_episodes', 'list_seasons']
+                    if displayItem.type in [CDisplayListItem.TYPE_VIDEO, CDisplayListItem.TYPE_AUDIO] or isGroupItem:
                         if watchedKey != '':
                             if displayItem.isWatched:
                                 params = IPTVChoiceBoxItem(_('Unset watched'), "", {'action': 'unset_watched_flag', 'item_index': Index, 'watched_key': watchedKey})
@@ -536,20 +568,22 @@ class IPTVWatchedHelper(object):
     def recomputeGroupWatched(self, childItems, keyProvider, parentItem):
         self._dbgCall('recomputeGroupWatched')
         try:
-            anyWatched = False
+            childKeys = []
             for child in childItems or []:
                 try:
                     childKey = keyProvider(child)
                 except Exception:
                     childKey = ''
                     printExc()
-                if childKey != '' and self.isWatched(childKey):
-                    anyWatched = True
-                    break
+                if childKey != '':
+                    childKeys.append(childKey)
             parentKey = keyProvider(parentItem)
             if parentKey == '':
                 return False
-            if anyWatched:
+            if len(childKeys) == 0:
+                return self.unmarkItemWatched(parentItem, parentKey)
+            allWatched = all(self.isWatched(childKey) for childKey in childKeys)
+            if allWatched:
                 return self.markItemWatched(parentItem, parentKey)
             else:
                 return self.unmarkItemWatched(parentItem, parentKey)
