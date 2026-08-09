@@ -307,7 +307,7 @@ class ConfigMenu(ConfigBaseWidget):
         list.append(getConfigListEntry(_("Remove disabled services"), config.plugins.iptvplayer.remove_diabled_hosts))
         list.append(getConfigListEntry(_("Allow watched flag to be set"), config.plugins.iptvplayer.favourites_use_watched_flag))
         if config.plugins.iptvplayer.favourites_use_watched_flag.value:
-            list.append(getConfigListEntry(_("    The color of the viewed item"), config.plugins.iptvplayer.watched_item_color))
+            list.append(getConfigListEntry("    " + _("The color of the viewed item"), config.plugins.iptvplayer.watched_item_color))
         list.append(getConfigListEntry(_("----- SECURITY CONFIGURATION -----"),))
         list.append(getConfigListEntry(_("Pin protection for plugin"), config.plugins.iptvplayer.pluginProtectedByPin))
         list.append(getConfigListEntry(_("Pin protection for configuration"), config.plugins.iptvplayer.configProtectedByPin))

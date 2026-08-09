@@ -451,15 +451,11 @@ class IPTVWatchedHelper(object):
                     displayItem = ret.value[Index]
 
                     if action == 'unset_watched_flag':
-                        normalChanged = self.unmarkItemWatched(displayItem, watchedKey)
-                        favouriteChanged = self.unmarkFavouriteItemWatched(self.hostName, displayItem)
-                        if normalChanged or favouriteChanged:
+                        if self.unmarkItemWatched(displayItem, watchedKey):
                             retCode = RetHost.OK
 
                     elif action == 'set_watched_flag':
-                        normalChanged = self.markItemWatched(displayItem, watchedKey)
-                        favouriteChanged = self.markFavouriteItemWatched(self.hostName, displayItem)
-                        if normalChanged or favouriteChanged:
+                        if self.markItemWatched(displayItem, watchedKey):
                             retCode = RetHost.OK
 
                     if retCode == RetHost.OK:

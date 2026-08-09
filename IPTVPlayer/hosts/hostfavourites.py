@@ -392,19 +392,19 @@ class IPTVHost(CHostBase):
                 guestHost = self.host.getCurrentGuestHost()
                 if guestHost is not None:
                     rawGuestHost = self._getRawGuestHost(guestHost)
-                    currItem = getattr(rawGuestHost, 'currItem', {})
-                    if not isinstance(currItem, dict) or not currItem:
-                        currList = getattr(rawGuestHost, 'currList', []) or []
-                        if 0 <= Index < len(currList):
-                            currItem = currList[Index]
-                    category = str(currItem.get('category', '') or '').strip()
+                    guestList = getattr(rawGuestHost, 'currList', None) or []
+                    # use the highlighted row, not the item the current list was opened
+                    # from - otherwise MENU on any season row would always act on the
+                    # whole series instead of just that season
+                    rowItem = guestList[Index] if 0 <= Index < len(guestList) else None
+                    category = str(rowItem.get('category', '') or '').strip() if isinstance(rowItem, dict) else ''
                     if category in ['list_episodes', 'list_seasons']:
                         keyProvider = getattr(rawGuestHost, '_getWatchedKeyForItem', None)
                         if callable(keyProvider):
-                            watchedKey = keyProvider(currItem)
+                            watchedKey = keyProvider(rowItem)
                             if watchedKey != '':
                                 action = 'unset_watched_flag' if guestHost.watchedHelper.isWatched(watchedKey) else 'set_watched_flag'
-                                params = IPTVChoiceBoxItem(_('Unset watched') if action == 'unset_watched_flag' else _('Set watched'), "", {'action': action, 'guest_parent_category': category, 'guest_item_index': Index, 'guest_item': currItem, 'watched_key': watchedKey})
+                                params = IPTVChoiceBoxItem(_('Unset watched') if action == 'unset_watched_flag' else _('Set watched'), "", {'action': action, 'guest_parent_category': category, 'guest_item_index': Index, 'guest_item': rowItem, 'watched_key': watchedKey})
                                 retlist.append(params)
                                 retCode = RetHost.OK
             if retCode != RetHost.OK:
@@ -430,7 +430,7 @@ class IPTVHost(CHostBase):
                     rawGuestHost = self._getRawGuestHost(guestHost)
                     category = privateData.get('guest_parent_category', '')
                     action = privateData.get('action', '')
-                    currItem = privateData.get('guest_item') or getattr(rawGuestHost, 'currItem', {})
+                    currItem = privateData.get('guest_item')
                     if not isinstance(currItem, dict) or not currItem:
                         currList = getattr(rawGuestHost, 'currList', []) or []
                         guestIndex = int(privateData.get('guest_item_index', 0) or 0)
