@@ -149,9 +149,9 @@ class IPTVMainNavigatorList(IPTVListComponentBase):
                     self.dictPIX[key] = LoadPixmap(cached=True, path=GetIconDir(pixFile))
             except Exception:
                 printExc()
-        # small 16x16 badges overlaid on the bottom-right corner of the item icon;
-        # optional - if the files aren't present LoadPixmap just leaves these None
-        # and buildEntry() below skips them, falling back to the */~ title prefix
+        # 32x32 watched/started overlay, centered on top of the item icon; optional -
+        # if the files aren't present LoadPixmap just leaves these None and
+        # buildEntry() below skips them, falling back to the */~ title prefix
         try:
             self.watchedBadgePIX = LoadPixmap(cached=True, path=GetIconDir('WatchedBadge.png'))
         except Exception:
@@ -164,16 +164,24 @@ class IPTVMainNavigatorList(IPTVListComponentBase):
     def onDestroy(self):
         self._nullPIX()
 
+    # item icon box (imageType pixmap) and the watched/started overlay drawn on top of
+    # it - the overlay is designed to sit centered directly over the icon, not as a
+    # small corner badge
+    ICON_X, ICON_Y, ICON_W, ICON_H = 3, 1, 40, 40
+    BADGE_W, BADGE_H = 32, 32
+    BADGE_X = ICON_X + (ICON_W - BADGE_W) // 2
+    BADGE_Y = ICON_Y + (ICON_H - BADGE_H) // 2
+
     def buildEntry(self, item):
         width = self.l.getItemSize().width()
         height = self.l.getItemSize().height()
         res = [None]
         res.append((eListboxPythonMultiContent.TYPE_TEXT, 45, 0, width - 45, height, 1, RT_HALIGN_LEFT | RT_VALIGN_CENTER, item.getDisplayTitle(), item.getTextColor()))
-        res.append((eListboxPythonMultiContent.TYPE_PIXMAP_ALPHABLEND, 3, 1, 40, 40, self.dictPIX.get(item.imageType, None)))
+        res.append((eListboxPythonMultiContent.TYPE_PIXMAP_ALPHABLEND, self.ICON_X, self.ICON_Y, self.ICON_W, self.ICON_H, self.dictPIX.get(item.imageType, None)))
         if getattr(item, 'isWatched', False) and self.watchedBadgePIX is not None:
-            res.append((eListboxPythonMultiContent.TYPE_PIXMAP_ALPHABLEND, 27, 25, 16, 16, self.watchedBadgePIX))
+            res.append((eListboxPythonMultiContent.TYPE_PIXMAP_ALPHABLEND, self.BADGE_X, self.BADGE_Y, self.BADGE_W, self.BADGE_H, self.watchedBadgePIX))
         elif getattr(item, 'isStarted', False) and self.startedBadgePIX is not None:
-            res.append((eListboxPythonMultiContent.TYPE_PIXMAP_ALPHABLEND, 27, 25, 16, 16, self.startedBadgePIX))
+            res.append((eListboxPythonMultiContent.TYPE_PIXMAP_ALPHABLEND, self.BADGE_X, self.BADGE_Y, self.BADGE_W, self.BADGE_H, self.startedBadgePIX))
         return res
 
 
