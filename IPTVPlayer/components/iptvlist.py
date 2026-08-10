@@ -188,7 +188,7 @@ class IPTVMainNavigatorList(IPTVListComponentBase):
 
 class IPTVRadioButtonList(IPTVMainNavigatorList):
     ICONS_FILESNAMES = {'on': 'radio_button_on.png', 'off': 'radio_button_off.png'}
-    FAILED_TEXT_COLOR = "#FFFF4040"
+    FAILED_TEXT_COLOR = "#FF4040"
     ERROR_BADGE_W, ERROR_BADGE_H = 32, 32
 
     def __init__(self):
