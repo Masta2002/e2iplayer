@@ -210,24 +210,51 @@ class IPTVRadioButtonList(IPTVMainNavigatorList):
         width = self.l.getItemSize().width()
         height = self.l.getItemSize().height()
         pixmap_y = (height - 16) // 2
-        failed = getattr(item, 'failed', False)
-        textColor = None
-        if failed:
-            try:
-                textColor = parseColor(self.FAILED_TEXT_COLOR).argb()
-            except Exception:
-                textColor = None
         res = [None]
         if None is item.type:
-            textArgs = (eListboxPythonMultiContent.TYPE_TEXT, 5, 0, width - 5, height, 1, RT_HALIGN_LEFT | RT_VALIGN_CENTER, item.name)
+            res.append((eListboxPythonMultiContent.TYPE_TEXT, 5, 0, width - 5, height, 1, RT_HALIGN_LEFT | RT_VALIGN_CENTER, item.name))
         else:
-            textArgs = (eListboxPythonMultiContent.TYPE_TEXT, 30, 0, width - 30, height, 1, RT_HALIGN_LEFT | RT_VALIGN_CENTER, item.name)
+            res.append((eListboxPythonMultiContent.TYPE_TEXT, 30, 0, width - 30, height, 1, RT_HALIGN_LEFT | RT_VALIGN_CENTER, item.name))
             res.append((eListboxPythonMultiContent.TYPE_PIXMAP_ALPHABLEND, 3, pixmap_y, 16, 16, self.dictPIX.get(item.type, None)))
-        if textColor is not None:
-            textArgs = textArgs + (textColor,)
-        res.append(textArgs)
+        return res
+
+
+class IPTVLinkChoiceBoxList(IPTVRadioButtonList):
+    # used for the "Select link" mirror picker: always shows the regular link
+    # icon (same spot/size as the main list's item icon) with the error badge
+    # overlaid centered on top of it when that mirror failed to resolve - same
+    # overlay pattern as the watched/started badge in IPTVMainNavigatorList
+    LINK_ICON_FILENAME = 'GlobItem.png'
+
+    def __init__(self):
+        IPTVRadioButtonList.__init__(self)
+        self.linkIconPIX = None
+
+    def onCreate(self):
+        IPTVRadioButtonList.onCreate(self)
+        try:
+            self.linkIconPIX = LoadPixmap(cached=True, path=GetIconDir(self.LINK_ICON_FILENAME))
+        except Exception:
+            self.linkIconPIX = None
+
+    def onDestroy(self):
+        IPTVRadioButtonList.onDestroy(self)
+        self.linkIconPIX = None
+
+    def buildEntry(self, item):
+        width = self.l.getItemSize().width()
+        height = self.l.getItemSize().height()
+        failed = getattr(item, 'failed', False)
+        textX = self.ICON_X + self.ICON_W + 5
+        textArgs = (eListboxPythonMultiContent.TYPE_TEXT, textX, 0, width - textX, height, 1, RT_HALIGN_LEFT | RT_VALIGN_CENTER, item.name)
+        if failed:
+            try:
+                textArgs = textArgs + (parseColor(self.FAILED_TEXT_COLOR).argb(),)
+            except Exception:
+                pass
+        res = [None, textArgs]
+        if self.linkIconPIX is not None:
+            res.append((eListboxPythonMultiContent.TYPE_PIXMAP_ALPHABLEND, self.ICON_X, self.ICON_Y, self.ICON_W, self.ICON_H, self.linkIconPIX))
         if failed and self.errorBadgePIX is not None:
-            badge_y = (height - self.ERROR_BADGE_H) // 2
-            badge_x = width - self.ERROR_BADGE_W - 5
-            res.append((eListboxPythonMultiContent.TYPE_PIXMAP_ALPHABLEND, badge_x, badge_y, self.ERROR_BADGE_W, self.ERROR_BADGE_H, self.errorBadgePIX))
+            res.append((eListboxPythonMultiContent.TYPE_PIXMAP_ALPHABLEND, self.BADGE_X, self.BADGE_Y, self.BADGE_W, self.BADGE_H, self.errorBadgePIX))
         return res

@@ -59,7 +59,7 @@ from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT
 from Plugins.Extensions.IPTVPlayer.components.iptvplayer import IPTVStandardMoviePlayer, IPTVMiniMoviePlayer
 from Plugins.Extensions.IPTVPlayer.components.iptvextmovieplayer import IPTVExtMoviePlayer
 from Plugins.Extensions.IPTVPlayer.components.iptvpictureplayer import IPTVPicturePlayerWidget
-from Plugins.Extensions.IPTVPlayer.components.iptvlist import IPTVMainNavigatorList
+from Plugins.Extensions.IPTVPlayer.components.iptvlist import IPTVMainNavigatorList, IPTVLinkChoiceBoxList
 from Plugins.Extensions.IPTVPlayer.components.iptvarticleview import IPTVArticleView
 from Plugins.Extensions.IPTVPlayer.components.ihost import IHost, CDisplayListItem, RetHost, CUrlItem, ArticleContent, CFavItem
 from Plugins.Extensions.IPTVPlayer.components.iconmenager import IconMenager
@@ -1265,13 +1265,20 @@ class E2iPlayerWidget(Screen):
         # just re-select and re-resolve the very same failing link again
         if (0 == len(linkList) and resolvingLink is not None and self._currentLinkOptions is not None and
                 len(self._currentLinkOptions) > 1 and not self.autoPlaySeqStarted):
-            # resolving this particular mirror failed - mark it and reopen the full
-            # mirror list (instead of dead-ending on "no valid links") so the user can
-            # see it highlighted and try another one
+            # resolving this particular mirror failed - mark it, tell the user, then
+            # reopen the full mirror list (instead of dead-ending on "no valid links")
+            # so they can see it highlighted and try another one
             resolvingLink.failed = True
-            self.selectLinkForCurrVideo(self._currentLinkOptions)
+            message = _("No valid links available.")
+            lastErrorMsg = GetIPTVPlayerLastHostError()
+            if '' != lastErrorMsg:
+                message += "\n" + _('Last error: "%s"') % lastErrorMsg
+            self.session.openWithCallback(self._reopenLinkPickerAfterFailure, MessageBox, message, type=MessageBox.TYPE_INFO, timeout=10)
             return
         self.selectLinkForCurrVideo(linkList)
+
+    def _reopenLinkPickerAfterFailure(self, ret=None):
+        self.selectLinkForCurrVideo(self._currentLinkOptions)
 
     def getSelIndex(self):
         currSelIndex = self["list"].getCurrentIndex()
@@ -1711,7 +1718,7 @@ class E2iPlayerWidget(Screen):
             printDBG("selectLinkForCurrVideo: |%s| |%s|" % (link.name, link.url))
             options.append(IPTVChoiceBoxItem(link.name, "", link, failed=link.failed))
 
-        self.session.openWithCallback(self.selectLinksCallback, IPTVChoiceBoxWidget, {'width': 600, 'current_idx': 0, 'title': _("Select link"), 'options': options})
+        self.session.openWithCallback(self.selectLinksCallback, IPTVChoiceBoxWidget, {'width': 600, 'current_idx': 0, 'title': _("Select link"), 'options': options, 'list_class': IPTVLinkChoiceBoxList})
 
     def selectLinksCallback(self, retArg):
         if isinstance(retArg, IPTVChoiceBoxItem) and isinstance(retArg.privateData, CUrlItem):

@@ -63,7 +63,7 @@ class IPTVChoiceBoxWidget(Screen):
         self.onClose.append(self.__onClose)
 
         self["title"] = Label(self.params.get('title', _("Select option")))
-        self["list"] = IPTVRadioButtonList()
+        self["list"] = self.params.get('list_class', IPTVRadioButtonList)()
 
         self["actions"] = ActionMap(["SetupActions"],
             {
