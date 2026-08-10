@@ -26,11 +26,13 @@ class IPTVChoiceBoxItem:
     def __init__(self, name="",
                  description="",
                  privateData=None,
-                 type=TYPE_NONE):
+                 type=TYPE_NONE,
+                 failed=False):
         self.name = name
         self.description = description
         self.type = type
         self.privateData = privateData
+        self.failed = failed
 
 
 class IPTVChoiceBoxWidget(Screen):

@@ -295,6 +295,12 @@ class E2iPlayerWidget(Screen):
             gDownloadManager = IPTVDMApi(2, int(config.plugins.iptvplayer.IPTVDMMaxDownloadItem.value), GetIPTVDMNotification)
             if config.plugins.iptvplayer.IPTVDMRunAtStart.value:
                 gDownloadManager.runWorkThread()
+        # transient state for the "Select link" screen: the full list of mirrors
+        # currently shown (so a resolve failure can reopen it with the failed one
+        # marked) and the mirror currently being resolved. Both reset naturally
+        # whenever a fresh mirror list is fetched from the host.
+        self._currentLinkOptions = None
+        self._resolvingLinkItem = None
         # Auto playing sequencer
         self.autoPlaySeqStarted = False
         self.autoPlaySeqTimer = eTimer()
@@ -1250,6 +1256,21 @@ class E2iPlayerWidget(Screen):
                     printExc("selectResolvedVideoLinks: wrong resolved url type!")
         else:
             printExc()
+
+        resolvingLink = self._resolvingLinkItem
+        self._resolvingLinkItem = None
+        # only reopen the picker on failure when there was genuinely a choice of
+        # several mirrors to begin with - for a single mirror (or the non-interactive
+        # autoplay sequencer, which always auto-picks the first one) reopening would
+        # just re-select and re-resolve the very same failing link again
+        if (0 == len(linkList) and resolvingLink is not None and self._currentLinkOptions is not None and
+                len(self._currentLinkOptions) > 1 and not self.autoPlaySeqStarted):
+            # resolving this particular mirror failed - mark it and reopen the full
+            # mirror list (instead of dead-ending on "no valid links") so the user can
+            # see it highlighted and try another one
+            resolvingLink.failed = True
+            self.selectLinkForCurrVideo(self._currentLinkOptions)
+            return
         self.selectLinkForCurrVideo(linkList)
 
     def getSelIndex(self):
@@ -1664,18 +1685,10 @@ class E2iPlayerWidget(Screen):
         else:
             links = customUrlItems
 
-        options = []
-        for link in links:
-            printDBG("selectLinkForCurrVideo: |%s| |%s|" % (link.name, link.url))
-            # if type('') == type(link.name):
-                # link.name = link.name.encode('utf-8', 'ignore')
-            # if type('') == type(link.url):
-                # link.url = link.url.encode('utf-8', 'ignore')
-            options.append((link.name, link.url, link.urlNeedsResolve))
-
         # There is no free links for current video
         numOfLinks = len(links)
         if 0 == numOfLinks:
+            self._currentLinkOptions = None
             if not self.checkAutoPlaySequencer():
                 message = _("No valid links available.")
                 lastErrorMsg = GetIPTVPlayerLastHostError()
@@ -1688,35 +1701,36 @@ class E2iPlayerWidget(Screen):
             return
         elif 1 == numOfLinks or self.autoPlaySeqStarted:
             # call manualy selectLinksCallback - start VIDEO without links selection
-            arg = []
-            arg.append(" ")  # name of item - not displayed so empty
-            arg.append(links[0].url)
-            arg.append(links[0].urlNeedsResolve)
-            self.selectLinksCallback(arg)
+            self._currentLinkOptions = links
+            self.selectLinksCallback(IPTVChoiceBoxItem(" ", "", links[0]))  # name of item - not displayed so empty
             return
 
-        # options.sort(reverse=True)
-        self.session.openWithCallback(self.selectLinksCallback, ChoiceBox, title=_("Select link"), list=options)
+        self._currentLinkOptions = links
+        options = []
+        for link in links:
+            printDBG("selectLinkForCurrVideo: |%s| |%s|" % (link.name, link.url))
+            options.append(IPTVChoiceBoxItem(link.name, "", link, failed=link.failed))
+
+        self.session.openWithCallback(self.selectLinksCallback, IPTVChoiceBoxWidget, {'width': 600, 'current_idx': 0, 'title': _("Select link"), 'options': options})
 
     def selectLinksCallback(self, retArg):
-        # retArg[0] - name
-        # retArg[1] - url src
-        # retArg[2] - urlNeedsResolve
-        if retArg and 3 == len(retArg):
-            # check if we have URL
-            if isinstance(retArg[1], str):
-                videoUrl = retArg[1]
-                if len(videoUrl) > 3:
-                    # check if we need to resolve this URL
-                    if str(retArg[2]) == '1':
-                        # call resolve link from host
-                        self.requestListFromHost('ResolveURL', -1, videoUrl)
-                    else:
-                        list = []
-                        list.append(videoUrl)
-                        self.playVideo(RetHost(status=RetHost.OK, value=list))
-                    return
-            self.playVideo(RetHost(status=RetHost.ERROR, value=[]))
+        if isinstance(retArg, IPTVChoiceBoxItem) and isinstance(retArg.privateData, CUrlItem):
+            link = retArg.privateData
+            videoUrl = link.url
+            if isinstance(videoUrl, str) and len(videoUrl) > 3:
+                # check if we need to resolve this URL (strict '1' check, same as the
+                # original ChoiceBox-based code - some hosts store this as a string,
+                # and a plain truthiness check would wrongly treat "0" as needing resolve)
+                if str(link.urlNeedsResolve) == '1':
+                    # call resolve link from host
+                    self._resolvingLinkItem = link
+                    self.requestListFromHost('ResolveURL', -1, videoUrl)
+                else:
+                    list = []
+                    list.append(videoUrl)
+                    self.playVideo(RetHost(status=RetHost.OK, value=list))
+                return
+        self.playVideo(RetHost(status=RetHost.ERROR, value=[]))
     # end selectLinksCallback(self, retArg):
 
     def checkBuffering(self, url):

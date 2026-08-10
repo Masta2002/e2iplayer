@@ -18,6 +18,7 @@ from Plugins.Extensions.IPTVPlayer.components.ihost import CDisplayListItem
 from Components.GUIComponent import GUIComponent
 from enigma import eListboxPythonMultiContent, eListbox, gFont, RT_HALIGN_LEFT, RT_VALIGN_CENTER, getDesktop
 from Tools.LoadPixmap import LoadPixmap
+from skin import parseColor
 import skin
 ###################################################
 
@@ -149,9 +150,9 @@ class IPTVMainNavigatorList(IPTVListComponentBase):
                     self.dictPIX[key] = LoadPixmap(cached=True, path=GetIconDir(pixFile))
             except Exception:
                 printExc()
-        # 32x32 watched/started overlay, centered on top of the item icon; optional -
-        # if the files aren't present LoadPixmap just leaves these None and
-        # buildEntry() below skips them, falling back to the */~ title prefix
+        # 32x32 watched/started overlay, centered on top of the item icon; if the
+        # files aren't present LoadPixmap just leaves these None and buildEntry()
+        # below skips them, so the item simply shows no watched/started indicator
         try:
             self.watchedBadgePIX = LoadPixmap(cached=True, path=GetIconDir('WatchedBadge.png'))
         except Exception:
@@ -187,18 +188,46 @@ class IPTVMainNavigatorList(IPTVListComponentBase):
 
 class IPTVRadioButtonList(IPTVMainNavigatorList):
     ICONS_FILESNAMES = {'on': 'radio_button_on.png', 'off': 'radio_button_off.png'}
+    FAILED_TEXT_COLOR = "#FFFF4040"
+    ERROR_BADGE_W, ERROR_BADGE_H = 32, 32
 
     def __init__(self):
         IPTVMainNavigatorList.__init__(self)
+        self.errorBadgePIX = None
+
+    def onCreate(self):
+        IPTVMainNavigatorList.onCreate(self)
+        try:
+            self.errorBadgePIX = LoadPixmap(cached=True, path=GetIconDir('ErrorBadge.png'))
+        except Exception:
+            self.errorBadgePIX = None
+
+    def onDestroy(self):
+        IPTVMainNavigatorList.onDestroy(self)
+        self.errorBadgePIX = None
 
     def buildEntry(self, item):
         width = self.l.getItemSize().width()
         height = self.l.getItemSize().height()
         pixmap_y = (height - 16) // 2
+        failed = getattr(item, 'failed', False)
+        textColor = None
+        if failed:
+            try:
+                textColor = parseColor(self.FAILED_TEXT_COLOR).argb()
+            except Exception:
+                textColor = None
         res = [None]
         if None is item.type:
-            res.append((eListboxPythonMultiContent.TYPE_TEXT, 5, 0, width - 5, height, 1, RT_HALIGN_LEFT | RT_VALIGN_CENTER, item.name))
+            textArgs = (eListboxPythonMultiContent.TYPE_TEXT, 5, 0, width - 5, height, 1, RT_HALIGN_LEFT | RT_VALIGN_CENTER, item.name)
         else:
-            res.append((eListboxPythonMultiContent.TYPE_TEXT, 30, 0, width - 30, height, 1, RT_HALIGN_LEFT | RT_VALIGN_CENTER, item.name))
+            textArgs = (eListboxPythonMultiContent.TYPE_TEXT, 30, 0, width - 30, height, 1, RT_HALIGN_LEFT | RT_VALIGN_CENTER, item.name)
             res.append((eListboxPythonMultiContent.TYPE_PIXMAP_ALPHABLEND, 3, pixmap_y, 16, 16, self.dictPIX.get(item.type, None)))
+        if textColor is not None:
+            textArgs = textArgs + (textColor,)
+        res.append(textArgs)
+        if failed and self.errorBadgePIX is not None:
+            badge_y = (height - self.ERROR_BADGE_H) // 2
+            badge_x = width - self.ERROR_BADGE_W - 5
+            res.append((eListboxPythonMultiContent.TYPE_PIXMAP_ALPHABLEND, badge_x, badge_y, self.ERROR_BADGE_W, self.ERROR_BADGE_H, self.errorBadgePIX))
         return res

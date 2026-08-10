@@ -24,21 +24,13 @@ class WatchedFlagHostMixin(object):
         self.cachedRet = ret
         return ret
 
-    def syncWatchedToFavouriteHash(self, Index=0):
-        if config.plugins.iptvplayer.favourites_use_watched_flag.value and self.watchedHelper.syncFavouriteFromRet(self.cachedRet, Index):
-            self.refreshAfterWatchedFlagChange = True
-            return True
-        return False
-
     def getLinksForVideo(self, Index=0, selItem=None):
         # this resolves links for both actually streaming AND downloading, and can
-        # also fail - so, unlike the old behaviour, it does NOT mark the item started.
-        # That only happens once iptvplayerwidget.py's playVideo() has confirmed the
-        # links resolved and it's really about to open a player (see markItemAsStarted).
-        try:
-            self.syncWatchedToFavouriteHash(Index)
-        except Exception:
-            printExc()
+        # also fail - so, unlike the old behaviour, it does NOT touch watched/started
+        # state at all. That only happens once iptvplayerwidget.py's playVideo() has
+        # confirmed the links resolved and it's really about to open a player (see
+        # markItemAsStarted) - marking/instant UI feedback here used to fire for
+        # downloads too, which is wrong.
         return CHostBase.getLinksForVideo(self, Index, selItem)
 
     def getCustomActions(self, Index=0):
@@ -55,6 +47,12 @@ class WatchedFlagHostMixin(object):
                     propagate = getattr(self.host, '_propagateEpisodeWatchedState', None)
                     if callable(propagate):
                         propagate(cItem)
+                    # instant UI feedback: reflect it into the already-rendered list
+                    # without needing a full refetch
+                    if self.cachedRet is not None and hasattr(self.cachedRet, 'value') and 0 <= Index < len(self.cachedRet.value):
+                        if not self.cachedRet.value[Index].isWatched:
+                            self.cachedRet.value[Index].isStarted = True
+                        self.refreshAfterWatchedFlagChange = True
         except Exception:
             printExc()
 

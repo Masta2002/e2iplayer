@@ -471,11 +471,11 @@ class IPTVWatchedHelper(object):
     # ret/favourite sync helpers
     #
     # Host list items are keyed by their own stable url-based key
-    # (keyProvider/_getWatchedKeyForItem), so fixHostRet()/syncFavouriteFromRet()
-    # only need that key - there used to be a second, separate lookup here keyed
-    # by display title+type, but its result was always immediately overwritten
-    # by the key-based one below, so it never actually affected what was shown
-    # and has been removed instead of also switching it to a stable key.
+    # (keyProvider/_getWatchedKeyForItem), so fixHostRet() only needs that key -
+    # there used to be a second, separate lookup here keyed by display title+type,
+    # but its result was always immediately overwritten by the key-based one below,
+    # so it never actually affected what was shown and has been removed instead of
+    # also switching it to a stable key.
     ###################################################
     def fixHostRet(self, ret, currList, keyProvider):
         self._dbgCall('fixHostRet')
@@ -500,25 +500,6 @@ class IPTVWatchedHelper(object):
         self._lastKeyProvider = keyProvider
         self.dumpDebugCalls()
         return ret
-
-    def syncFavouriteFromRet(self, cachedRet, index):
-        # the item was already marked started via its stable key just before this
-        # runs (see markHostItemAsStarted in the host's own getLinksForVideo); this
-        # only reflects that into the cached display list for instant UI feedback -
-        # don't downgrade an already fully-watched item back to merely "started"
-        self._dbgCall('syncFavouriteFromRet')
-        try:
-            if cachedRet is None or not hasattr(cachedRet, 'value'):
-                return False
-            if index < 0 or index >= len(cachedRet.value):
-                return False
-            if not cachedRet.value[index].isWatched:
-                cachedRet.value[index].isStarted = True
-            self.dumpDebugCalls()
-            return True
-        except Exception:
-            printExc()
-        return False
 
     ###################################################
     # menu custom action helpers (watched toggle via MENU key)
