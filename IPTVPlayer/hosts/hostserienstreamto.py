@@ -14,6 +14,7 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.libs.urlmetahelper import buildSidecar, sidecarFromUrlMeta, decorateUrl, decorateResolvedLinkItems
 from Plugins.Extensions.IPTVPlayer.tools.iptvwatchedhelper import IPTVWatchedHelper
 from Plugins.Extensions.IPTVPlayer.tools.iptvwatchedhostmixin import WatchedFlagHostMixin
+from Plugins.Extensions.IPTVPlayer.components.iptvconfigmenu import IsSidecarEnabled
 
 
 config.plugins.iptvplayer.serienstreamto_hosts = ConfigSelection(default="http://186.2.175.5/", choices=[("http://186.2.175.5/", "186.2.175.5"), ("https://serienstream.to/", "serienstream.to"), ("https://serienstream.cx/", "serienstream.cx")])  # NOSONAR
@@ -21,19 +22,18 @@ config.plugins.iptvplayer.serienstreamto_uselogin = ConfigYesNo(default=False)
 config.plugins.iptvplayer.serienstreamto_login = ConfigText(default="", fixed_size=False)
 config.plugins.iptvplayer.serienstreamto_password = ConfigText(default="", fixed_size=False)
 config.plugins.iptvplayer.serienstreamto_omdb_apikey = ConfigText(default="", fixed_size=False)
-config.plugins.iptvplayer.serienstreamto_sidecar = ConfigYesNo(default=True)
 config.plugins.iptvplayer.serienstreamto_mkv = ConfigYesNo(default=True)
 config.plugins.iptvplayer.serienstreamto_legacy_titles = ConfigYesNo(default=False)
 
 
 def GetConfigList():
-    # "Allow watched flag to be set" / "The color of the viewed item" now live in the
-    # global E2iPlayer settings (components/iptvconfigmenu.py), not per-host
+    # "Allow watched flag to be set" / "The color of the viewed item" / "Create sidecar
+    # files" now live in the global E2iPlayer settings (components/iptvconfigmenu.py),
+    # not per-host
     optionList = [getConfigListEntry(_("Use login") + ":", config.plugins.iptvplayer.serienstreamto_uselogin),
                   getConfigListEntry(_("e-mail") + ":", config.plugins.iptvplayer.serienstreamto_login),
                   getConfigListEntry(_("password") + ":", config.plugins.iptvplayer.serienstreamto_password),
                   getConfigListEntry(_("OMDb API Key") + ":", config.plugins.iptvplayer.serienstreamto_omdb_apikey),
-                  getConfigListEntry(_("Create sidecar files (.txt/.jpg)") + ":", config.plugins.iptvplayer.serienstreamto_sidecar),
                   getConfigListEntry(_("Create MKV") + ":", config.plugins.iptvplayer.serienstreamto_mkv),
                   getConfigListEntry(_("Use legacy title format") + ":", config.plugins.iptvplayer.serienstreamto_legacy_titles)]
     optionList.append(getConfigListEntry(_("host") + ":", config.plugins.iptvplayer.serienstreamto_hosts))
@@ -439,7 +439,7 @@ class SerienStreamTo(CBaseHostClass):
         urltab = []
         sidecarTxt = ""
         sidecarImg = ""
-        sidecarEnabled = config.plugins.iptvplayer.serienstreamto_sidecar.value
+        sidecarEnabled = IsSidecarEnabled()
         imdb_rating = cItem.get("imdb_rating", "")
         sidecarYear = ""
         sidecarGenre = ""
@@ -534,7 +534,7 @@ class SerienStreamTo(CBaseHostClass):
 
     def getVideoLinks(self, url):
         printDBG("SerienStreamTo.getVideoLinks [%s]" % url)
-        cfgSidecarEnabled = config.plugins.iptvplayer.serienstreamto_sidecar.value
+        cfgSidecarEnabled = IsSidecarEnabled()
         cfgMkvEnabled = config.plugins.iptvplayer.serienstreamto_mkv.value
         sidecar = sidecarFromUrlMeta(url, cfgSidecarEnabled)
         def _addFinalMeta(videoLinks):

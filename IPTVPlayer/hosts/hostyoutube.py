@@ -14,6 +14,7 @@ from Plugins.Extensions.IPTVPlayer.libs.urlmetahelper import buildSidecar, build
 from Plugins.Extensions.IPTVPlayer.libs.youtubeuserlinks import YouTubeUserLinksManager
 from Plugins.Extensions.IPTVPlayer.tools.iptvwatchedhelper import IPTVWatchedHelper
 from Plugins.Extensions.IPTVPlayer.tools.iptvwatchedhostmixin import WatchedFlagHostMixin
+from Plugins.Extensions.IPTVPlayer.components.iptvconfigmenu import IsSidecarEnabled
 
 ###################################################
 
@@ -49,7 +50,6 @@ from Components.MenuList import MenuList
 # Config options for HOST
 ###################################################
 config.plugins.iptvplayer.Sciezkaurllist = ConfigDirectory(default="/hdd/")
-config.plugins.iptvplayer.youtube_sidecar = ConfigYesNo(default=True)
 config.plugins.iptvplayer.youtube_mkv_chapters = ConfigYesNo(default=True)
 config.plugins.iptvplayer.youtube_enigma2_cuts = ConfigYesNo(default=True)
 config.plugins.iptvplayer.youtube_download_channel_name = ConfigYesNo(default=True)
@@ -85,11 +85,11 @@ def GetConfigList():
     optionList.append(getConfigListEntry(_("Age-gate bypass:"), config.plugins.iptvplayer.ytAgeGate))
     optionList.append(getConfigListEntry(_("Display language:"), config.plugins.iptvplayer.youtube_ui_language))
     optionList.append(getConfigListEntry(_("Add channel name to downloaded file") + ":", config.plugins.iptvplayer.youtube_download_channel_name))
-    optionList.append(getConfigListEntry(_("Create sidecar files (.txt/.jpg)") + ":", config.plugins.iptvplayer.youtube_sidecar))
     optionList.append(getConfigListEntry(_("Create MKV with chapter marks from description") + ":", config.plugins.iptvplayer.youtube_mkv_chapters))
     optionList.append(getConfigListEntry(_("Create Enigma2 .cuts chapter marks") + ":", config.plugins.iptvplayer.youtube_enigma2_cuts))
-    # "Allow watched flag to be set" / "The color of the viewed item" now live in the
-    # global E2iPlayer settings (components/iptvconfigmenu.py), not per-host
+    # "Allow watched flag to be set" / "The color of the viewed item" / "Create sidecar
+    # files" now live in the global E2iPlayer settings (components/iptvconfigmenu.py),
+    # not per-host
     # temporary, the ffmpeg must be in right version to be able to merge file without transcoding
     # checking should be moved to setup
     if IsExecutable("ffmpeg"):
@@ -733,7 +733,7 @@ class Youtube(CBaseHostClass):
     def getLinksForVideo(self, cItem):
         printDBG("Youtube.getLinksForVideo cItem[%s]" % cItem)
 
-        sidecarEnabled = config.plugins.iptvplayer.youtube_sidecar.value
+        sidecarEnabled = IsSidecarEnabled()
         mkvChaptersEnabled = config.plugins.iptvplayer.youtube_mkv_chapters.value
         cutsChaptersEnabled = config.plugins.iptvplayer.youtube_enigma2_cuts.value
         downloadChannelNameEnabled = config.plugins.iptvplayer.youtube_download_channel_name.value

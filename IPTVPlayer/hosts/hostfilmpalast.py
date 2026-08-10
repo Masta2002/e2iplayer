@@ -13,6 +13,7 @@ from Plugins.Extensions.IPTVPlayer.libs import ph
 from Plugins.Extensions.IPTVPlayer.libs.urlmetahelper import buildSidecar, sidecarFromUrlMeta, decorateUrl, decorateCachedLinkItems, decorateResolvedLinkItems
 from Plugins.Extensions.IPTVPlayer.tools.iptvwatchedhelper import IPTVWatchedHelper
 from Plugins.Extensions.IPTVPlayer.tools.iptvwatchedhostmixin import WatchedFlagHostMixin
+from Plugins.Extensions.IPTVPlayer.components.iptvconfigmenu import IsSidecarEnabled
 
 ###################################################
 from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote
@@ -23,15 +24,14 @@ from Plugins.Extensions.IPTVPlayer.p2p3.UrlParse import urljoin
 ###################################################
 ###################################################
 
-config.plugins.iptvplayer.filmpalast_sidecar = ConfigYesNo(default=True)
 config.plugins.iptvplayer.filmpalast_mkv = ConfigYesNo(default=True)
 
 
 def GetConfigList():
-    # "Allow watched flag to be set" / "The color of the viewed item" now live in the
-    # global E2iPlayer settings (components/iptvconfigmenu.py), not per-host
+    # "Allow watched flag to be set" / "The color of the viewed item" / "Create sidecar
+    # files" now live in the global E2iPlayer settings (components/iptvconfigmenu.py),
+    # not per-host
     optionList = [
-        getConfigListEntry(_("Create sidecar files (.txt/.jpg)") + ":", config.plugins.iptvplayer.filmpalast_sidecar),
         getConfigListEntry(_("Create MKV") + ":", config.plugins.iptvplayer.filmpalast_mkv),
     ]
     return optionList
@@ -359,7 +359,7 @@ class FilmPalastTo(CBaseHostClass):
         linksTab = []
         sidecarTxt = ""
         sidecarImg = ""
-        sidecarEnabled = config.plugins.iptvplayer.filmpalast_sidecar.value
+        sidecarEnabled = IsSidecarEnabled()
         imdb_rating = cItem.get("imdb_rating", "")
         sidecarYear = ""
         sidecarDuration = ""
@@ -445,7 +445,7 @@ class FilmPalastTo(CBaseHostClass):
 
         videoUrl = strwithmeta(videoUrl)
 
-        cfgSidecarEnabled = config.plugins.iptvplayer.filmpalast_sidecar.value
+        cfgSidecarEnabled = IsSidecarEnabled()
         cfgMkvEnabled = config.plugins.iptvplayer.filmpalast_mkv.value
         sidecar = sidecarFromUrlMeta(videoUrl, cfgSidecarEnabled)
 

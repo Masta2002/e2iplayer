@@ -170,6 +170,15 @@ config.plugins.iptvplayer.autoplay_start_delay = ConfigInteger(3, (0, 9))
 config.plugins.iptvplayer.favourites_use_watched_flag = ConfigYesNo(default=True)
 config.plugins.iptvplayer.watched_item_color = ConfigSelection(default="#808080", choices=COLORS_DEFINITONS)
 config.plugins.iptvplayer.started_item_color = ConfigSelection(default="#FFFF00", choices=COLORS_DEFINITONS)
+config.plugins.iptvplayer.sidecar_enabled = ConfigYesNo(default=True)
+
+
+def IsSidecarEnabled():
+    # single central place hosts ask whether to create sidecar .txt/.jpg files,
+    # instead of each host keeping its own copy of this config option
+    return config.plugins.iptvplayer.sidecar_enabled.value
+
+
 config.plugins.iptvplayer.usepycurl = ConfigYesNo(default=False)
 
 config.plugins.iptvplayer.prefer_hlsdl_for_pls_with_alt_media = ConfigYesNo(default=True)
@@ -310,6 +319,7 @@ class ConfigMenu(ConfigBaseWidget):
         if config.plugins.iptvplayer.favourites_use_watched_flag.value:
             list.append(getConfigListEntry("    " + _("The color of the viewed item"), config.plugins.iptvplayer.watched_item_color))
             list.append(getConfigListEntry("    " + _("The color of the started item"), config.plugins.iptvplayer.started_item_color))
+        list.append(getConfigListEntry(_("Create sidecar files (.txt/.jpg)"), config.plugins.iptvplayer.sidecar_enabled))
         list.append(getConfigListEntry(_("----- SECURITY CONFIGURATION -----"),))
         list.append(getConfigListEntry(_("Pin protection for plugin"), config.plugins.iptvplayer.pluginProtectedByPin))
         list.append(getConfigListEntry(_("Pin protection for configuration"), config.plugins.iptvplayer.configProtectedByPin))
