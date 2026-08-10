@@ -1878,6 +1878,15 @@ class E2iPlayerWidget(Screen):
                 else:
                     self.stopAutoPlaySequencer()
             else:
+                # genuinely about to stream (not download) and every earlier check
+                # (blocked url, missing directory, low disk space) already passed -
+                # this is the only place that marks the item "started"
+                try:
+                    if hasattr(self.host, 'markItemAsStarted'):
+                        self.host.markItemAsStarted(self["list"].getCurrentIndex())
+                except Exception:
+                    printExc()
+
                 self.prevVideoMode = GetE2VideoMode()
                 printDBG("Current video mode [%s]" % self.prevVideoMode)
                 gstAdditionalParams = {'defaul_videomode': self.prevVideoMode, 'host_name': self.hostName, 'external_sub_tracks': url.meta.get('external_sub_tracks', []), 'iptv_refresh_cmd': url.meta.get('iptv_refresh_cmd', '')}  # default_player_videooptions

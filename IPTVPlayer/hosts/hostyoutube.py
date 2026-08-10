@@ -743,12 +743,10 @@ class Youtube(CBaseHostClass):
 
         workItem = dict(cItem)
 
-        try:
-            # mark "started" on play; leaveMoviePlayer() upgrades to fully watched once
-            # playback actually reaches the completion threshold
-            self.watchedHelper.markHostItemAsStarted(self, cItem, self._getWatchedKeyForItem)
-        except Exception:
-            printExc()
+        # NOTE: marking the item "started" happens later, in iptvplayerwidget.py's
+        # playVideo() - not here. This method resolves links for both actually
+        # streaming AND downloading, and can also fail/return nothing, so marking
+        # here would (and used to) tag failed attempts and downloads as "started" too.
 
         try:
             if workItem.get("is_pagination", False) or workItem.get("type", "") == "more" or workItem.get("image_type", "") == "NEXT":

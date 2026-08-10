@@ -348,14 +348,10 @@ class FilmPalastTo(CBaseHostClass):
 
     def getLinksForVideo(self, cItem):
         printDBG("FilmPalastTo.getLinksForVideo [%s]" % cItem)
-        try:
-            # mark "started" on play; leaveMoviePlayer() upgrades to fully watched once
-            # playback actually reaches the completion threshold
-            if config.plugins.iptvplayer.favourites_use_watched_flag.value:
-                self.watchedHelper.markHostItemAsStarted(self, cItem, self._getWatchedKeyForItem)
-                self._propagateEpisodeWatchedState(cItem)
-        except Exception:
-            printExc()
+        # NOTE: marking the item "started" happens later, in iptvplayerwidget.py's
+        # playVideo() - not here. This method resolves links for both actually
+        # streaming AND downloading, and can also fail/return nothing, so marking
+        # here would (and used to) tag failed attempts and downloads as "started" too.
         linksTab = []
         sidecarTxt = ""
         sidecarImg = ""

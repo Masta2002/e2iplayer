@@ -429,13 +429,10 @@ class SerienStreamTo(CBaseHostClass):
 
     def getLinksForVideo(self, cItem):
         printDBG("SerienStreamTo.getLinksForVideo [%s]" % cItem)
-        try:
-            # mark "started" on play; leaveMoviePlayer() upgrades to fully watched once
-            # playback actually reaches the completion threshold
-            self.watchedHelper.markHostItemAsStarted(self, cItem, self._getWatchedKeyForItem)
-            self._propagateEpisodeWatchedState(cItem)
-        except Exception:
-            printExc()
+        # NOTE: marking the item "started" happens later, in iptvplayerwidget.py's
+        # playVideo() - not here. This method resolves links for both actually
+        # streaming AND downloading, and can also fail/return nothing, so marking
+        # here would (and used to) tag failed attempts and downloads as "started" too.
         urltab = []
         sidecarTxt = ""
         sidecarImg = ""

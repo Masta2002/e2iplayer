@@ -31,10 +31,10 @@ class WatchedFlagHostMixin(object):
         return False
 
     def getLinksForVideo(self, Index=0, selItem=None):
-        # marking the item watched is handled by the host's own getLinksForVideo(cItem),
-        # which this delegates into (via CHostBase -> getLinksForItem -> host.getLinksForItem
-        # alias) and which is also reached from the favourites direct-play path that never
-        # goes through this Index-based method at all - marking it here too would be redundant
+        # this resolves links for both actually streaming AND downloading, and can
+        # also fail - so, unlike the old behaviour, it does NOT mark the item started.
+        # That only happens once iptvplayerwidget.py's playVideo() has confirmed the
+        # links resolved and it's really about to open a player (see markItemAsStarted).
         try:
             self.syncWatchedToFavouriteHash(Index)
         except Exception:
@@ -43,6 +43,20 @@ class WatchedFlagHostMixin(object):
 
     def getCustomActions(self, Index=0):
         return self.watchedHelper.getCustomActionsForRet(self.cachedRet, self.host.currList, self.host._getWatchedKeyForItem, Index)
+
+    def markItemAsStarted(self, Index=0):
+        # called from iptvplayerwidget.py's playVideo() right before a player is
+        # actually opened for the item at Index - not on download, and not if
+        # resolving/opening failed before getting here
+        try:
+            if config.plugins.iptvplayer.favourites_use_watched_flag.value and 0 <= Index < len(self.host.currList):
+                cItem = self.host.currList[Index]
+                if self.watchedHelper.markHostItemAsStarted(self.host, cItem, self.host._getWatchedKeyForItem):
+                    propagate = getattr(self.host, '_propagateEpisodeWatchedState', None)
+                    if callable(propagate):
+                        propagate(cItem)
+        except Exception:
+            printExc()
 
     def markItemAsViewed(self, Index=0):
         # called from leaveMoviePlayer() once playback crosses the completion

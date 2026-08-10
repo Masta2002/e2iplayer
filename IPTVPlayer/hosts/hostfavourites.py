@@ -433,6 +433,54 @@ class IPTVHost(CHostBase):
                 printExc()
         return False
 
+    def markItemAsStarted(self, Index=0):
+        # called from iptvplayerwidget.py's playVideo() right before a player is
+        # actually opened for the item at Index - not on download, and not if
+        # resolving/opening failed before getting here. Mirrors the guest/non-guest
+        # host resolution used for reading state (_getStableItemHashSource) but on
+        # the write side, so the real host's own watched key/helper is used instead
+        # of a favourites-only mechanism.
+        try:
+            if not self.useWatchedFlag:
+                return
+            if self.host.isQuestMode():
+                guestHost = self.host.getCurrentGuestHost()
+                if guestHost is None:
+                    return
+                rawGuestHost = self._getRawGuestHost(guestHost)
+                keyProvider = getattr(rawGuestHost, '_getWatchedKeyForItem', None)
+                guestList = getattr(rawGuestHost, 'currList', None) or []
+                if not callable(keyProvider) or not (0 <= Index < len(guestList)):
+                    return
+                item = guestList[Index]
+                if guestHost.watchedHelper.markHostItemAsStarted(rawGuestHost, item, keyProvider):
+                    propagate = getattr(rawGuestHost, '_propagateEpisodeWatchedState', None)
+                    if callable(propagate):
+                        propagate(item)
+            else:
+                if not (0 <= Index < len(self.host.currList)):
+                    return
+                item = self.host.currList[Index]
+                favItem = item.get('fav_item')
+                hostName = str(item.get('host', '') or '')
+                if not isinstance(favItem, dict) or hostName == '':
+                    return
+                rawHost = self._getRawHostForName(hostName)
+                keyProvider = getattr(rawHost, '_getWatchedKeyForItem', None)
+                watchedHelper = getattr(rawHost, 'watchedHelper', None)
+                if not callable(keyProvider) or watchedHelper is None:
+                    return
+                if watchedHelper.markHostItemAsStarted(rawHost, favItem, keyProvider):
+                    propagate = getattr(rawHost, '_propagateEpisodeWatchedState', None)
+                    if callable(propagate):
+                        propagate(favItem)
+            if self.cachedRet is not None and hasattr(self.cachedRet, 'value') and 0 <= Index < len(self.cachedRet.value):
+                if not self.cachedRet.value[Index].isWatched:
+                    self.cachedRet.value[Index].isStarted = True
+                self.refreshAfterWatchedFlagChange = True
+        except Exception:
+            printExc()
+
     def markItemAsViewed(self, Index=0):
         retCode = RetHost.ERROR
         retlist = []
@@ -467,20 +515,28 @@ class IPTVHost(CHostBase):
                         if callable(keyProvider):
                             watchedKey = keyProvider(rowItem)
                             if watchedKey != '':
-                                action = 'unset_watched_flag' if guestHost.watchedHelper.isWatched(watchedKey) else 'set_watched_flag'
-                                params = IPTVChoiceBoxItem(_('Unset watched') if action == 'unset_watched_flag' else _('Set watched'), "", {'action': action, 'guest_parent_category': category, 'guest_item_index': Index, 'guest_item': rowItem, 'watched_key': watchedKey})
-                                retlist.append(params)
-                                retCode = RetHost.OK
+                                state = guestHost.watchedHelper.getWatchedState(watchedKey)
+                                isWatched = (state == 'watched')
+                                isStarted = (state == 'started')
+                                # a "started" item isn't fully watched yet, so offer both
+                                # promoting it to watched and clearing it entirely
+                                if not isWatched:
+                                    retlist.append(IPTVChoiceBoxItem(_('Set watched'), "", {'action': 'set_watched_flag', 'guest_parent_category': category, 'guest_item_index': Index, 'guest_item': rowItem, 'watched_key': watchedKey}))
+                                if isWatched or isStarted:
+                                    retlist.append(IPTVChoiceBoxItem(_('Unset watched'), "", {'action': 'unset_watched_flag', 'guest_parent_category': category, 'guest_item_index': Index, 'guest_item': rowItem, 'watched_key': watchedKey}))
+                                if retlist:
+                                    retCode = RetHost.OK
             if retCode != RetHost.OK:
                 ret = self.cachedRet
                 if ret.value[Index].type in [CDisplayListItem.TYPE_VIDEO, CDisplayListItem.TYPE_AUDIO]:
                     tmp = self.getItemHashData(Index, ret.value[Index])
                     if tmp != '':
-                        if self.cachedRet.value[Index].isWatched:
-                            params = IPTVChoiceBoxItem(_('Unset watched'), "", {'action': 'unset_watched_flag', 'item_index': Index, 'hash_data': tmp})
-                        else:
-                            params = IPTVChoiceBoxItem(_('Set watched'), "", {'action': 'set_watched_flag', 'item_index': Index, 'hash_data': tmp})
-                        retlist.append(params)
+                        isWatched = bool(self.cachedRet.value[Index].isWatched)
+                        isStarted = bool(getattr(self.cachedRet.value[Index], 'isStarted', False))
+                        if not isWatched:
+                            retlist.append(IPTVChoiceBoxItem(_('Set watched'), "", {'action': 'set_watched_flag', 'item_index': Index, 'hash_data': tmp}))
+                        if isWatched or isStarted:
+                            retlist.append(IPTVChoiceBoxItem(_('Unset watched'), "", {'action': 'unset_watched_flag', 'item_index': Index, 'hash_data': tmp}))
                     retCode = RetHost.OK
         return RetHost(retCode, value=retlist)
 

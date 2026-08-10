@@ -262,18 +262,16 @@ class IPTVWatchedHelper(object):
             printExc()
         return False
 
-    def markItemStarted(self, item, watchedKey):
-        self._dbgCall('markItemStarted')
+    def _writeStartedMarker(self, item, watchedKey):
+        # unconditional write, no anti-downgrade guard - used by parent (season/series)
+        # recompute, where "started" must reflect the current children truthfully even
+        # if the parent was previously fully watched (e.g. one episode got unwatched
+        # again after the whole season was marked watched)
         try:
             if not self.isMarkingAllowed():
                 return False
             watchedKey = self._normalizeKey(watchedKey)
             if watchedKey == '':
-                return False
-            # never downgrade an already fully-watched item back to "started"
-            if self.isWatched(watchedKey):
-                self._setItemWatchedFlag(item, True)
-                self._setItemStartedFlag(item, False)
                 return False
             if not self._ensureWatchedDir():
                 return False
@@ -282,10 +280,31 @@ class IPTVWatchedHelper(object):
                 return False
             if self._writeMarkerFile(flagFilePath, self.STARTED_MARKER):
                 self._setItemStartedFlag(item, True)
+                self._setItemWatchedFlag(item, False)
                 return True
         except Exception:
             printExc()
         return False
+
+    def markItemStarted(self, item, watchedKey):
+        # used when playback of a single item starts - deliberately keeps an
+        # already fully-watched item watched instead of downgrading it just
+        # because it's being played again
+        self._dbgCall('markItemStarted')
+        try:
+            if not self.isMarkingAllowed():
+                return False
+            watchedKey = self._normalizeKey(watchedKey)
+            if watchedKey == '':
+                return False
+            if self.isWatched(watchedKey):
+                self._setItemWatchedFlag(item, True)
+                self._setItemStartedFlag(item, False)
+                return False
+        except Exception:
+            printExc()
+            return False
+        return self._writeStartedMarker(item, watchedKey)
 
     def unmarkItemWatched(self, item, watchedKey):
         self._dbgCall('unmarkItemWatched')
@@ -390,7 +409,7 @@ class IPTVWatchedHelper(object):
             if allWatched:
                 self.markItemWatched(parentItem, parentKey)
             elif anyProgress:
-                self.markItemStarted(parentItem, parentKey)
+                self._writeStartedMarker(parentItem, parentKey)
             else:
                 self.unmarkItemWatched(parentItem, parentKey)
             return True
@@ -524,15 +543,20 @@ class IPTVWatchedHelper(object):
                     isGroupItem = isinstance(itemDict, dict) and itemDict.get('category', '') in ['list_episodes', 'list_seasons']
                     if displayItem.type in [CDisplayListItem.TYPE_VIDEO, CDisplayListItem.TYPE_AUDIO] or isGroupItem:
                         if watchedKey != '':
-                            if displayItem.isWatched:
-                                params = IPTVChoiceBoxItem(_('Unset watched'), "", {'action': 'unset_watched_flag', 'item_index': Index, 'watched_key': watchedKey})
-                            else:
-                                params = IPTVChoiceBoxItem(_('Set watched'), "", {'action': 'set_watched_flag', 'item_index': Index, 'watched_key': watchedKey})
-                            retlist.append(params)
-                            retCode = RetHost.OK
-                            self._lastRet = ret
-                            self._lastCurrList = currList
-                            self._lastKeyProvider = keyProvider
+                            isWatched = bool(getattr(displayItem, 'isWatched', False))
+                            isStarted = bool(getattr(displayItem, 'isStarted', False))
+                            # a "started" item isn't fully watched yet, so it should offer
+                            # both promoting it to watched and clearing it back to nothing -
+                            # not just the one toggle a plain watched/unwatched item gets
+                            if not isWatched:
+                                retlist.append(IPTVChoiceBoxItem(_('Set watched'), "", {'action': 'set_watched_flag', 'item_index': Index, 'watched_key': watchedKey}))
+                            if isWatched or isStarted:
+                                retlist.append(IPTVChoiceBoxItem(_('Unset watched'), "", {'action': 'unset_watched_flag', 'item_index': Index, 'watched_key': watchedKey}))
+                            if retlist:
+                                retCode = RetHost.OK
+                                self._lastRet = ret
+                                self._lastCurrList = currList
+                                self._lastKeyProvider = keyProvider
         except Exception:
             printExc()
         self.dumpDebugCalls()
@@ -592,7 +616,7 @@ class IPTVWatchedHelper(object):
             if allWatched:
                 return self.markItemWatched(parentItem, parentKey)
             elif anyProgress:
-                return self.markItemStarted(parentItem, parentKey)
+                return self._writeStartedMarker(parentItem, parentKey)
             else:
                 return self.unmarkItemWatched(parentItem, parentKey)
         except Exception:
