@@ -1718,9 +1718,26 @@ class E2iPlayerWidget(Screen):
             printDBG("selectLinkForCurrVideo: |%s| |%s|" % (link.name, link.url))
             options.append(IPTVChoiceBoxItem(link.name, "", link, failed=link.failed))
 
-        self.session.openWithCallback(self.selectLinksCallback, IPTVChoiceBoxWidget, {'width': 600, 'current_idx': 0, 'title': _("Select link"), 'options': options, 'list_class': IPTVLinkChoiceBoxList})
+        self.session.openWithCallback(self.selectLinksCallback, IPTVChoiceBoxWidget, {'width': 600, 'height': self._getLinkPickerHeight(), 'current_idx': 0, 'title': _("Select link"), 'options': options, 'list_class': IPTVLinkChoiceBoxList})
+
+    def _getLinkPickerHeight(self):
+        # IPTVChoiceBoxWidget's skin is defined in a fixed 1280x720 reference space
+        # and scaled per-axis to the real screen resolution by the skin engine, so
+        # these are reference-space pixel heights, not real ones. Tuned to show a
+        # few more rows than the default 300 on SD, and 3 more rows than that gave
+        # on FullHD, before the list starts scrolling.
+        resType = self.getSkinResolutionType()
+        if resType == 'sd':
+            return 370
+        elif resType == 'hd':
+            return 380
+        return 300
 
     def selectLinksCallback(self, retArg):
+        if retArg is None:
+            # user cancelled the picker without trying any link - there's nothing
+            # wrong, so don't show a "No valid links" error for it
+            return
         if isinstance(retArg, IPTVChoiceBoxItem) and isinstance(retArg.privateData, CUrlItem):
             link = retArg.privateData
             videoUrl = link.url
