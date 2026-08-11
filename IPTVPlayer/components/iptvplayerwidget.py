@@ -1723,14 +1723,16 @@ class E2iPlayerWidget(Screen):
     def _getLinkPickerHeight(self):
         # IPTVChoiceBoxWidget's skin is defined in a fixed 1280x720 reference space
         # and scaled per-axis to the real screen resolution by the skin engine, so
-        # these are reference-space pixel heights, not real ones. Tuned to show a
-        # few more rows than the default 300 on SD, and 3 more rows than that gave
-        # on FullHD, before the list starts scrolling.
+        # these are reference-space pixel heights, not real ones. Tuned so HD and
+        # FullHD both show 12 rows before the list starts scrolling (up from ~6/~9
+        # at the previous default of 300), and SD gets a few more rows too.
         resType = self.getSkinResolutionType()
         if resType == 'sd':
             return 370
         elif resType == 'hd':
             return 380
+        elif resType == 'hd_ready':
+            return 480
         return 300
 
     def selectLinksCallback(self, retArg):
