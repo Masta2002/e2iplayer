@@ -706,7 +706,8 @@ class ConfigMenu(ConfigBaseWidget):
             config.plugins.iptvplayer.configProtectedByPin,
             config.plugins.iptvplayer.osk_type,
             config.plugins.iptvplayer.plugin_autostart,
-            config.plugins.iptvplayer.favourites_use_watched_flag
+            config.plugins.iptvplayer.favourites_use_watched_flag,
+            config.plugins.iptvplayer.storageExpertMode
             # config.plugins.iptvplayer.captcha_bypass_free,
             # config.plugins.iptvplayer.captcha_bypass_pay
         ]
