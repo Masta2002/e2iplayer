@@ -2,7 +2,7 @@
 # Last modified: 09/05/2026
 # Lodynet Host By Mohamed Elsafty (angel_heart)
 ###################################################
-from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc
+from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, GetCookieDir
 from Plugins.Extensions.IPTVPlayer.components.ihost import CHostBase, CBaseHostClass
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.libs.urlparserhelper import getDirectM3U8Playlist
@@ -10,7 +10,6 @@ from datetime import datetime
 import urllib
 import re
 import time
-import os
 import requests
 import json
 import html
@@ -1524,19 +1523,11 @@ class Lodynet(CBaseHostClass):
     # ==========================================================================================
     def getVidloDirectLinks(self, baseUrl):
         printDBG("getVidloDirectLinks [%s]" % baseUrl)
-        PRIMARY_PATH = "/media/hdd/IPTVCache/cookies"
-        FALLBACK_PATH = "/tmp/IPTV_Cookies"
-        if os.path.isdir(PRIMARY_PATH) and os.access(PRIMARY_PATH, os.W_OK):
-            COOKIE_PATH = PRIMARY_PATH
-        else:
-            COOKIE_PATH = FALLBACK_PATH
-        if not os.path.exists(COOKIE_PATH):
-            try:
-                os.makedirs(COOKIE_PATH)
-            except Exception as e:
-                printDBG("Cookie dir error: %s" % e)
-                COOKIE_PATH = "/tmp"
-        COOKIE_FILE = os.path.join(COOKIE_PATH, "vidlo.cookie")
+        # was hardcoded to /media/hdd/IPTVCache/cookies with its own
+        # /tmp fallback chain, bypassing the configured CacheDir entirely
+        # (and missing out on its own /hdd-missing handling) - GetCookieDir()
+        # already covers both
+        COOKIE_FILE = GetCookieDir("vidlo.cookie")
         HTTP_HEADER = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
             "Referer": baseUrl,
