@@ -917,6 +917,26 @@ def mkdirs(newdir, raiseException=False):
     return False
 
 
+def IsRealStoragePresent(path):
+    # walks up to the nearest existing ancestor without creating anything,
+    # then checks whether it's a genuinely separate filesystem from root
+    # (a real mounted HDD/USB) rather than just an empty placeholder
+    # directory (e.g. /media with nothing plugged in) living on the same
+    # flash/overlay filesystem as / - a plain os.path.isdir() check alone
+    # can't tell those two cases apart, and mkdirs() would happily create
+    # a throwaway folder on flash in either case
+    check = path.rstrip('/') or '/'
+    while not os.path.isdir(check):
+        parent = os.path.dirname(check)
+        if parent == check:
+            break
+        check = parent
+    try:
+        return os.stat(check).st_dev != os.stat('/').st_dev
+    except Exception:
+        return False
+
+
 def rm(fullname):
     try:
         if os.path.exists(fullname):

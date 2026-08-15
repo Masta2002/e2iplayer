@@ -43,7 +43,7 @@ from Plugins.Extensions.IPTVPlayer.libs.pCommon import CParsingHelper
 from Plugins.Extensions.IPTVPlayer.libs.urlparser import urlparser
 from Plugins.Extensions.IPTVPlayer.tools.iptvfavourites import IPTVFavourites
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import FreeSpace as iptvtools_FreeSpace, \
-                                                          mkdirs as iptvtools_mkdirs, GetIPTVPlayerVersion, \
+                                                          mkdirs as iptvtools_mkdirs, IsRealStoragePresent as iptvtools_IsRealStoragePresent, GetIPTVPlayerVersion, \
                                                           printDBG, printExc, iptv_system, GetHostsList, IsHostEnabled, \
                                                           eConnectCallback, GetSkinsDir, GetIconDir, GetPluginDir, \
                                                           SortHostsList, GetHostsOrderList, CSearchHistoryHelper, \
@@ -212,21 +212,26 @@ class E2iPlayerWidget(Screen):
         self.spinnerPixmap = [LoadPixmap(GetIconDir('radio_button_on.png')), LoadPixmap(GetIconDir('radio_button_off.png'))]
         self.useAlternativePlayer = False
 
-        # /hdd may not exist at all on boxes without a real HDD/USB drive.
-        # Runs once per affected path - after being switched away, a path
-        # no longer starts with "/hdd" so its check becomes a no-op.
-        hddMissing = not os_path.isdir('/hdd')
+        # Not tied to "/hdd" specifically - covers both "no /hdd at all"
+        # and "was pointed at a USB stick that's since been unplugged".
+        # IsRealStoragePresent() walks up to the nearest existing ancestor
+        # and checks it's a genuinely separate filesystem from root, so a
+        # merely-not-yet-created subfolder on a perfectly fine real drive
+        # (e.g. first run) is NOT mistaken for missing storage.
 
         # CacheDir defaults to /hdd/IPTVCache/, which would then silently
         # fail every write (cookies, JS cache, favourites, icons, ...).
         # Reroute to the plugin's own bundled cache/ folder instead, which
-        # always exists on any install.
-        if hddMissing and config.plugins.iptvplayer.CacheDir.value.startswith('/hdd'):
-            self.session.open(MessageBox, _("No /hdd found. The cache folder will be switched to the plugin's own cache directory."), type=MessageBox.TYPE_INFO, timeout=10)
-            newCacheDir = GetPluginDir('cache/')
-            if not os_path.exists(newCacheDir):
-                iptvtools_mkdirs(newCacheDir)
-            config.plugins.iptvplayer.CacheDir.value = newCacheDir
+        # always exists on any install. The plugin's own folder lives on
+        # the same (flash/overlay) filesystem as root, so it would itself
+        # never pass IsRealStoragePresent() - skip once already switched,
+        # or every start would re-show the notification for no reason.
+        pluginCacheDir = GetPluginDir('cache/')
+        if config.plugins.iptvplayer.CacheDir.value != pluginCacheDir and not iptvtools_IsRealStoragePresent(config.plugins.iptvplayer.CacheDir.value):
+            self.session.open(MessageBox, _("No storage found for the cache folder. The cache folder will be switched to the plugin's own cache directory."), type=MessageBox.TYPE_INFO, timeout=10)
+            if not os_path.exists(pluginCacheDir):
+                iptvtools_mkdirs(pluginCacheDir)
+            config.plugins.iptvplayer.CacheDir.value = pluginCacheDir
             config.plugins.iptvplayer.CacheDir.save()
             configfile.save()
 
@@ -234,10 +239,12 @@ class E2iPlayerWidget(Screen):
         # its single .iptv_buffering.flv file at the end of each playback
         # session (_cleanedUp(), called from onEnd()), so losing it on
         # reboot is harmless. Route it to TmpDir instead of the plugin's
-        # own cache/ folder when /hdd is missing - that's exactly what
-        # TmpDir is for, and Enigma2 clears /tmp on restart anyway, so no
-        # user-facing notification is needed for this one.
-        if hddMissing and config.plugins.iptvplayer.bufferingPath.value.startswith('/hdd'):
+        # own cache/ folder when its storage is missing - that's exactly
+        # what TmpDir is for, and Enigma2 clears /tmp on restart anyway,
+        # so no user-facing notification is needed for this one. Skip
+        # once already switched, same reasoning as CacheDir above (/tmp
+        # isn't guaranteed to be its own filesystem on every image).
+        if config.plugins.iptvplayer.bufferingPath.value != config.plugins.iptvplayer.TmpDir.value and not iptvtools_IsRealStoragePresent(config.plugins.iptvplayer.bufferingPath.value):
             config.plugins.iptvplayer.bufferingPath.value = config.plugins.iptvplayer.TmpDir.value
             config.plugins.iptvplayer.bufferingPath.save()
             configfile.save()
@@ -248,7 +255,7 @@ class E2iPlayerWidget(Screen):
         # instead; if they cancel, DownloadsDir is simply left as-is
         # (pointing at a path that doesn't exist yet) until they set it
         # properly via Settings.
-        if hddMissing and config.plugins.iptvplayer.DownloadsDir.value.startswith('/hdd'):
+        if not iptvtools_IsRealStoragePresent(config.plugins.iptvplayer.DownloadsDir.value):
             def _setDownloadsDir(newPath):
                 if newPath is not None:
                     config.plugins.iptvplayer.DownloadsDir.value = newPath
@@ -258,7 +265,7 @@ class E2iPlayerWidget(Screen):
             def _askDownloadsDir(ret=None):
                 self.session.openWithCallback(_setDownloadsDir, IPTVDirectorySelectorWidget, currDir=config.plugins.iptvplayer.DownloadsDir.value, title=_("Select directory"))
 
-            self.session.openWithCallback(_askDownloadsDir, MessageBox, _("No /hdd found. Where would you like to save your downloads?"), type=MessageBox.TYPE_INFO)
+            self.session.openWithCallback(_askDownloadsDir, MessageBox, _("No storage found for the downloads location. Where would you like to save your downloads?"), type=MessageBox.TYPE_INFO)
 
         self.showMessageNoFreeSpaceForIcon = False
         self.iconMenager = None
