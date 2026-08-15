@@ -211,19 +211,34 @@ class E2iPlayerWidget(Screen):
         self.spinnerPixmap = [LoadPixmap(GetIconDir('radio_button_on.png')), LoadPixmap(GetIconDir('radio_button_off.png'))]
         self.useAlternativePlayer = False
 
-        # /hdd may not exist at all on boxes without a real HDD/USB drive;
+        # /hdd may not exist at all on boxes without a real HDD/USB drive.
+        # Runs once per affected path - after being switched away, a path
+        # no longer starts with "/hdd" so its check becomes a no-op.
+        hddMissing = not os_path.isdir('/hdd')
+
         # CacheDir defaults to /hdd/IPTVCache/, which would then silently
         # fail every write (cookies, JS cache, favourites, icons, ...).
         # Reroute to the plugin's own bundled cache/ folder instead, which
-        # always exists on any install. Runs once - after the switch,
-        # CacheDir no longer starts with "/hdd" so this becomes a no-op.
-        if config.plugins.iptvplayer.CacheDir.value.startswith('/hdd') and not os_path.isdir('/hdd'):
+        # always exists on any install.
+        if hddMissing and config.plugins.iptvplayer.CacheDir.value.startswith('/hdd'):
             self.session.open(MessageBox, _("No /hdd found. The cache folder will be switched to the plugin's own cache directory."), type=MessageBox.TYPE_INFO, timeout=10)
             newCacheDir = GetPluginDir('cache/')
             if not os_path.exists(newCacheDir):
                 iptvtools_mkdirs(newCacheDir)
             config.plugins.iptvplayer.CacheDir.value = newCacheDir
             config.plugins.iptvplayer.CacheDir.save()
+            configfile.save()
+
+        # bufferingPath is pure scratch space - iptvbuffui.py always deletes
+        # its single .iptv_buffering.flv file at the end of each playback
+        # session (_cleanedUp(), called from onEnd()), so losing it on
+        # reboot is harmless. Route it to TmpDir instead of the plugin's
+        # own cache/ folder when /hdd is missing - that's exactly what
+        # TmpDir is for, and Enigma2 clears /tmp on restart anyway, so no
+        # user-facing notification is needed for this one.
+        if hddMissing and config.plugins.iptvplayer.bufferingPath.value.startswith('/hdd'):
+            config.plugins.iptvplayer.bufferingPath.value = config.plugins.iptvplayer.TmpDir.value
+            config.plugins.iptvplayer.bufferingPath.save()
             configfile.save()
 
         self.showMessageNoFreeSpaceForIcon = False
