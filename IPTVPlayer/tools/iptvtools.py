@@ -20,6 +20,8 @@ from Components.config import config
 from Tools.Directories import resolveFilename, fileExists, SCOPE_PLUGINS, SCOPE_CONFIG
 from enigma import eConsoleAppContainer
 from Components.Language import language
+from Screens.Notifications import AddPopup
+from Screens.MessageBox import MessageBox
 from time import time
 from urllib.request import urlopen
 import traceback
@@ -352,6 +354,22 @@ def TestTmpCookieDir():
         f.write("test")
 
 
+# tracks paths already warned about, so a repeatedly-called Get*Dir()
+# helper (e.g. GetCookieDir(), called on every request) doesn't flood the
+# user with the same popup over and over
+gWarnedUnwritableDirs = set()
+
+
+def _warnIfDirNotWritable(path):
+    if os.path.isdir(path) or path in gWarnedUnwritableDirs:
+        return
+    gWarnedUnwritableDirs.add(path)
+    try:
+        AddPopup(_('Cache folder "%s" could not be created. Some data (cookies, search history, favourites, subtitles, ...) may not be saved.') % path, type=MessageBox.TYPE_ERROR, timeout=10)
+    except Exception:
+        printExc()
+
+
 def GetCookieDir(file='', forceFromConfig=False):
     if gE2iPlayerTempCookieDir is None or forceFromConfig:
         cookieDir = os.path.join(config.plugins.iptvplayer.CacheDir.value, 'cookies/')
@@ -360,6 +378,7 @@ def GetCookieDir(file='', forceFromConfig=False):
     try:
         if not os.path.isdir(cookieDir):
             mkdirs(cookieDir)
+            _warnIfDirNotWritable(cookieDir)
     except Exception:
         printExc()
     return cookieDir + file
@@ -402,6 +421,7 @@ def GetJSCacheDir(fileName='', forceFromConfig=False):
     try:
         if not os.path.isdir(cookieDir):
             mkdirs(cookieDir)
+            _warnIfDirNotWritable(cookieDir)
     except Exception:
         printExc()
     return os.path.join(cookieDir, fileName)
@@ -437,7 +457,9 @@ def CreateTmpFile(filename, data=''):
 
 def GetCacheSubDir(dirName, fileName=''):
     path = os.path.join(config.plugins.iptvplayer.CacheDir.value, dirName)
-    mkdirs(path)
+    if not os.path.isdir(path):
+        mkdirs(path)
+        _warnIfDirNotWritable(path)
     return os.path.join(path, fileName)
 
 
