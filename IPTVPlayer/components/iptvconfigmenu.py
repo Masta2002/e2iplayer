@@ -471,9 +471,9 @@ class ConfigMenu(ConfigBaseWidget):
         list.append(getConfigListEntry("    " + _("Delete subtitles cache now"), config.plugins.iptvplayer.fakeSubtitlesCacheDelete))
         list.append(getConfigListEntry("    " + _("Delete movie metadata cache after (days, 0 = never)"), config.plugins.iptvplayer.movieMetaDataCacheDeleteAfterDays))
         list.append(getConfigListEntry("    " + _("Delete movie metadata cache now"), config.plugins.iptvplayer.fakeMovieMetaDataCacheDelete))
-        if config.plugins.iptvplayer.showcover.value:
-            list.append(getConfigListEntry("    " + _("Remove thumbnails"), config.plugins.iptvplayer.deleteIcons))
-            list.append(getConfigListEntry("    " + _("Delete thumbnails cache now"), config.plugins.iptvplayer.fakeIconsCacheDelete))
+        list.append(getConfigListEntry("    " + _("Remove thumbnails"), config.plugins.iptvplayer.deleteIcons))
+        list.append(getConfigListEntry("    " + _("Delete thumbnails cache now"), config.plugins.iptvplayer.fakeIconsCacheDelete))
+        list.append(getConfigListEntry("    " + _("The number of items in the search history"), config.plugins.iptvplayer.search_history_size))
 
         list.append(getConfigListEntry(_("----- BUFFERING CONFIGURATION -----"), ))
         list.append(getConfigListEntry(_("[HTTP] buffering"), config.plugins.iptvplayer.buforowanie))
@@ -536,7 +536,6 @@ class ConfigMenu(ConfigBaseWidget):
         list.append(getConfigListEntry(_("The default aspect ratio for the external player"), config.plugins.iptvplayer.hidden_ext_player_def_aspect_ratio))
 
         list.append(getConfigListEntry(_("----- OTHER SETTINGS -----"), ))
-        list.append(getConfigListEntry(_("The number of items in the search history"), config.plugins.iptvplayer.search_history_size))
         list.append(getConfigListEntry(_("Write current title to file:"), config.plugins.iptvplayer.curr_title_file))
         list.append(getConfigListEntry(_("MIPS Floating Point Architecture"), config.plugins.iptvplayer.plarformfpuabi))
         list.append(getConfigListEntry(_("Prefer hlsld for playlist with alt. media"), config.plugins.iptvplayer.prefer_hlsdl_for_pls_with_alt_media))
