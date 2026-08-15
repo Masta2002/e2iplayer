@@ -479,6 +479,10 @@ def GetMovieMetaDataDir(fileName=''):
     return GetCacheSubDir('MovieMetaData', fileName)
 
 
+def GetMoviePlayerPerHostDir(fileName=''):
+    return GetCacheSubDir('MoviePlayer', fileName)
+
+
 def GetIPTVDMImgDir(fileName=''):
     return os.path.join(resolveFilename(SCOPE_PLUGINS, 'Extensions/IPTVPlayer/icons/'), fileName)
 
@@ -1444,7 +1448,7 @@ class CFakeMoviePlayerOption():
 
 class CMoviePlayerPerHost():
     def __init__(self, hostName):
-        self.filePath = GetCacheSubDir('MoviePlayer', hostName + '.json')
+        self.filePath = GetMoviePlayerPerHostDir(hostName + '.json')
         self.activePlayer = {}  # {buffering:True/False, 'player':''}
         self.load()
 
