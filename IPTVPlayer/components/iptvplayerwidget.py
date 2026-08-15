@@ -33,6 +33,7 @@ from enigma import getDesktop, eTimer
 ####################################################
 from Plugins.Extensions.IPTVPlayer.components.iptvconfigmenu import ConfigMenu, GetMoviePlayer, GetAvailableMoviePlayers, GetMoviePlayerName, GetListOfHostsNames
 from Plugins.Extensions.IPTVPlayer.components.confighost import ConfigHostMenu, ConfigHostsMenu
+from Plugins.Extensions.IPTVPlayer.components.iptvdirbrowser import IPTVDirectorySelectorWidget
 from Plugins.Extensions.IPTVPlayer.components.configgroups import ConfigGroupsMenu
 
 from Plugins.Extensions.IPTVPlayer.components.iptvfavouriteswidgets import IPTVFavouritesAddItemWidget, IPTVFavouritesMainWidget
@@ -240,6 +241,24 @@ class E2iPlayerWidget(Screen):
             config.plugins.iptvplayer.bufferingPath.value = config.plugins.iptvplayer.TmpDir.value
             config.plugins.iptvplayer.bufferingPath.save()
             configfile.save()
+
+        # DownloadsDir holds real, permanent downloaded movies - unlike
+        # CacheDir/bufferingPath it must never be silently redirected to a
+        # guessed location. Ask the user directly where downloads should go
+        # instead; if they cancel, DownloadsDir is simply left as-is
+        # (pointing at a path that doesn't exist yet) until they set it
+        # properly via Settings.
+        if hddMissing and config.plugins.iptvplayer.DownloadsDir.value.startswith('/hdd'):
+            def _setDownloadsDir(newPath):
+                if newPath is not None:
+                    config.plugins.iptvplayer.DownloadsDir.value = newPath
+                    config.plugins.iptvplayer.DownloadsDir.save()
+                    configfile.save()
+
+            def _askDownloadsDir(ret=None):
+                self.session.openWithCallback(_setDownloadsDir, IPTVDirectorySelectorWidget, currDir=config.plugins.iptvplayer.DownloadsDir.value, title=_("Select directory"))
+
+            self.session.openWithCallback(_askDownloadsDir, MessageBox, _("No /hdd found. Where would you like to save your downloads?"), type=MessageBox.TYPE_INFO)
 
         self.showMessageNoFreeSpaceForIcon = False
         self.iconMenager = None
