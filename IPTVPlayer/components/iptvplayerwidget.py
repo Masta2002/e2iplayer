@@ -44,6 +44,7 @@ from Plugins.Extensions.IPTVPlayer.libs.urlparser import urlparser
 from Plugins.Extensions.IPTVPlayer.tools.iptvfavourites import IPTVFavourites
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import FreeSpace as iptvtools_FreeSpace, \
                                                           mkdirs as iptvtools_mkdirs, IsRealStoragePresent as iptvtools_IsRealStoragePresent, \
+                                                          IsPathWritable as iptvtools_IsPathWritable, \
                                                           CleanOldFilesInDir as iptvtools_CleanOldFilesInDir, GetIPTVPlayerVersion, \
                                                           printDBG, printExc, iptv_system, GetHostsList, IsHostEnabled, \
                                                           eConnectCallback, GetSkinsDir, GetIconDir, GetPluginDir, \
@@ -256,8 +257,19 @@ class E2iPlayerWidget(Screen):
         # guessed location. Ask the user directly where downloads should go
         # instead; if they cancel, DownloadsDir is simply left as-is
         # (pointing at a path that doesn't exist yet) until they set it
-        # properly via Settings.
-        if not iptvtools_IsRealStoragePresent(config.plugins.iptvplayer.DownloadsDir.value):
+        # properly via Settings. Once the user has explicitly picked a
+        # path here before (it no longer matches the untouched migration
+        # default), fall back to a plain exists+writable check instead of
+        # requiring genuinely separate storage - otherwise a box with no
+        # real HDD/USB at all would get re-prompted on every single start
+        # even after deliberately picking a flash folder, since that
+        # never passes IsRealStoragePresent().
+        downloadsDir = config.plugins.iptvplayer.DownloadsDir.value
+        if downloadsDir == config.plugins.iptvplayer.NaszaSciezka.value:
+            downloadsDirOk = iptvtools_IsRealStoragePresent(downloadsDir)
+        else:
+            downloadsDirOk = iptvtools_IsPathWritable(downloadsDir)
+        if not downloadsDirOk:
             def _setDownloadsDir(newPath):
                 if newPath is not None:
                     config.plugins.iptvplayer.DownloadsDir.value = newPath

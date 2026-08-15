@@ -991,6 +991,20 @@ def IsRealStoragePresent(path):
         return False
 
 
+def IsPathWritable(path):
+    # plain existence+writability check, deliberately without
+    # IsRealStoragePresent()'s "is this genuinely separate storage"
+    # requirement - used once a path has already been explicitly
+    # confirmed/chosen (e.g. via the /hdd-missing download-location
+    # picker), so a deliberately-picked flash folder on a box with no
+    # real storage at all is accepted instead of being re-flagged as
+    # "missing" forever
+    try:
+        return os.path.isdir(path) and os.access(path, os.W_OK)
+    except Exception:
+        return False
+
+
 def rm(fullname):
     try:
         if os.path.exists(fullname):
