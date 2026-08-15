@@ -1016,6 +1016,44 @@ def rmtree(path, ignore_errors=False, onerror=None):
         onerror(os.rmdir, path)
 
 
+def CleanOldFilesInDir(path, days):
+    # deletes files older than `days` days (by mtime), walking the tree
+    # recursively; days<=0 means "never delete" - a no-op. Leftover empty
+    # subdirectories are not pruned, that's harmless
+    try:
+        days = int(days)
+    except Exception:
+        days = 0
+    if days <= 0:
+        return
+    cutoff = time() - days * 86400
+    try:
+        for root, dirs, files in os.walk(path):
+            for fileName in files:
+                filePath = os.path.join(root, fileName)
+                try:
+                    if os.path.getmtime(filePath) < cutoff:
+                        os.remove(filePath)
+                except Exception:
+                    printExc()
+    except Exception:
+        printExc()
+
+
+def RemoveDirContents(path):
+    # deletes everything inside `path` but keeps `path` itself, so
+    # subsequent Get*Dir() calls still find a valid (now empty) directory
+    try:
+        for name in os.listdir(path):
+            fullname = os.path.join(path, name)
+            if os.path.isdir(fullname) and not os.path.islink(fullname):
+                rmtree(fullname, ignore_errors=True)
+            else:
+                rm(fullname)
+    except Exception:
+        printExc()
+
+
 def GetFileSize(filepath):
     try:
         return os.stat(filepath).st_size

@@ -9,7 +9,8 @@
 ###################################################
 
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, GetSkinsList, GetHostsList, GetEnabledHostsList, \
-                                                          IsExecutable, CFakeMoviePlayerOption
+                                                          IsExecutable, CFakeMoviePlayerOption, GetCookieDir, GetJSCacheDir, \
+                                                          GetSubtitlesDir, GetMovieMetaDataDir, RemoveDirContents
 from Plugins.Extensions.IPTVPlayer.components.configbase import ConfigBaseWidget, ConfigIPTVFileSelection, COLORS_DEFINITONS
 from Plugins.Extensions.IPTVPlayer.components.confighost import ConfigHostsMenu
 from Plugins.Extensions.IPTVPlayer.components.iptvdirbrowser import IPTVDirectorySelectorWidget
@@ -110,6 +111,22 @@ config.plugins.iptvplayer.SciezkaCache = ConfigDirectory(default="/hdd/IPTVCache
 config.plugins.iptvplayer.CacheDir = ConfigDirectory(default=config.plugins.iptvplayer.SciezkaCache.value)  # , fixed_size = False)
 config.plugins.iptvplayer.NaszaTMP = ConfigDirectory(default="/tmp/")  # , fixed_size = False)
 config.plugins.iptvplayer.TmpDir = ConfigDirectory(default=config.plugins.iptvplayer.NaszaTMP.value)  # , fixed_size = False)
+
+# per-category auto-cleanup for the CacheDir subfolders that otherwise
+# grow forever (unlike icons, which already had their own deleteIcons
+# cleanup above). 0 = never delete. The "fakeXxxDelete" entries are
+# non-editable action triggers (same pattern as fakePin/fakeHostsList
+# below) wired up in ConfigMenu.keyOK() to a confirm dialog + immediate
+# manual delete
+config.plugins.iptvplayer.cookiesCacheDeleteAfterDays = ConfigSelectionNumber(min=0, max=365, stepwidth=1, default=0, wraparound=False)
+config.plugins.iptvplayer.fakeCookiesCacheDelete = ConfigSelection(default="fake", choices=[("fake", _("Delete now"))])
+config.plugins.iptvplayer.jsCacheDeleteAfterDays = ConfigSelectionNumber(min=0, max=365, stepwidth=1, default=0, wraparound=False)
+config.plugins.iptvplayer.fakeJSCacheDelete = ConfigSelection(default="fake", choices=[("fake", _("Delete now"))])
+config.plugins.iptvplayer.subtitlesCacheDeleteAfterDays = ConfigSelectionNumber(min=0, max=365, stepwidth=1, default=0, wraparound=False)
+config.plugins.iptvplayer.fakeSubtitlesCacheDelete = ConfigSelection(default="fake", choices=[("fake", _("Delete now"))])
+config.plugins.iptvplayer.movieMetaDataCacheDeleteAfterDays = ConfigSelectionNumber(min=0, max=365, stepwidth=1, default=0, wraparound=False)
+config.plugins.iptvplayer.fakeMovieMetaDataCacheDelete = ConfigSelection(default="fake", choices=[("fake", _("Delete now"))])
+
 config.plugins.iptvplayer.ZablokujWMV = ConfigYesNo(default=True)
 
 config.plugins.iptvplayer.vkcom_login = ConfigText(default="", fixed_size=False)
@@ -444,6 +461,14 @@ class ConfigMenu(ConfigBaseWidget):
         list.append(getConfigListEntry(_("----- STORAGE CONFIGURATION -----"),))
         list.append(getConfigListEntry(_("Folder for cache data"), config.plugins.iptvplayer.CacheDir))
         list.append(getConfigListEntry(_("Folder for temporary data"), config.plugins.iptvplayer.TmpDir))
+        list.append(getConfigListEntry("    " + _("Delete cookies cache after (days, 0 = never)"), config.plugins.iptvplayer.cookiesCacheDeleteAfterDays))
+        list.append(getConfigListEntry("    " + _("Delete cookies cache now"), config.plugins.iptvplayer.fakeCookiesCacheDelete))
+        list.append(getConfigListEntry("    " + _("Delete JS cache after (days, 0 = never)"), config.plugins.iptvplayer.jsCacheDeleteAfterDays))
+        list.append(getConfigListEntry("    " + _("Delete JS cache now"), config.plugins.iptvplayer.fakeJSCacheDelete))
+        list.append(getConfigListEntry("    " + _("Delete subtitles cache after (days, 0 = never)"), config.plugins.iptvplayer.subtitlesCacheDeleteAfterDays))
+        list.append(getConfigListEntry("    " + _("Delete subtitles cache now"), config.plugins.iptvplayer.fakeSubtitlesCacheDelete))
+        list.append(getConfigListEntry("    " + _("Delete movie metadata cache after (days, 0 = never)"), config.plugins.iptvplayer.movieMetaDataCacheDeleteAfterDays))
+        list.append(getConfigListEntry("    " + _("Delete movie metadata cache now"), config.plugins.iptvplayer.fakeMovieMetaDataCacheDelete))
 
         list.append(getConfigListEntry(_("----- BUFFERING CONFIGURATION -----"), ))
         list.append(getConfigListEntry(_("[HTTP] buffering"), config.plugins.iptvplayer.buforowanie))
@@ -520,7 +545,9 @@ class ConfigMenu(ConfigBaseWidget):
 
     def onSelectionChanged(self):
         currItem = self["config"].getCurrent()[1]
-        if currItem in [config.plugins.iptvplayer.fakePin, config.plugins.iptvplayer.fakeHostsList, config.plugins.iptvplayer.fakExtMoviePlayerList]:
+        if currItem in [config.plugins.iptvplayer.fakePin, config.plugins.iptvplayer.fakeHostsList, config.plugins.iptvplayer.fakExtMoviePlayerList,
+                         config.plugins.iptvplayer.fakeCookiesCacheDelete, config.plugins.iptvplayer.fakeJSCacheDelete,
+                         config.plugins.iptvplayer.fakeSubtitlesCacheDelete, config.plugins.iptvplayer.fakeMovieMetaDataCacheDelete]:
             self.isOkEnabled = True
             self.isSelectable = False
             self.setOKLabel()
@@ -582,8 +609,23 @@ class ConfigMenu(ConfigBaseWidget):
             self.hostsList()
         elif config.plugins.iptvplayer.fakExtMoviePlayerList == currItem:
             self.extMoviePlayerList()
+        elif config.plugins.iptvplayer.fakeCookiesCacheDelete == currItem:
+            self.confirmDeleteCacheNow(_("cookies cache"), GetCookieDir())
+        elif config.plugins.iptvplayer.fakeJSCacheDelete == currItem:
+            self.confirmDeleteCacheNow(_("JS cache"), GetJSCacheDir())
+        elif config.plugins.iptvplayer.fakeSubtitlesCacheDelete == currItem:
+            self.confirmDeleteCacheNow(_("subtitles cache"), GetSubtitlesDir())
+        elif config.plugins.iptvplayer.fakeMovieMetaDataCacheDelete == currItem:
+            self.confirmDeleteCacheNow(_("movie metadata cache"), GetMovieMetaDataDir())
         else:
             ConfigBaseWidget.keyOK(self)
+
+    def confirmDeleteCacheNow(self, label, path):
+        self.session.openWithCallback(boundFunction(self.deleteCacheNowCallback, path), MessageBox, _("Do you really want to delete the %s now?") % label, type=MessageBox.TYPE_YESNO, default=False)
+
+    def deleteCacheNowCallback(self, path, ret=False):
+        if ret:
+            RemoveDirContents(path)
 
     def keyDefaults(self):
         def keyDefaultsConfirm(result):

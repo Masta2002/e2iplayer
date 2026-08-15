@@ -43,11 +43,13 @@ from Plugins.Extensions.IPTVPlayer.libs.pCommon import CParsingHelper
 from Plugins.Extensions.IPTVPlayer.libs.urlparser import urlparser
 from Plugins.Extensions.IPTVPlayer.tools.iptvfavourites import IPTVFavourites
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import FreeSpace as iptvtools_FreeSpace, \
-                                                          mkdirs as iptvtools_mkdirs, IsRealStoragePresent as iptvtools_IsRealStoragePresent, GetIPTVPlayerVersion, \
+                                                          mkdirs as iptvtools_mkdirs, IsRealStoragePresent as iptvtools_IsRealStoragePresent, \
+                                                          CleanOldFilesInDir as iptvtools_CleanOldFilesInDir, GetIPTVPlayerVersion, \
                                                           printDBG, printExc, iptv_system, GetHostsList, IsHostEnabled, \
                                                           eConnectCallback, GetSkinsDir, GetIconDir, GetPluginDir, \
                                                           SortHostsList, GetHostsOrderList, CSearchHistoryHelper, \
                                                           CMoviePlayerPerHost, GetFavouritesDir, CFakeMoviePlayerOption, GetAvailableIconSize, \
+                                                          GetCookieDir, GetJSCacheDir, GetSubtitlesDir, GetMovieMetaDataDir, \
                                                           GetE2VideoMode, SetE2VideoMode, TestTmpCookieDir, TestTmpJSCacheDir, \
                                                           ClearTmpCookieDir, ClearTmpJSCacheDir, SetTmpCookieDir, SetTmpJSCacheDir, \
                                                           GetEnabledHostsList, SaveHostsOrderList, formatBytes, getExcMSG
@@ -266,6 +268,18 @@ class E2iPlayerWidget(Screen):
                 self.session.openWithCallback(_setDownloadsDir, IPTVDirectorySelectorWidget, currDir=config.plugins.iptvplayer.DownloadsDir.value, title=_("Select directory"))
 
             self.session.openWithCallback(_askDownloadsDir, MessageBox, _("No storage found for the downloads location. Where would you like to save your downloads?"), type=MessageBox.TYPE_INFO)
+
+        # per-category cache auto-cleanup (age threshold configurable in
+        # Settings -> Storage configuration, 0 = never). Off the main
+        # thread since it walks the whole subtree on every start.
+        for cacheDirFunc, deleteAfterDays in (
+            (GetCookieDir, config.plugins.iptvplayer.cookiesCacheDeleteAfterDays.value),
+            (GetJSCacheDir, config.plugins.iptvplayer.jsCacheDeleteAfterDays.value),
+            (GetSubtitlesDir, config.plugins.iptvplayer.subtitlesCacheDeleteAfterDays.value),
+            (GetMovieMetaDataDir, config.plugins.iptvplayer.movieMetaDataCacheDeleteAfterDays.value),
+        ):
+            if deleteAfterDays > 0:
+                asynccall.AsyncMethod(iptvtools_CleanOldFilesInDir)(cacheDirFunc(), deleteAfterDays)
 
         self.showMessageNoFreeSpaceForIcon = False
         self.iconMenager = None
