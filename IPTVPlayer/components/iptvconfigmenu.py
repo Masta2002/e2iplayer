@@ -129,8 +129,9 @@ config.plugins.iptvplayer.subtitlesCacheDeleteAfterDays = ConfigSelectionNumber(
 config.plugins.iptvplayer.fakeSubtitlesCacheDelete = ConfigSelection(default="fake", choices=[("fake", _("Delete now"))])
 config.plugins.iptvplayer.movieMetaDataCacheDeleteAfterDays = ConfigSelectionNumber(min=0, max=365, stepwidth=1, default=0, wraparound=False)
 config.plugins.iptvplayer.fakeMovieMetaDataCacheDelete = ConfigSelection(default="fake", choices=[("fake", _("Delete now"))])
-# per-host remembered movie player/buffering choice (CMoviePlayerPerHost)
-config.plugins.iptvplayer.moviePlayerCacheDeleteAfterDays = ConfigSelectionNumber(min=0, max=365, stepwidth=1, default=0, wraparound=False)
+# per-host remembered movie player/buffering choice (CMoviePlayerPerHost) -
+# always current, no real notion of "stale" - manual reset only, no
+# auto-cleanup-after-days option
 config.plugins.iptvplayer.fakeMoviePlayerCacheDelete = ConfigSelection(default="fake", choices=[("fake", _("Delete now"))])
 # deleteIcons itself (moved here from Skin configuration) already had its
 # own auto-cleanup (RemoveOldDirsIcons, driven from IconMenager.__del__) -
@@ -485,7 +486,6 @@ class ConfigMenu(ConfigBaseWidget):
         list.append(getConfigListEntry("    " + _("Delete subtitles cache now"), config.plugins.iptvplayer.fakeSubtitlesCacheDelete))
         list.append(getConfigListEntry("    " + _("Delete movie metadata cache after (days, 0 = never)"), config.plugins.iptvplayer.movieMetaDataCacheDeleteAfterDays))
         list.append(getConfigListEntry("    " + _("Delete movie metadata cache now"), config.plugins.iptvplayer.fakeMovieMetaDataCacheDelete))
-        list.append(getConfigListEntry("    " + _("Delete movie player preferences after (days, 0 = never)"), config.plugins.iptvplayer.moviePlayerCacheDeleteAfterDays))
         list.append(getConfigListEntry("    " + _("Delete movie player preferences now"), config.plugins.iptvplayer.fakeMoviePlayerCacheDelete))
         list.append(getConfigListEntry("    " + _("Remove thumbnails"), config.plugins.iptvplayer.deleteIcons))
         list.append(getConfigListEntry("    " + _("Delete thumbnails cache now"), config.plugins.iptvplayer.fakeIconsCacheDelete))

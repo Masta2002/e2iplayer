@@ -49,7 +49,7 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtools import FreeSpace as iptvtools
                                                           eConnectCallback, GetSkinsDir, GetIconDir, GetPluginDir, \
                                                           SortHostsList, GetHostsOrderList, CSearchHistoryHelper, \
                                                           CMoviePlayerPerHost, GetFavouritesDir, CFakeMoviePlayerOption, GetAvailableIconSize, \
-                                                          GetCookieDir, GetJSCacheDir, GetSubtitlesDir, GetMovieMetaDataDir, GetMoviePlayerPerHostDir, \
+                                                          GetCookieDir, GetJSCacheDir, GetSubtitlesDir, GetMovieMetaDataDir, \
                                                           GetE2VideoMode, SetE2VideoMode, TestTmpCookieDir, TestTmpJSCacheDir, \
                                                           ClearTmpCookieDir, ClearTmpJSCacheDir, SetTmpCookieDir, SetTmpJSCacheDir, \
                                                           GetEnabledHostsList, SaveHostsOrderList, formatBytes, getExcMSG
@@ -277,7 +277,6 @@ class E2iPlayerWidget(Screen):
             (GetJSCacheDir, config.plugins.iptvplayer.jsCacheDeleteAfterDays.value),
             (GetSubtitlesDir, config.plugins.iptvplayer.subtitlesCacheDeleteAfterDays.value),
             (GetMovieMetaDataDir, config.plugins.iptvplayer.movieMetaDataCacheDeleteAfterDays.value),
-            (GetMoviePlayerPerHostDir, config.plugins.iptvplayer.moviePlayerCacheDeleteAfterDays.value),
         ):
             if deleteAfterDays > 0:
                 asynccall.AsyncMethod(iptvtools_CleanOldFilesInDir)(cacheDirFunc(), deleteAfterDays)
