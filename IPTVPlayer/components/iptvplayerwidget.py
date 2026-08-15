@@ -21,7 +21,7 @@ from Screens.ChoiceBox import ChoiceBox
 from Components.ActionMap import ActionMap
 from Components.Label import Label
 from Components.Pixmap import Pixmap
-from Components.config import config
+from Components.config import config, configfile
 from Components.Sources.StaticText import StaticText
 from Tools.BoundFunction import boundFunction
 from Tools.LoadPixmap import LoadPixmap
@@ -210,6 +210,21 @@ class E2iPlayerWidget(Screen):
 
         self.spinnerPixmap = [LoadPixmap(GetIconDir('radio_button_on.png')), LoadPixmap(GetIconDir('radio_button_off.png'))]
         self.useAlternativePlayer = False
+
+        # /hdd may not exist at all on boxes without a real HDD/USB drive;
+        # CacheDir defaults to /hdd/IPTVCache/, which would then silently
+        # fail every write (cookies, JS cache, favourites, icons, ...).
+        # Reroute to the plugin's own bundled cache/ folder instead, which
+        # always exists on any install. Runs once - after the switch,
+        # CacheDir no longer starts with "/hdd" so this becomes a no-op.
+        if config.plugins.iptvplayer.CacheDir.value.startswith('/hdd') and not os_path.isdir('/hdd'):
+            self.session.open(MessageBox, _("No /hdd found. The cache folder will be switched to the plugin's own cache directory."), type=MessageBox.TYPE_INFO, timeout=10)
+            newCacheDir = GetPluginDir('cache/')
+            if not os_path.exists(newCacheDir):
+                iptvtools_mkdirs(newCacheDir)
+            config.plugins.iptvplayer.CacheDir.value = newCacheDir
+            config.plugins.iptvplayer.CacheDir.save()
+            configfile.save()
 
         self.showMessageNoFreeSpaceForIcon = False
         self.iconMenager = None
