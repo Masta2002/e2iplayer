@@ -483,6 +483,34 @@ def GetMoviePlayerPerHostDir(fileName=''):
     return GetCacheSubDir('MoviePlayer', fileName)
 
 
+def GetHostOrderDir(fileName=''):
+    return GetCacheSubDir('hostorder', fileName)
+
+
+def GetMigratedHostOrderFile(fileName):
+    # host group/order files (iptvplayerhostsgroups.json,
+    # iptvplayer<group>group.json, iptvplayerhostsorder) used to live in
+    # /etc/enigma2/ (GetConfigDir) - moved to CacheDir/hostorder/ so they
+    # sit alongside all the other cache data instead of cluttering the
+    # Enigma2 settings folder. Migrate an existing file once (copy+remove
+    # rather than os.rename, since /etc/enigma2 and CacheDir can be on
+    # different filesystems) so nothing gets lost, instead of silently
+    # starting fresh
+    newPath = GetHostOrderDir(fileName)
+    if not os.path.exists(newPath):
+        oldPath = GetConfigDir(fileName)
+        if os.path.exists(oldPath):
+            try:
+                with open(oldPath, 'rb') as src:
+                    data = src.read()
+                with open(newPath, 'wb') as dst:
+                    dst.write(data)
+                os.remove(oldPath)
+            except Exception:
+                printExc()
+    return newPath
+
+
 def GetIPTVDMImgDir(fileName=''):
     return os.path.join(resolveFilename(SCOPE_PLUGINS, 'Extensions/IPTVPlayer/icons/'), fileName)
 
@@ -796,7 +824,7 @@ def SortHostsList(hostsList):
 
 def SaveHostsOrderList(list, fileName="iptvplayerhostsorder"):
     printDBG('SaveHostsOrderList begin')
-    fname = GetConfigDir(fileName)
+    fname = GetMigratedHostOrderFile(fileName)
     try:
         f = open(fname, 'w')
         for item in list:
@@ -808,7 +836,7 @@ def SaveHostsOrderList(list, fileName="iptvplayerhostsorder"):
 
 def GetHostsOrderList(fileName="iptvplayerhostsorder"):
     printDBG('GetHostsOrderList begin')
-    fname = GetConfigDir(fileName)
+    fname = GetMigratedHostOrderFile(fileName)
     list = []
     try:
         if fileExists(fname):
