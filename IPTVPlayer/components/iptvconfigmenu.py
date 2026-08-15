@@ -47,8 +47,14 @@ config.plugins.iptvplayer.hostsListType = ConfigSelection(default="G", choices=[
 config.plugins.iptvplayer.showinMainMenu = ConfigYesNo(default=False)
 # config.plugins.iptvplayer.ListaGraficzna = ConfigYesNo(default=True)
 config.plugins.iptvplayer.group_hosts = ConfigYesNo(default=True)
+# NaszaSciezka (Polish for "our path") is kept, hidden from the UI, only
+# so its already-persisted value can seed DownloadsDir's default below -
+# renaming a config attribute changes its settings-file key, so without
+# this a user's customized path would silently reset to the built-in
+# default after the rename. Same for SciezkaCache/NaszaTMP further down.
 config.plugins.iptvplayer.NaszaSciezka = ConfigDirectory(default="/hdd/movie/")  # , fixed_size = False)
-config.plugins.iptvplayer.bufferingPath = ConfigDirectory(default=config.plugins.iptvplayer.NaszaSciezka.value)  # , fixed_size = False)
+config.plugins.iptvplayer.DownloadsDir = ConfigDirectory(default=config.plugins.iptvplayer.NaszaSciezka.value)  # , fixed_size = False)
+config.plugins.iptvplayer.bufferingPath = ConfigDirectory(default=config.plugins.iptvplayer.DownloadsDir.value)  # , fixed_size = False)
 config.plugins.iptvplayer.buforowanie = ConfigYesNo(default=False)
 config.plugins.iptvplayer.buforowanie_m3u8 = ConfigYesNo(default=True)
 config.plugins.iptvplayer.buforowanie_rtmp = ConfigYesNo(default=False)
@@ -101,7 +107,9 @@ config.plugins.iptvplayer.alternativeMoviePlayer = ConfigSelection(default="auto
 config.plugins.iptvplayer.moviePlayerPickerMode = ConfigSelection(default="standard", choices=[("standard", _("Standard")), ("extended", _("Extended"))])
 
 config.plugins.iptvplayer.SciezkaCache = ConfigDirectory(default="/hdd/IPTVCache/")  # , fixed_size = False)
+config.plugins.iptvplayer.CacheDir = ConfigDirectory(default=config.plugins.iptvplayer.SciezkaCache.value)  # , fixed_size = False)
 config.plugins.iptvplayer.NaszaTMP = ConfigDirectory(default="/tmp/")  # , fixed_size = False)
+config.plugins.iptvplayer.TmpDir = ConfigDirectory(default=config.plugins.iptvplayer.NaszaTMP.value)  # , fixed_size = False)
 config.plugins.iptvplayer.ZablokujWMV = ConfigYesNo(default=True)
 
 config.plugins.iptvplayer.vkcom_login = ConfigText(default="", fixed_size=False)
@@ -361,7 +369,7 @@ class ConfigMenu(ConfigBaseWidget):
         ConfigBaseWidget.__init__(self, session)
         # remember old
         self.showcoverOld = config.plugins.iptvplayer.showcover.value
-        self.SciezkaCacheOld = config.plugins.iptvplayer.SciezkaCache.value
+        self.CacheDirOld = config.plugins.iptvplayer.CacheDir.value
         self.remove_diabled_hostsOld = config.plugins.iptvplayer.remove_diabled_hosts.value
         self.enabledHostsListOld = GetEnabledHostsList()
         self.runtimeOptionsValues = self.getRuntimeOptionsValues()
@@ -434,8 +442,8 @@ class ConfigMenu(ConfigBaseWidget):
         list.append(getConfigListEntry(_("Ukrainian proxy server url"), config.plugins.iptvplayer.ukrainian_proxyurl))
 
         list.append(getConfigListEntry(_("----- STORAGE CONFIGURATION -----"),))
-        list.append(getConfigListEntry(_("Folder for cache data"), config.plugins.iptvplayer.SciezkaCache))
-        list.append(getConfigListEntry(_("Folder for temporary data"), config.plugins.iptvplayer.NaszaTMP))
+        list.append(getConfigListEntry(_("Folder for cache data"), config.plugins.iptvplayer.CacheDir))
+        list.append(getConfigListEntry(_("Folder for temporary data"), config.plugins.iptvplayer.TmpDir))
 
         list.append(getConfigListEntry(_("----- BUFFERING CONFIGURATION -----"), ))
         list.append(getConfigListEntry(_("[HTTP] buffering"), config.plugins.iptvplayer.buforowanie))
@@ -447,7 +455,7 @@ class ConfigMenu(ConfigBaseWidget):
             list.append(getConfigListEntry(_("Buffering location"), config.plugins.iptvplayer.bufferingPath))
 
         list.append(getConfigListEntry(_("----- DOWNLOADING CONFIGURATION -----"), ))
-        list.append(getConfigListEntry(_("Downloads location"), config.plugins.iptvplayer.NaszaSciezka))
+        list.append(getConfigListEntry(_("Downloads location"), config.plugins.iptvplayer.DownloadsDir))
         list.append(getConfigListEntry(_("Start download manager per default"), config.plugins.iptvplayer.IPTVDMRunAtStart))
         list.append(getConfigListEntry(_("Show download manager after adding new item"), config.plugins.iptvplayer.IPTVDMShowAfterAdd))
         list.append(getConfigListEntry(_("Number of downloaded files simultaneously"), config.plugins.iptvplayer.IPTVDMMaxDownloadItem))
@@ -523,7 +531,7 @@ class ConfigMenu(ConfigBaseWidget):
     def saveAndClose(self):
         ConfigBaseWidget.saveAndClose(self)
         if self.showcoverOld != config.plugins.iptvplayer.showcover.value or \
-            self.SciezkaCacheOld != config.plugins.iptvplayer.SciezkaCache.value:
+            self.CacheDirOld != config.plugins.iptvplayer.CacheDir.value:
             pass
             # plugin must be restarted if we wont to this options take effect
     """

@@ -30,7 +30,7 @@ from Components.config import config
 
 
 # config.plugins.iptvplayer.showcover (true|false)
-# config.plugins.iptvplayer.SciezkaCache = ConfigText(default = "/hdd/IPTVCache")
+# config.plugins.iptvplayer.CacheDir = ConfigText(default = "/hdd/IPTVCache")
 
 class IconMenager:
     HEADER = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36', 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Accept-Encoding': 'gzip, deflate'}
@@ -38,7 +38,7 @@ class IconMenager:
 
     def __init__(self, updateFun=None, downloadNew=True):
         printDBG("IconMenager.__init__")
-        self.DOWNLOADED_IMAGE_PATH_BASE = config.plugins.iptvplayer.SciezkaCache.value
+        self.DOWNLOADED_IMAGE_PATH_BASE = config.plugins.iptvplayer.CacheDir.value
         self.cm = common()
 
         # download queue
@@ -75,7 +75,7 @@ class IconMenager:
         self.clearDQueue()
         self.clearAAueue()
 
-        if config.plugins.iptvplayer.SciezkaCache.value == self.DOWNLOADED_IMAGE_PATH_BASE and config.plugins.iptvplayer.showcover.value:
+        if config.plugins.iptvplayer.CacheDir.value == self.DOWNLOADED_IMAGE_PATH_BASE and config.plugins.iptvplayer.showcover.value:
             AsyncMethod(RemoveOldDirsIcons)(self.DOWNLOADED_IMAGE_PATH_BASE, config.plugins.iptvplayer.deleteIcons.value)
         else:
             # remove all icons as they are not more needed due to config changes

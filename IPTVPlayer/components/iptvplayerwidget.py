@@ -214,10 +214,10 @@ class E2iPlayerWidget(Screen):
         self.showMessageNoFreeSpaceForIcon = False
         self.iconMenager = None
         if config.plugins.iptvplayer.showcover.value:
-            if not os_path.exists(config.plugins.iptvplayer.SciezkaCache.value):
-                iptvtools_mkdirs(config.plugins.iptvplayer.SciezkaCache.value)
+            if not os_path.exists(config.plugins.iptvplayer.CacheDir.value):
+                iptvtools_mkdirs(config.plugins.iptvplayer.CacheDir.value)
 
-            if iptvtools_FreeSpace(config.plugins.iptvplayer.SciezkaCache.value, 10):
+            if iptvtools_FreeSpace(config.plugins.iptvplayer.CacheDir.value, 10):
                 self.iconMenager = IconMenager(True)
             else:
                 self.showMessageNoFreeSpaceForIcon = True
@@ -1571,7 +1571,7 @@ class E2iPlayerWidget(Screen):
 
             if self.showMessageNoFreeSpaceForIcon and hasIcon:
                 self.showMessageNoFreeSpaceForIcon = False
-                self.session.open(MessageBox, (_("There is no free space on the drive [%s].") % config.plugins.iptvplayer.SciezkaCache.value) + "\n" + _("New icons will not be available."), type=MessageBox.TYPE_INFO, timeout=10)
+                self.session.open(MessageBox, (_("There is no free space on the drive [%s].") % config.plugins.iptvplayer.CacheDir.value) + "\n" + _("New icons will not be available."), type=MessageBox.TYPE_INFO, timeout=10)
         elif type in ['selecthost', 'selectgroup']:
             self.close()
             return
@@ -1912,7 +1912,7 @@ class E2iPlayerWidget(Screen):
 
             isBufferingMode = False if url.startswith('file://') else self.activePlayer.get('buffering', self.checkBuffering(url))
             bufferingPath = config.plugins.iptvplayer.bufferingPath.value
-            downloadingPath = config.plugins.iptvplayer.NaszaSciezka.value
+            downloadingPath = config.plugins.iptvplayer.DownloadsDir.value
             destinationPath = downloadingPath if recorderMode else bufferingPath
 
             if recorderMode or isBufferingMode:

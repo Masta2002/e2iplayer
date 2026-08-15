@@ -76,7 +76,7 @@ class Ipla(CBaseHostClass):
     def __init__(self):
         CBaseHostClass.__init__(self, {'history': 'ipla'})
         self.categoryXMLTree = None
-        self.cacheFilePath = os_path.join(config.plugins.iptvplayer.SciezkaCache.value, "iplaxml.cache")
+        self.cacheFilePath = os_path.join(config.plugins.iptvplayer.CacheDir.value, "iplaxml.cache")
         self.cm.HEADER = {'User-Agent': self.HOST, 'DNT': '1', 'Accept': 'text/html', 'Accept-Encoding': 'gzip, deflate'}
 
     def getStr(self, v, default=''):

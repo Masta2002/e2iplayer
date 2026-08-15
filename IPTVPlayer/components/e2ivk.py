@@ -26,7 +26,7 @@ from Plugins.Extensions.IPTVPlayer.components.e2ivksuggestion import Autocomplet
 
 # Global, keyboard-wide search history shown inside the OSK itself (left/right
 # arrow from the text field), independent of each host's own "Search history"
-# menu item. Stored the same way as those (CSearchHistoryHelper -> SciezkaCache
+# menu item. Stored the same way as those (CSearchHistoryHelper -> CacheDir
 # cache dir), just under its own file so it doesn't mix with per-host entries.
 gVKSearchHistory = CSearchHistoryHelper('e2ivk')
 

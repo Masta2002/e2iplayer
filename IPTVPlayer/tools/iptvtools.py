@@ -354,7 +354,7 @@ def TestTmpCookieDir():
 
 def GetCookieDir(file='', forceFromConfig=False):
     if gE2iPlayerTempCookieDir is None or forceFromConfig:
-        cookieDir = os.path.join(config.plugins.iptvplayer.SciezkaCache.value, 'cookies/')
+        cookieDir = os.path.join(config.plugins.iptvplayer.CacheDir.value, 'cookies/')
     else:
         cookieDir = gE2iPlayerTempCookieDir
     try:
@@ -396,7 +396,7 @@ def TestTmpJSCacheDir():
 
 def GetJSCacheDir(fileName='', forceFromConfig=False):
     if gE2iPlayerTempJSCache is None or forceFromConfig:
-        cookieDir = os.path.join(config.plugins.iptvplayer.SciezkaCache.value, 'JSCache/')
+        cookieDir = os.path.join(config.plugins.iptvplayer.CacheDir.value, 'JSCache/')
     else:
         cookieDir = gE2iPlayerTempJSCache
     try:
@@ -409,7 +409,7 @@ def GetJSCacheDir(fileName='', forceFromConfig=False):
 
 
 def GetTmpDir(fileName=''):
-    path = config.plugins.iptvplayer.NaszaTMP.value
+    path = config.plugins.iptvplayer.TmpDir.value
     path = path.replace('//', '/')
     mkdirs(path)
     return os.path.join(path, fileName)
@@ -436,7 +436,7 @@ def CreateTmpFile(filename, data=''):
 
 
 def GetCacheSubDir(dirName, fileName=''):
-    path = os.path.join(config.plugins.iptvplayer.SciezkaCache.value, dirName)
+    path = os.path.join(config.plugins.iptvplayer.CacheDir.value, dirName)
     mkdirs(path)
     return os.path.join(path, fileName)
 
