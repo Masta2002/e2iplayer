@@ -361,24 +361,22 @@ def TestTmpCookieDir():
 gWarnedUnwritableDirs = set()
 
 
-def _warnIfDirNotWritable(path):
+def _warnIfDirNotCreatable(path, message):
     if os.path.isdir(path) or path in gWarnedUnwritableDirs:
         return
     gWarnedUnwritableDirs.add(path)
     try:
-        AddPopup(_('Cache folder "%s" could not be created. Some data (cookies, subtitles, ...) may not be saved.') % path, type=MessageBox.TYPE_ERROR, timeout=10)
+        AddPopup(message % path, type=MessageBox.TYPE_ERROR, timeout=10)
     except Exception:
         printExc()
+
+
+def _warnIfDirNotWritable(path):
+    _warnIfDirNotCreatable(path, _('Cache folder "%s" could not be created. Some data (cookies, subtitles, ...) may not be saved.'))
 
 
 def _warnIfConfigDirNotWritable(path):
-    if os.path.isdir(path) or path in gWarnedUnwritableDirs:
-        return
-    gWarnedUnwritableDirs.add(path)
-    try:
-        AddPopup(_('Config folder "%s" could not be created. Some data (host order, search history, favourites, movie player preferences, ...) may not be saved.') % path, type=MessageBox.TYPE_ERROR, timeout=10)
-    except Exception:
-        printExc()
+    _warnIfDirNotCreatable(path, _('Config folder "%s" could not be created. Some data (host order, search history, favourites, movie player preferences, ...) may not be saved.'))
 
 
 def GetCookieDir(file='', forceFromConfig=False):
