@@ -366,7 +366,24 @@ def _warnIfDirNotCreatable(path, message):
         return
     gWarnedUnwritableDirs.add(path)
     try:
-        AddPopup(message % path, type=MessageBox.TYPE_ERROR, timeout=10)
+        # imported lazily - asynccall.py imports from this module at its
+        # own top level, so a module-level import here would be circular
+        import Plugins.Extensions.IPTVPlayer.components.asynccall as asynccall
+
+        def showPopup(session=None):
+            AddPopup(message % path, type=MessageBox.TYPE_ERROR, timeout=10)
+
+        if asynccall.IsMainThread():
+            showPopup()
+        elif asynccall.gMainFunctionsQueueTab[0] is not None:
+            # Get*Dir() helpers can be called from a host's worker thread
+            # (e.g. while resolving video links, see AsyncMethod usage in
+            # iptvplayerwidget.py) - Enigma2's notification/GUI APIs are not
+            # thread-safe, so route the popup through the same main-thread
+            # proxy queue the rest of the plugin already uses for this
+            asynccall.DelegateToMainThread(showPopup)()
+        # else: no active GUI session to show a popup on (e.g. plugin used
+        # only through the headless web interface) - nothing to do
     except Exception:
         printExc()
 
