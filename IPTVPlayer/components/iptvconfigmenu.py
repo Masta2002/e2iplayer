@@ -114,8 +114,14 @@ config.plugins.iptvplayer.SciezkaCache = ConfigDirectory(default="/hdd/IPTVCache
 config.plugins.iptvplayer.CacheDir = ConfigDirectory(default=config.plugins.iptvplayer.SciezkaCache.value)  # , fixed_size = False)
 config.plugins.iptvplayer.NaszaTMP = ConfigDirectory(default="/tmp/")  # , fixed_size = False)
 config.plugins.iptvplayer.TmpDir = ConfigDirectory(default=config.plugins.iptvplayer.NaszaTMP.value)  # , fixed_size = False)
+# holds real user data (favourites/watched status, search history, movie
+# player preferences, host order/groups) as opposed to CacheDir's
+# disposable, freely-regenerable cache data - kept separate so "Delete
+# all cache files now" can never touch it, and so it can live somewhere
+# that survives a cache wipe/reflash of external storage
+config.plugins.iptvplayer.ConfigDir = ConfigDirectory(default="/etc/enigma2/IPTVPlayer/")  # , fixed_size = False)
 # hides all the per-category cleanup entries below by default - most
-# users never need to touch these, only the two folder paths above
+# users never need to touch these, only the three folder paths above
 config.plugins.iptvplayer.storageExpertMode = ConfigYesNo(default=False)
 
 # per-category auto-cleanup for the CacheDir subfolders that otherwise
@@ -149,9 +155,12 @@ config.plugins.iptvplayer.fakeSearchHistoryDelete = ConfigSelection(default="fak
 # the others above - no auto-cleanup-after-days option, deliberately
 # manual-only with a stronger confirmation text
 config.plugins.iptvplayer.fakeFavouritesCacheDelete = ConfigSelection(default="fake", choices=[("fake", _("Delete now"))])
-# wipes the entire CacheDir (cookies, JS cache, favourites/watched,
-# search history, subtitles, movie metadata, thumbnails - everything)
+# wipes the entire CacheDir (cookies, JS cache, subtitles, movie
+# metadata, thumbnails - everything disposable/regenerable)
 config.plugins.iptvplayer.fakeAllCacheDelete = ConfigSelection(default="fake", choices=[("fake", _("Delete now"))])
+# wipes the entire ConfigDir (favourites/watched, search history, movie
+# player preferences, host order/groups - everything that's real user data)
+config.plugins.iptvplayer.fakeAllConfigDelete = ConfigSelection(default="fake", choices=[("fake", _("Delete now"))])
 
 config.plugins.iptvplayer.ZablokujWMV = ConfigYesNo(default=True)
 
@@ -485,8 +494,10 @@ class ConfigMenu(ConfigBaseWidget):
         list.append(getConfigListEntry(_("----- STORAGE CONFIGURATION -----"),))
         list.append(getConfigListEntry(_("Folder for cache data"), config.plugins.iptvplayer.CacheDir))
         list.append(getConfigListEntry(_("Folder for temporary data"), config.plugins.iptvplayer.TmpDir))
+        list.append(getConfigListEntry(_("Folder for config data"), config.plugins.iptvplayer.ConfigDir))
         list.append(getConfigListEntry(_("Detail/expert mode"), config.plugins.iptvplayer.storageExpertMode))
         if config.plugins.iptvplayer.storageExpertMode.value:
+            list.append(getConfigListEntry("    " + _("Cache"),))
             list.append(getConfigListEntry("    " + _("Delete cookies cache after (days, 0 = never)"), config.plugins.iptvplayer.cookiesCacheDeleteAfterDays))
             list.append(getConfigListEntry("    " + _("Delete cookies cache now"), config.plugins.iptvplayer.fakeCookiesCacheDelete))
             list.append(getConfigListEntry("    " + _("Delete JS cache after (days, 0 = never)"), config.plugins.iptvplayer.jsCacheDeleteAfterDays))
@@ -495,14 +506,16 @@ class ConfigMenu(ConfigBaseWidget):
             list.append(getConfigListEntry("    " + _("Delete subtitles cache now"), config.plugins.iptvplayer.fakeSubtitlesCacheDelete))
             list.append(getConfigListEntry("    " + _("Delete movie metadata cache after (days, 0 = never)"), config.plugins.iptvplayer.movieMetaDataCacheDeleteAfterDays))
             list.append(getConfigListEntry("    " + _("Delete movie metadata cache now"), config.plugins.iptvplayer.fakeMovieMetaDataCacheDelete))
-            list.append(getConfigListEntry("    " + _("Delete movie player preferences now"), config.plugins.iptvplayer.fakeMoviePlayerCacheDelete))
-            list.append(getConfigListEntry("    " + _("Delete host order and groups now"), config.plugins.iptvplayer.fakeHostOrderCacheDelete))
             list.append(getConfigListEntry("    " + _("Remove thumbnails"), config.plugins.iptvplayer.deleteIcons))
             list.append(getConfigListEntry("    " + _("Delete thumbnails cache now"), config.plugins.iptvplayer.fakeIconsCacheDelete))
+            list.append(getConfigListEntry("    " + _("Delete all cache files now"), config.plugins.iptvplayer.fakeAllCacheDelete))
+            list.append(getConfigListEntry("    " + _("Config"),))
+            list.append(getConfigListEntry("    " + _("Delete movie player preferences now"), config.plugins.iptvplayer.fakeMoviePlayerCacheDelete))
+            list.append(getConfigListEntry("    " + _("Delete host order and groups now"), config.plugins.iptvplayer.fakeHostOrderCacheDelete))
             list.append(getConfigListEntry("    " + _("The number of items in the search history"), config.plugins.iptvplayer.search_history_size))
             list.append(getConfigListEntry("    " + _("Delete search history now"), config.plugins.iptvplayer.fakeSearchHistoryDelete))
             list.append(getConfigListEntry("    " + _("Delete favourites and watched status now"), config.plugins.iptvplayer.fakeFavouritesCacheDelete))
-            list.append(getConfigListEntry(_("Delete all cache files now"), config.plugins.iptvplayer.fakeAllCacheDelete))
+            list.append(getConfigListEntry("    " + _("Delete all config files now"), config.plugins.iptvplayer.fakeAllConfigDelete))
 
         list.append(getConfigListEntry(_("----- BUFFERING CONFIGURATION -----"), ))
         list.append(getConfigListEntry(_("[HTTP] buffering"), config.plugins.iptvplayer.buforowanie))
@@ -583,6 +596,7 @@ class ConfigMenu(ConfigBaseWidget):
                          config.plugins.iptvplayer.fakeSubtitlesCacheDelete, config.plugins.iptvplayer.fakeMovieMetaDataCacheDelete,
                          config.plugins.iptvplayer.fakeIconsCacheDelete, config.plugins.iptvplayer.fakeSearchHistoryDelete,
                          config.plugins.iptvplayer.fakeFavouritesCacheDelete, config.plugins.iptvplayer.fakeAllCacheDelete,
+                         config.plugins.iptvplayer.fakeAllConfigDelete,
                          config.plugins.iptvplayer.fakeMoviePlayerCacheDelete, config.plugins.iptvplayer.fakeHostOrderCacheDelete]:
             self.isOkEnabled = True
             self.isSelectable = False
@@ -664,7 +678,9 @@ class ConfigMenu(ConfigBaseWidget):
         elif config.plugins.iptvplayer.fakeFavouritesCacheDelete == currItem:
             self.session.openWithCallback(boundFunction(self.deleteCacheNowCallback, GetFavouritesDir()), MessageBox, _("Do you really want to delete ALL favourites and watched status now? This is real user data, not just cache, and cannot be undone."), type=MessageBox.TYPE_YESNO, default=False)
         elif config.plugins.iptvplayer.fakeAllCacheDelete == currItem:
-            self.session.openWithCallback(boundFunction(self.deleteCacheNowCallback, config.plugins.iptvplayer.CacheDir.value), MessageBox, _("Do you really want to delete ALL cache data now? This includes cookies, favourites, watched status, search history, subtitles, movie metadata, movie player preferences, host order/groups and thumbnails, and cannot be undone."), type=MessageBox.TYPE_YESNO, default=False)
+            self.session.openWithCallback(boundFunction(self.deleteCacheNowCallback, config.plugins.iptvplayer.CacheDir.value), MessageBox, _("Do you really want to delete ALL cache data now? This includes cookies, subtitles, movie metadata and thumbnails, and cannot be undone."), type=MessageBox.TYPE_YESNO, default=False)
+        elif config.plugins.iptvplayer.fakeAllConfigDelete == currItem:
+            self.session.openWithCallback(boundFunction(self.deleteCacheNowCallback, config.plugins.iptvplayer.ConfigDir.value), MessageBox, _("Do you really want to delete ALL config data now? This is real user data, not just cache - it includes favourites, watched status, search history, movie player preferences and host order/groups, and cannot be undone."), type=MessageBox.TYPE_YESNO, default=False)
         else:
             ConfigBaseWidget.keyOK(self)
 

@@ -4060,3 +4060,114 @@ msgstr "www: "
 
 msgid "yellow"
 msgstr "gelb"
+
+msgid "Cache"
+msgstr "Cache"
+
+msgid "Config"
+msgstr "Konfiguration"
+
+msgid "Cache folder \"%s\" could not be created. Some data (cookies, subtitles, ...) may not be saved."
+msgstr "Cache-Ordner \"%s\" konnte nicht erstellt werden. Manche Daten (Cookies, Untertitel, ...) werden eventuell nicht gespeichert."
+
+msgid "Config folder \"%s\" could not be created. Some data (host order, search history, favourites, movie player preferences, ...) may not be saved."
+msgstr "Konfigurationsordner \"%s\" konnte nicht erstellt werden. Manche Daten (Host-Reihenfolge, Suchverlauf, Favoriten, Movie-Player-Präferenzen, ...) werden eventuell nicht gespeichert."
+
+msgid "Delete JS cache after (days, 0 = never)"
+msgstr "JS-Cache löschen nach (Tage, 0 = nie)"
+
+msgid "Delete JS cache now"
+msgstr "JS-Cache jetzt löschen"
+
+msgid "Delete all cache files now"
+msgstr "Alle Cache-Dateien jetzt löschen"
+
+msgid "Delete all config files now"
+msgstr "Alle Konfigurationsdateien jetzt löschen"
+
+msgid "Delete cookies cache after (days, 0 = never)"
+msgstr "Cookies-Cache löschen nach (Tage, 0 = nie)"
+
+msgid "Delete cookies cache now"
+msgstr "Cookies-Cache jetzt löschen"
+
+msgid "Delete favourites and watched status now"
+msgstr "Favoriten und Gesehen-Status jetzt löschen"
+
+msgid "Delete host order and groups now"
+msgstr "Host-Reihenfolge und Gruppen jetzt löschen"
+
+msgid "Delete movie metadata cache after (days, 0 = never)"
+msgstr "Film-Metadaten-Cache löschen nach (Tage, 0 = nie)"
+
+msgid "Delete movie metadata cache now"
+msgstr "Film-Metadaten-Cache jetzt löschen"
+
+msgid "Delete movie player preferences now"
+msgstr "Movie-Player-Präferenzen jetzt löschen"
+
+msgid "Delete now"
+msgstr "Jetzt löschen"
+
+msgid "Delete search history now"
+msgstr "Suchverlauf jetzt löschen"
+
+msgid "Delete subtitles cache after (days, 0 = never)"
+msgstr "Untertitel-Cache löschen nach (Tage, 0 = nie)"
+
+msgid "Delete subtitles cache now"
+msgstr "Untertitel-Cache jetzt löschen"
+
+msgid "Delete thumbnails cache now"
+msgstr "Vorschaubilder-Cache jetzt löschen"
+
+msgid "Detail/expert mode"
+msgstr "Detail-/Expertenmodus"
+
+msgid "Do you really want to delete ALL cache data now? This includes cookies, subtitles, movie metadata and thumbnails, and cannot be undone."
+msgstr "Möchten Sie wirklich JETZT ALLE Cache-Daten löschen? Dies umfasst Cookies, Untertitel, Film-Metadaten und Vorschaubilder und kann nicht rückgängig gemacht werden."
+
+msgid "Do you really want to delete ALL config data now? This is real user data, not just cache - it includes favourites, watched status, search history, movie player preferences and host order/groups, and cannot be undone."
+msgstr "Möchten Sie wirklich JETZT ALLE Konfigurationsdaten löschen? Dies sind echte Benutzerdaten, kein reiner Cache - dazu gehören Favoriten, Gesehen-Status, Suchverlauf, Movie-Player-Präferenzen und Host-Reihenfolge/Gruppen. Dies kann nicht rückgängig gemacht werden."
+
+msgid "Do you really want to delete ALL favourites and watched status now? This is real user data, not just cache, and cannot be undone."
+msgstr "Möchten Sie wirklich JETZT ALLE Favoriten und den Gesehen-Status löschen? Dies sind echte Benutzerdaten, kein reiner Cache, und kann nicht rückgängig gemacht werden."
+
+msgid "Do you really want to delete the %s now?"
+msgstr "Möchten Sie %s jetzt wirklich löschen?"
+
+msgid "Do you really want to delete the thumbnails cache now?"
+msgstr "Möchten Sie den Vorschaubilder-Cache jetzt wirklich löschen?"
+
+msgid "Folder for config data"
+msgstr "Ordner für Konfigurationsdaten"
+
+msgid "JS cache"
+msgstr "JS-Cache"
+
+msgid "No storage found for the cache folder. The cache folder will be switched to the plugin's own cache directory."
+msgstr "Kein Speicher für den Cache-Ordner gefunden. Der Cache-Ordner wird auf das eigene Cache-Verzeichnis des Plugins umgestellt."
+
+msgid "No storage found for the downloads location. Where would you like to save your downloads?"
+msgstr "Kein Speicher für den Downloadordner gefunden. Wo möchten Sie Ihre Downloads speichern?"
+
+msgid "cookies cache"
+msgstr "Cookies-Cache"
+
+msgid "host order and groups"
+msgstr "Host-Reihenfolge und Gruppen"
+
+msgid "movie metadata cache"
+msgstr "Film-Metadaten-Cache"
+
+msgid "movie player preferences"
+msgstr "Movie-Player-Präferenzen"
+
+msgid "never"
+msgstr "nie"
+
+msgid "search history"
+msgstr "Suchverlauf"
+
+msgid "subtitles cache"
+msgstr "Untertitel-Cache"

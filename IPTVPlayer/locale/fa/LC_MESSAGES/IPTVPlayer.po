@@ -3949,3 +3949,114 @@ msgstr ""
 
 msgid "yellow"
 msgstr ""
+
+msgid "Cache"
+msgstr ""
+
+msgid "Config"
+msgstr ""
+
+msgid "Cache folder \"%s\" could not be created. Some data (cookies, subtitles, ...) may not be saved."
+msgstr ""
+
+msgid "Config folder \"%s\" could not be created. Some data (host order, search history, favourites, movie player preferences, ...) may not be saved."
+msgstr ""
+
+msgid "Delete JS cache after (days, 0 = never)"
+msgstr ""
+
+msgid "Delete JS cache now"
+msgstr ""
+
+msgid "Delete all cache files now"
+msgstr ""
+
+msgid "Delete all config files now"
+msgstr ""
+
+msgid "Delete cookies cache after (days, 0 = never)"
+msgstr ""
+
+msgid "Delete cookies cache now"
+msgstr ""
+
+msgid "Delete favourites and watched status now"
+msgstr ""
+
+msgid "Delete host order and groups now"
+msgstr ""
+
+msgid "Delete movie metadata cache after (days, 0 = never)"
+msgstr ""
+
+msgid "Delete movie metadata cache now"
+msgstr ""
+
+msgid "Delete movie player preferences now"
+msgstr ""
+
+msgid "Delete now"
+msgstr ""
+
+msgid "Delete search history now"
+msgstr ""
+
+msgid "Delete subtitles cache after (days, 0 = never)"
+msgstr ""
+
+msgid "Delete subtitles cache now"
+msgstr ""
+
+msgid "Delete thumbnails cache now"
+msgstr ""
+
+msgid "Detail/expert mode"
+msgstr ""
+
+msgid "Do you really want to delete ALL cache data now? This includes cookies, subtitles, movie metadata and thumbnails, and cannot be undone."
+msgstr ""
+
+msgid "Do you really want to delete ALL config data now? This is real user data, not just cache - it includes favourites, watched status, search history, movie player preferences and host order/groups, and cannot be undone."
+msgstr ""
+
+msgid "Do you really want to delete ALL favourites and watched status now? This is real user data, not just cache, and cannot be undone."
+msgstr ""
+
+msgid "Do you really want to delete the %s now?"
+msgstr ""
+
+msgid "Do you really want to delete the thumbnails cache now?"
+msgstr ""
+
+msgid "Folder for config data"
+msgstr ""
+
+msgid "JS cache"
+msgstr ""
+
+msgid "No storage found for the cache folder. The cache folder will be switched to the plugin's own cache directory."
+msgstr ""
+
+msgid "No storage found for the downloads location. Where would you like to save your downloads?"
+msgstr ""
+
+msgid "cookies cache"
+msgstr ""
+
+msgid "host order and groups"
+msgstr ""
+
+msgid "movie metadata cache"
+msgstr ""
+
+msgid "movie player preferences"
+msgstr ""
+
+msgid "never"
+msgstr ""
+
+msgid "search history"
+msgstr ""
+
+msgid "subtitles cache"
+msgstr ""

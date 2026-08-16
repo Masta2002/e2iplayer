@@ -28,6 +28,7 @@ import traceback
 import re
 import sys
 import os
+import shutil
 import stat
 import codecs
 import datetime
@@ -365,7 +366,17 @@ def _warnIfDirNotWritable(path):
         return
     gWarnedUnwritableDirs.add(path)
     try:
-        AddPopup(_('Cache folder "%s" could not be created. Some data (cookies, search history, favourites, subtitles, ...) may not be saved.') % path, type=MessageBox.TYPE_ERROR, timeout=10)
+        AddPopup(_('Cache folder "%s" could not be created. Some data (cookies, subtitles, ...) may not be saved.') % path, type=MessageBox.TYPE_ERROR, timeout=10)
+    except Exception:
+        printExc()
+
+
+def _warnIfConfigDirNotWritable(path):
+    if os.path.isdir(path) or path in gWarnedUnwritableDirs:
+        return
+    gWarnedUnwritableDirs.add(path)
+    try:
+        AddPopup(_('Config folder "%s" could not be created. Some data (host order, search history, favourites, movie player preferences, ...) may not be saved.') % path, type=MessageBox.TYPE_ERROR, timeout=10)
     except Exception:
         printExc()
 
@@ -463,12 +474,32 @@ def GetCacheSubDir(dirName, fileName=''):
     return os.path.join(path, fileName)
 
 
+def GetConfigSubDir(dirName, fileName=''):
+    path = os.path.join(config.plugins.iptvplayer.ConfigDir.value, dirName)
+    if not os.path.isdir(path):
+        # search history/favourites/watched status/movie player preferences
+        # used to live under CacheDir (real user data mixed in with
+        # disposable cache) - move the whole subfolder over once, so
+        # existing data isn't lost or wiped by "Delete all cache files now"
+        oldPath = os.path.join(config.plugins.iptvplayer.CacheDir.value, dirName)
+        if os.path.isdir(oldPath):
+            try:
+                mkdirs(config.plugins.iptvplayer.ConfigDir.value)
+                shutil.move(oldPath, path)
+            except Exception:
+                printExc()
+    if not os.path.isdir(path):
+        mkdirs(path)
+        _warnIfConfigDirNotWritable(path)
+    return os.path.join(path, fileName)
+
+
 def GetSearchHistoryDir(fileName=''):
-    return GetCacheSubDir('SearchHistory', fileName)
+    return GetConfigSubDir('SearchHistory', fileName)
 
 
 def GetFavouritesDir(fileName=''):
-    return GetCacheSubDir('IPTVFavourites', fileName)
+    return GetConfigSubDir('IPTVFavourites', fileName)
 
 
 def GetSubtitlesDir(fileName=''):
@@ -480,22 +511,21 @@ def GetMovieMetaDataDir(fileName=''):
 
 
 def GetMoviePlayerPerHostDir(fileName=''):
-    return GetCacheSubDir('MoviePlayer', fileName)
+    return GetConfigSubDir('MoviePlayer', fileName)
 
 
 def GetHostOrderDir(fileName=''):
-    return GetCacheSubDir('hostorder', fileName)
+    return GetConfigSubDir('hostorder', fileName)
 
 
 def GetMigratedHostOrderFile(fileName):
     # host group/order files (iptvplayerhostsgroups.json,
     # iptvplayer<group>group.json, iptvplayerhostsorder) used to live in
-    # /etc/enigma2/ (GetConfigDir) - moved to CacheDir/hostorder/ so they
-    # sit alongside all the other cache data instead of cluttering the
-    # Enigma2 settings folder. Migrate an existing file once (copy+remove
-    # rather than os.rename, since /etc/enigma2 and CacheDir can be on
-    # different filesystems) so nothing gets lost, instead of silently
-    # starting fresh
+    # /etc/enigma2/ (GetConfigDir) - moved to ConfigDir/hostorder/ so they
+    # sit in their own subfolder instead of cluttering the Enigma2 settings
+    # folder directly. Migrate an existing file once (copy+remove rather
+    # than os.rename, since /etc/enigma2 and ConfigDir can be on different
+    # filesystems) so nothing gets lost, instead of silently starting fresh
     newPath = GetHostOrderDir(fileName)
     if not os.path.exists(newPath):
         oldPath = GetConfigDir(fileName)
