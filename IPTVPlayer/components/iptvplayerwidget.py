@@ -258,6 +258,11 @@ class E2iPlayerWidget(Screen):
         self.currItem = CDisplayListItem()
         self.favouritesCurrentGroupId = ''
 
+        # global (not per-host) memory of the last selected search-history entry,
+        # see _rememberHistorySelection()/_restoreHistorySelection()
+        self._lastHistorySelection = None
+        self._isLoadingList = False
+
         self.visible = True
         self.bufferSize = config.plugins.iptvplayer.requestedBuffSize.value * 1024 * 1024
 
@@ -1061,6 +1066,7 @@ class E2iPlayerWidget(Screen):
     def onSelectionChanged(self):
         self.updateDownloadButton()
         self.changeBottomPanel()
+        self._rememberHistorySelection()
 
     def back_pressed(self):
         if self.stopAutoPlaySequencer() and self.autoPlaySeqTimerValue:
@@ -1129,26 +1135,83 @@ class E2iPlayerWidget(Screen):
 
         return False
 
-    def keyT9Jump(self, digit):
-        if not self.isSearchHistoryList():
-            return False
+    def _rememberHistorySelection(self):
+        # global (not per-host) memory of the last selected search-history
+        # entry, restored by _restoreHistorySelection() in reloadList() so
+        # reopening the history list lands back on it instead of index 0.
+        # Skipped while a list is being (re)loaded, since moveToIndex() below
+        # fires this same callback and would otherwise overwrite the value
+        # we are about to restore with whatever index/name it lands on first.
+        try:
+            if self._isLoadingList or not self.isSearchHistoryList():
+                return
+            item = self.getSelItem()
+            name = getattr(item, 'name', None) if item is not None else None
+            if name:
+                self._lastHistorySelection = name
+        except Exception:
+            printExc()
 
-        letter = self.t9HistoryInput.getKey(int(digit))
-        if not letter:
+    def _restoreHistorySelection(self):
+        # name-based, not index-based: new searches insert at the front of
+        # the history list and shift every existing entry's index
+        try:
+            if not self.isSearchHistoryList():
+                return
+            wanted = self._lastHistorySelection
+            if not wanted:
+                return
+            for idx, it in enumerate(self.currList):
+                if getattr(it, 'name', None) == wanted:
+                    self["list"].moveToIndex(idx)
+                    break
+        except Exception:
+            printExc()
+
+    def keyT9Jump(self, digit):
+        # search-history list: every digit press is consumed by the T9 jump
+        # (always returns True), digits have no other meaning in this list
+        if self.isSearchHistoryList():
+            letter = self.t9HistoryInput.getKey(int(digit))
+            if not letter:
+                return True
+
+            try:
+                currentIdx = self['list'].getCurrentIndex()
+                idx = findT9JumpIndex(len(self.currList), currentIdx, letter, lambda i: getattr(self.currList[i], 'name', ''))
+                if idx >= 0:
+                    self['list'].moveToIndex(idx)
+                    printDBG('T9 history jump key[%s] letter[%s] index[%d]' % (digit, letter, idx))
+                else:
+                    printDBG('T9 history jump key[%s] letter[%s] no match' % (digit, letter))
+            except Exception:
+                printExc()
+
             return True
 
+        # any other list (main menu, categories, series, favourites, ...):
+        # only intercept the digit when it actually produced a jump, so
+        # keyT9_1/4/8's secondary binding (ok_pressed1/4, startAutoPlaySequencer)
+        # still fires normally when there is no match
+        if not config.plugins.iptvplayer.enableT9MainList.value or not self.currList:
+            return False
+
         try:
+            letter = self.t9HistoryInput.getKey(int(digit))
+            if not letter:
+                return True
+
             currentIdx = self['list'].getCurrentIndex()
             idx = findT9JumpIndex(len(self.currList), currentIdx, letter, lambda i: getattr(self.currList[i], 'name', ''))
             if idx >= 0:
                 self['list'].moveToIndex(idx)
-                printDBG('T9 history jump key[%s] letter[%s] index[%d]' % (digit, letter, idx))
-            else:
-                printDBG('T9 history jump key[%s] letter[%s] no match' % (digit, letter))
+                printDBG('T9 main list jump key[%s] letter[%s] index[%d]' % (digit, letter, idx))
+                return True
+            printDBG('T9 main list jump key[%s] letter[%s] no match' % (digit, letter))
+            return False
         except Exception:
             printExc()
-
-        return True
+            return False
 
     def keyT9_1(self):
         if not self.keyT9Jump('1'):
@@ -2360,6 +2423,9 @@ class E2iPlayerWidget(Screen):
 
     def reloadList(self, params):
         printDBG("reloadList")
+        # suppresses _rememberHistorySelection() while the list below is being
+        # (re)built and its selection moved around programmatically
+        self._isLoadingList = True
         refresh = params['add_param'].get('refresh', 0)
         selIndex = params['add_param'].get('selIndex', -1)
         ret = params['ret']
@@ -2409,6 +2475,8 @@ class E2iPlayerWidget(Screen):
 
             self.setStatusTex("")
             self["list"].show()
+        self._isLoadingList = False
+        self._restoreHistorySelection()
         self.updateDownloadButton()
         if 2 == refresh:
             self.autoPlaySequencerNext(False)
