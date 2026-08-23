@@ -681,7 +681,9 @@ class IPTVFavouritesMainWidget(Screen):
             if ":groups:" == self.menu:
                 groups = self.favourites.getGroups()
                 total = len(groups)
-                getTitle = lambda i: groups[i].get('title', '')
+
+                def getTitle(i):
+                    return groups[i].get('title', '')
             else:
                 if not self.loadGroupItems(self.menu):
                     return
@@ -689,7 +691,9 @@ class IPTVFavouritesMainWidget(Screen):
                 if not sts:
                     return
                 total = len(items)
-                getTitle = lambda i: getattr(items[i], 'name', '')
+
+                def getTitle(i):
+                    return getattr(items[i], 'name', '')
 
             idx = findT9JumpIndex(total, currentIdx, letter, getTitle)
             if idx >= 0:
