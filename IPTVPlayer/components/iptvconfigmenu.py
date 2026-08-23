@@ -182,6 +182,7 @@ config.plugins.iptvplayer.hidden_ext_player_def_aspect_ratio = ConfigSelection(d
 
 config.plugins.iptvplayer.search_history_size = ConfigInteger(50, (0, 1000000))
 config.plugins.iptvplayer.enableT9MainList = ConfigYesNo(default=True)
+config.plugins.iptvplayer.rememberHistorySelection = ConfigYesNo(default=True)
 config.plugins.iptvplayer.autoplay_start_delay = ConfigInteger(3, (0, 9))
 
 config.plugins.iptvplayer.favourites_use_watched_flag = ConfigYesNo(default=True)
@@ -504,6 +505,7 @@ class ConfigMenu(ConfigBaseWidget):
 
         list.append(getConfigListEntry(_("----- OTHER SETTINGS -----"), ))
         list.append(getConfigListEntry(_("The number of items in the search history"), config.plugins.iptvplayer.search_history_size))
+        list.append(getConfigListEntry(_("Remember last search history selection"), config.plugins.iptvplayer.rememberHistorySelection))
         list.append(getConfigListEntry(_("T9 letter jump in lists"), config.plugins.iptvplayer.enableT9MainList))
         list.append(getConfigListEntry(_("Write current title to file:"), config.plugins.iptvplayer.curr_title_file))
         list.append(getConfigListEntry(_("MIPS Floating Point Architecture"), config.plugins.iptvplayer.plarformfpuabi))
