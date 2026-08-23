@@ -691,20 +691,24 @@ class MergeDownloader(BaseDownloader, SidecarMixin):
         if None is data:
             return
         self.outData += ensureText(data)
+        # only parse+reset once the full header block has arrived - wget's
+        # stderr can split a 'Length:' line across two callbacks, and
+        # resetting outData on every call would drop the first half before
+        # the second one arrives
         if 'Saving to:' in self.outData:
             self.console_stderrAvail_conn = None
-        lines = self.outData.replace('\r', '\n').split('\n')
-        for idx in range(len(lines)):
-            if 'Length:' in lines[idx]:
-                match = re.search(r" ([0-9]+?) ", lines[idx])
-                if match:
-                    parsedSize = int(match.group(1))
-                    if parsedSize > 0:
-                        self.multi['remote_size'][self.currIdx] = parsedSize
-                match = re.search(r"(\[[^]]+?\])", lines[idx])
-                if match:
-                    self.multi['remote_content_type'][self.currIdx] = match.group(1)
-        self.outData = ''
+            lines = self.outData.replace('\r', '\n').split('\n')
+            for idx in range(len(lines)):
+                if 'Length:' in lines[idx]:
+                    match = re.search(r" ([0-9]+?) ", lines[idx])
+                    if match:
+                        parsedSize = int(match.group(1))
+                        if parsedSize > 0:
+                            self.multi['remote_size'][self.currIdx] = parsedSize
+                    match = re.search(r"(\[[^]]+?\])", lines[idx])
+                    if match:
+                        self.multi['remote_content_type'][self.currIdx] = match.group(1)
+            self.outData = ''
 
     def _terminate(self):
         printDBG("MergeDownloader._terminate")

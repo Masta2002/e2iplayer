@@ -325,8 +325,15 @@ class E2iPlayerWidget(Screen):
         self.prevVideoMode = None
         # no handleTimeout: we act on every press immediately (list jump,
         # not text composition), so the commit-after-timeout callback and
-        # its eTimer aren't needed - only the digit-cycling in getKey() is
+        # its eTimer aren't needed - only the digit-cycling in getKey() is.
+        # Separate instances per list context: NumericalTextInput only resets
+        # its letter-cycle position when a DIFFERENT digit is pressed, so
+        # sharing one instance between the search-history and main-list T9
+        # jump would leak cycle state across an unrelated list switch (e.g.
+        # pressing '2' in the history list, then '2' again in the main list,
+        # would resume the cycle at 'b' instead of restarting at 'a').
         self.t9HistoryInput = NumericalTextInput(handleTimeout=False)
+        self.t9MainListInput = NumericalTextInput(handleTimeout=False)
 
         # test if path for js and cookies temporary files
         # is writable, without this plugin can not works
@@ -1209,7 +1216,7 @@ class E2iPlayerWidget(Screen):
             return False
 
         try:
-            letter = self.t9HistoryInput.getKey(int(digit))
+            letter = self.t9MainListInput.getKey(int(digit))
             if not letter:
                 return True
 
