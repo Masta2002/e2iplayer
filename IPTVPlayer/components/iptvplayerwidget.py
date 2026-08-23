@@ -1169,6 +1169,14 @@ class E2iPlayerWidget(Screen):
             printExc()
 
     def keyT9Jump(self, digit):
+        # single global switch for the whole T9 letter-jump feature (this
+        # method's search-history AND main-list branch alike, plus the
+        # independent keyNumberJump() copies in iptvfavouriteswidgets.py and
+        # searchhistoryeditor.py) - off restores plain keyT9_1/4/8 fallback
+        # behaviour (ok_pressed1/4, startAutoPlaySequencer) everywhere
+        if not config.plugins.iptvplayer.enableT9MainList.value:
+            return False
+
         # search-history list: every digit press is consumed by the T9 jump
         # (always returns True), digits have no other meaning in this list
         if self.isSearchHistoryList():
@@ -1193,7 +1201,7 @@ class E2iPlayerWidget(Screen):
         # only intercept the digit when it actually produced a jump, so
         # keyT9_1/4/8's secondary binding (ok_pressed1/4, startAutoPlaySequencer)
         # still fires normally when there is no match
-        if not config.plugins.iptvplayer.enableT9MainList.value or not self.currList:
+        if not self.currList:
             return False
 
         try:
