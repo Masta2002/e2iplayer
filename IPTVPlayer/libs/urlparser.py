@@ -547,11 +547,13 @@ class urlparser:
             "vidsrc.bz": self.pp.parserVIDSRC,
             "vidsrc.cc": self.pp.parserMEGAFILES,
             "vidsrc.do": self.pp.parserVIDSRC,
+            "vidsrc.fyi": self.pp.parserVIDSRCMOV,
             "vidsrc.gd": self.pp.parserVIDSRC,
             "vidsrc.in": self.pp.parserVIDSRC,
             "vidsrc.io": self.pp.parserVIDSRC,
             "vidsrc.me": self.pp.parserVIDSRC,
             "vidsrc.mn": self.pp.parserVIDSRC,
+            "vidsrc.mov": self.pp.parserVIDSRCMOV,
             "vidsrc.net": self.pp.parserVIDSRC,
             "vidsrc.pm": self.pp.parserVIDSRC,
             "vidsrc.tw": self.pp.parserVIDSRC,
@@ -2376,6 +2378,19 @@ class pageParser(CaptchaHelper):
                 if ".m3u8" in url:
                     urltab.extend(getDirectM3U8Playlist(url, sortWithMaxBitrate=99999999))
         return urltab
+
+    def parserVIDSRCMOV(self, baseUrl):  # add 240826
+        printDBG("parserVIDSRCMOV baseUrl[%s]" % baseUrl)
+        HTTP_HEADER = self.cm.getDefaultHeader()
+        sts, data = self.cm.getPage(baseUrl, {"header": HTTP_HEADER})
+        if not sts:
+            return []
+        inner = re.search(r'<iframe[^>]+src=["\']([^"\']+)["\']', data)
+        if not inner:
+            return []
+        innerUrl = inner.group(1)
+        innerUrl = "https:" + innerUrl if innerUrl.startswith("//") else innerUrl
+        return self.parserVIDSRC(innerUrl)
 
     def parserGUPLOAD(self, baseUrl):
         printDBG("parserGUPLOAD baseUrl[%s]" % baseUrl)

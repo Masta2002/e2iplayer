@@ -1,0 +1,553 @@
+# -*- coding: utf-8 -*-
+###=========== Created by angel_heart (Mohamed Elsafty) ======== 20260801
+# Last Modified: 24.08.2026 - Fixed search (search_item was False), switched to
+# searchItems()/listsHistory() pattern, added watched/started flag support,
+# removed duplicated link-building code
+from Plugins.Extensions.IPTVPlayer.components.ihost import CBaseHostClass, CHostBase, RetHost
+from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT as _
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote_plus
+from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc
+from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
+from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads
+from Plugins.Extensions.IPTVPlayer.tools.iptvwatchedhelper import IPTVWatchedHelper
+from Plugins.Extensions.IPTVPlayer.tools.iptvwatchedhostmixin import WatchedFlagHostMixin
+import re
+
+
+def GetConfigList():
+    return []
+
+
+def gettytul():
+    return "https://cineb.sx/"
+
+
+class Cineb(CBaseHostClass):
+
+    def __init__(self):
+        CBaseHostClass.__init__(self, {"history": "Cineb", "cookie": "Cineb.cookie"})
+        self.HEADER = self.cm.getDefaultHeader()
+        self.defaultParams = {"header": self.HEADER, "use_cookie": True, "load_cookie": True, "save_cookie": True, "cookiefile": self.COOKIE_FILE}
+        self.MAIN_URL = "https://cineb.sx"
+        self.DEFAULT_ICON_URL = self.MAIN_URL + "/assets/brands/cineb/favicon.png"
+        self.cacheSeasons = {}
+        self.cacheEpisodes = {}
+        self.watchedHelper = IPTVWatchedHelper("cineb")
+        self.MAIN_CAT_TAB = [
+            {"category": "list_items", "title": _("Movies"), "url": self.getFullUrl("/movie")},
+            {"category": "list_items", "title": _("TV Series"), "url": self.getFullUrl("/tv")},
+            {"category": "list_items", "title": _("Top IMDb"), "url": self.getFullUrl("/top-imdb")},
+            {"category": "list_items", "title": _("Updates"), "url": self.getFullUrl("/updates")},
+            {"category": "list_genres", "title": _("Genres")},
+            {"category": "list_countries", "title": _("Countries")},
+        ] + self.searchItems()
+
+    def getPage(self, baseUrl, addParams=None, post_data=None):
+        if addParams is None:
+            addParams = dict(self.defaultParams)
+        else:
+            if "header" not in addParams:
+                addParams["header"] = dict(self.HEADER)
+        addParams["header"]["Referer"] = self.MAIN_URL
+        return self.cm.getPageCFProtection(baseUrl, addParams, post_data)
+
+    def _getWatchedKeyForItem(self, cItem):
+        try:
+            if not isinstance(cItem, dict):
+                return ""
+            itemType = cItem.get("type", "")
+            category = cItem.get("category", "")
+            if itemType in ["video", "audio"]:
+                contentUrl = str(cItem.get("content_url", "") or cItem.get("url", "") or "").strip()
+                if contentUrl != "":
+                    return "url:%s" % contentUrl
+                return ""
+            if category == "list_servers":
+                url = str(cItem.get("url", "") or "").strip()
+                if url != "":
+                    return "url:%s" % url
+                return ""
+            if category == "list_episodes":
+                url = str(cItem.get("url", "") or "").strip()
+                if url != "":
+                    return "season:%s" % url
+                return ""
+            if category == "list_seasons":
+                url = str(cItem.get("url", "") or "").strip()
+                if url != "":
+                    return "url:%s" % url
+                return ""
+            return ""
+        except Exception:
+            printExc()
+        return ""
+
+    def _buildSeasonItem(self, seasonUrl):
+        return {"category": "list_episodes", "url": seasonUrl}
+
+    def _buildSeriesItem(self, seriesUrl):
+        return {"category": "list_seasons", "url": seriesUrl}
+
+    def _propagateEpisodeWatchedState(self, item):
+        try:
+            if not isinstance(item, dict):
+                return
+            seasonUrl = str(item.get("season_url", "") or "").strip()
+            if seasonUrl == "":
+                return
+            seasonEpisodes = self.cacheEpisodes.get(seasonUrl, [])
+            if seasonEpisodes:
+                self.watchedHelper.updateParentWatchedState(self._buildSeasonItem(seasonUrl), seasonEpisodes, self._getWatchedKeyForItem)
+            seriesUrl = str(item.get("series_url", "") or "").strip()
+            seasonChildren = self.cacheSeasons.get(seriesUrl, [])
+            if seriesUrl != "" and seasonChildren:
+                seriesItem = {"category": "list_seasons", "url": seriesUrl}
+                self.watchedHelper.updateParentWatchedState(seriesItem, seasonChildren, self._getWatchedKeyForItem)
+        except Exception:
+            printExc()
+
+    def listItems(self, cItem):
+        printDBG("Cineb.listItems")
+        page = cItem.get("page", 1)
+        url = cItem["url"]
+        if page > 1:
+            if "?" in url:
+                url += "&page=%d" % page
+            else:
+                url += "?page=%d" % page
+        sts, data = self.getPage(url)
+        if not sts:
+            return
+        nextPage = ""
+        nextMatch = re.search(r'href=["\']([^"\']+page=%d)["\'][^>]*rel=["\']next["\']' % (page + 1), data)
+        if nextMatch:
+            nextPage = nextMatch.group(1)
+        else:
+            nextMatch = re.search(r'href=["\']([^"\']+page=%d)["\']' % (page + 1), data)
+            if nextMatch:
+                nextPage = nextMatch.group(1)
+        items = re.findall(r'<a class="bf-card".*?</a>', data, re.DOTALL)
+        for item in items:
+            itemUrl = self.cm.ph.getSearchGroups(item, """href=['"]([^'^"]+)['"]""")[0]
+            itemUrl = self.getFullUrl(itemUrl)
+            title = self.cm.ph.getSearchGroups(item, """title=['"]([^'^"]+)['"]""")[0]
+            if not title:
+                title = self.cm.ph.getSearchGroups(item, """alt=['"]([^'^"]+)['"]""")[0]
+            icon = self.cm.ph.getSearchGroups(item, """src=['"]([^'^"]+)['"]""")[0]
+            icon = self.getFullIconUrl(icon)
+            quality = self.cm.ph.getSearchGroups(item, """class=['"]bf-card__qual['"][^>]*>([^<]+)<""")[0].strip()
+            genre = self.cm.ph.getSearchGroups(item, """class=['"]bf-card__genre['"][^>]*>([^<]+)<""")[0].strip()
+            desc_parts = []
+            if quality:
+                desc_parts.append("\\c0000ff00%s" % quality)
+            if genre:
+                desc_parts.append("\\c00ffff00%s" % genre)
+            desc = " | ".join(desc_parts)
+            title = self.cleanHtmlStr(title)
+            if not itemUrl or not title:
+                continue
+            params = dict(cItem)
+            params.update({"good_for_fav": True, "title": title, "url": itemUrl, "icon": icon, "desc": desc})
+            if "/watch/tv-" in itemUrl or "/tv/" in itemUrl:
+                params["category"] = "list_seasons"
+            else:
+                params["category"] = "list_servers"
+            self.watchedHelper.updateHostItemFlag(self, params, self._getWatchedKeyForItem)
+            self.addDir(params)
+        if nextPage:
+            params = dict(cItem)
+            params.update({"good_for_fav": False, "title": _("Next page ▶▶▶"), "url": self.getFullUrl(nextPage), "page": page + 1})
+            self.addDir(params)
+
+    def listGenres(self, cItem):
+        printDBG("Cineb.listGenres")
+        sts, data = self.getPage(self.MAIN_URL)
+        if not sts:
+            return
+        matches = re.findall(r"""href=['"](/genre/[^"']+)['"][^>]*>([^<]+)<""", data)
+        for url, title in matches:
+            title = self.cleanHtmlStr(title)
+            if not title or title.lower() in ["home", "movies", "tv series"]:
+                continue
+            params = dict(cItem)
+            params.update({"category": "list_items", "title": title, "url": self.getFullUrl(url)})
+            self.addDir(params)
+
+    def listCountries(self, cItem):
+        printDBG("Cineb.listCountries")
+        sts, data = self.getPage(self.MAIN_URL)
+        if not sts:
+            return
+        matches = re.findall(r"""href=['"](/country/[^"']+)['"][^>]*>([^<]+)<""", data)
+        for url, title in matches:
+            title = self.cleanHtmlStr(title)
+            if not title:
+                continue
+            params = dict(cItem)
+            params.update({"category": "list_items", "title": title, "url": self.getFullUrl(url)})
+            self.addDir(params)
+
+    def listSeasons(self, cItem):
+        printDBG("Cineb.listSeasons")
+        seriesUrl = cItem["url"]
+        sts, data = self.getPage(seriesUrl)
+        if not sts:
+            return
+        episodesSection = self.cm.ph.getDataBeetwenMarkers(data, '<section id="movie-episodes"', "</section>", False)[1]
+        seasons = re.findall(r'<a[^>]+class=["\']season-pill[^"\']*["\'][^>]+href=["\']([^"\']+)["\']', episodesSection)
+        if not seasons:
+            self.listEpisodesFromPage(cItem, episodesSection or data, seriesUrl)
+            return
+        seasonItems = []
+        for href in seasons:
+            href = self.cleanHtmlStr(href)
+            numMatch = re.search(r"[?&]s=(\d+)", href)
+            title = _("Season %s") % numMatch.group(1) if numMatch else _("Season")
+            params = dict(cItem)
+            params.pop("isWatched", None)
+            params.pop("isStarted", None)
+            params.update({"category": "list_episodes", "title": title, "url": self.getFullUrl(href), "series_url": seriesUrl})
+            seasonItems.append(params)
+        self.cacheSeasons[seriesUrl] = seasonItems
+        for params in seasonItems:
+            self.watchedHelper.updateHostItemFlag(self, params, self._getWatchedKeyForItem)
+            self.addDir(params)
+
+    def listEpisodesFromPage(self, cItem, data, seriesUrl=None):
+        if data is None:
+            sts, data = self.getPage(cItem["url"])
+            if not sts:
+                return
+        if seriesUrl is None:
+            seriesUrl = cItem.get("series_url", cItem["url"])
+        seasonUrl = cItem["url"]
+        episodes = re.findall(r'<a[^>]+href=["\'](/watch/[^"\']+)["\'][^>]+class=["\']ep-tile[^"\']*["\'][^>]*title=["\']([^"\']+)["\']', data)
+        if not episodes:
+            episodes = re.findall(r'<a[^>]+href=["\'](/watch/[^"\']+)["\'][^>]+class=["\']ep-tile[^"\']*["\'][^>]*>([^<]+)<', data)
+        episodeItems = []
+        for url, title in episodes:
+            params = dict(cItem)
+            params.pop("isWatched", None)
+            params.pop("isStarted", None)
+            params.update({"category": "list_servers", "title": self.cleanHtmlStr(title), "url": self.getFullUrl(self.cleanHtmlStr(url)), "season_url": seasonUrl, "series_url": seriesUrl})
+            episodeItems.append(params)
+        self.cacheEpisodes[seasonUrl] = episodeItems
+        for params in episodeItems:
+            self.watchedHelper.updateHostItemFlag(self, params, self._getWatchedKeyForItem)
+            self.addDir(params)
+
+    def listEpisodes(self, cItem):
+        printDBG("Cineb.listEpisodes")
+        sts, data = self.getPage(cItem["url"])
+        if not sts:
+            return
+        self.listEpisodesFromPage(cItem, data)
+
+    def _scrapeDetails(self, url):
+        sts, data = self.getPage(url)
+        if not sts:
+            return {}
+        info = {}
+        imdb = self.cm.ph.getSearchGroups(data, r'class=["\']IMDb["\'][^>]*><b>IMDb</b>([^<]+)<')[0].strip()
+        if not imdb:
+            imdb = self.cm.ph.getSearchGroups(data, r"IMDb[^0-9]*([0-9.]+)")[0].strip()
+        info["imdb"] = imdb
+        info["quality"] = self.cm.ph.getSearchGroups(data, r'class=["\']quality["\'][^>]*>([^<]+)<')[0].strip()
+        metaBlock = self.cm.ph.getDataBeetwenMarkers(data, '<div class="metadata set"', "</div>", False)[1]
+        info["year"] = ""
+        info["duration"] = ""
+        if metaBlock:
+            yearMatch = re.search(r"<span>\s*(\d{4})\s*</span>", metaBlock)
+            durationMatch = re.search(r"<span>\s*(\d+\s*min)\s*</span>", metaBlock)
+            if yearMatch:
+                info["year"] = yearMatch.group(1).strip()
+            if durationMatch:
+                info["duration"] = durationMatch.group(1).strip()
+
+        def extractNames(label):
+            block = re.findall(r"<li>%s:(.*?)</li>" % label, data, re.DOTALL)
+            if not block:
+                return []
+            return [self.cleanHtmlStr(name) for name in re.findall(r"<a[^>]+>([^<]+)</a>", block[0])]
+
+        info["countries"] = extractNames("Country")
+        info["genres"] = extractNames("Genres")
+        released = self.cm.ph.getSearchGroups(data, r"Released:[\s\n]*<span[^>]+>([^<]+)<")[0].strip()
+        if not released:
+            released = self.cm.ph.getSearchGroups(data, r"First air date:[\s\n]*<span[^>]+>([^<]+)<")[0].strip()
+        info["released"] = released
+        info["directors"] = extractNames("Directors")
+        info["creators"] = [] if info["directors"] else extractNames("Created by")
+        info["productions"] = extractNames("Productions")
+        info["casts"] = extractNames("Casts")
+        info["lastUpdated"] = self.cm.ph.getSearchGroups(data, r"Last updated:[\s\n]*<time[^>]+>([^<]+)<")[0].strip()
+        description = self.cm.ph.getSearchGroups(data, r'class=["\']description text-expand["\'][^>]*>(.*?)</div>', re.DOTALL)[0]
+        info["description"] = self.cleanHtmlStr(description)
+        return info
+
+    def getMovieDetails(self, url):
+        info = self._scrapeDetails(url)
+        if not info:
+            return ""
+        details = []
+        if info["imdb"]:
+            details.append("IMDb: %s" % info["imdb"])
+        if info["quality"]:
+            details.append("\\c0000ff00%s" % info["quality"])
+        if info["year"]:
+            details.append(info["year"])
+        if info["duration"]:
+            details.append(info["duration"])
+        desc = " | ".join(details) + "\n" if details else ""
+        if info["countries"]:
+            desc += "Country: %s\n" % ", ".join(info["countries"])
+        if info["genres"]:
+            desc += "\\c00ffff00Genres: %s\n" % ", ".join(info["genres"])
+        if info["released"]:
+            desc += "Released: %s\n" % info["released"]
+        if info["directors"]:
+            desc += "Directors: %s\n" % ", ".join(info["directors"])
+        elif info["creators"]:
+            desc += "Created by: %s\n" % ", ".join(info["creators"])
+        if info["productions"]:
+            desc += "Productions: %s\n" % ", ".join(info["productions"])
+        if info["casts"]:
+            desc += "Casts: %s\n" % ", ".join(info["casts"])
+        if info["lastUpdated"]:
+            desc += "Last updated: %s\n" % info["lastUpdated"]
+        if info["description"]:
+            desc += "\n%s" % info["description"]
+        return desc
+
+    def getArticleContent(self, cItem):
+        printDBG("Cineb.getArticleContent [%s]" % cItem)
+        contentUrl = cItem.get("content_url") or cItem.get("url", "")
+        if not contentUrl:
+            return []
+        info = self._scrapeDetails(contentUrl)
+        if not info:
+            return []
+        otherInfo = {}
+        if info["imdb"]:
+            otherInfo["imdb"] = info["imdb"]
+        if info["released"]:
+            otherInfo["released"] = info["released"]
+        if info["duration"]:
+            otherInfo["duration"] = info["duration"]
+        if info["genres"]:
+            otherInfo["genres"] = ", ".join(info["genres"])
+        if info["countries"]:
+            otherInfo["countries"] = ", ".join(info["countries"])
+        if info["directors"]:
+            otherInfo["directors"] = ", ".join(info["directors"])
+        elif info["creators"]:
+            otherInfo["directors"] = ", ".join(info["creators"])
+        if info["casts"]:
+            otherInfo["actors"] = ", ".join(info["casts"])
+        title = cItem.get("title", "")
+        icon = cItem.get("icon", self.DEFAULT_ICON_URL)
+        return [{"title": title, "text": info["description"], "images": [{"url": self.getFullIconUrl(icon)}], "other_info": otherInfo}]
+
+    def listServers(self, cItem):
+        printDBG("Cineb.listServers")
+        movieDesc = self.getMovieDetails(cItem["url"])
+        linksTab = self.getLinksForVideo(cItem)
+        for item in linksTab:
+            params = dict(cItem)
+            params.pop("isWatched", None)
+            params.pop("isStarted", None)
+            finalDesc = movieDesc
+            if cItem.get("desc"):
+                finalDesc = movieDesc + "\n" + cItem["desc"]
+            params.update({"content_url": cItem["url"], "title": item["name"], "url": item["url"], "type": "video", "desc": finalDesc})
+            self.watchedHelper.updateHostItemFlag(self, params, self._getWatchedKeyForItem)
+            self.addVideo(params)
+
+    def _linkItemFromUrl(self, url):
+        if url.startswith("//"):
+            url = "https:" + url
+        elif not url.startswith("http"):
+            url = self.getFullUrl(url)
+        hostName = self.up.getHostName(url)
+        if not hostName:
+            hostName = url.split("/")[2] if len(url.split("/")) > 2 else "Server"
+        return {"name": hostName.capitalize(), "url": strwithmeta(url, {"Referer": self.MAIN_URL}), "need_resolve": 1}
+
+    def getLinksForVideo(self, cItem):
+        printDBG("Cineb.getLinksForVideo [%s]" % cItem)
+        urlTab = []
+        sts, data = self.getPage(cItem["url"])
+        if not sts:
+            return []
+        match = re.search(r"window\.__OPT\s*=\s*(\[.*?\]);", data, re.DOTALL)
+        if match:
+            try:
+                serversList = json_loads(match.group(1))
+                if isinstance(serversList, list):
+                    for serverUrl in serversList:
+                        if isinstance(serverUrl, str):
+                            urlTab.append(self._linkItemFromUrl(serverUrl))
+            except Exception:
+                printExc()
+        if not urlTab:
+            iframeList = re.findall(r'<iframe[^>]+src=["\']([^"\']+)["\']', data, re.I)
+            for src in iframeList:
+                if "youtube" not in src and "google" not in src:
+                    urlTab.append(self._linkItemFromUrl(src))
+        return urlTab
+
+    def getVideoLinks(self, url):
+        printDBG("Cineb.getVideoLinks [%s]" % url)
+        urlTab = []
+        if self.cm.isValidUrl(url):
+            if int(strwithmeta(url).meta.get("need_resolve", 0)) == 1:
+                urlTab = self.up.getVideoLinkExt(url)
+            else:
+                urlTab.append({"name": "direct", "url": url})
+        return urlTab
+
+    def listSearchResult(self, cItem, searchPattern, searchType):
+        printDBG("Cineb.listSearchResult cItem[%s], searchPattern[%s] searchType[%s]" % (cItem, searchPattern, searchType))
+        cItem = dict(cItem)
+        cItem["url"] = self.getFullUrl("/browser?keyword=%s" % urllib_quote_plus(searchPattern))
+        self.listItems(cItem)
+
+    def handleService(self, index, refresh=0, searchPattern="", searchType=""):
+        printDBG("handleService start")
+        CBaseHostClass.handleService(self, index, refresh, searchPattern, searchType)
+        name = self.currItem.get("name", "")
+        category = self.currItem.get("category", "")
+        printDBG("handleService: |||||||||||||||||||||||||||||||||||| name[%s], category[%s] " % (name, category))
+        self.currList = []
+        if name is None:
+            self.listsTab(self.MAIN_CAT_TAB, {"name": "category"})
+        elif category == "list_items":
+            self.listItems(self.currItem)
+        elif category == "list_genres":
+            self.listGenres(self.currItem)
+        elif category == "list_countries":
+            self.listCountries(self.currItem)
+        elif category == "list_seasons":
+            self.listSeasons(self.currItem)
+        elif category == "list_episodes":
+            self.listEpisodes(self.currItem)
+        elif category == "list_servers":
+            self.listServers(self.currItem)
+        elif category in ["search", "search_next_page"]:
+            cItem = dict(self.currItem)
+            cItem.update({"search_item": False, "name": "category"})
+            self.listSearchResult(cItem, searchPattern, searchType)
+        elif category == "search_history":
+            self.listsHistory({"name": "history", "category": "search"}, "desc")
+        else:
+            printExc()
+        CBaseHostClass.endHandleService(self, index, refresh)
+
+
+class IPTVHost(WatchedFlagHostMixin, CHostBase):
+
+    def __init__(self):
+        CHostBase.__init__(self, Cineb(), True, [])
+        self.cachedRet = None
+        self.refreshAfterWatchedFlagChange = False
+        self.watchedHelper = IPTVWatchedHelper("cineb")
+
+    def _setWatchedStateForSeasonItem(self, seasonItem, action):
+        try:
+            seasonUrl = str(seasonItem.get("url", "") or "").strip()
+            seasonKey = self.host._getWatchedKeyForItem(seasonItem)
+            if seasonKey == "":
+                return False
+            changed = False
+            for episodeItem in self.host.cacheEpisodes.get(seasonUrl, []):
+                episodeKey = self.host._getWatchedKeyForItem(episodeItem)
+                if episodeKey == "":
+                    continue
+                if action == "set_watched_flag":
+                    changed = self.watchedHelper.markItemWatched(episodeItem, episodeKey) or changed
+                else:
+                    changed = self.watchedHelper.unmarkItemWatched(episodeItem, episodeKey) or changed
+            if action == "set_watched_flag":
+                changed = self.watchedHelper.markItemWatched(seasonItem, seasonKey) or changed
+            else:
+                changed = self.watchedHelper.unmarkItemWatched(seasonItem, seasonKey) or changed
+            return changed
+        except Exception:
+            printExc()
+            return False
+
+    def _setWatchedStateForSeriesItem(self, seriesItem, action):
+        try:
+            seriesUrl = str(seriesItem.get("url", "") or "").strip()
+            if seriesUrl == "":
+                return False
+            changed = False
+            for seasonItem in self.host.cacheSeasons.get(seriesUrl, []):
+                changed = self._setWatchedStateForSeasonItem(seasonItem, action) or changed
+            seriesKey = self.host._getWatchedKeyForItem(seriesItem)
+            if seriesKey == "":
+                return changed
+            if action == "set_watched_flag":
+                changed = self.watchedHelper.markItemWatched(seriesItem, seriesKey) or changed
+            else:
+                changed = self.watchedHelper.unmarkItemWatched(seriesItem, seriesKey) or changed
+            return changed
+        except Exception:
+            printExc()
+            return False
+
+    def _refreshParentStateAfterAction(self, item, action):
+        try:
+            if not isinstance(item, dict):
+                return
+            category = str(item.get("category", "") or "").strip()
+            if category == "list_episodes":
+                seasonUrl = str(item.get("url", "") or "").strip()
+                seriesUrl = str(item.get("series_url", "") or "").strip()
+                if seasonUrl != "":
+                    seasonEpisodes = self.host.cacheEpisodes.get(seasonUrl, [])
+                    if seasonEpisodes:
+                        self.watchedHelper.updateParentWatchedState(self.host._buildSeasonItem(seasonUrl), seasonEpisodes, self.host._getWatchedKeyForItem)
+                if seriesUrl != "":
+                    seasonChildren = self.host.cacheSeasons.get(seriesUrl, [])
+                    if seasonChildren:
+                        seriesParent = {"category": "list_seasons", "url": seriesUrl}
+                        self.watchedHelper.updateParentWatchedState(seriesParent, seasonChildren, self.host._getWatchedKeyForItem)
+            elif category == "list_seasons":
+                seriesUrl = str(item.get("url", "") or "").strip()
+                seasonChildren = self.host.cacheSeasons.get(seriesUrl, [])
+                if seriesUrl != "" and seasonChildren:
+                    seriesParent = {"category": "list_seasons", "url": seriesUrl}
+                    self.watchedHelper.updateParentWatchedState(seriesParent, seasonChildren, self.host._getWatchedKeyForItem)
+            elif str(item.get("type", "") or "").strip() in ["video", "audio"]:
+                self.host._propagateEpisodeWatchedState(item)
+        except Exception:
+            printExc()
+
+    def performCustomAction(self, privateData):
+        ret = self.watchedHelper.performCustomAction(privateData)
+        if ret.status == RetHost.OK:
+            self.refreshAfterWatchedFlagChange = True
+            try:
+                action = privateData.get("action", "")
+                if action in ("unset_watched_flag", "set_watched_flag"):
+                    idx = privateData.get("item_index", -1)
+                    item = self.host.currList[idx] if 0 <= idx < len(self.host.currList) else {}
+                    category = item.get("category", "")
+                    if category == "list_episodes":
+                        self._setWatchedStateForSeasonItem(item, action)
+                    elif category == "list_seasons":
+                        self._setWatchedStateForSeriesItem(item, action)
+                    self._refreshParentStateAfterAction(item, action)
+                    self.watchedHelper.recomputeAllGroupsWatched(self.host.cacheEpisodes, self.host._getWatchedKeyForItem, self.host._buildSeasonItem)
+                    self.watchedHelper.recomputeAllGroupsWatched(self.host.cacheSeasons, self.host._getWatchedKeyForItem, self.host._buildSeriesItem)
+            except Exception:
+                printExc()
+        return ret
+
+    def withArticleContent(self, cItem):
+        if not isinstance(cItem, dict):
+            return False
+        if cItem.get("type", "") in ["video", "audio"]:
+            return True
+        return cItem.get("category", "") in ["list_seasons", "list_episodes"]

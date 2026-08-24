@@ -40,7 +40,8 @@
   "movie2kcx",
   "einschalten",
   "megakino",
-  "moflixstream"
+  "moflixstream",
+  "cineb"
  ],
  "cartoonsandanime": [
   "aniworld",
@@ -112,6 +113,7 @@
   "putlockertvto",
   "cineto",
   "worldfree4u",
+  "cineb",
   "dailymotion",
   "rteieplayer",
   "playrtsiw",
