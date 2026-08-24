@@ -347,13 +347,9 @@ class Cineb(CBaseHostClass):
 
     def getVideoLinks(self, url):
         printDBG("Cineb.getVideoLinks [%s]" % url)
-        urlTab = []
         if self.cm.isValidUrl(url):
-            if int(strwithmeta(url).meta.get("need_resolve", 0)) == 1:
-                urlTab = self.up.getVideoLinkExt(url)
-            else:
-                urlTab.append({"name": "direct", "url": url})
-        return urlTab
+            return self.up.getVideoLinkExt(url)
+        return []
 
     def listSearchResult(self, cItem, searchPattern, searchType):
         printDBG("Cineb.listSearchResult cItem[%s], searchPattern[%s] searchType[%s]" % (cItem, searchPattern, searchType))
