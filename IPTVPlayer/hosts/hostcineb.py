@@ -58,11 +58,6 @@ class Cineb(CBaseHostClass):
             itemType = cItem.get("type", "")
             category = cItem.get("category", "")
             if itemType in ["video", "audio"]:
-                contentUrl = str(cItem.get("content_url", "") or cItem.get("url", "") or "").strip()
-                if contentUrl != "":
-                    return "url:%s" % contentUrl
-                return ""
-            if category == "list_servers":
                 url = str(cItem.get("url", "") or "").strip()
                 if url != "":
                     return "url:%s" % url
@@ -150,10 +145,13 @@ class Cineb(CBaseHostClass):
             params.update({"good_for_fav": True, "title": title, "url": itemUrl, "icon": icon, "desc": desc})
             if "/watch/tv-" in itemUrl or "/tv/" in itemUrl:
                 params["category"] = "list_seasons"
+                self.watchedHelper.updateHostItemFlag(self, params, self._getWatchedKeyForItem)
+                self.addDir(params)
             else:
-                params["category"] = "list_servers"
-            self.watchedHelper.updateHostItemFlag(self, params, self._getWatchedKeyForItem)
-            self.addDir(params)
+                params["category"] = "video"
+                params["type"] = "video"
+                self.watchedHelper.updateHostItemFlag(self, params, self._getWatchedKeyForItem)
+                self.addVideo(params)
         if nextPage:
             params = dict(cItem)
             params.update({"good_for_fav": False, "title": _("Next page ▶▶▶"), "url": self.getFullUrl(nextPage), "page": page + 1})
@@ -229,12 +227,12 @@ class Cineb(CBaseHostClass):
             params = dict(cItem)
             params.pop("isWatched", None)
             params.pop("isStarted", None)
-            params.update({"category": "list_servers", "title": self.cleanHtmlStr(title), "url": self.getFullUrl(self.cleanHtmlStr(url)), "season_url": seasonUrl, "series_url": seriesUrl})
+            params.update({"category": "video", "type": "video", "title": self.cleanHtmlStr(title), "url": self.getFullUrl(self.cleanHtmlStr(url)), "season_url": seasonUrl, "series_url": seriesUrl})
             episodeItems.append(params)
         self.cacheEpisodes[seasonUrl] = episodeItems
         for params in episodeItems:
             self.watchedHelper.updateHostItemFlag(self, params, self._getWatchedKeyForItem)
-            self.addDir(params)
+            self.addVideo(params)
 
     def listEpisodes(self, cItem):
         printDBG("Cineb.listEpisodes")
@@ -285,43 +283,9 @@ class Cineb(CBaseHostClass):
         info["description"] = self.cleanHtmlStr(description)
         return info
 
-    def getMovieDetails(self, url):
-        info = self._scrapeDetails(url)
-        if not info:
-            return ""
-        details = []
-        if info["imdb"]:
-            details.append("IMDb: %s" % info["imdb"])
-        if info["quality"]:
-            details.append("\\c0000ff00%s" % info["quality"])
-        if info["year"]:
-            details.append(info["year"])
-        if info["duration"]:
-            details.append(info["duration"])
-        desc = " | ".join(details) + "\n" if details else ""
-        if info["countries"]:
-            desc += "Country: %s\n" % ", ".join(info["countries"])
-        if info["genres"]:
-            desc += "\\c00ffff00Genres: %s\n" % ", ".join(info["genres"])
-        if info["released"]:
-            desc += "Released: %s\n" % info["released"]
-        if info["directors"]:
-            desc += "Directors: %s\n" % ", ".join(info["directors"])
-        elif info["creators"]:
-            desc += "Created by: %s\n" % ", ".join(info["creators"])
-        if info["productions"]:
-            desc += "Productions: %s\n" % ", ".join(info["productions"])
-        if info["casts"]:
-            desc += "Casts: %s\n" % ", ".join(info["casts"])
-        if info["lastUpdated"]:
-            desc += "Last updated: %s\n" % info["lastUpdated"]
-        if info["description"]:
-            desc += "\n%s" % info["description"]
-        return desc
-
     def getArticleContent(self, cItem):
         printDBG("Cineb.getArticleContent [%s]" % cItem)
-        contentUrl = cItem.get("content_url") or cItem.get("url", "")
+        contentUrl = cItem.get("url", "")
         if not contentUrl:
             return []
         info = self._scrapeDetails(contentUrl)
@@ -347,21 +311,6 @@ class Cineb(CBaseHostClass):
         title = cItem.get("title", "")
         icon = cItem.get("icon", self.DEFAULT_ICON_URL)
         return [{"title": title, "text": info["description"], "images": [{"url": self.getFullIconUrl(icon)}], "other_info": otherInfo}]
-
-    def listServers(self, cItem):
-        printDBG("Cineb.listServers")
-        movieDesc = self.getMovieDetails(cItem["url"])
-        linksTab = self.getLinksForVideo(cItem)
-        for item in linksTab:
-            params = dict(cItem)
-            params.pop("isWatched", None)
-            params.pop("isStarted", None)
-            finalDesc = movieDesc
-            if cItem.get("desc"):
-                finalDesc = movieDesc + "\n" + cItem["desc"]
-            params.update({"content_url": cItem["url"], "title": item["name"], "url": item["url"], "type": "video", "desc": finalDesc})
-            self.watchedHelper.updateHostItemFlag(self, params, self._getWatchedKeyForItem)
-            self.addVideo(params)
 
     def _linkItemFromUrl(self, url):
         if url.startswith("//"):
@@ -431,8 +380,6 @@ class Cineb(CBaseHostClass):
             self.listSeasons(self.currItem)
         elif category == "list_episodes":
             self.listEpisodes(self.currItem)
-        elif category == "list_servers":
-            self.listServers(self.currItem)
         elif category in ["search", "search_next_page"]:
             cItem = dict(self.currItem)
             cItem.update({"search_item": False, "name": "category"})
