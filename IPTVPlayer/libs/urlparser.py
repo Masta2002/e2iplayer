@@ -539,6 +539,7 @@ class urlparser:
             "vidmoly.net": self.pp.parserVIDMOLYME,
             "vidmoly.to": self.pp.parserVIDMOLYME,
             "vidneo.cc": self.pp.parserVIDNEO,
+            "vidnest.fun": self.pp.parserVIDNEST,
             "vidnest.io": self.pp.parserJWPLAYER,
             "vidoza.co": self.pp.parserJWPLAYER,
             "vidoza.net": self.pp.parserJWPLAYER,
@@ -2639,4 +2640,96 @@ class pageParser(CaptchaHelper):
                 printExc()
                 return []
 
+        return urltab
+
+    def parserVIDNEST(self, baseUrl):  # add 250826
+        def vidnestB64Decode(s):
+            alphabet = "RB0fpH8ZEyVLkv7c2i6MAJ5u3IKFDxlS1NTsnGaqmXYdUrtzjwObCgQP94hoeW+/="
+            rev = {c: i for i, c in enumerate(alphabet)}
+            s = s + "=" * ((-len(s)) % 4)
+            out = bytearray()
+            for i in range(0, len(s), 4):
+                chunk = s[i:i + 4]
+                c0 = rev.get(chunk[0], 64)
+                c1 = rev.get(chunk[1], 64)
+                c2 = 64 if chunk[2] == "=" else rev.get(chunk[2], 64)
+                c3 = 64 if chunk[3] == "=" else rev.get(chunk[3], 64)
+                out.append(((c0 << 2) | (c1 >> 4)) & 0xFF)
+                if c2 != 64:
+                    out.append((((c1 & 0x0F) << 4) | (c2 >> 2)) & 0xFF)
+                if c3 != 64:
+                    out.append((((c2 & 0x03) << 6) | c3) & 0xFF)
+            return bytes(out).decode("utf-8", "replace")
+
+        def extractLinks(server, root):
+            links = []
+            try:
+                if server == "moviebox":
+                    for item in root.get("url", []) or []:
+                        if item.get("link"):
+                            links.append((item["link"], item.get("resolution", "")))
+                elif server in ("allmovies", "delta"):
+                    for item in root.get("streams", []) or []:
+                        if item.get("url"):
+                            links.append((item["url"], item.get("language", "")))
+                elif server == "hollymoviehd":
+                    for item in root.get("sources", []) or []:
+                        if item.get("file"):
+                            links.append((item["file"], item.get("label", "")))
+                elif server in ("purstream", "klikxxi"):
+                    for item in root.get("sources", []) or []:
+                        if item.get("url"):
+                            links.append((item["url"], item.get("quality", item.get("name", ""))))
+                elif server == "vidlink":
+                    playlist = root.get("data", {}).get("stream", {}).get("playlist")
+                    if playlist:
+                        links.append((playlist, ""))
+                elif server == "onehd":
+                    if root.get("url"):
+                        links.append((root["url"], ""))
+            except Exception:
+                printExc()
+            return links
+
+        printDBG("parserVIDNEST baseUrl[%s]" % baseUrl)
+        urltab = []
+        m = re.search(r"/(movie|tv)/(\d+)(?:/(\d+)/(\d+))?", baseUrl)
+        if not m:
+            return []
+        mediaType, tmdbId, season, episode = m.group(1), m.group(2), m.group(3), m.group(4)
+        HTTP_HEADER = self.cm.getDefaultHeader()
+        HTTP_HEADER["Referer"] = "https://vidnest.fun/"
+        HTTP_HEADER["Origin"] = "https://vidnest.fun"
+        servers = ["moviebox", "allmovies", "catflix", "purstream", "hollymoviehd", "lamda", "flixhq", "vidlink", "onehd", "klikxxi"]
+        for server in servers:
+            if mediaType == "tv" and season and episode:
+                apiUrl = "https://new.vidnest.fun/%s/tv/%s/%s/%s" % (server, tmdbId, season, episode)
+            else:
+                apiUrl = "https://new.vidnest.fun/%s/movie/%s" % (server, tmdbId)
+            if server == "onehd":
+                apiUrl += "?server=upcloud"
+            sts, data = self.cm.getPage(apiUrl, {"header": dict(HTTP_HEADER), "timeout": 10})
+            if not sts:
+                continue
+            try:
+                resp = json_loads(data)
+                payload = resp.get("data")
+                if not payload:
+                    continue
+                if resp.get("encrypted"):
+                    payload = vidnestB64Decode(payload)
+                root = json_loads(payload)
+            except Exception:
+                continue
+            for url, label in extractLinks(server, root):
+                if url.startswith("//"):
+                    url = "https:" + url
+                decoUrl = urlparser.decorateUrl(url, {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": "https://vidnest.fun/"})
+                name = "VidNest %s" % server.capitalize()
+                if label:
+                    name += " %s" % label
+                if ".m3u8" in url.lower():
+                    urltab.extend(getDirectM3U8Playlist(decoUrl, sortWithMaxBitrate=99999999))
+                else:
+                    urltab.append({"name": name, "url": decoUrl})
         return urltab
