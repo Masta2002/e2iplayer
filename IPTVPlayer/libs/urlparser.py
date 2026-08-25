@@ -432,6 +432,7 @@ class urlparser:
             "odysee.com": self.pp.parserJWPLAYER,
             "ok.ru": self.pp.parserOKRU,
             # p
+            "peachify.top": self.pp.parserPEACHIFY,
             "peytonepre.com": self.pp.parserJWPLAYER,
             "player.upn.one": self.pp.parserSBS,
             "playerwish.com": self.pp.parserJWPLAYER,
@@ -523,6 +524,7 @@ class urlparser:
             "vidply.com": self.pp.parserDOOD,
             "videa.hu": self.pp.parserVIDEA,
             "videakid.hu": self.pp.parserVIDEA,
+            "videasy.net": self.pp.parserVIDEASY,
             "vidaraa.cc": self.pp.parserSTREAMUP,
             "vidarax.cc": self.pp.parserSTREAMUP,
             "vidavaca.net": self.pp.parserSTREAMUP,
@@ -2732,4 +2734,113 @@ class pageParser(CaptchaHelper):
                     urltab.extend(getDirectM3U8Playlist(decoUrl, sortWithMaxBitrate=99999999))
                 else:
                     urltab.append({"name": name, "url": decoUrl})
+        return urltab
+
+    def parserPEACHIFY(self, baseUrl):  # add 250826
+        printDBG("parserPEACHIFY baseUrl[%s]" % baseUrl)
+        urltab = []
+        m = re.search(r"/(movie|tv)/(\d+)(?:/(\d+)/(\d+))?", baseUrl)
+        if not m:
+            return []
+        mediaType, tmdbId, season, episode = m.group(1), m.group(2), m.group(3), m.group(4)
+        HTTP_HEADER = self.cm.getDefaultHeader()
+        HTTP_HEADER["Referer"] = "https://peachify.top/"
+        HTTP_HEADER["Origin"] = "https://peachify.top"
+        apiBase = "https://x.eat-peach.sbs"
+        servers = ["moviebox", "air", "holly", "hr", "multi"]
+        for server in servers:
+            if mediaType == "tv" and season and episode:
+                apiUrl = "%s/%s/tv/%s/%s/%s" % (apiBase, server, tmdbId, season, episode)
+            else:
+                apiUrl = "%s/%s/movie/%s" % (apiBase, server, tmdbId)
+            sts, data = self.cm.getPage(apiUrl, {"header": dict(HTTP_HEADER), "timeout": 10})
+            if not sts:
+                continue
+            try:
+                payload = json_loads(data).get("data")
+                if not payload:
+                    continue
+                sts2, decData = self.cm.getPage(
+                    "https://enc-dec.app/api/dec-peachify",
+                    {"header": {"Content-Type": "application/json"}, "raw_post_data": True, "timeout": 10},
+                    json_dumps({"text": payload}),
+                )
+                if not sts2:
+                    continue
+                decResp = json_loads(decData)
+                if decResp.get("status") != 200:
+                    continue
+                sources = decResp.get("result", {}).get("sources", [])
+            except Exception:
+                continue
+            for src in sources or []:
+                url = src.get("url")
+                if not url:
+                    continue
+                name = "Peachify %s" % server.capitalize()
+                if src.get("dub"):
+                    name += " %s" % src["dub"]
+                if src.get("quality"):
+                    name += " %sp" % src["quality"]
+                decoUrl = urlparser.decorateUrl(url, {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": "https://peachify.top/", "Origin": "https://peachify.top"})
+                if ".m3u8" in url.lower():
+                    urltab.extend(getDirectM3U8Playlist(decoUrl, sortWithMaxBitrate=99999999))
+                else:
+                    urltab.append({"name": name, "url": decoUrl})
+        return urltab
+
+    def parserVIDEASY(self, baseUrl):  # add 250826
+        printDBG("parserVIDEASY baseUrl[%s]" % baseUrl)
+        urltab = []
+        m = re.search(r"/(movie|tv)/(\d+)(?:/(\d+)/(\d+))?", baseUrl)
+        if not m:
+            return []
+        mediaType, tmdbId, season, episode = m.group(1), m.group(2), m.group(3), m.group(4)
+        HTTP_HEADER = self.cm.getDefaultHeader()
+        HTTP_HEADER["Referer"] = "https://player.videasy.net/"
+        HTTP_HEADER["Origin"] = "https://player.videasy.net"
+        params = "tmdbId=%s&mediaType=%s&episodeId=%s&seasonId=%s" % (
+            tmdbId, mediaType, episode or "1", season or "1"
+        )
+        servers = [
+            ("https://api2.videasy.net/cuevana/sources-with-title", "cuevana"),
+            ("https://api.videasy.net/mb-flix/sources-with-title", "mb-flix"),
+            ("https://api.videasy.net/1movies/sources-with-title", "1movies"),
+            ("https://api.videasy.net/cdn/sources-with-title", "cdn"),
+            ("https://api.videasy.net/superflix/sources-with-title", "superflix"),
+            ("https://api.videasy.net/lamovie/sources-with-title", "lamovie"),
+        ]
+        for apiUrl, name in servers:
+            sts, data = self.cm.getPage("%s?%s" % (apiUrl, params), {"header": dict(HTTP_HEADER), "timeout": 10})
+            if not sts:
+                continue
+            blob = data.strip()
+            if not blob or len(blob) < 10:
+                continue
+            sts2, decData = self.cm.getPage(
+                "https://enc-dec.app/api/dec-videasy",
+                {"header": {"Content-Type": "application/json"}, "raw_post_data": True, "timeout": 10},
+                json_dumps({"text": blob, "id": tmdbId}),
+            )
+            if not sts2:
+                continue
+            try:
+                decResp = json_loads(decData)
+                if decResp.get("status") != 200:
+                    continue
+                sources = decResp.get("result", {}).get("sources", [])
+            except Exception:
+                continue
+            for src in sources or []:
+                url = src.get("url")
+                if not url:
+                    continue
+                itemName = "Videasy %s" % name.capitalize()
+                if src.get("quality"):
+                    itemName += " %s" % src["quality"]
+                decoUrl = urlparser.decorateUrl(url, {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": "https://player.videasy.net/", "Origin": "https://player.videasy.net"})
+                if ".m3u8" in url.lower():
+                    urltab.extend(getDirectM3U8Playlist(decoUrl, sortWithMaxBitrate=99999999))
+                else:
+                    urltab.append({"name": itemName, "url": decoUrl})
         return urltab
