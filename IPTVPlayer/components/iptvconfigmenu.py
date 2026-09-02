@@ -241,18 +241,30 @@ config.plugins.iptvplayer.fakExtMoviePlayerList = ConfigSelection(default="fake"
 config.plugins.iptvplayer.hidden_ext_player_def_aspect_ratio = ConfigSelection(default="-1", choices=[("-1", _("default")), ("0", _("4:3 Letterbox")), ("1", _("4:3 PanScan")), ("2", _("16:9")), ("3", _("16:9 always")), ("4", _("16:10 Letterbox")), ("5", _("16:10 PanScan")), ("6", _("16:9 Letterbox"))])
 
 config.plugins.iptvplayer.search_history_size = ConfigInteger(50, (0, 1000000))
+config.plugins.iptvplayer.enableT9MainList = ConfigYesNo(default=True)
+config.plugins.iptvplayer.rememberHistorySelection = ConfigYesNo(default=True)
 config.plugins.iptvplayer.autoplay_start_delay = ConfigInteger(3, (0, 9))
 
 config.plugins.iptvplayer.favourites_use_watched_flag = ConfigYesNo(default=True)
 config.plugins.iptvplayer.watched_item_color = ConfigSelection(default="#808080", choices=COLORS_DEFINITONS)
 config.plugins.iptvplayer.started_item_color = ConfigSelection(default="#FFFF00", choices=COLORS_DEFINITONS)
 config.plugins.iptvplayer.sidecar_enabled = ConfigYesNo(default=True)
+config.plugins.iptvplayer.normalize_media_names = ConfigYesNo(default=True)
 
 
 def IsSidecarEnabled():
     # single central place hosts ask whether to create sidecar .txt/.jpg files,
     # instead of each host keeping its own copy of this config option
     return config.plugins.iptvplayer.sidecar_enabled.value
+
+
+def IsMediaNamingNormalized():
+    # shared toggle for every host that produces media-server friendly item
+    # titles ("Show - SxxExx - Title" / "Title (Year)" / "Show - Title
+    # (YYYY-MM-DD)") instead of the site's raw label - currently the mediathek
+    # hosts (ARD/ZDF/ARTE/ORF/SRG), serienstream.to and hdfilme. The download
+    # filename is derived from the item title, so this normalises that too.
+    return config.plugins.iptvplayer.normalize_media_names.value
 
 
 config.plugins.iptvplayer.usepycurl = ConfigYesNo(default=False)
@@ -460,6 +472,7 @@ class ConfigMenu(ConfigBaseWidget):
             list.append(getConfigListEntry("    " + _("The color of the viewed item"), config.plugins.iptvplayer.watched_item_color))
             list.append(getConfigListEntry("    " + _("The color of the started item"), config.plugins.iptvplayer.started_item_color))
         list.append(getConfigListEntry(_("Create sidecar files (.txt/.jpg)"), config.plugins.iptvplayer.sidecar_enabled))
+        list.append(getConfigListEntry(_("Normalize item / file names (Show - SxxExx - Title)"), config.plugins.iptvplayer.normalize_media_names))
         list.append(getConfigListEntry(_("----- SECURITY CONFIGURATION -----"),))
         list.append(getConfigListEntry(_("Pin protection for plugin"), config.plugins.iptvplayer.pluginProtectedByPin))
         list.append(getConfigListEntry(_("Pin protection for configuration"), config.plugins.iptvplayer.configProtectedByPin))
@@ -582,6 +595,9 @@ class ConfigMenu(ConfigBaseWidget):
         list.append(getConfigListEntry(_("The default aspect ratio for the external player"), config.plugins.iptvplayer.hidden_ext_player_def_aspect_ratio))
 
         list.append(getConfigListEntry(_("----- OTHER SETTINGS -----"), ))
+        # search_history_size lives in the STORAGE section on this branch; keep only the new python3 toggles here
+        list.append(getConfigListEntry(_("Remember last search history selection"), config.plugins.iptvplayer.rememberHistorySelection))
+        list.append(getConfigListEntry(_("T9 letter jump in lists"), config.plugins.iptvplayer.enableT9MainList))
         list.append(getConfigListEntry(_("Write current title to file:"), config.plugins.iptvplayer.curr_title_file))
         list.append(getConfigListEntry(_("MIPS Floating Point Architecture"), config.plugins.iptvplayer.plarformfpuabi))
         list.append(getConfigListEntry(_("Prefer hlsld for playlist with alt. media"), config.plugins.iptvplayer.prefer_hlsdl_for_pls_with_alt_media))
