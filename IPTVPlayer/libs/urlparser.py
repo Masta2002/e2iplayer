@@ -558,6 +558,7 @@ class urlparser:
             "vidoza.co": self.pp.parserJWPLAYER,
             "vidoza.net": self.pp.parserJWPLAYER,
             "vidoza.org": self.pp.parserJWPLAYER,
+            "vidrock.net": self.pp.parserVIDROCK,
             "vidsonic.net": self.pp.parserVIDSONIC,
             "vidsrc.bz": self.pp.parserVIDSRC,
             "vidsrc.cc": self.pp.parserMEGAFILES,
@@ -3093,6 +3094,45 @@ class pageParser(CaptchaHelper):
             else:
                 url = urlparser.decorateUrl(js.get("hls"), {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": host, "Origin": host[:-1]})
                 urltab.extend(getDirectM3U8Playlist(url, sortWithMaxBitrate=99999999))
+        return urltab
+
+    def parserVIDROCK(self, baseUrl):  # add 030926 - vidrock.net (7reels "AdRock"); per-server AES-256-GCM blobs from a plain JSON API
+        printDBG("parserVIDROCK baseUrl[%s]" % baseUrl)
+        m = re.search(r"vidrock\.net/(?:api/)?(movie/\d+|tv/\d+/\d+/\d+)", baseUrl)
+        if not m:
+            return []
+        HTTP_HEADER = self.cm.getDefaultHeader()
+        HTTP_HEADER["Referer"] = "https://vidrock.net/"
+        sts, data = self.cm.getPage("https://vidrock.net/api/" + m.group(1), {"header": HTTP_HEADER})
+        if not sts:
+            return []
+        try:
+            servers = json_loads(data)
+        except Exception:
+            printExc()
+            return []
+        cipher = python_aesgcm.new(unhexlify("7f3e9c2a8b5d1f4e6a9c3b7d2e5f8a1c4b6d9e2f5a8c1b4d7e9f2a5c8b1d4e7f"))
+        urltab = []
+        for name, info in servers.items():
+            enc = (info or {}).get("url")
+            if not enc:
+                continue
+            try:
+                blob = base64.b64decode(enc.replace("-", "+").replace("_", "/") + "=" * (-len(enc) % 4))
+                plain = cipher.open(blob[:12], blob[12:])
+            except Exception:
+                printExc()
+                continue
+            if not plain:
+                continue
+            url = ensure_str(plain).strip()
+            if not url.startswith("http"):
+                continue
+            url = urlparser.decorateUrl(url, {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": "https://vidrock.net/", "Origin": "https://vidrock.net"})
+            if ".m3u8" in url:
+                urltab.extend(getDirectM3U8Playlist(url, sortWithMaxBitrate=99999999))
+            else:
+                urltab.append({"name": name, "url": url})
         return urltab
 
     def parserVIDNEO(self, baseUrl):  # fix 060726

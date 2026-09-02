@@ -148,51 +148,32 @@ class SevenReels(GenericFolderWatchedScraperMixin, CBaseHostClass):
         cItem['url'] = self.MAIN_URL + 'api/search/smart?q=' + urllib_quote_plus(searchPattern)
         self.listItems(cItem)
 
-    def _collectStreams(self, html, referer, ua):
-        """Pull direct progressive/HLS CDN links out of an embed page (no external decoder)."""
-        out = []
-        for proto in ('mp4', 'm3u8'):
-            for mu in re.findall(r'''(https?://[^"'\s\\]+\.%s[^"'\s\\]*)''' % proto, html):
-                mu = mu.replace('\\/', '/')
-                m = re.search(r'-s(\d{3,4})p-|(\d{3,4})p', mu)
-                res = (m.group(1) or m.group(2)) if m else None
-                name = '%s %sp' % (proto.upper(), res) if res else proto.upper()
-                out.append((int(res) if res else 0, {
-                    'name': name,
-                    'url': strwithmeta(mu, {'User-Agent': ua, 'Referer': referer}),
-                    'need_resolve': 0,
-                }))
-        return out
+    # 7reels' watch page is a JS shell that just iframes one of a fixed set of
+    # TMDb-keyed embed providers (server list + URL shapes lifted from the site's
+    # own bundle). We hand every candidate to urlparser; whichever ones it knows
+    # how to resolve show up as playable links. "tv" appends /<season>/<episode>.
+    _EMBEDS = (
+        ('AdRock', 'https://vidrock.net/%(kind)s/%(id)s%(se)s'),
+        ('Strigil', 'https://strigil.cc/embed/%(kind)s/%(id)s%(se)s?embedKey=key_c90081fa77254eb5&autoPlay=true'),
+        ('VidSrc', 'https://vidsrc.mov/embed/%(kind)s/%(id)s%(se)s'),
+        ('VidEasy', 'https://player.videasy.to/%(kind)s/%(id)s%(se)s'),
+        ('VidLink', 'https://vidlink.pro/%(kind)s/%(id)s%(se)s'),
+        ('VidCore', 'https://vidcore.net/%(kind)s/%(id)s%(se)s'),
+        ('VidNest', 'https://vidnest.fun/%(kind)s/%(id)s%(se)s'),
+        ('Vidzee', 'https://player.vidzee.wtf/embed/%(kind)s/%(id)s%(se)s'),
+        ('VidUp', 'https://vidup.to/%(kind)s/%(id)s%(se)s'),
+    )
 
     def getLinksForVideo(self, cItem):
         printDBG("SevenReels.getLinksForVideo [%s]" % cItem['url'])
-        url = cItem['url']
-        ua = self.HEADER['User-Agent']
-        m = re.search(r'/(movie|tv)/(\d+)', url)
-        mediaType, mediaId = (m.group(1), m.group(2)) if m else ('movie', '')
+        m = re.search(r'/(movie|tv)/(\d+)', cItem['url'])
+        if not m:
+            return []
+        fields = {'kind': m.group(1), 'id': m.group(2), 'se': '/1/1' if m.group(1) == 'tv' else ''}
 
-        streams = []
-        embeds = []
-        sts, html = self.getPage(url)
-        if sts:
-            sm = re.search(r'''(https?:)?(//[^"'\s]*strigil\.cc/embed/(?:movie|tv)/[^"'\s]+)''', html)
-            if sm:
-                strigilUrl = ('https:' + sm.group(2)).replace('&amp;', '&')
-                sts2, embedHtml = self.getPage(strigilUrl, {'header': {'Referer': url, 'User-Agent': ua}})
-                if sts2:
-                    streams.extend(self._collectStreams(embedHtml, strigilUrl, ua))
-
-            for host in ('vsembed.ru', 'vsembed.su'):
-                em = re.search(r'''(https?://[^"'\s]*%s/embed/(?:movie|tv)/[^"'\s]+)''' % re.escape(host), html)
-                if em:
-                    embeds.append(em.group(1))
-
-        if not embeds and mediaId:
-            embeds.append('https://vsembed.ru/embed/%s/%s%s' % (mediaType, mediaId, '/1/1' if mediaType == 'tv' else ''))
-
-        urlTab = [t[1] for t in sorted(streams, key=lambda x: x[0], reverse=True)]
-        for em in embeds:
-            urlTab.append({'name': self.up.getHostName(em).capitalize(), 'url': strwithmeta(em, {'Referer': self.MAIN_URL}), 'need_resolve': 1})
+        urlTab = []
+        for label, tpl in self._EMBEDS:
+            urlTab.append({'name': label, 'url': strwithmeta(tpl % fields, {'Referer': self.MAIN_URL}), 'need_resolve': 1})
         return applySidecarToLinks(urlTab, buildSidecarFromItem(cItem, IsSidecarEnabled()))
 
     def getVideoLinks(self, videoUrl):
