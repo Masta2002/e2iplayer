@@ -443,6 +443,7 @@ class urlparser:
             "odysseusa.cc": self.pp.parserSTREAMUP,
             "ok.ru": self.pp.parserOKRU,
             # p
+            "peachify.top": self.pp.parserPEACHIFY,
             "peytonepre.com": self.pp.parserJWPLAYER,
             "player.upn.one": self.pp.parserSBS,
             "playerwish.com": self.pp.parserJWPLAYER,
@@ -538,6 +539,8 @@ class urlparser:
             "vidply.com": self.pp.parserDOOD,
             "videa.hu": self.pp.parserVIDEA,
             "videakid.hu": self.pp.parserVIDEA,
+            "videasy.net": self.pp.parserVIDEASY,
+            "videasy.to": self.pp.parserVIDEASY,
             "vidaraa.cc": self.pp.parserSTREAMUP,
             "vidarax.cc": self.pp.parserSTREAMUP,
             "vidavaca.net": self.pp.parserSTREAMUP,
@@ -554,6 +557,7 @@ class urlparser:
             "vidmoly.net": self.pp.parserVIDMOLYME,
             "vidmoly.to": self.pp.parserVIDMOLYME,
             "vidneo.cc": self.pp.parserVIDNEO,
+            "vidnest.fun": self.pp.parserVIDNEST,
             "vidnest.io": self.pp.parserJWPLAYER,
             "vidoza.co": self.pp.parserJWPLAYER,
             "vidoza.net": self.pp.parserJWPLAYER,
@@ -563,11 +567,13 @@ class urlparser:
             "vidsrc.bz": self.pp.parserVIDSRC,
             "vidsrc.cc": self.pp.parserMEGAFILES,
             "vidsrc.do": self.pp.parserVIDSRC,
+            "vidsrc.fyi": self.pp.parserVIDSRCMOV,
             "vidsrc.gd": self.pp.parserVIDSRC,
             "vidsrc.in": self.pp.parserVIDSRC,
             "vidsrc.io": self.pp.parserVIDSRC,
             "vidsrc.me": self.pp.parserVIDSRC,
             "vidsrc.mn": self.pp.parserVIDSRC,
+            "vidsrc.mov": self.pp.parserVIDSRCMOV,
             "vidsrc.net": self.pp.parserVIDSRC,
             "vidsrc.pm": self.pp.parserVIDSRC,
             "vidsrc.tw": self.pp.parserVIDSRC,
@@ -2851,6 +2857,19 @@ class pageParser(CaptchaHelper):
                     urltab.extend(getDirectM3U8Playlist(url, sortWithMaxBitrate=99999999))
         return urltab
 
+    def parserVIDSRCMOV(self, baseUrl):  # add 240826
+        printDBG("parserVIDSRCMOV baseUrl[%s]" % baseUrl)
+        HTTP_HEADER = self.cm.getDefaultHeader()
+        sts, data = self.cm.getPage(baseUrl, {"header": HTTP_HEADER})
+        if not sts:
+            return []
+        inner = re.search(r'<iframe[^>]+src=["\']([^"\']+)["\']', data)
+        if not inner:
+            return []
+        innerUrl = inner.group(1)
+        innerUrl = "https:" + innerUrl if innerUrl.startswith("//") else innerUrl
+        return self.parserVIDSRC(innerUrl)
+
     def parserGUPLOAD(self, baseUrl):
         printDBG("parserGUPLOAD baseUrl[%s]" % baseUrl)
         host = urlparser.getDomain(baseUrl, False)
@@ -3174,4 +3193,205 @@ class pageParser(CaptchaHelper):
                 printExc()
                 return []
 
+        return urltab
+
+    def parserVIDNEST(self, baseUrl):  # add 250826
+        def vidnestB64Decode(s):
+            alphabet = "RB0fpH8ZEyVLkv7c2i6MAJ5u3IKFDxlS1NTsnGaqmXYdUrtzjwObCgQP94hoeW+/="
+            rev = {c: i for i, c in enumerate(alphabet)}
+            s = s + "=" * ((-len(s)) % 4)
+            out = bytearray()
+            for i in range(0, len(s), 4):
+                chunk = s[i:i + 4]
+                c0 = rev.get(chunk[0], 64)
+                c1 = rev.get(chunk[1], 64)
+                c2 = 64 if chunk[2] == "=" else rev.get(chunk[2], 64)
+                c3 = 64 if chunk[3] == "=" else rev.get(chunk[3], 64)
+                out.append(((c0 << 2) | (c1 >> 4)) & 0xFF)
+                if c2 != 64:
+                    out.append((((c1 & 0x0F) << 4) | (c2 >> 2)) & 0xFF)
+                if c3 != 64:
+                    out.append((((c2 & 0x03) << 6) | c3) & 0xFF)
+            return bytes(out).decode("utf-8", "replace")
+
+        def extractLinks(server, root):
+            links = []
+            try:
+                if server == "moviebox":
+                    for item in root.get("url", []) or []:
+                        if item.get("link"):
+                            links.append((item["link"], item.get("resolution", "")))
+                elif server in ("allmovies", "delta"):
+                    for item in root.get("streams", []) or []:
+                        if item.get("url"):
+                            links.append((item["url"], item.get("language", "")))
+                elif server == "hollymoviehd":
+                    for item in root.get("sources", []) or []:
+                        if item.get("file"):
+                            links.append((item["file"], item.get("label", "")))
+                elif server in ("purstream", "klikxxi"):
+                    for item in root.get("sources", []) or []:
+                        if item.get("url"):
+                            links.append((item["url"], item.get("quality", item.get("name", ""))))
+                elif server == "vidlink":
+                    playlist = root.get("data", {}).get("stream", {}).get("playlist")
+                    if playlist:
+                        links.append((playlist, ""))
+                elif server == "onehd":
+                    if root.get("url"):
+                        links.append((root["url"], ""))
+            except Exception:
+                printExc()
+            return links
+
+        printDBG("parserVIDNEST baseUrl[%s]" % baseUrl)
+        urltab = []
+        m = re.search(r"/(movie|tv)/(\d+)(?:/(\d+)/(\d+))?", baseUrl)
+        if not m:
+            return []
+        mediaType, tmdbId, season, episode = m.group(1), m.group(2), m.group(3), m.group(4)
+        HTTP_HEADER = self.cm.getDefaultHeader()
+        HTTP_HEADER["Referer"] = "https://vidnest.fun/"
+        HTTP_HEADER["Origin"] = "https://vidnest.fun"
+        servers = ["moviebox", "allmovies", "catflix", "purstream", "hollymoviehd", "lamda", "flixhq", "vidlink", "onehd", "klikxxi"]
+        for server in servers:
+            if mediaType == "tv" and season and episode:
+                apiUrl = "https://new.vidnest.fun/%s/tv/%s/%s/%s" % (server, tmdbId, season, episode)
+            else:
+                apiUrl = "https://new.vidnest.fun/%s/movie/%s" % (server, tmdbId)
+            if server == "onehd":
+                apiUrl += "?server=upcloud"
+            sts, data = self.cm.getPage(apiUrl, {"header": dict(HTTP_HEADER), "timeout": 10})
+            if not sts:
+                continue
+            try:
+                resp = json_loads(data)
+                payload = resp.get("data")
+                if not payload:
+                    continue
+                if resp.get("encrypted"):
+                    payload = vidnestB64Decode(payload)
+                root = json_loads(payload)
+            except Exception:
+                continue
+            for url, label in extractLinks(server, root):
+                if url.startswith("//"):
+                    url = "https:" + url
+                decoUrl = urlparser.decorateUrl(url, {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": "https://vidnest.fun/"})
+                name = "VidNest %s" % server.capitalize()
+                if label:
+                    name += " %s" % label
+                if ".m3u8" in url.lower():
+                    urltab.extend(getDirectM3U8Playlist(decoUrl, sortWithMaxBitrate=99999999))
+                else:
+                    urltab.append({"name": name, "url": decoUrl})
+        return urltab
+
+    def parserPEACHIFY(self, baseUrl):  # add 250826
+        printDBG("parserPEACHIFY baseUrl[%s]" % baseUrl)
+        urltab = []
+        m = re.search(r"/(movie|tv)/(\d+)(?:/(\d+)/(\d+))?", baseUrl)
+        if not m:
+            return []
+        mediaType, tmdbId, season, episode = m.group(1), m.group(2), m.group(3), m.group(4)
+        HTTP_HEADER = self.cm.getDefaultHeader()
+        HTTP_HEADER["Referer"] = "https://peachify.top/"
+        HTTP_HEADER["Origin"] = "https://peachify.top"
+        apiBase = "https://x.eat-peach.sbs"
+        servers = ["moviebox", "air", "holly", "hr", "multi"]
+        for server in servers:
+            if mediaType == "tv" and season and episode:
+                apiUrl = "%s/%s/tv/%s/%s/%s" % (apiBase, server, tmdbId, season, episode)
+            else:
+                apiUrl = "%s/%s/movie/%s" % (apiBase, server, tmdbId)
+            sts, data = self.cm.getPage(apiUrl, {"header": dict(HTTP_HEADER), "timeout": 10})
+            if not sts:
+                continue
+            try:
+                payload = json_loads(data).get("data")
+                if not payload:
+                    continue
+                sts2, decData = self.cm.getPage(
+                    "https://enc-dec.app/api/dec-peachify",
+                    {"header": {"Content-Type": "application/json"}, "raw_post_data": True, "timeout": 10},
+                    json_dumps({"text": payload}),
+                )
+                if not sts2:
+                    continue
+                decResp = json_loads(decData)
+                if decResp.get("status") != 200:
+                    continue
+                sources = decResp.get("result", {}).get("sources", [])
+            except Exception:
+                continue
+            for src in sources or []:
+                url = src.get("url")
+                if not url:
+                    continue
+                name = "Peachify %s" % server.capitalize()
+                if src.get("dub"):
+                    name += " %s" % src["dub"]
+                if src.get("quality"):
+                    name += " %sp" % src["quality"]
+                decoUrl = urlparser.decorateUrl(url, {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": "https://peachify.top/", "Origin": "https://peachify.top"})
+                if ".m3u8" in url.lower():
+                    urltab.extend(getDirectM3U8Playlist(decoUrl, sortWithMaxBitrate=99999999))
+                else:
+                    urltab.append({"name": name, "url": decoUrl})
+        return urltab
+
+    def parserVIDEASY(self, baseUrl):  # add 250826
+        printDBG("parserVIDEASY baseUrl[%s]" % baseUrl)
+        urltab = []
+        m = re.search(r"/(movie|tv)/(\d+)(?:/(\d+)/(\d+))?", baseUrl)
+        if not m:
+            return []
+        mediaType, tmdbId, season, episode = m.group(1), m.group(2), m.group(3), m.group(4)
+        HTTP_HEADER = self.cm.getDefaultHeader()
+        HTTP_HEADER["Referer"] = "https://player.videasy.net/"
+        HTTP_HEADER["Origin"] = "https://player.videasy.net"
+        params = "tmdbId=%s&mediaType=%s&episodeId=%s&seasonId=%s" % (
+            tmdbId, mediaType, episode or "1", season or "1"
+        )
+        servers = [
+            ("https://api2.videasy.net/cuevana/sources-with-title", "cuevana"),
+            ("https://api.videasy.net/mb-flix/sources-with-title", "mb-flix"),
+            ("https://api.videasy.net/1movies/sources-with-title", "1movies"),
+            ("https://api.videasy.net/cdn/sources-with-title", "cdn"),
+            ("https://api.videasy.net/superflix/sources-with-title", "superflix"),
+            ("https://api.videasy.net/lamovie/sources-with-title", "lamovie"),
+        ]
+        for apiUrl, name in servers:
+            sts, data = self.cm.getPage("%s?%s" % (apiUrl, params), {"header": dict(HTTP_HEADER), "timeout": 10})
+            if not sts:
+                continue
+            blob = data.strip()
+            if not blob or len(blob) < 10:
+                continue
+            sts2, decData = self.cm.getPage(
+                "https://enc-dec.app/api/dec-videasy",
+                {"header": {"Content-Type": "application/json"}, "raw_post_data": True, "timeout": 10},
+                json_dumps({"text": blob, "id": tmdbId}),
+            )
+            if not sts2:
+                continue
+            try:
+                decResp = json_loads(decData)
+                if decResp.get("status") != 200:
+                    continue
+                sources = decResp.get("result", {}).get("sources", [])
+            except Exception:
+                continue
+            for src in sources or []:
+                url = src.get("url")
+                if not url:
+                    continue
+                itemName = "Videasy %s" % name.capitalize()
+                if src.get("quality"):
+                    itemName += " %s" % src["quality"]
+                decoUrl = urlparser.decorateUrl(url, {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": "https://player.videasy.net/", "Origin": "https://player.videasy.net"})
+                if ".m3u8" in url.lower():
+                    urltab.extend(getDirectM3U8Playlist(decoUrl, sortWithMaxBitrate=99999999))
+                else:
+                    urltab.append({"name": itemName, "url": decoUrl})
         return urltab

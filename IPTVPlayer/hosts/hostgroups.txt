@@ -41,6 +41,7 @@
   "einschalten",
   "megakino",
   "moflixstream",
+  "cineb",
   "sevenreels"
  ],
  "cartoonsandanime": [
@@ -113,6 +114,7 @@
   "putlockertvto",
   "cineto",
   "worldfree4u",
+  "cineb",
   "dailymotion",
   "rteieplayer",
   "playrtsiw",
