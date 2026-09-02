@@ -537,6 +537,8 @@ class urlparser:
             "veev.to": self.pp.parserVEEV,
             "vide0.net": self.pp.parserDOOD,
             "vidply.com": self.pp.parserDOOD,
+            "vidcore.io": self.pp.parserVIDCORE,
+            "vidcore.net": self.pp.parserVIDCORE,
             "videa.hu": self.pp.parserVIDEA,
             "videakid.hu": self.pp.parserVIDEA,
             "videasy.net": self.pp.parserVIDEASY,
@@ -585,6 +587,7 @@ class urlparser:
             "vidsrc-me.su": self.pp.parserVIDSRC,
             "vidsrcme.ru": self.pp.parserVIDSRC,
             "vidsrcme.su": self.pp.parserVIDSRC,
+            "vidup.to": self.pp.parserVIDCORE,
             "vixeo.io": self.pp.parserVIXEO,
             "vixsrc.to": self.pp.parserVIXSRC,
             "vsrc.su": self.pp.parserVIDSRC,
@@ -3394,4 +3397,79 @@ class pageParser(CaptchaHelper):
                     urltab.extend(getDirectM3U8Playlist(decoUrl, sortWithMaxBitrate=99999999))
                 else:
                     urltab.append({"name": itemName, "url": decoUrl})
+        return urltab
+
+    def parserVIDCORE(self, baseUrl):  # add 030926 - vidcore.net/.io + vidup.to (shared codebase); page token -> enc-dec.app enc/dec chain
+        printDBG("parserVIDCORE baseUrl[%s]" % baseUrl)
+        urltab = []
+        m = re.search(r"/(movie|tv)/([A-Za-z0-9]+)(?:/(\d+)/(\d+))?", baseUrl)
+        if not m:
+            return []
+        mediaType, mid, season, episode = m.group(1), m.group(2), m.group(3), m.group(4)
+        if "vidup" in baseUrl:
+            host, name = "vidup.to", "vidup"
+        else:
+            host, name = "vidcore.io", "vidcore"
+        ref = "https://%s/" % host
+        api = "https://enc-dec.app/api"
+        HTTP_HEADER = self.cm.getDefaultHeader()
+        HTTP_HEADER["Referer"] = ref
+        if mediaType == "tv" and season and episode:
+            pageUrl = "%stv/%s/%s/%s/" % (ref, mid, season, episode)
+        else:
+            pageUrl = "%smovie/%s/" % (ref, mid)
+        sts, data = self.cm.getPage(pageUrl, {"header": HTTP_HEADER})
+        if not sts:
+            return []
+        tok = re.search(r'\\"(?:en|token)\\":\\"([^\\"]+)', data)
+        if not tok:
+            return []
+        sts, data = self.cm.getPage("%s/enc-%s?%s" % (api, name, urllib_urlencode({"text": tok.group(1)})), {"header": {"User-Agent": HTTP_HEADER["User-Agent"]}})
+        if not sts:
+            return []
+        try:
+            parts = json_loads(data)["result"]
+            serversUrl, streamBase, csrf = parts["servers"], parts["stream"], parts["token"]
+        except Exception:
+            printExc()
+            return []
+        provHdr = {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": ref, "X-Requested-With": "XMLHttpRequest", "X-CSRF-Token": csrf}
+        sts, serversEnc = self.cm.getPage(serversUrl, {"header": provHdr, "raw_post_data": True}, "")
+        if not sts:
+            return []
+        sts, data = self.cm.getPage("%s/dec-%s" % (api, name), {"header": {"Content-Type": "application/json"}, "raw_post_data": True}, json_dumps({"text": serversEnc}))
+        if not sts:
+            return []
+        try:
+            serverList = json_loads(data).get("result") or []
+        except Exception:
+            printExc()
+            return []
+        for srv in serverList[:5]:
+            srvData = srv.get("data")
+            if not srvData:
+                continue
+            sts, streamEnc = self.cm.getPage("%s/%s" % (streamBase, srvData), {"header": provHdr, "raw_post_data": True}, "")
+            if not sts:
+                continue
+            sts, data = self.cm.getPage("%s/dec-%s" % (api, name), {"header": {"Content-Type": "application/json"}, "raw_post_data": True}, json_dumps({"text": streamEnc}))
+            if not sts:
+                continue
+            try:
+                res = json_loads(data)
+                if res.get("status") != 200:
+                    continue
+                streamUrl = res.get("result", {}).get("url")
+            except Exception:
+                continue
+            if not streamUrl:
+                continue
+            label = ("%s %s" % (name.capitalize(), srv.get("name", ""))).strip()
+            decoUrl = urlparser.decorateUrl(streamUrl, {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": ref, "Origin": ref[:-1]})
+            if ".m3u8" in streamUrl:
+                for item in getDirectM3U8Playlist(decoUrl, sortWithMaxBitrate=99999999):
+                    item["name"] = "%s %s" % (label, item.get("name", ""))
+                    urltab.append(item)
+            else:
+                urltab.append({"name": label, "url": decoUrl})
         return urltab
