@@ -8,6 +8,10 @@ from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT
 from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote_plus
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
+from Plugins.Extensions.IPTVPlayer.tools.iptvwatchedhelper import IPTVWatchedHelper
+from Plugins.Extensions.IPTVPlayer.tools.iptvwatchedfoldermixin import GenericFolderWatchedScraperMixin, GenericFolderWatchedHostMixin
+from Plugins.Extensions.IPTVPlayer.libs.urlmetahelper import buildSidecarFromItem, applySidecarToLinks, sidecarFromUrlMeta, decorateResolvedLinkItems
+from Plugins.Extensions.IPTVPlayer.components.iptvconfigmenu import IsSidecarEnabled, IsMediaNamingNormalized
 
 
 def GetConfigList():
@@ -18,7 +22,7 @@ def gettytul():
     return 'https://7reels.cc/'
 
 
-class SevenReels(CBaseHostClass):
+class SevenReels(GenericFolderWatchedScraperMixin, CBaseHostClass):
 
     IMG_URL = 'https://image.tmdb.org/t/p/w500'
 
@@ -42,6 +46,29 @@ class SevenReels(CBaseHostClass):
             {'category': 'list_items', 'title': _('Documentary'), 'url': api + 'tmdb/discover/movie?with_genres=99'},
             {'category': 'list_items', 'title': _('Animation'), 'url': api + 'tmdb/discover/movie?with_genres=16'},
         ] + self.searchItems()
+
+        self.watchedHelper = IPTVWatchedHelper('sevenreels')
+        self.wfInitFolderCache()
+
+    ###################################################
+    # watched flag
+    ###################################################
+    def _getWatchedKeyForItem(self, cItem):
+        try:
+            if not isinstance(cItem, dict):
+                return ''
+            if cItem.get('type', '') in ('video', 'audio'):
+                url = str(cItem.get('url', '') or '').strip()
+                return 'video:%s' % url if url else ''
+            if cItem.get('search_item') or cItem.get('name') == 'history':
+                return ''
+            if cItem.get('category', '') in ('search', 'search_next_page', 'search_history'):
+                return ''
+            url = self.wfNormalizeUrlKey(cItem.get('url', ''))
+            return 'folder:%s' % url if url else ''
+        except Exception:
+            printExc()
+        return ''
 
     def getPage(self, baseUrl, addParams=None, post_data=None):
         if addParams is None:
@@ -84,20 +111,25 @@ class SevenReels(CBaseHostClass):
 
         items = self._extractItems(parsed)
         defType = 'tv' if 'discover/tv' in cItem['url'] else 'movie'
+        normalize = IsMediaNamingNormalized()
         count = 0
         for item in items:
             mediaId = item.get('id')
-            title = item.get('title') or item.get('name') or ''
+            title = self.cleanHtmlStr(item.get('title') or item.get('name') or '')
             if not mediaId or not title:
                 continue
             mediaType = item.get('media_type') or defType
             poster = item.get('poster_path') or ''
             year = (item.get('release_date') or item.get('first_air_date') or '')[:4]
+            dispTitle = ('%s (%s)' % (title, year)) if (year and (normalize or mediaType == 'movie')) else title
             params = dict(cItem)
+            params.pop('page', None)
             params.update({
                 'good_for_fav': True,
                 'category': 'video',
-                'title': ('%s (%s)' % (title, year)) if year else title,
+                'title': dispTitle,
+                's_title': title,
+                'year': year,
                 'url': '%s%s/%s/watch' % (self.MAIN_URL, mediaType, mediaId),
                 'icon': (self.IMG_URL + poster) if poster else '',
                 'desc': self.cleanHtmlStr(item.get('overview', '')),
@@ -161,12 +193,13 @@ class SevenReels(CBaseHostClass):
         urlTab = [t[1] for t in sorted(streams, key=lambda x: x[0], reverse=True)]
         for em in embeds:
             urlTab.append({'name': self.up.getHostName(em).capitalize(), 'url': strwithmeta(em, {'Referer': self.MAIN_URL}), 'need_resolve': 1})
-        return urlTab
+        return applySidecarToLinks(urlTab, buildSidecarFromItem(cItem, IsSidecarEnabled()))
 
     def getVideoLinks(self, videoUrl):
         printDBG("SevenReels.getVideoLinks [%s]" % videoUrl)
         if self.cm.isValidUrl(videoUrl):
-            return self.up.getVideoLinkExt(videoUrl)
+            sidecar = sidecarFromUrlMeta(videoUrl, IsSidecarEnabled())
+            return decorateResolvedLinkItems(self.up.getVideoLinkExt(videoUrl), sidecar)
         return []
 
     def handleService(self, index, refresh=0, searchPattern='', searchType=''):
@@ -192,7 +225,10 @@ class SevenReels(CBaseHostClass):
         CBaseHostClass.endHandleService(self, index, refresh)
 
 
-class IPTVHost(CHostBase):
+class IPTVHost(GenericFolderWatchedHostMixin, CHostBase):
 
     def __init__(self):
         CHostBase.__init__(self, SevenReels(), True, [])
+        self.cachedRet = None
+        self.refreshAfterWatchedFlagChange = False
+        self.watchedHelper = IPTVWatchedHelper('sevenreels')
