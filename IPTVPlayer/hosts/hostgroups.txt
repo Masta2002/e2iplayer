@@ -40,7 +40,8 @@
   "movie2kcx",
   "einschalten",
   "megakino",
-  "moflixstream"
+  "moflixstream",
+  "sevenreels"
  ],
  "cartoonsandanime": [
   "aniworld",
@@ -115,6 +116,7 @@
   "dailymotion",
   "rteieplayer",
   "playrtsiw",
+  "sevenreels",
   "orthobulletscom",
   "vumedicom"
  ],
