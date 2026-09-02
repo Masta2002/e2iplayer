@@ -11,7 +11,18 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads
 from Plugins.Extensions.IPTVPlayer.tools.iptvwatchedhelper import IPTVWatchedHelper
 from Plugins.Extensions.IPTVPlayer.tools.iptvwatchedhostmixin import WatchedFlagHostMixin
+from Plugins.Extensions.IPTVPlayer.tools.iptvnaming import formatSxxExx
+from Plugins.Extensions.IPTVPlayer.libs.urlmetahelper import buildSidecarFromItem, applySidecarToLinks, sidecarFromUrlMeta, decorateResolvedLinkItems
+from Plugins.Extensions.IPTVPlayer.components.iptvconfigmenu import IsSidecarEnabled, IsMediaNamingNormalized
 import re
+
+
+_SERIES_SUFFIX_RE = re.compile(r"\s*[-–]\s*Season\s+\d+\s*$", re.I)
+_EP_STATUS_RE = re.compile(r"\s*\((?:trailer only|coming soon|not released|no source)\)\s*$", re.I)
+
+
+def _cleanSeriesTitle(title):
+    return _SERIES_SUFFIX_RE.sub("", title or "").strip()
 
 
 def GetConfigList():
@@ -145,6 +156,7 @@ class Cineb(CBaseHostClass):
             params.update({"good_for_fav": True, "title": title, "url": itemUrl, "icon": icon, "desc": desc})
             if "/watch/tv-" in itemUrl or "/tv/" in itemUrl:
                 params["category"] = "list_seasons"
+                params["s_title"] = _cleanSeriesTitle(title)
                 self.watchedHelper.updateHostItemFlag(self, params, self._getWatchedKeyForItem)
                 self.addDir(params)
             else:
@@ -196,15 +208,17 @@ class Cineb(CBaseHostClass):
         if not seasons:
             self.listEpisodesFromPage(cItem, episodesSection or data, seriesUrl)
             return
+        sTitle = cItem.get("s_title") or _cleanSeriesTitle(cItem.get("title", ""))
         seasonItems = []
         for href in seasons:
             href = self.cleanHtmlStr(href)
             numMatch = re.search(r"[?&]s=(\d+)", href)
-            title = _("Season %s") % numMatch.group(1) if numMatch else _("Season")
+            seasonNum = numMatch.group(1) if numMatch else ""
+            title = _("Season %s") % seasonNum if seasonNum else _("Season")
             params = dict(cItem)
             params.pop("isWatched", None)
             params.pop("isStarted", None)
-            params.update({"category": "list_episodes", "title": title, "url": self.getFullUrl(href), "series_url": seriesUrl})
+            params.update({"category": "list_episodes", "title": title, "url": self.getFullUrl(href), "series_url": seriesUrl, "s_title": sTitle, "season": seasonNum})
             seasonItems.append(params)
         self.cacheSeasons[seriesUrl] = seasonItems
         for params in seasonItems:
@@ -222,12 +236,24 @@ class Cineb(CBaseHostClass):
         episodes = re.findall(r'<a[^>]+href=["\'](/watch/[^"\']+)["\'][^>]+class=["\']ep-tile[^"\']*["\'][^>]*title=["\']([^"\']+)["\']', data)
         if not episodes:
             episodes = re.findall(r'<a[^>]+href=["\'](/watch/[^"\']+)["\'][^>]+class=["\']ep-tile[^"\']*["\'][^>]*>([^<]+)<', data)
+        normalize = IsMediaNamingNormalized()
+        sTitle = cItem.get("s_title") or _cleanSeriesTitle(cItem.get("title", ""))
         episodeItems = []
-        for url, title in episodes:
+        for url, rawTitle in episodes:
+            url = self.getFullUrl(self.cleanHtmlStr(url))
+            epName = _EP_STATUS_RE.sub("", self.cleanHtmlStr(rawTitle)).strip()
+            se = re.search(r"[?&]s=(\d+)&e=(\d+)", url)
+            sNum = se.group(1) if se else str(cItem.get("season", "") or "")
+            eNum = se.group(2) if se else ""
+            if normalize and sNum and eNum:
+                tag = formatSxxExx(sNum, eNum)
+                title = "%s - %s - %s" % (sTitle, tag, epName) if (sTitle and epName) else ("%s - %s" % (sTitle or epName, tag))
+            else:
+                title = epName or (cItem.get("title", ""))
             params = dict(cItem)
             params.pop("isWatched", None)
             params.pop("isStarted", None)
-            params.update({"category": "video", "type": "video", "title": self.cleanHtmlStr(title), "url": self.getFullUrl(self.cleanHtmlStr(url)), "season_url": seasonUrl, "series_url": seriesUrl})
+            params.update({"category": "video", "type": "video", "title": title, "url": url, "season_url": seasonUrl, "series_url": seriesUrl})
             episodeItems.append(params)
         self.cacheEpisodes[seasonUrl] = episodeItems
         for params in episodeItems:
@@ -343,12 +369,16 @@ class Cineb(CBaseHostClass):
             for src in iframeList:
                 if "youtube" not in src and "google" not in src:
                     urlTab.append(self._linkItemFromUrl(src))
-        return urlTab
+        descMatch = re.search(r'class=["\']description text-expand["\'][^>]*>(.*?)</div>', data, re.DOTALL)
+        synopsis = self.cleanHtmlStr(descMatch.group(1)) if descMatch else ""
+        if not synopsis:
+            synopsis = re.sub(r"\\c[0-9a-fA-F]{8}", "", cItem.get("desc", "")).strip(" |")
+        return applySidecarToLinks(urlTab, buildSidecarFromItem(cItem, IsSidecarEnabled(), synopsis))
 
     def getVideoLinks(self, url):
         printDBG("Cineb.getVideoLinks [%s]" % url)
         if self.cm.isValidUrl(url):
-            return self.up.getVideoLinkExt(url)
+            return decorateResolvedLinkItems(self.up.getVideoLinkExt(url), sidecarFromUrlMeta(url, IsSidecarEnabled()))
         return []
 
     def listSearchResult(self, cItem, searchPattern, searchType):
