@@ -3130,7 +3130,9 @@ class pageParser(CaptchaHelper):
                 continue
             url = urlparser.decorateUrl(url, {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": "https://vidrock.net/", "Origin": "https://vidrock.net"})
             if ".m3u8" in url:
-                urltab.extend(getDirectM3U8Playlist(url, sortWithMaxBitrate=99999999))
+                for item in getDirectM3U8Playlist(url, sortWithMaxBitrate=99999999):
+                    item["name"] = "%s %s" % (name, item.get("name", ""))
+                    urltab.append(item)
             else:
                 urltab.append({"name": name, "url": url})
         return urltab
