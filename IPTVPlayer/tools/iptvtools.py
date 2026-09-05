@@ -288,7 +288,7 @@ def GetAvailableIconSize(checkAll=True):
     confirmedIconSize = 0
     for size in iconSizes:
         try:
-            file = resolveFilename(SCOPE_PLUGINS, 'Extensions/IPTVPlayer/icons/PlayerSelector/Marker/marker{0}.png').format(int(size) + 45)
+            file = resolveFilename(SCOPE_PLUGINS, 'Extensions/IPTVPlayer/icons/PlayerSelector/marker/marker{0}.png').format(int(size) + 45)
             if fileExists(file):
                 confirmedIconSize = int(size)
                 break
@@ -1758,25 +1758,6 @@ def GetVersionNum(ver):
     except Exception:
         printExc('Version[%r]' % ver)
         return 0
-
-
-def IsFPUAvailable():
-    try:
-        if None is IsFPUAvailable.available:
-            with open('/proc/cpuinfo', 'r') as f:
-                data = f.read().strip().upper()
-            if ' FPU ' in data:
-                IsFPUAvailable.available = True
-            else:
-                IsFPUAvailable.available = False
-        if IsFPUAvailable.available is False and config.plugins.iptvplayer.plarformfpuabi.value == 'hard_float':
-            return True
-    except Exception:
-        printExc()
-    return IsFPUAvailable.available
-
-
-IsFPUAvailable.available = None
 
 
 def IsSubtitlesParserExtensionCanBeUsed():
