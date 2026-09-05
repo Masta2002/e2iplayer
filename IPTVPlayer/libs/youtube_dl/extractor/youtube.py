@@ -184,7 +184,11 @@ class CYTSignAlgoExtractor:
         return decSignatures
 
 
-def ExtractorError(text):
+def reportExtractorError(text):
+    # Not an exception. This used to be named ExtractorError, shadowing the
+    # real class from youtube_dl.utils, so `raise ExtractorError(...)` raised
+    # None -> a spurious TypeError on every deep failure. It only surfaces
+    # the message now; callers return an empty result themselves.
     printDBG(text)
     SetIPTVPlayerLastHostError(_(text))
 
@@ -527,10 +531,12 @@ class YoutubeIE(object):
                 SetIPTVPlayerLastHostError(ageReason or _("This video requires you to sign in to a YouTube account."))
 
         if isGoogleDoc and not sts:
-            raise ExtractorError("Unable to download video webpage")
+            reportExtractorError("Unable to download video webpage")
+            return []
 
         if not player_response:
-            raise ExtractorError("Unable to get player response")
+            reportExtractorError("Unable to get player response")
+            return []
 
         video_info = player_response.get("videoDetails", {})
         # subtitles
@@ -678,12 +684,14 @@ class YoutubeIE(object):
         if not sts:
             return url_map
         for format_url in _get_urls(manifest):
-            itag = self._search_regex(r"itag/(\d+?)/", format_url, "itag")
-            url_map[itag] = {"url": format_url}
+            itag = self._search_regex(r"itag/(\d+?)/", format_url, "itag", default="")
+            if itag:
+                url_map[itag] = {"url": format_url}
         return url_map
 
     def _search_regex(self, pattern, string, name, default=None, fatal=True, flags=0):
         compiled_regex_type = type(re.compile(""))
+        mobj = None
         if isinstance(pattern, (str, compiled_regex_type)):
             mobj = re.search(pattern, string, flags)
         else:
@@ -698,10 +706,9 @@ class YoutubeIE(object):
         elif default is not None:
             return default
         elif fatal:
-            printDBG("Unable to extract %s" % name)
-            raise
+            raise Exception("Unable to extract %s" % name)
         else:
-            printDBG("unable to extract %s; please report this issue on http://yt-dl.org/bug" % name)
+            printDBG("unable to extract %s" % name)
             return None
 
     def _get_video_url_list(self, url_map, allowVP9=False):
