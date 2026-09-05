@@ -30,21 +30,71 @@ config.plugins.iptvplayer.ytVP9 = ConfigYesNo(default=False)
 config.plugins.iptvplayer.ytShowDash = ConfigSelection(default="auto", choices=[("auto", _("Auto")), ("true", _("Yes")), ("false", _("No"))])
 config.plugins.iptvplayer.ytSortBy = ConfigSelection(default="A", choices=[("A", _("Relevance")), ("I", _("Upload date")), ("M", _("View count")), ("E", _("Rating"))])
 
+# InnerTube WEB client. The API key is the long-lived public youtube.com one
+# (unchanged for years, also used by yt-dlp); the client version and
+# visitorData rot and are refreshed at runtime from ytcfg - see
+# YouTubeParser._absorbPageConfig() / _getYtConfig(). These are only the
+# fallbacks for when that scrape fails.
+YT_INNERTUBE_API_KEY = "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8"
+YT_CLIENT_VERSION_FALLBACK = "2.20260904.01.00"
+
 
 class YouTubeParser:
+
+    # process-wide cache: {"client_version": str, "api_key": str, "visitor_data": str}
+    _ytConfig = None
 
     def __init__(self):
         self.cm = common()
         self.HTTP_HEADER = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
             "X-YouTube-Client-Name": "1",
-            "X-YouTube-Client-Version": "2.20201112.04.01",
+            "X-YouTube-Client-Version": YT_CLIENT_VERSION_FALLBACK,
             "X-Requested-With": "XMLHttpRequest"
         }
         self.http_params = {"header": self.HTTP_HEADER, "return_data": True}
         self.postdata = {}
         self.sessionToken = ""
         return
+
+    def _absorbPageConfig(self, data):
+        # every youtube.com HTML page carries the full ytcfg; harvest the
+        # bits that go stale so continuation POSTs stay current for free.
+        try:
+            data = ensure_str(data)
+        except Exception:
+            return
+        cfg = dict(YouTubeParser._ytConfig or {})
+        m = re.search(r'"INNERTUBE_(?:CONTEXT_)?CLIENT_VERSION":"([0-9.]+)"', data)
+        if m:
+            cfg["client_version"] = m.group(1)
+        m = re.search(r'"INNERTUBE_API_KEY":"([A-Za-z0-9_\-]+)"', data)
+        if m:
+            cfg["api_key"] = m.group(1)
+        m = re.search(r'"visitorData":"([^"\\]{20,2000})"', data)
+        if m:
+            cfg["visitor_data"] = m.group(1)
+        if cfg:
+            YouTubeParser._ytConfig = cfg
+
+    def _getYtConfig(self, fetchIfMissing=False):
+        cfg = YouTubeParser._ytConfig
+        if fetchIfMissing and (not cfg or not cfg.get("client_version")):
+            # continuation-only flow with nothing harvested yet - one cheap
+            # fetch of the home page, else fall through to the constants
+            try:
+                sts, data = self.cm.getPage("https://www.youtube.com/", self.http_params)
+                if sts and data:
+                    self._absorbPageConfig(data)
+            except Exception:
+                printExc()
+            cfg = YouTubeParser._ytConfig or {}
+        cfg = cfg or {}
+        return {
+            "client_version": cfg.get("client_version") or YT_CLIENT_VERSION_FALLBACK,
+            "api_key": cfg.get("api_key") or YT_INNERTUBE_API_KEY,
+            "visitor_data": cfg.get("visitor_data") or "",
+        }
 
     @staticmethod
     def isDashAllowed():
@@ -72,6 +122,7 @@ class YouTubeParser:
         return value
 
     def checkSessionToken(self, data):
+        self._absorbPageConfig(data)
         if not self.sessionToken:
             token = self.cm.ph.getSearchGroups(data, '''"XSRF_TOKEN":"([^"]+?)"''')[0]
             if token:
@@ -397,11 +448,12 @@ class YouTubeParser:
             if not videoId:
                 return retData
             url = "https://www.youtube.com/watch?v=%s" % videoId
-            sts, data = self.cm.getPage(url, self.http_params)
+            sts, data = self.cm.getPage(url, self._applyYoutubeHeaders())
             if not sts or not data:
                 printDBG("YouTubeParser._getWatchPageData getPage FAILED")
                 return retData
             data = ensure_str(data)
+            self._absorbPageConfig(data)
             publishDate = ""
             m = re.search(r'"publishDate":"([^"]+)"', data, re.IGNORECASE)
             if m:
@@ -800,8 +852,23 @@ class YouTubeParser:
         params = self.http_params if http_params is None else dict(http_params)
         hdr = dict(params.get("header", {}))
         hdr["Accept-Language"] = accept_language if accept_language is not None else self._getAcceptLanguage()
+        cfg = self._getYtConfig()
+        hdr["X-YouTube-Client-Name"] = "1"
+        hdr["X-YouTube-Client-Version"] = cfg["client_version"]
+        hdr["Origin"] = "https://www.youtube.com"
+        hdr["X-Youtube-Bootstrap-Logged-In"] = "false"
+        if cfg["visitor_data"]:
+            hdr["X-Goog-Visitor-Id"] = cfg["visitor_data"]
         params["header"] = hdr
         return params
+
+    def _ytContext(self):
+        hl, gl = self._getDefaultLangAndRegion()
+        cfg = self._getYtConfig(fetchIfMissing=True)
+        client = {"clientName": "WEB", "clientVersion": cfg["client_version"], "hl": hl, "gl": gl}
+        if cfg["visitor_data"]:
+            client["visitorData"] = cfg["visitor_data"]
+        return cfg, {"client": client}
 
     def _extractEntriesFromBrowse(self, response):
         entries = []
@@ -885,18 +952,9 @@ class YouTubeParser:
                 except Exception:
                     label = _("Next page")
                 # continuation page for channel list
-                hl, gl = self._getDefaultLangAndRegion()
-                urlNextPage = "https://www.youtube.com/youtubei/v1/browse?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8"
-                post_data = {
-                    "context": {
-                        "client": {
-                            "clientName": "WEB",
-                            "clientVersion": "2.20201021.03.00",
-                            "hl": hl,
-                            "gl": gl,
-                        }
-                    },
-                }
+                cfg, context = self._ytContext()
+                urlNextPage = "https://www.youtube.com/youtubei/v1/browse?key=" + cfg["api_key"]
+                post_data = {"context": context}
                 post_data["continuation"] = ctoken
                 post_data["context"]["clickTracking"] = {"clickTrackingParams": ctit}
                 post_data = json_dumps(post_data).encode("utf-8")
@@ -1066,18 +1124,9 @@ class YouTubeParser:
                 ctoken = nextPage["continuationCommand"]["token"]
                 itct = nextPage["clickTrackingParams"]
                 label = _("Next page")
-                hl, gl = self._getDefaultLangAndRegion()
-                urlNextPage = "https://www.youtube.com/youtubei/v1/search?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8"
-                post_data = {
-                    "context": {
-                        "client": {
-                            "clientName": "WEB",
-                            "clientVersion": "2.20201021.03.00",
-                            "hl": hl,
-                            "gl": gl,
-                        }
-                    },
-                }
+                cfg, context = self._ytContext()
+                urlNextPage = "https://www.youtube.com/youtubei/v1/search?key=" + cfg["api_key"]
+                post_data = {"context": context}
                 post_data["continuation"] = ctoken
                 post_data["context"]["clickTracking"] = {"clickTrackingParams": itct}
                 post_data = json_dumps(post_data).encode("utf-8")
