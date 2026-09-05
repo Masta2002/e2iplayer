@@ -195,70 +195,8 @@ class YoutubeIE(object):
                      ([0-9A-Za-z_-]+)                                         # here is it! the YouTube video ID
                      (?(1).+)?                                                # if we found the ID, everything can follow
                      $"""
-    _LANG_URL = r"https://www.youtube.com/?hl=en&persist_hl=1&gl=US&persist_gl=1&opt_out_ackd=1"
-    _LOGIN_URL = "https://accounts.google.com/ServiceLogin"
-    _AGE_URL = "https://www.youtube.com/verify_age?next_url=/&gl=US&hl=en"
     _NEXT_URL_RE = r"[\?&]next_url=([^&]+)"
-    _NETRC_MACHINE = "youtube"
     # Listed in order of quality
-    _available_formats = [
-        "38",
-        "37",
-        "46",
-        "22",
-        "45",
-        "35",
-        "44",
-        "34",
-        "18",
-        "43",
-        "6",
-        "5",
-        "36",
-        "17",
-        "13",
-        # Apple HTTP Live Streaming
-        "96",
-        "95",
-        "94",
-        "93",
-        "92",
-        "132",
-        "151",
-        # 3D
-        "85",
-        "84",
-        "102",
-        "83",
-        "101",
-        "82",
-        "100",
-        # Dash video
-        "138",
-        "137",
-        "248",
-        "136",
-        "247",
-        "135",
-        "246",
-        "245",
-        "244",
-        "134",
-        "243",
-        "133",
-        "242",
-        "160",
-        "298",
-        "299",
-        "313",
-        "271",
-        # Dash audio
-        "141",
-        "172",
-        "140",
-        "171",
-        "139",
-    ]
     _available_formats_prefer_free = [
         "38",
         "46",
@@ -316,42 +254,6 @@ class YoutubeIE(object):
         "139",
     ]
 
-    _supported_formats = [
-        "18",
-        "22",
-        "37",
-        "38",  # mp4
-        "82",
-        "83",
-        "84",
-        "85",  # mp4 3D
-        "92",
-        "93",
-        "94",
-        "95",
-        "96",
-        "132",
-        "151",  # Apple HTTP Live Streaming
-        "133",
-        "134",
-        "135",
-        "136",
-        "137",
-        "138",
-        "160",
-        "298",
-        "299",  # Dash mp4
-        "139",
-        "140",
-        "141",  # Dash mp4 audio
-    ]
-
-    _video_formats_map = {
-        "flv": ["35", "34", "6", "5"],
-        "3gp": ["36", "17", "13"],
-        "mp4": ["38", "37", "22", "18"],
-        "webm": ["46", "45", "44", "43"],
-    }
     _video_extensions = {
         "13": "3gp",
         "17": "3gp",
@@ -463,38 +365,6 @@ class YoutubeIE(object):
         "313": "2160p",
     }
 
-    _special_itags = {
-        "82": "3D",
-        "83": "3D",
-        "84": "3D",
-        "85": "3D",
-        "100": "3D",
-        "101": "3D",
-        "102": "3D",
-        "133": "DASH Video",
-        "134": "DASH Video",
-        "135": "DASH Video",
-        "136": "DASH Video",
-        "137": "DASH Video",
-        "138": "DASH Video",
-        "139": "DASH Audio",
-        "140": "DASH Audio",
-        "141": "DASH Audio",
-        "160": "DASH Video",
-        "171": "DASH Audio",
-        "172": "DASH Audio",
-        "242": "DASH Video",
-        "243": "DASH Video",
-        "244": "DASH Video",
-        "245": "DASH Video",
-        "246": "DASH Video",
-        "247": "DASH Video",
-        "248": "DASH Video",
-        "298": "DASH Video",
-        "299": "DASH Video",
-        "271": "DASH Video",
-        "313": "DASH Video",
-    }
     IE_NAME = "youtube"
 
     def __init__(self, params={}):
@@ -688,7 +558,7 @@ class YoutubeIE(object):
         except Exception:
             printExc()
 
-        if video_info.get("isLive", True) and not video_url_list:  # j00zek needs verification if default value should be True or False, for now assuming yes
+        if video_info.get("isLive", False) and not video_url_list:
             is_m3u8 = "yes"
             manifest_url = _unquote(player_response["streamingData"]["hlsManifestUrl"], None)
             url_map = self._extract_from_m3u8(manifest_url, video_id)

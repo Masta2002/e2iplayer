@@ -6,7 +6,7 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, Is
 from Plugins.Extensions.IPTVPlayer.libs.pCommon import common
 from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT as _
 from Plugins.Extensions.IPTVPlayer.libs.urlparserhelper import decorateUrl
-from Plugins.Extensions.IPTVPlayer.libs.urlparserhelper import getDirectM3U8Playlist, getMPDLinksWithMeta
+from Plugins.Extensions.IPTVPlayer.libs.urlparserhelper import getMPDLinksWithMeta
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads, dumps as json_dumps
 from Plugins.Extensions.IPTVPlayer.libs import ph
@@ -210,50 +210,12 @@ class YouTubeParser:
                 item["url"] = decorateUrl("merge://audio_url|video_url", {"audio_url": dashAudioLists[0]["url"], "video_url": ensure_str(item["url"])})
                 dashList.append(item)
 
-        # try to get hls format with alternative method
+        # no progressive/muxed format survived - fall back to the HLS list
+        # (_real_extract already resolves hlsManifestUrl and the DASH
+        # adaptiveFormats; the old "hlsvp"/"dashmpd" watch-page keys this
+        # used to scrape were removed by YouTube years ago)
         if 0 == len(retList):
-            try:
-                video_id = YoutubeIE()._extract_id(url)
-                url = "http://www.youtube.com/watch?v=%s&gl=US&hl=en&has_verified=1" % video_id
-                sts, data = self.cm.getPage(url, {"header": {"User-agent": "Mozilla/5.0 (iPad; CPU OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/146.0.7680.38 Mobile/15E148 Safari/604.1"}})
-                if sts:
-                    data = data.replace('\\"', '"').replace("\\\\\\/", "/")
-                    hlsUrl = self.cm.ph.getSearchGroups(data, r'''"hlsvp"\s*:\s*"(https?://[^"]+?)"''')[0]
-                    hlsUrl = json_loads('"%s"' % hlsUrl)
-                    if self.cm.isValidUrl(hlsUrl):
-                        hlsList = getDirectM3U8Playlist(hlsUrl)
-                        if len(hlsList):
-                            dashList = []
-                            for item in hlsList:
-                                item["format"] = "%sx%s" % (item.get("width", 0), item.get("height", 0))
-                                item["ext"] = "m3u8"
-                                item["m3u8"] = True
-                                retList.append(item)
-            except Exception:
-                printExc()
-            if 0 == len(retList):
-                retList = retHLSList
-
-            if dash:
-                try:
-                    sts, data = self.cm.getPage(url, {"header": {"User-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"}})
-                    data = data.replace('\\"', '"').replace("\\\\\\/", "/").replace("\\/", "/")
-                    dashUrl = self.cm.ph.getSearchGroups(data, r'''"dashmpd"\s*:\s*"(https?://[^"]+?)"''')[0]
-                    dashUrl = json_loads('"%s"' % dashUrl)
-                    if "?" not in dashUrl:
-                        dashUrl += "?mpd_version=5"
-                    else:
-                        dashUrl += "&mpd_version=5"
-                    printDBG("DASH URL >> [%s]" % dashUrl)
-                    if self.cm.isValidUrl(dashUrl):
-                        dashList = getMPDLinksWithMeta(dashUrl, checkExt=False)
-                        printDBG(dashList)
-                        for idx in range(len(dashList)):
-                            dashList[idx]["format"] = "%sx%s" % (dashList[idx].get("height", 0), dashList[idx].get("width", 0))
-                            dashList[idx]["ext"] = "mpd"
-                            dashList[idx]["dash"] = True
-                except Exception:
-                    printExc()
+            retList = retHLSList
 
         for idx in range(len(retList)):
             if retList[idx].get("m3u8", False):
