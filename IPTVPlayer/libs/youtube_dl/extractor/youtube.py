@@ -18,13 +18,17 @@ from Plugins.Extensions.IPTVPlayer.tools.e2ijs import js_execute_ext, is_js_cach
 
 from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import ensure_str
 
-# InnerTube ANDROID player client. YouTube doesn't pin the exact build, it
-# just rejects anything more than a few months stale, so this only needs an
-# occasional bump. contentCheckOk/racyCheckOk acknowledge sensitive-content
-# interstitials (not a hard age gate - that needs a signed-in account).
-YT_ANDROID_CLIENT_VERSION = "20.48.39"
-YT_ANDROID_SDK_VERSION = 35
-YT_ANDROID_OS_VERSION = "15"
+# InnerTube mobile player clients. YouTube doesn't pin the exact build, it
+# just rejects anything more than a few months stale, so these only need an
+# occasional bump. Both hand unthrottled progressive/adaptive URLs to an
+# anonymous caller (no nsig descrambling needed); IOS is the fallback when
+# ANDROID gets flagged. contentCheckOk/racyCheckOk acknowledge
+# sensitive-content interstitials (not a hard age gate - that needs an
+# account).
+YT_ANDROID_CLIENT_VERSION = "21.08.266"
+YT_ANDROID_SDK_VERSION = 30
+YT_ANDROID_OS_VERSION = "11"
+YT_IOS_CLIENT_VERSION = "20.03.02"
 
 
 class CYTSignAlgoExtractor:
@@ -473,38 +477,51 @@ class YoutubeIE(object):
             videoInfoparams = {"cookiefile": COOKIE_FILE, "use_cookie": True, "load_cookie": False, "save_cookie": True}
             sts, video_webpage = self.cm.getPage(url)
         else:
-            tries = 0
-            while tries < 3:
-                tries += 1
-                url = "https://www.youtube.com/youtubei/v1/player?prettyPrint=false"
-                isGoogleDoc = False
-                videoKey = "video_id"
-                videoInfoparams = {}
-
-                http_params = {"header": {"User-Agent": "com.google.android.youtube/%s(Linux; U; Android %s) gzip" % (YT_ANDROID_CLIENT_VERSION, YT_ANDROID_OS_VERSION), "Content-Type": "application/json", "Origin": "https://www.youtube.com", "X-YouTube-Client-Name": "3", "X-YouTube-Client-Version": YT_ANDROID_CLIENT_VERSION}}
-                http_params["raw_post_data"] = True
-                post_data = "{'videoId': '%s', 'params': '2AMB', 'contentCheckOk': true, 'racyCheckOk': true, 'context': {'client': {'hl': '%s', 'clientVersion': '%s', 'clientName': 'ANDROID', 'androidSdkVersion': %s, 'osName': 'Android', 'osVersion': '%s',}}}" % (video_id, GetDefaultLang(), YT_ANDROID_CLIENT_VERSION, YT_ANDROID_SDK_VERSION, YT_ANDROID_OS_VERSION)
-                sts, video_webpage = self.cm.getPage(url, http_params, post_data)
-                if sts:
-                    player_response = json_loads(video_webpage)
-                    status = player_response.get("playabilityStatus", {}).get("status", "")
-                    if status == "LOGIN_REQUIRED" or (status == "ERROR" and not player_response.get("streamingData")):
-                        # age-restricted / sign-in-walled: no anonymous YouTube
-                        # client can reach these any more (needs a Google
-                        # account) - retrying won't help, so stop and surface why
-                        reason = player_response.get("playabilityStatus", {}).get("reason", "") or _("This video requires you to sign in to a YouTube account.")
-                        SetIPTVPlayerLastHostError(reason)
-                        break
-                else:
-                    url = "https://www.youtube.com/watch?v=%s&bpctr=9999999999&has_verified=1&" % video_id
-                    sts, video_webpage = self.cm.getPage(url)
-                    if sts:
-                        player_response = self._extract_yt_initial_variable(video_webpage, self._YT_INITIAL_PLAYER_RESPONSE_RE, video_id, "initial player response")
-                printDBG("_real_extract tries %s" % tries)
-                if player_response and player_response.get("streamingData"):
+            isGoogleDoc = False
+            url = "https://www.youtube.com/youtubei/v1/player?prettyPrint=false"
+            lang = GetDefaultLang()
+            it_clients = [
+                ("3", YT_ANDROID_CLIENT_VERSION,
+                 "com.google.android.youtube/%s(Linux; U; Android %s) gzip" % (YT_ANDROID_CLIENT_VERSION, YT_ANDROID_OS_VERSION),
+                 "'clientName': 'ANDROID', 'clientVersion': '%s', 'androidSdkVersion': %s, 'osName': 'Android', 'osVersion': '%s'" % (YT_ANDROID_CLIENT_VERSION, YT_ANDROID_SDK_VERSION, YT_ANDROID_OS_VERSION)),
+                ("5", YT_IOS_CLIENT_VERSION,
+                 "com.google.ios.youtube/%s (iPhone16,2; U; CPU iOS 18_2_1 like Mac OS X;)" % YT_IOS_CLIENT_VERSION,
+                 "'clientName': 'IOS', 'clientVersion': '%s', 'deviceMake': 'Apple', 'deviceModel': 'iPhone16,2', 'osName': 'iPhone', 'osVersion': '18.2.1.22C161'" % YT_IOS_CLIENT_VERSION),
+            ]
+            video_webpage = ""
+            ageReason = ""
+            for cname, cver, ua, client_ctx in it_clients:
+                http_params = {"header": {"User-Agent": ua, "Content-Type": "application/json", "Origin": "https://www.youtube.com", "X-YouTube-Client-Name": cname, "X-YouTube-Client-Version": cver}, "raw_post_data": True}
+                post_data = "{'videoId': '%s', 'params': '2AMB', 'contentCheckOk': true, 'racyCheckOk': true, 'context': {'client': {'hl': '%s', %s,}}}" % (video_id, lang, client_ctx)
+                sts, data = self.cm.getPage(url, http_params, post_data)
+                if not sts:
+                    continue
+                pr = json_loads(data)
+                if pr and pr.get("streamingData"):
+                    player_response, video_webpage = pr, data
                     break
+                status = pr.get("playabilityStatus", {}).get("status", "") if pr else ""
+                if status in ("LOGIN_REQUIRED", "ERROR", "UNPLAYABLE"):
+                    player_response = pr
+                    ageReason = pr.get("playabilityStatus", {}).get("reason", "") or ageReason
 
-        if not sts:
+            # last resort: the watch page's ytInitialPlayerResponse (its URLs
+            # need sig + nsig descrambling, so worse quality, but sometimes the
+            # only thing left)
+            if not (player_response and player_response.get("streamingData")):
+                sts, wp = self.cm.getPage("https://www.youtube.com/watch?v=%s&bpctr=9999999999&has_verified=1&" % video_id)
+                if sts:
+                    video_webpage = wp
+                    wr = self._extract_yt_initial_variable(wp, self._YT_INITIAL_PLAYER_RESPONSE_RE, video_id, "initial player response")
+                    if wr and wr.get("streamingData"):
+                        player_response = wr
+
+            if not (player_response and player_response.get("streamingData")):
+                # nothing playable - almost always an age / sign-in wall, which
+                # no anonymous YouTube client can pass any more
+                SetIPTVPlayerLastHostError(ageReason or _("This video requires you to sign in to a YouTube account."))
+
+        if isGoogleDoc and not sts:
             raise ExtractorError("Unable to download video webpage")
 
         if not player_response:
