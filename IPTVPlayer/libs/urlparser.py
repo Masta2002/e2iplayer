@@ -1244,15 +1244,13 @@ class pageParser(CaptchaHelper):
                 height = config.plugins.iptvplayer.ytDefaultformat.value
                 dash = self.getYTParser().isDashAllowed()
                 vp9 = self.getYTParser().isVP9Allowed()
-                age = self.getYTParser().isAgeGateAllowed()
             except Exception:
                 printDBG("parserYOUTUBE default ytformat or ytDefaultformat not available here")
                 formats = "mp4"
                 height = "360"
                 dash = False
                 vp9 = False
-                age = False
-            tmpTab, dashTab = self.getYTParser().getDirectLinks(url, formats, dash, dashSepareteList=True, allowVP9=vp9, allowAgeGate=age)
+            tmpTab, dashTab = self.getYTParser().getDirectLinks(url, formats, dash, dashSepareteList=True, allowVP9=vp9)
             videoUrls = []
             for item in tmpTab:
                 url = strwithmeta(item["url"], {"youtube_id": item.get("id", "")})

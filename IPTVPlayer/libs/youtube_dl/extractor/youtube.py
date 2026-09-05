@@ -466,9 +466,8 @@ class YoutubeIE(object):
         # manually authored / community caption tracks
         return self._caption_tracks_to_subs(self._extract_caption_tracks(video_id, source), want_asr=False)
 
-    def _real_extract(self, url, allowVP9=False, allowAgeGate=False):
-        # Extract original video URL from URL with redirection, like age verification, using next_url parameter
-
+    def _real_extract(self, url, allowVP9=False):
+        # follow a next_url= redirect (old age-verification style link) if present
         mobj = re.search(self._NEXT_URL_RE, url)
         if mobj:
             # https
