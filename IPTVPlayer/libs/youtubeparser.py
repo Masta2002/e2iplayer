@@ -11,7 +11,7 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads, dumps as json_dumps
 from Plugins.Extensions.IPTVPlayer.libs import ph
 from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import ensure_str
-from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_urlencode
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_urlencode, urllib_unquote_plus
 from Plugins.Extensions.IPTVPlayer.p2p3.UrlParse import urlparse, urlunparse, parse_qsl
 
 # FOREIGN import
@@ -28,6 +28,8 @@ config.plugins.iptvplayer.ytUseDF = ConfigYesNo(default=True)
 config.plugins.iptvplayer.ytVP9 = ConfigYesNo(default=False)
 config.plugins.iptvplayer.ytShowDash = ConfigSelection(default="auto", choices=[("auto", _("Auto")), ("true", _("Yes")), ("false", _("No"))])
 config.plugins.iptvplayer.ytSortBy = ConfigSelection(default="A", choices=[("A", _("Relevance")), ("I", _("Upload date")), ("M", _("View count")), ("E", _("Rating"))])
+config.plugins.iptvplayer.youtube_search_region = ConfigSelection(default="auto", choices=[("auto", _("Automatic"))] + [(c, c) for c in ("US", "GB", "DE", "AT", "CH", "FR", "IT", "ES", "PL", "NL", "BE", "CZ", "RU", "UA", "TR", "GR", "SE", "PT", "BR", "MX", "IN", "JP", "KR", "CA", "AU")])
+config.plugins.iptvplayer.youtube_safe_search = ConfigYesNo(default=False)
 
 # InnerTube WEB client. The API key is the long-lived public youtube.com one
 # (unchanged for years, also used by yt-dlp); the client version and
@@ -763,6 +765,16 @@ class YouTubeParser:
 
     # LOCALE HELPERS
     def _getDefaultLangAndRegion(self):
+        lang, region = self._deriveLangAndRegion()
+        try:
+            searchRegion = ensure_str(config.plugins.iptvplayer.youtube_search_region.value)
+            if searchRegion and searchRegion != "auto":
+                region = searchRegion
+        except Exception:
+            printExc()
+        return lang, region
+
+    def _deriveLangAndRegion(self):
         lang = "en"
         region = "US"
         try:
@@ -821,7 +833,10 @@ class YouTubeParser:
         client = {"clientName": "WEB", "clientVersion": cfg["client_version"], "hl": hl, "gl": gl}
         if cfg["visitor_data"]:
             client["visitorData"] = cfg["visitor_data"]
-        return cfg, {"client": client}
+        context = {"client": client}
+        if config.plugins.iptvplayer.youtube_safe_search.value:
+            context["user"] = {"enableSafetyMode": True}
+        return cfg, context
 
     def _extractEntriesFromBrowse(self, response):
         entries = []
@@ -945,33 +960,26 @@ class YouTubeParser:
                     return []
                 response = json_loads(data)
             else:
-                # first search request
-                url = "https://www.youtube.com/results?search_query=" + pattern + "&sp="
-                if searchType == "video":
-                    url += "CA%sSAhAB" % sortBy
-                if searchType == "channel":
-                    url += "CA%sSAhAC" % sortBy
-                if searchType == "playlist":
-                    url += "CA%sSAhAD" % sortBy
-                if searchType == "live":
-                    url += "EgJAAQ%253D%253D"
-                self.http_params = self._applyYoutubeHeaders(self.http_params)
-                sts, data = self.cm.getPage(url, self.http_params)
+                # first search request - InnerTube POST (the response parser
+                # below is key-based so it handles it the same as the
+                # continuation; also lets safe search / region take effect and
+                # avoids scraping ytInitialData out of the HTML)
+                cfg, context = self._ytContext()
+                spFilter = {"video": "CA%sSAhAB" % sortBy, "channel": "CA%sSAhAC" % sortBy,
+                            "playlist": "CA%sSAhAD" % sortBy, "live": "EgJAAQ=="}.get(searchType, "")
+                post_body = {"context": context, "query": urllib_unquote_plus(pattern)}
+                if spFilter:
+                    post_body["params"] = spFilter
+                url = "https://www.youtube.com/youtubei/v1/search?key=" + cfg["api_key"]
+                http_params = dict(self.http_params)
+                http_params["header"] = dict(http_params.get("header", {}))
+                http_params["header"]["Content-Type"] = "application/json"
+                http_params["raw_post_data"] = True
+                http_params = self._applyYoutubeHeaders(http_params)
+                sts, data = self.cm.getPage(url, http_params, json_dumps(post_body).encode("utf-8"))
                 if not sts:
                     return []
-                self.checkSessionToken(data)
-                data2 = self.cm.ph.getDataBeetwenMarkers(data, 'window["ytInitialData"] =', "};", False)[1]
-                if len(data2) == 0:
-                    data2 = self.cm.ph.getDataBeetwenMarkers(data, "var ytInitialData =", "};", False)[1]
-                data2 = ensure_str(data2.strip())
-                # json simple schema verification and correction
-                jsonStarts = data2.count("{")
-                jsonEnds = data2.count("}")
-                printDBG('youtuberparser.YouTubeParser().getSearchResult correcting json string by adding "}" %s time(s) at the end' % (jsonStarts - jsonEnds))
-                while jsonEnds < jsonStarts:
-                    data2 = data2 + "}"
-                    jsonEnds += 1
-                response = json_loads(data2)
+                response = json_loads(data)
 
             # search videos
             r2 = list(self.findKeys(response, "videoRenderer"))

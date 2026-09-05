@@ -77,6 +77,8 @@ except NameError:
 def GetConfigList():
     optionList = []
     optionList.append(getConfigListEntry(_("Sort by:"), config.plugins.iptvplayer.ytSortBy))
+    optionList.append(getConfigListEntry(_("Search results region:"), config.plugins.iptvplayer.youtube_search_region))
+    optionList.append(getConfigListEntry(_("Safe search (restricted mode):"), config.plugins.iptvplayer.youtube_safe_search))
     optionList.append(getConfigListEntry(_("Path to ytlist.txt, urllist.txt"), config.plugins.iptvplayer.Sciezkaurllist))
     optionList.append(getConfigListEntry(_("Video format:"), config.plugins.iptvplayer.ytformat))
     optionList.append(getConfigListEntry(_("Default video quality:"), config.plugins.iptvplayer.ytDefaultformat))
