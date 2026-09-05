@@ -18,14 +18,18 @@ from Plugins.Extensions.IPTVPlayer.tools.e2ijs import js_execute_ext, is_js_cach
 
 from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import ensure_str
 
-# InnerTube mobile player clients. YouTube doesn't pin the exact build, it
-# just rejects anything more than a few months stale, so these only need an
-# occasional bump. Both hand unthrottled progressive/adaptive URLs to an
-# anonymous caller (no nsig descrambling needed); IOS is the fallback when
+# InnerTube mobile player clients (values tracked from yt-dlp). Both hand
+# unthrottled, un-ciphered progressive/adaptive URLs to an anonymous caller
+# (verified: no &n= throttle param, full CDN speed), so no player-JS /
+# signature / nsig work is needed on this path. IOS is the fallback when
 # ANDROID gets flagged. contentCheckOk/racyCheckOk acknowledge
 # sensitive-content interstitials (not a hard age gate - that needs an
 # account).
-YT_ANDROID_CLIENT_VERSION = "21.08.266"
+#   - ANDROID: YouTube 404s builds it considers too new; ~21.39 was the
+#     ceiling last checked, this is a real released build.
+#   - IOS: do NOT bump past 20.x - IOS 21.x returns SABR-only formats
+#     (no url, no signatureCipher) that need a full SABR/po_token cycle.
+YT_ANDROID_CLIENT_VERSION = "21.26.364"
 YT_ANDROID_SDK_VERSION = 30
 YT_ANDROID_OS_VERSION = "11"
 YT_IOS_CLIENT_VERSION = "20.03.02"
