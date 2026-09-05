@@ -18,6 +18,14 @@ from Plugins.Extensions.IPTVPlayer.tools.e2ijs import js_execute_ext, is_js_cach
 
 from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import ensure_str
 
+# InnerTube ANDROID player client. YouTube doesn't pin the exact build, it
+# just rejects anything more than a few months stale, so this only needs an
+# occasional bump. contentCheckOk/racyCheckOk acknowledge sensitive-content
+# interstitials (not a hard age gate - that needs a signed-in account).
+YT_ANDROID_CLIENT_VERSION = "20.48.39"
+YT_ANDROID_SDK_VERSION = 35
+YT_ANDROID_OS_VERSION = "15"
+
 
 class CYTSignAlgoExtractor:
     MAX_REC_DEPTH = 5  # MAX RECURSION Depth for security
@@ -388,22 +396,44 @@ class YoutubeIE(object):
     def _extract_yt_initial_variable(self, webpage, regex, video_id, name):
         return json_loads(self._search_regex((r"%s\s*%s" % (regex, self._YT_INITIAL_BOUNDARY_RE), regex), webpage, name, default="{}"))
 
-    def _get_automatic_captions(self, video_id, webpage=None):
-        sub_tracks = []
-        if None is webpage:
-            url = "https://www.youtube.com/watch?v=%s&hl=%s&has_verified=1" % (video_id, GetDefaultLang())
-            sts, webpage = self.cm.getPage(url)
-            player_response = self._extract_yt_initial_variable(webpage, self._YT_INITIAL_PLAYER_RESPONSE_RE, video_id, "initial player response")
+    def _extract_caption_tracks(self, video_id, source=None):
+        # source may be a player_response dict, a watch-page HTML string, or
+        # None (fetch the watch page). YouTube dropped the old
+        # api/timedtext?type=list endpoint; captionTracks in the player
+        # response is the only listing now.
+        if isinstance(source, dict):
+            player_response = source
         else:
-            player_response = webpage
+            webpage = source
+            if webpage is None:
+                url = "https://www.youtube.com/watch?v=%s&hl=%s&has_verified=1" % (video_id, GetDefaultLang())
+                sts, webpage = self.cm.getPage(url)
+                if not sts:
+                    return []
+            player_response = self._extract_yt_initial_variable(webpage, self._YT_INITIAL_PLAYER_RESPONSE_RE, video_id, "initial player response")
         try:
-            player_captions = player_response["captions"]["playerCaptionsTracklistRenderer"]["captionTracks"]
+            return player_response["captions"]["playerCaptionsTracklistRenderer"]["captionTracks"] or []
         except Exception:
-            printDBG("youtube - _get_automatic_captions(): [captionTracks] NOT found in player_response")
-            return sub_tracks
-        try:
-            for lang in player_captions:
-                printDBG("_get_automatic_captions %s" % lang)
+            printDBG("youtube - captionTracks not found in player response")
+            return []
+
+    @staticmethod
+    def _caption_track_name(lang):
+        name = lang.get("name", {})
+        if isinstance(name, dict):
+            if name.get("simpleText"):
+                return name["simpleText"]
+            for run in name.get("runs", []):
+                if run.get("text"):
+                    return run["text"]
+        return lang.get("languageCode", "")
+
+    def _caption_tracks_to_subs(self, tracks, want_asr):
+        sub_tracks = []
+        for lang in tracks or []:
+            try:
+                if (lang.get("kind") == "asr") != want_asr:
+                    continue
                 sub_url = urllib.parse.unquote_plus(lang["baseUrl"])
                 sub_format = self.cm.ph.getSearchGroups(sub_url + "&", r"[\?&]fmt=([^\?^&]+)[\?&]")[0]
                 if sub_format != "":
@@ -411,43 +441,18 @@ class YoutubeIE(object):
                 else:
                     sub_url = sub_url + "&fmt=vtt"
                 sub_lang = lang["languageCode"]
-                sub_tracks.append({"title": sub_lang.encode("utf-8"), "url": sub_url, "lang": sub_lang.encode("utf-8"), "ytid": len(sub_tracks), "format": "vtt"})
-        except Exception:
-            printExc()
+                sub_tracks.append({"title": self._caption_track_name(lang) or sub_lang, "url": sub_url, "lang": sub_lang, "ytid": len(sub_tracks), "format": "vtt"})
+            except Exception:
+                printExc()
         return sub_tracks
 
-    def _get_subtitles(self, video_id):
-        sub_tracks = []
-        try:
-            url = "https://www.youtube.com/api/timedtext?hl=%s&type=list&v=%s" % (GetDefaultLang(), video_id)
-            sts, data = self.cm.getPage(url)
-            if not sts:
-                return sub_tracks
+    def _get_automatic_captions(self, video_id, webpage=None):
+        # ASR (auto-generated) caption tracks
+        return self._caption_tracks_to_subs(self._extract_caption_tracks(video_id, webpage), want_asr=True)
 
-            encoding = self.cm.ph.getDataBeetwenMarkers(data, 'encoding="', '"', False)[1]
-
-            def getArg(item, name):
-                val = self.cm.ph.getDataBeetwenMarkers(item, '%s="' % name, '"', False)[1]
-                return val.decode(encoding).encode(encoding)
-
-            data = data.split("/>")
-            for item in data:
-                if "lang_code" not in item:
-                    continue
-                id = getArg(item, "id")
-                name = getArg(item, "name")
-                lang_code = getArg(item, "lang_code")
-                lang_original = getArg(item, "lang_original")
-                lang_translated = getArg(item, "lang_translated")
-
-                title = (name + " " + lang_translated).strip()
-                params = {"lang": lang_code, "v": video_id, "fmt": "vtt", "name": name}
-                url = "https://www.youtube.com/api/timedtext?" + urllib.parse.urlencode(params)
-                sub_tracks.append({"title": title, "url": url, "lang": lang_code, "ytid": id, "format": "vtt"})
-        except Exception:
-            printExc()
-        printDBG(sub_tracks)
-        return sub_tracks
+    def _get_subtitles(self, video_id, source=None):
+        # manually authored / community caption tracks
+        return self._caption_tracks_to_subs(self._extract_caption_tracks(video_id, source), want_asr=False)
 
     def _real_extract(self, url, allowVP9=False, allowAgeGate=False):
         # Extract original video URL from URL with redirection, like age verification, using next_url parameter
@@ -476,16 +481,20 @@ class YoutubeIE(object):
                 videoKey = "video_id"
                 videoInfoparams = {}
 
-                http_params = {"header": {"User-Agent": "com.google.android.youtube/20.32.35(Linux; U; Android 15) gzip", "Content-Type": "application/json", "Origin": "https://www.youtube.com", "X-YouTube-Client-Name": "3", "X-YouTube-Client-Version": "20.32.35"}}
+                http_params = {"header": {"User-Agent": "com.google.android.youtube/%s(Linux; U; Android %s) gzip" % (YT_ANDROID_CLIENT_VERSION, YT_ANDROID_OS_VERSION), "Content-Type": "application/json", "Origin": "https://www.youtube.com", "X-YouTube-Client-Name": "3", "X-YouTube-Client-Version": YT_ANDROID_CLIENT_VERSION}}
                 http_params["raw_post_data"] = True
-                post_data = "{'videoId': '%s', 'params': '2AMB', 'context': {'client': {'hl': '%s', 'clientVersion': '20.32.35', 'clientName': 'ANDROID', 'androidSdkVersion': 35, 'osName': 'Android', 'osVersion': '15',}}}" % (video_id, GetDefaultLang())
+                post_data = "{'videoId': '%s', 'params': '2AMB', 'contentCheckOk': true, 'racyCheckOk': true, 'context': {'client': {'hl': '%s', 'clientVersion': '%s', 'clientName': 'ANDROID', 'androidSdkVersion': %s, 'osName': 'Android', 'osVersion': '%s',}}}" % (video_id, GetDefaultLang(), YT_ANDROID_CLIENT_VERSION, YT_ANDROID_SDK_VERSION, YT_ANDROID_OS_VERSION)
                 sts, video_webpage = self.cm.getPage(url, http_params, post_data)
                 if sts:
-                    if allowAgeGate and "LOGIN_REQUIRED" in video_webpage:
-                        http_params["header"]["X-YouTube-Client-Name"] = "85"
-                        post_data = "{'videoId': '%s', 'thirdParty': 'https://www.youtube.com/', 'context': {'client': {'clientName': 'TVHTML5_SIMPLY_EMBEDDED_PLAYER', 'clientVersion': '2.0', 'clientScreen': 'EMBED'}}}" % video_id
-                        sts, video_webpage = self.cm.getPage(url, http_params, post_data)
                     player_response = json_loads(video_webpage)
+                    status = player_response.get("playabilityStatus", {}).get("status", "")
+                    if status == "LOGIN_REQUIRED" or (status == "ERROR" and not player_response.get("streamingData")):
+                        # age-restricted / sign-in-walled: no anonymous YouTube
+                        # client can reach these any more (needs a Google
+                        # account) - retrying won't help, so stop and surface why
+                        reason = player_response.get("playabilityStatus", {}).get("reason", "") or _("This video requires you to sign in to a YouTube account.")
+                        SetIPTVPlayerLastHostError(reason)
+                        break
                 else:
                     url = "https://www.youtube.com/watch?v=%s&bpctr=9999999999&has_verified=1&" % video_id
                     sts, video_webpage = self.cm.getPage(url)
@@ -602,7 +611,7 @@ class YoutubeIE(object):
         if isGoogleDoc:
             cookieHeader = self.cm.getCookieHeader(COOKIE_FILE)
 
-        sub_tracks = self._get_automatic_captions(video_id, player_response)
+        sub_tracks = self._get_subtitles(video_id, player_response) + self._get_automatic_captions(video_id, player_response)
         results = []
         for format_param, url_item in video_url_list:
             # Extension

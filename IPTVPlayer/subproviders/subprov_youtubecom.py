@@ -54,10 +54,10 @@ class YoutubeComProvider(CBaseSubProviderClass):
         from Plugins.Extensions.IPTVPlayer.libs.youtube_dl.extractor.youtube import YoutubeIE
 
         ytExtractor = YoutubeIE()
-        # get normal langs
-        tab = ytExtractor._get_subtitles(self.youtubeId)
-        tab2 = ytExtractor._get_automatic_captions(self.youtubeId)
-        for item in tab2:
+        # one listing, split into manually authored vs auto-generated tracks
+        tracks = ytExtractor._extract_caption_tracks(self.youtubeId)
+        tab = ytExtractor._caption_tracks_to_subs(tracks, want_asr=False)
+        for item in ytExtractor._caption_tracks_to_subs(tracks, want_asr=True):
             item['title'] = '[%s] %s' % (_('Auto-translate'), item['title'])
             tab.append(item)
         defaultLang = GetDefaultLang()
