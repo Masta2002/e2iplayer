@@ -78,8 +78,7 @@ class YouTubeParser:
             YouTubeParser._ytConfig = cfg
 
     def _getYtConfig(self, fetchIfMissing=False):
-        cfg = YouTubeParser._ytConfig
-        if fetchIfMissing and (not cfg or not cfg.get("client_version")):
+        if fetchIfMissing and not (YouTubeParser._ytConfig or {}).get("client_version"):
             # continuation-only flow with nothing harvested yet - one cheap
             # fetch of the home page, else fall through to the constants
             try:
@@ -88,8 +87,7 @@ class YouTubeParser:
                     self._absorbPageConfig(data)
             except Exception:
                 printExc()
-            cfg = YouTubeParser._ytConfig or {}
-        cfg = cfg or {}
+        cfg = YouTubeParser._ytConfig or {}
         return {
             "client_version": cfg.get("client_version") or YT_CLIENT_VERSION_FALLBACK,
             "api_key": cfg.get("api_key") or YT_INNERTUBE_API_KEY,

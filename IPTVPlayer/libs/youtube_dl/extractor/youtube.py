@@ -475,10 +475,7 @@ class YoutubeIE(object):
         if "yt-video-id" == video_id:
             video_id = self.cm.ph.getSearchGroups(url + "&", r"[\?&]docid=([^\?^&]+)[\?&]")[0]
             isGoogleDoc = True
-            url = url
-            videoKey = "docid"
             COOKIE_FILE = GetCookieDir("docs.google.com.cookie")
-            videoInfoparams = {"cookiefile": COOKIE_FILE, "use_cookie": True, "load_cookie": False, "save_cookie": True}
             sts, video_webpage = self.cm.getPage(url)
         else:
             isGoogleDoc = False
@@ -500,11 +497,15 @@ class YoutubeIE(object):
                 sts, data = self.cm.getPage(url, http_params, post_data)
                 if not sts:
                     continue
-                pr = json_loads(data)
-                if pr and pr.get("streamingData"):
+                try:
+                    pr = json_loads(data)
+                except Exception:
+                    continue
+                status = pr.get("playabilityStatus", {}).get("status", "") if isinstance(pr, dict) else ""
+                printDBG("_real_extract: player client %s -> %s" % (cname, status or "no status"))
+                if isinstance(pr, dict) and pr.get("streamingData"):
                     player_response, video_webpage = pr, data
                     break
-                status = pr.get("playabilityStatus", {}).get("status", "") if pr else ""
                 if status in ("LOGIN_REQUIRED", "ERROR", "UNPLAYABLE"):
                     player_response = pr
                     ageReason = pr.get("playabilityStatus", {}).get("reason", "") or ageReason
@@ -588,10 +589,10 @@ class YoutubeIE(object):
         except Exception:
             printExc()
 
-        if video_info.get("isLive", False) and not video_url_list:
+        manifest_url = player_response.get("streamingData", {}).get("hlsManifestUrl")
+        if manifest_url and not video_url_list:
             is_m3u8 = "yes"
-            manifest_url = _unquote(player_response["streamingData"]["hlsManifestUrl"], None)
-            url_map = self._extract_from_m3u8(manifest_url, video_id)
+            url_map = self._extract_from_m3u8(_unquote(manifest_url, None), video_id)
             video_url_list = self._get_video_url_list(url_map, allowVP9)
 
         if not video_url_list:
@@ -632,7 +633,8 @@ class YoutubeIE(object):
         if isGoogleDoc:
             cookieHeader = self.cm.getCookieHeader(COOKIE_FILE)
 
-        sub_tracks = self._get_subtitles(video_id, player_response) + self._get_automatic_captions(video_id, player_response)
+        caption_tracks = self._extract_caption_tracks(video_id, player_response)
+        sub_tracks = self._caption_tracks_to_subs(caption_tracks, False) + self._caption_tracks_to_subs(caption_tracks, True)
         results = []
         for format_param, url_item in video_url_list:
             # Extension
@@ -673,8 +675,9 @@ class YoutubeIE(object):
             return urls
 
         sts, manifest = self.cm.getPage(manifest_url)
-        formats_urls = _get_urls(manifest)
-        for format_url in formats_urls:
+        if not sts:
+            return url_map
+        for format_url in _get_urls(manifest):
             itag = self._search_regex(r"itag/(\d+?)/", format_url, "itag")
             url_map[itag] = {"url": format_url}
         return url_map
