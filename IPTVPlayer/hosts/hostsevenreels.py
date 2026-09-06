@@ -5,7 +5,7 @@ import json
 import re
 from Plugins.Extensions.IPTVPlayer.components.ihost import CBaseHostClass, CHostBase
 from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT as _
-from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote_plus
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote, urllib_quote_plus
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.tools.iptvwatchedhelper import IPTVWatchedHelper
@@ -44,7 +44,7 @@ class SevenReels(GenericFolderWatchedScraperMixin, CBaseHostClass):
         ('AdRock', 'https://vidrock.net/%(kind)s/%(id)s%(se)s'),
         ('Strigil', 'https://strigil.cc/embed/%(kind)s/%(id)s%(se)s?embedKey=key_c90081fa77254eb5&autoPlay=true'),
         ('VidSrc', 'https://vidsrc.mov/embed/%(kind)s/%(id)s%(se)s'),
-        ('VidEasy', 'https://player.videasy.to/%(kind)s/%(id)s%(se)s'),
+        ('VidEasy', 'https://player.videasy.to/%(kind)s/%(id)s%(se)s?title=%(title)s&year=%(year)s'),
         ('VidLink', 'https://vidlink.pro/%(kind)s/%(id)s%(se)s'),
         ('VidCore', 'https://vidcore.net/%(kind)s/%(id)s%(se)s'),
         ('VidNest', 'https://vidnest.fun/%(kind)s/%(id)s%(se)s'),
@@ -190,7 +190,11 @@ class SevenReels(GenericFolderWatchedScraperMixin, CBaseHostClass):
         m = re.search(r'/(movie|tv)/(\d+)', cItem['url'])
         if not m:
             return []
-        fields = {'kind': m.group(1), 'id': m.group(2), 'se': '/1/1' if m.group(1) == 'tv' else ''}
+        fields = {
+            'kind': m.group(1), 'id': m.group(2), 'se': '/1/1' if m.group(1) == 'tv' else '',
+            'title': urllib_quote(cItem.get('s_title') or cItem.get('title', '') or '', safe=''),
+            'year': cItem.get('year', '') or '',
+        }
 
         urlTab = []
         for label, tpl in self.EMBEDS:

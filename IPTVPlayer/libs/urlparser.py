@@ -28,7 +28,7 @@ from Plugins.Extensions.IPTVPlayer.libs.urlparserhelper import captchaParser, de
 from Plugins.Extensions.IPTVPlayer.libs.youtube_dl.utils import clean_html
 from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import ensure_binary, ensure_str
 from Plugins.Extensions.IPTVPlayer.p2p3.pVer import isPY2
-from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_unquote, urllib_urlencode
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote, urllib_unquote, urllib_urlencode
 from Plugins.Extensions.IPTVPlayer.p2p3.UrlParse import parse_qs, urljoin, urlparse
 from Plugins.Extensions.IPTVPlayer.tools.e2ijs import js_execute, js_execute_ext
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import CSelOneLink, GetCookieDir, GetDefaultLang, GetJSScriptFile, GetPluginDir, printDBG, printExc, rm
@@ -3353,29 +3353,43 @@ class pageParser(CaptchaHelper):
                     urltab.append({"name": name, "url": decoUrl})
         return urltab
 
-    def parserVIDEASY(self, baseUrl):  # add 250826
+    def parserVIDEASY(self, baseUrl):  # updated 040926 - site moved its backend from api.videasy.net to api.speedracelight.com and now requires a /seed step plus a (double URL-encoded) title for sources-with-title
         printDBG("parserVIDEASY baseUrl[%s]" % baseUrl)
         urltab = []
         m = re.search(r"/(movie|tv)/(\d+)(?:/(\d+)/(\d+))?", baseUrl)
         if not m:
             return []
         mediaType, tmdbId, season, episode = m.group(1), m.group(2), m.group(3), m.group(4)
+
+        # title/year travel as plain query params on the candidate URL itself
+        # (decorateParamsFromUrl only whitelists header-ish keys into .meta, so
+        # we read them back out of the raw url text here instead).
+        titleMatch = re.search(r"[?&]title=([^&]+)", baseUrl)
+        yearMatch = re.search(r"[?&]year=([^&]+)", baseUrl)
+        title = urllib_unquote(titleMatch.group(1)) if titleMatch else ""
+        year = urllib_unquote(yearMatch.group(1)) if yearMatch else ""
+        encTitle = urllib_quote(urllib_quote(title, safe=""), safe="")
+
         HTTP_HEADER = self.cm.getDefaultHeader()
-        HTTP_HEADER["Referer"] = "https://player.videasy.net/"
-        HTTP_HEADER["Origin"] = "https://player.videasy.net"
-        params = "tmdbId=%s&mediaType=%s&episodeId=%s&seasonId=%s" % (
-            tmdbId, mediaType, episode or "1", season or "1"
-        )
-        servers = [
-            ("https://api2.videasy.net/cuevana/sources-with-title", "cuevana"),
-            ("https://api.videasy.net/mb-flix/sources-with-title", "mb-flix"),
-            ("https://api.videasy.net/1movies/sources-with-title", "1movies"),
-            ("https://api.videasy.net/cdn/sources-with-title", "cdn"),
-            ("https://api.videasy.net/superflix/sources-with-title", "superflix"),
-            ("https://api.videasy.net/lamovie/sources-with-title", "lamovie"),
-        ]
-        for apiUrl, name in servers:
-            sts, data = self.cm.getPage("%s?%s" % (apiUrl, params), {"header": dict(HTTP_HEADER), "timeout": 10})
+        HTTP_HEADER["Referer"] = "https://player.videasy.to/"
+        HTTP_HEADER["Origin"] = "https://player.videasy.to"
+
+        sts0, seedData = self.cm.getPage("https://api.speedracelight.com/seed?mediaId=%s" % tmdbId, {"header": dict(HTTP_HEADER), "timeout": 10})
+        if not sts0:
+            return []
+        try:
+            seed = json_loads(seedData).get("seed")
+        except Exception:
+            seed = None
+        if not seed:
+            return []
+
+        servers = ["cdn", "hdmovie", "vsrc"]
+        for name in servers:
+            apiUrl = ("https://api.speedracelight.com/%s/sources-with-title"
+                      "?title=%s&mediaType=%s&year=%s&tmdbId=%s&episodeId=%s&seasonId=%s&enc=2&seed=%s"
+                      % (name, encTitle, mediaType, year, tmdbId, episode or "1", season or "1", seed))
+            sts, data = self.cm.getPage(apiUrl, {"header": dict(HTTP_HEADER), "timeout": 10})
             if not sts:
                 continue
             blob = data.strip()
@@ -3384,7 +3398,7 @@ class pageParser(CaptchaHelper):
             sts2, decData = self.cm.getPage(
                 "https://enc-dec.app/api/dec-videasy",
                 {"header": {"Content-Type": "application/json"}, "raw_post_data": True, "timeout": 10},
-                json_dumps({"text": blob, "id": tmdbId}),
+                json_dumps({"text": blob, "id": tmdbId, "seed": seed}),
             )
             if not sts2:
                 continue
@@ -3392,21 +3406,50 @@ class pageParser(CaptchaHelper):
                 decResp = json_loads(decData)
                 if decResp.get("status") != 200:
                     continue
-                sources = decResp.get("result", {}).get("sources", [])
+                result = decResp.get("result", {})
             except Exception:
                 continue
-            for src in sources or []:
-                url = src.get("url")
-                if not url:
-                    continue
+
+            sources = result.get("sources") if isinstance(result, dict) else None
+            found = []
+            if sources:
+                for src in sources:
+                    u = src.get("url")
+                    if u:
+                        found.append((u, src.get("quality")))
+            else:
+                # schema-agnostic fallback: walk the whole result for any
+                # http(s) link ending up as a playable stream
+                stack = [result]
+                while stack:
+                    node = stack.pop()
+                    if isinstance(node, dict):
+                        stack.extend(node.values())
+                    elif isinstance(node, list):
+                        stack.extend(node)
+                    elif isinstance(node, basestring) and node.startswith("http") and (".m3u8" in node or ".mp4" in node):
+                        found.append((node, None))
+
+            for url, quality in found:
                 itemName = "Videasy %s" % name.capitalize()
-                if src.get("quality"):
-                    itemName += " %s" % src["quality"]
-                decoUrl = urlparser.decorateUrl(url, {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": "https://player.videasy.net/", "Origin": "https://player.videasy.net"})
-                if ".m3u8" in url.lower():
-                    urltab.extend(getDirectM3U8Playlist(decoUrl, sortWithMaxBitrate=99999999))
+                decoUrl = urlparser.decorateUrl(url, {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": "https://player.videasy.to/", "Origin": "https://player.videasy.to", "iptv_use_ffmpeg": True})
+                qm = re.search(r"(\d{3,4})p", url)
+                if quality or qm:
+                    # this link already names its own single quality (either the
+                    # API told us, or it's baked into the URL, e.g. .../s1080p-.../
+                    # ...m3u8) - no need to probe the playlist to discover it.
+                    itemName += " %s" % (quality or ("%sp" % qm.group(1)))
+                    urltab.append({"name": itemName, "url": decoUrl})
+                elif ".m3u8" in url.lower():
+                    # genuine multi-variant master playlist - let the helper
+                    # discover the actual qualities inside it.
+                    for item in getDirectM3U8Playlist(decoUrl, sortWithMaxBitrate=99999999):
+                        item["name"] = ("%s %s" % (itemName, item.get("name", ""))).strip()
+                        urltab.append(item)
                 else:
                     urltab.append({"name": itemName, "url": decoUrl})
+            if urltab:
+                return urltab
         return urltab
 
     def parserVIDCORE(self, baseUrl):  # add 030926 - vidcore.net/.io + vidup.to (shared codebase); page token -> enc-dec.app enc/dec chain
