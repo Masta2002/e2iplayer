@@ -2768,7 +2768,7 @@ class Host(CBaseHostClass, XXXParser):
 			self.MAIN_URL = 'https://xhamsterlive.com'
 			url = 'https://go.hpyrdr.com/api/models?limit=9999'
 			COOKIEFILE = join(GetCookieDir(), 'xhamsterlive.cookie')
-			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='iphone_3_0')
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='iphone')
 			self.defaultParams = {'header': self.HTTP_HEADER, 'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE}
 			sts, data = self.get_Page(url)
 			if not sts:
@@ -3081,7 +3081,7 @@ class Host(CBaseHostClass, XXXParser):
 		if 'PORNWHITE-clips' == name:
 			catUrl = self.currList[Index].possibleTypesOfSearch
 			COOKIEFILE = join(GetCookieDir(), 'pornwhite.cookie')
-			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='iphone_3_0')
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='iphone')
 			self.defaultParams = {'header': self.HTTP_HEADER, 'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE}
 			sts, data = self.getPage(url, 'pornwhite.cookie', 'pornwhite.com', self.defaultParams)
 			if not sts:
@@ -4264,7 +4264,7 @@ class Host(CBaseHostClass, XXXParser):
 		if 'WANKOZ-clips' == name:
 			catUrl = self.currList[Index].possibleTypesOfSearch
 			COOKIEFILE = join(GetCookieDir(), 'wankoz.cookie')
-			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='iphone_3_0')
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='iphone')
 			self.defaultParams = {'header': self.HTTP_HEADER, 'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE}
 			sts, data = self.get_Page(url, self.defaultParams)
 			if not sts:
@@ -7153,7 +7153,7 @@ class Host(CBaseHostClass, XXXParser):
 			self.MAIN_URL = 'https://www.3movs.com'
 			catUrl = self.currList[Index].possibleTypesOfSearch
 			COOKIEFILE = join(GetCookieDir(), '3movs.cookie')
-			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='iphone_3_0')
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='iphone')
 			self.defaultParams = {'header': self.HTTP_HEADER, 'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE}
 			sts, data = self.getPage(url, '3movs.cookie', '3movs.com', self.defaultParams)
 			if not sts:
@@ -9203,7 +9203,7 @@ class Host(CBaseHostClass, XXXParser):
 		if 'SHESHAFT-clips' == name:
 			catUrl = self.currList[Index].possibleTypesOfSearch
 			COOKIEFILE = join(GetCookieDir(), 'sheshaft.cookie')
-			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='iphone_3_0')
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='iphone')
 			self.defaultParams = {'header': self.HTTP_HEADER, 'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE}
 			sts, data = self.get_Page(url, self.defaultParams)
 			if not sts:

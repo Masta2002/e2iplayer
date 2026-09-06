@@ -183,10 +183,12 @@ class IPTVArticleView(Screen):
         # already scaled globally by openATV) declares its own splitPosition
         # and must not have this HD-reference number forced onto it too.
         if not skinchrome.isExternalSkin(self.skinName):
-            try:
-                self["text"].instance.setSplitPosition(skinchrome.scalePixels(330, skinchrome.getScale()))
-            except Exception:
-                printExc()
+            textInstance = self["text"].instance
+            if hasattr(textInstance, "setSplitPosition"):
+                try:
+                    textInstance.setSplitPosition(skinchrome.scalePixels(330, skinchrome.getScale()))
+                except Exception:
+                    printExc()
         self.hideSpinner()
         self.loadCover()
         # header logo: the host's own logo if it has one, otherwise fall

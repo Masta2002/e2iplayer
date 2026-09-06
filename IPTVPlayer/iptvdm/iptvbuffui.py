@@ -98,13 +98,13 @@ class E2iPlayerBufferingWidget(Screen):
         fontSize = skinchrome.scalePixels(21, scale)
 
         availableH = sz_h - headerH - footerH
-        start_y = headerH + (availableH - (i_h + c_h)) / 2
+        start_y = headerH + (availableH - (i_h + c_h)) // 2
         # icon
-        i_x = (sz_w - i_w) / 2
+        i_x = (sz_w - i_w) // 2
         i_y = start_y
         # percentage
-        p_x = (sz_w - p_w) / 2
-        p_y = start_y + (i_h - p_h) / 2
+        p_x = (sz_w - p_w) // 2
+        p_y = start_y + (i_h - p_h) // 2
         # console
         c_x = 0
         c_y = i_y + i_h
@@ -481,8 +481,12 @@ class E2iPlayerBufferingWidget(Screen):
                     with open(self.filePath, "rb") as f:
                         currOffset = 0
                         while currOffset < localSize:
-                            rawSize = ReadUint32(f.read(4), False)
+                            sizeBytes = f.read(4)
                             rawType = f.read(4)
+                            if len(sizeBytes) < 4 or len(rawType) < 4:
+                                # end of file / short read
+                                break
+                            rawSize = ReadUint32(sizeBytes, False)
                             printDBG(">> rawType [%s]" % rawType)
                             printDBG(">> rawSize [%d]" % rawSize)
                             if currOffset == 0 and rawType != b"ftyp":
@@ -501,6 +505,9 @@ class E2iPlayerBufferingWidget(Screen):
                                     self.moovAtomOffset = currOffset + rawSize
                                     self.moovAtomSize = remoteSize - self.moovAtomOffset
                                     self.isMOOVAtomAtTheBeginning = False
+                                    break
+                                if rawSize <= 0:
+                                    # non-advancing atom - bail instead of spinning
                                     break
                                 currOffset += rawSize
                             f.seek(currOffset, 0)

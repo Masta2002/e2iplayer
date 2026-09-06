@@ -43,7 +43,6 @@ gInfoBar__init__ = None
 
 
 def InfoBar__init__wrapper(self, *args, **kwargs):
-    global gInfoBar__init__
     gInfoBar__init__(self, *args, **kwargs)
     self.onShow.append(doPluginAutostart)
 

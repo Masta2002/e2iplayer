@@ -1414,7 +1414,6 @@ class E2iPlayerWidget(Screen):
         self.activePlayer.set(ret.privateData)
 
     def runIPTVDM(self, callback=None):
-        global gDownloadManager
         if None is not gDownloadManager:
             from Plugins.Extensions.IPTVPlayer.iptvdm.iptvdmui import IPTVDMWidget
             if None is callback:
@@ -1740,7 +1739,8 @@ class E2iPlayerWidget(Screen):
                 printExc()
 
             try:
-                sel = self["list"].l.getCurrentSelection()[0]
+                sel = self["list"].l.getCurrentSelection()
+                sel = sel[0] if sel else None
             except Exception:
                 printExc()
                 self.getRefreshedCurrList()
@@ -2600,7 +2600,6 @@ class E2iPlayerWidget(Screen):
                     self.session.open(MessageBox, '\n'.join(errorTab), type=MessageBox.TYPE_INFO, timeout=10)
                     return
 
-            global gDownloadManager
             if recorderMode:
                 if None is not gDownloadManager:
                     if IsUrlDownloadable(url):
