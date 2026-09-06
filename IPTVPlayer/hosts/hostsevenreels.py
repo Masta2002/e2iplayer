@@ -84,6 +84,8 @@ class SevenReels(GenericFolderWatchedScraperMixin, CBaseHostClass):
         try:
             if not isinstance(cItem, dict):
                 return ''
+            if cItem.get('title', '') == _('Next page'):
+                return ''
             if cItem.get('type', '') in ('video', 'audio'):
                 url = str(cItem.get('url', '') or '').strip()
                 return 'video:%s' % url if url else ''
@@ -176,6 +178,8 @@ class SevenReels(GenericFolderWatchedScraperMixin, CBaseHostClass):
         totalPages = parsed.get('total_pages') or parsed.get('totalPages') or 0
         if count and totalPages and page < totalPages:
             params = dict(cItem)
+            params.pop('isWatched', None)
+            params.pop('isStarted', None)
             params.update({'good_for_fav': False, 'title': _('Next page'), 'page': page + 1, 'category': 'list_items'})
             self.addDir(params)
 

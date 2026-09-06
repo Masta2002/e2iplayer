@@ -166,7 +166,9 @@ class Cineb(CBaseHostClass):
                 self.addVideo(params)
         if nextPage:
             params = dict(cItem)
-            params.update({"good_for_fav": False, "title": _("Next page ▶▶▶"), "url": self.getFullUrl(nextPage), "page": page + 1})
+            params.pop("isWatched", None)
+            params.pop("isStarted", None)
+            params.update({"good_for_fav": False, "title": _("Next page"), "page": page + 1})
             self.addDir(params)
 
     def listGenres(self, cItem):
