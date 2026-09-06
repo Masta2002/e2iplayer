@@ -5,7 +5,7 @@
 # removed duplicated link-building code
 from Plugins.Extensions.IPTVPlayer.components.ihost import CBaseHostClass, CHostBase, RetHost
 from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT as _
-from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote_plus
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote, urllib_quote_plus
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads
@@ -338,11 +338,27 @@ class Cineb(CBaseHostClass):
         icon = cItem.get("icon", self.DEFAULT_ICON_URL)
         return [{"title": title, "text": info["description"], "images": [{"url": self.getFullIconUrl(icon)}], "other_info": otherInfo}]
 
-    def _linkItemFromUrl(self, url):
+    def _embedTitleYear(self, cItem):
+        title = cItem.get("s_title") or cItem.get("title", "") or ""
+        m = re.match(r"^(.*?)\s*\((\d{4})\)\s*$", title)
+        if m:
+            return m.group(1).strip(), m.group(2)
+        return title.strip(), cItem.get("year", "") or ""
+
+    def _linkItemFromUrl(self, url, cItem=None):
         if url.startswith("//"):
             url = "https:" + url
         elif not url.startswith("http"):
             url = self.getFullUrl(url)
+        # the videasy resolver (api.speedracelight.com) now needs the title
+        # on the embed URL - cineb's own server list omits it. Also normalise
+        # the dead player.videasy.net host to .to.
+        if cItem is not None and "videasy" in url and "title=" not in url:
+            url = url.replace("player.videasy.net", "player.videasy.to")
+            t, y = self._embedTitleYear(cItem)
+            if t:
+                sep = "&" if "?" in url else "?"
+                url = "%s%stitle=%s&year=%s" % (url, sep, urllib_quote(t, safe=""), y)
         hostName = self.up.getHostName(url)
         if not hostName:
             hostName = url.split("/")[2] if len(url.split("/")) > 2 else "Server"
@@ -361,14 +377,14 @@ class Cineb(CBaseHostClass):
                 if isinstance(serversList, list):
                     for serverUrl in serversList:
                         if isinstance(serverUrl, str):
-                            urlTab.append(self._linkItemFromUrl(serverUrl))
+                            urlTab.append(self._linkItemFromUrl(serverUrl, cItem))
             except Exception:
                 printExc()
         if not urlTab:
             iframeList = re.findall(r'<iframe[^>]+src=["\']([^"\']+)["\']', data, re.I)
             for src in iframeList:
                 if "youtube" not in src and "google" not in src:
-                    urlTab.append(self._linkItemFromUrl(src))
+                    urlTab.append(self._linkItemFromUrl(src, cItem))
         descMatch = re.search(r'class=["\']description text-expand["\'][^>]*>(.*?)</div>', data, re.DOTALL)
         synopsis = self.cleanHtmlStr(descMatch.group(1)) if descMatch else ""
         if not synopsis:

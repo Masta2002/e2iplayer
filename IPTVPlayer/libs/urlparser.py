@@ -3385,7 +3385,8 @@ class pageParser(CaptchaHelper):
             return []
 
         # server list per smy778/EncDecEndpoints samples/videasy.py
-        servers = ["cdn", "m4uhd", "vsrc", "hdmovie", "lamovie", "superflix"]
+        # ("vsrc" / "meine" endpoints 404 on the live API, left out)
+        servers = ["cdn", "hdmovie", "m4uhd", "lamovie", "superflix"]
         for name in servers:
             apiUrl = ("https://api.speedracelight.com/%s/sources-with-title"
                       "?title=%s&mediaType=%s&year=%s&tmdbId=%s&imdbId=&episodeId=%s&seasonId=%s&enc=2&seed=%s"
