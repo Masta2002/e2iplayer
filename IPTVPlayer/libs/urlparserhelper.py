@@ -352,6 +352,40 @@ def decorateUrl(url, metaParams={}):
     return retUrl
 
 
+def _hlsChannelsLabel(channels):
+    # CHANNELS first value is the count, e.g. "2" or "6/JOC" (Atmos)
+    try:
+        n = int(str(channels).split('/')[0].strip())
+    except Exception:
+        return ''
+    return {6: '5.1', 8: '7.1'}.get(n, '%dch' % n if n > 2 else '')
+
+
+def _hlsCharacteristicsLabel(characteristics, forSubtitles=False):
+    c = (characteristics or '').lower()
+    tags = []
+    if 'public.accessibility.describes-video' in c:
+        tags.append('AD')
+    if forSubtitles and ('transcribes-spoken-dialog' in c or 'describes-music-and-sound' in c):
+        tags.append('SDH')
+    return ' '.join(tags)
+
+
+def _appendLabelTag(base, tag):
+    # skip a tag the stream name already spells out (e.g. NAME="Deutsch AD")
+    if tag and tag.lower() not in base.lower().split():
+        return (base + ' ' + tag).strip()
+    return base
+
+
+def _hlsAudioLabel(audioStream):
+    label = audioStream.name or getattr(audioStream, 'language', '') or 'audio'
+    label = _appendLabelTag(label, _hlsChannelsLabel(getattr(audioStream, 'channels', None)))
+    for tag in _hlsCharacteristicsLabel(getattr(audioStream, 'characteristics', None)).split():
+        label = _appendLabelTag(label, tag)
+    return label
+
+
 def getDirectM3U8Playlist(M3U8Url, checkExt=True, variantCheck=True, cookieParams={}, checkContent=False, sortWithMaxBitrate=-1, mergeAltAudio=True):
     if checkExt and not M3U8Url.split('?', 1)[0].endswith('.m3u8'):
         return []
@@ -371,6 +405,36 @@ def getDirectM3U8Playlist(M3U8Url, checkExt=True, variantCheck=True, cookieParam
             data = data.strip()
         m3u8Obj = m3u8.inits(data, finallM3U8Url)
         if m3u8Obj.is_variant:
+            # Merge SUBTITLES renditions declared in the master playlist into
+            # external_sub_tracks (kept alongside any the caller already
+            # passed). The player exposes them as "Download suggested".
+            hlsSubTracks = []
+            seenSubUrls = set()
+            subMeta = dict((k, v) for k, v in meta.items() if k not in ('external_sub_tracks', 'iptv_proto', 'iptv_bitrate', 'iptv_m3u8_custom_base_link'))
+            for playlist in m3u8Obj.playlists:
+                for subStream in getattr(playlist, 'subtitle_streams', []):
+                    try:
+                        subUrl = subStream.absolute_uri
+                    except Exception:
+                        subUrl = ''
+                    if not subUrl or subUrl in seenSubUrls:
+                        continue
+                    seenSubUrls.add(subUrl)
+                    subTitle = subStream.name or subStream.language or 'HLS'
+                    subTags = []
+                    if getattr(subStream, 'forced', False) and 'forced' not in subTitle.lower():
+                        subTags.append('forced')
+                    for tag in _hlsCharacteristicsLabel(getattr(subStream, 'characteristics', None), forSubtitles=True).split():
+                        if tag.lower() not in subTitle.lower():
+                            subTags.append(tag)
+                    if subTags:
+                        subTitle = '%s (%s)' % (subTitle, ' '.join(subTags))
+                    hlsSubTracks.append({'title': subTitle,
+                                         'lang': subStream.language or '',
+                                         'url': strwithmeta(subUrl, subMeta),
+                                         'format': 'vtt'})
+            if hlsSubTracks:
+                meta['external_sub_tracks'] = list(meta.get('external_sub_tracks', [])) + hlsSubTracks
             for playlist in m3u8Obj.playlists:
                 item = {}
                 if not variantCheck or playlist.absolute_uri.split('?')[-1].endswith('.m3u8'):
@@ -402,11 +466,19 @@ def getDirectM3U8Playlist(M3U8Url, checkExt=True, variantCheck=True, cookieParam
                                                               item['width'],
                                                               item['height'],
                                                               item['codecs'])
+                try:
+                    videoRange = playlist.stream_info.video_range
+                    if videoRange and videoRange.upper() not in ('SDR', ''):
+                        item['name'] += ' ' + videoRange
+                    if playlist.stream_info.frame_rate:
+                        item['name'] += ' %gfps' % float(playlist.stream_info.frame_rate)
+                except Exception:
+                    pass
                 if mergeAltAudio and playlist.alt_audio_streams and item['url'].meta.get('iptv_proto') == 'm3u8':
                     for audio_stream in playlist.alt_audio_streams:
                         audioUrl = strwithmeta(audio_stream.absolute_uri, item['url'].meta)
                         altItem = dict(item)
-                        altItem['name'] = '[%s] %s' % (audio_stream.name, altItem['name'])
+                        altItem['name'] = '[%s] %s' % (_hlsAudioLabel(audio_stream), altItem['name'])
                         metaItem = dict(item['url'].meta)
                         metaItem.update({'audio_url': audioUrl, 'video_url': altItem['url'], 'ff_out_container': 'mpegts', 'prefered_merger': 'hlsdl'})
                         altItem['url'] = decorateUrl("merge://audio_url|video_url", metaItem)

@@ -131,6 +131,29 @@ def DownloaderCreator(url):
             downloader = None
 
     #################################################
+    # merge:// with HLS/DASH components (separate
+    # audio+video renditions, e.g. Arte CMAF, Apple
+    # bipbop) must be muxed with ffmpeg. HLSDownloader's
+    # "-a" alt-audio path only naively interleaves TS
+    # packets and yields an unplayable file for fMP4,
+    # and MergeDownloader wgets each component (fine for
+    # progressive URLs, wrong for .m3u8/.mpd playlists).
+    #################################################
+    try:
+        if isinstance(url, str) and url.startswith('merge://'):
+            compUrls = []
+            try:
+                for key in url.split('merge://', 1)[1].split('|'):
+                    compUrls.append(str(urlMeta.get(key, key)))
+            except Exception:
+                printExc()
+            if any((IsHlsLikeUrl(u) or '.mpd' in u.lower()) for u in compUrls):
+                printDBG("DownloaderCreator: merge:// with HLS/DASH components -> FFMPEGDownloader")
+                return FFMPEGDownloader()
+    except Exception:
+        printExc()
+
+    #################################################
     # Default assignment by protocol
     #################################################
     try:

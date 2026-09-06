@@ -10,6 +10,7 @@ from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import ensure_str
 # FOREIGN import
 ###################################################
 import codecs
+import os
 from functools import cmp_to_key
 
 
@@ -32,6 +33,11 @@ class IPTVFileHost:
 
     def addFile(self, filePath, encoding='utf-8', addItemParams={}):
         printDBG('IPTVFileHost.addFile file[%s]' % filePath)
+        if not os.path.isfile(filePath):
+            # a not-yet-created urllist.user / urllist.stream is normal - just
+            # yield an empty list instead of raising FileNotFoundError
+            printDBG('IPTVFileHost.addFile file does not exist [%s]' % filePath)
+            return
         try:
             with codecs.open(filePath, 'r', encoding, 'replace') as fp:
                 lineNum = 0
