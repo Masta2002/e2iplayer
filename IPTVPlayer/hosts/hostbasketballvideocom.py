@@ -41,8 +41,8 @@ class BasketballVideo(CBaseHostClass):
             return []
         cUrl = data.meta['url']
         self.setMainUrl(cUrl)
-        data = self.cm.ph.getAllItemsBeetwenMarkers(data, '<nav', '</nav')[0]
-        data = re.compile(r'a href="([^"]+)"\s*?>([^<]+)', re.DOTALL).findall(data)
+        data = self.cm.ph.getAllItemsBeetwenMarkers(data, '<nav', '</nav')
+        data = re.compile(r'a href="([^"]+)"\s*?>([^<]+)', re.DOTALL).findall(data[0] if data else '')
         for url, title in data:
             params = dict(cItem)
             params.update({'category': 'list_items', 'title': title, 'url': self.getFullUrl(url)})
@@ -75,8 +75,10 @@ class BasketballVideo(CBaseHostClass):
         sts, data = self.getPage(cItem['url'])
         if not sts:
             return []
-        data = self.cm.ph.getAllItemsBeetwenMarkers(data, 'class="fullstory block_elem"', 'class="full_info block_elem"')[0]
-        data = re.compile(r'''(?:src|href)=['"]([^'^"]+?)['"]\s(?:width|rel)''', re.DOTALL).findall(data)
+        data = self.cm.ph.getAllItemsBeetwenMarkers(data, 'class="fullstory block_elem"', 'class="full_info block_elem"')
+        if not data:
+            return urltab
+        data = re.compile(r'''(?:src|href)=['"]([^'^"]+?)['"]\s(?:width|rel)''', re.DOTALL).findall(data[0])
         for url in data:
             url = 'https:' + url if url.startswith('//') else url
             if any(d in url for d in ("gamesontvtoday.com", "nfl-video.com", "guidedesgemmes.com", "nhlgamestoday.com")):

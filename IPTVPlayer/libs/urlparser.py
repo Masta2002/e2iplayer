@@ -2814,7 +2814,10 @@ class pageParser(CaptchaHelper):
         if match:
             match = match.group(1).replace("&quot;", '"').replace("&amp;", "&")
             js = json_loads(match).get("flashvars", {}).get("metadata")
-            js = json_loads(js)
+            if isinstance(js, str):
+                js = json_loads(js) if js else {}
+            if not isinstance(js, dict):
+                js = {}
             url = js.get("hlsManifestUrl") or js.get("ondemandHls") or js.get("hlsMasterPlaylistUrl")
             if url:
                 url = urlparser.decorateUrl(url, {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": host, "Origin": host[:-1]})
