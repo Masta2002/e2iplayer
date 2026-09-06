@@ -3160,7 +3160,10 @@ class pageParser(CaptchaHelper):
                 continue
             if not plain:
                 continue
-            url = ensure_str(plain).strip()
+            if isinstance(plain, (bytes, bytearray)):
+                url = plain.decode("utf-8", "ignore").strip()
+            else:
+                url = str(plain).strip()
             if not url.startswith("http"):
                 continue
             url = urlparser.decorateUrl(url, {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": "https://vidrock.net/", "Origin": "https://vidrock.net"})
@@ -3489,9 +3492,11 @@ class pageParser(CaptchaHelper):
         except Exception:
             printExc()
             return []
+        if not isinstance(res, dict):
+            return []
         subTracks = []
         try:
-            for c in ((res.get("stream") or {}).get("captions") or res.get("captions") or []):
+            for c in (((res.get("stream") or {}) if isinstance(res.get("stream"), dict) else {}).get("captions") or res.get("captions") or []):
                 cu = c.get("url") or c.get("file")
                 if cu:
                     subTracks.append({"title": c.get("label", ""), "url": cu, "lang": c.get("language", c.get("label", ""))})
