@@ -1128,7 +1128,7 @@ class pageParser(CaptchaHelper):
                         else:
                             urlsTab.append({"name": quality, "url": media_url})
             except Exception:
-                printExc
+                printExc()
         return urlsTab
 
     def parserVK(self, baseUrl):  # Partly work, Login not work

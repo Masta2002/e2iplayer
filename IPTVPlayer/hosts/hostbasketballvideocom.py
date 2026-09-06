@@ -45,7 +45,7 @@ class BasketballVideo(CBaseHostClass):
         data = re.compile(r'a href="([^"]+)"\s*?>([^<]+)', re.DOTALL).findall(data)
         for url, title in data:
             params = dict(cItem)
-            params.update({'category': 'list_items', 'title': title, 'url': url})
+            params.update({'category': 'list_items', 'title': title, 'url': self.getFullUrl(url)})
             self.addDir(params)
 
     def listItems(self, cItem):
@@ -62,7 +62,7 @@ class BasketballVideo(CBaseHostClass):
             icon = self.getFullUrl(self.cm.ph.getSearchGroups(item, r'img src="([^"]+)')[0])
             desc = self.cleanHtmlStr(self.cm.ph.getDataBeetwenNodes(item, ('<div', '>', 'short_descr'), ('</div', '>'), False)[1]).replace('&nbsp;', ' ')
             params = dict(cItem)
-            params = {'good_for_fav': True, 'title': title, 'url': url, 'icon': icon, 'desc': desc}
+            params.update({'good_for_fav': True, 'title': title, 'url': url, 'icon': icon, 'desc': desc})
             self.addVideo(params)
         if nextPage:
             params = dict(cItem)

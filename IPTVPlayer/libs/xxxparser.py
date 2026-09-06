@@ -2013,7 +2013,6 @@ class XXXParser:
 			videoLinks = self.cm.ph.getDataBeetwenMarkers(data, '<div class="video_actions_wrapper', 'full video', False)[1]
 			printDBG('Total data: ' + str(videoLinks))
 			videoLinks = self.cm.ph.getAllItemsBeetwenMarkers(videoLinks, 'href="', '" class', False)
-			self.cm.ph.getAllItemsBeetwenMarkers
 			printDBG('Links: ' + str(videoLinks))
 			videoUrl = videoLinks[-2]
 			printDBG('Kesz link: ' + str(videoUrl))
@@ -5139,7 +5138,7 @@ class XXXParser:
 
 		if parser == 'https://glavmatures.com':
 			COOKIEFILE = join(GetCookieDir(), 'glavmatures.cookie')
-			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='iphone_3_0')
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='iphone')
 			self.defaultParams = {'use_cookie': True, 'load_cookie': False, 'save_cookie': True, 'cookiefile': COOKIEFILE}
 			sts, data = self.getPage(url, 'glavmatures.cookie', 'glavmatures.com', self.defaultParams)
 			if not sts:

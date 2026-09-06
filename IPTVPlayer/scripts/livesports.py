@@ -36,9 +36,8 @@ def rm(file):
 def printDBG(strDat):
     return
     strDat = str(strDat)
-    f = open('/tmp/iptv.dbg', 'a')
-    f.write(strDat + '\n')
-    f.close
+    with open('/tmp/iptv.dbg', 'a') as f:
+        f.write(strDat + '\n')
     print("%s" % strDat)
 
 
