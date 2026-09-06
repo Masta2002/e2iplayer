@@ -306,7 +306,6 @@ for hostName in gListOfHostsNames:
 
 
 def GetListOfHostsNames():
-    global gListOfHostsNames
     return gListOfHostsNames
 
 

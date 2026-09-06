@@ -1475,9 +1475,8 @@ class CMoviePlayerPerHost():
                 data['buffering'] = self.activePlayer['buffering']
                 data['player'] = {'value': self.activePlayer['player'].value, 'text': self.activePlayer['player'].getText()}
                 data = json_dumps(ensure_str(data))
-                file = codecs.open(self.filePath, 'w', 'utf-8', 'replace')
-                file.write(data)
-                file.close
+                with codecs.open(self.filePath, 'w', 'utf-8', 'replace') as file:
+                    file.write(data)
                 sts = True
         except Exception:
             printExc()
