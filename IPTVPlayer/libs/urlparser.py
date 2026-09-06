@@ -3384,10 +3384,11 @@ class pageParser(CaptchaHelper):
         if not seed:
             return []
 
-        servers = ["cdn", "hdmovie", "vsrc"]
+        # server list per smy778/EncDecEndpoints samples/videasy.py
+        servers = ["cdn", "m4uhd", "vsrc", "hdmovie", "lamovie", "superflix"]
         for name in servers:
             apiUrl = ("https://api.speedracelight.com/%s/sources-with-title"
-                      "?title=%s&mediaType=%s&year=%s&tmdbId=%s&episodeId=%s&seasonId=%s&enc=2&seed=%s"
+                      "?title=%s&mediaType=%s&year=%s&tmdbId=%s&imdbId=&episodeId=%s&seasonId=%s&enc=2&seed=%s"
                       % (name, encTitle, mediaType, year, tmdbId, episode or "1", season or "1", seed))
             sts, data = self.cm.getPage(apiUrl, {"header": dict(HTTP_HEADER), "timeout": 10})
             if not sts:
