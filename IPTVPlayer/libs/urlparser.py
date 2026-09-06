@@ -3608,7 +3608,7 @@ class pageParser(CaptchaHelper):
             if not streamUrl:
                 continue
             label = ("%s %s" % (name.capitalize(), srv.get("name", ""))).strip()
-            decoUrl = urlparser.decorateUrl(streamUrl, {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": ref, "Origin": ref[:-1]})
+            decoUrl = urlparser.decorateUrl(streamUrl, {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": ref, "Origin": ref[:-1], "iptv_use_ffmpeg": True})
             if ".m3u8" in streamUrl:
                 for item in getDirectM3U8Playlist(decoUrl, sortWithMaxBitrate=99999999):
                     item["name"] = "%s %s" % (label, item.get("name", ""))
