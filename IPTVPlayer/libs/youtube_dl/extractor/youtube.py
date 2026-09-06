@@ -466,7 +466,11 @@ class YoutubeIE(object):
         # manually authored / community caption tracks
         return self._caption_tracks_to_subs(self._extract_caption_tracks(video_id, source), want_asr=False)
 
-    def _real_extract(self, url, allowVP9=False):
+    def _real_extract(self, url, allowVP9=False, authHeader=None):
+        # authHeader: {"Authorization": "Bearer ..."} when the user is signed
+        # in - lets the player request reach members-only / age-restricted
+        # content
+        authHeader = authHeader or {}
         # follow a next_url= redirect (old age-verification style link) if present
         mobj = re.search(self._NEXT_URL_RE, url)
         if mobj:
@@ -494,8 +498,18 @@ class YoutubeIE(object):
             ]
             video_webpage = ""
             ageReason = ""
+            if authHeader:
+                # signed in: the mobile clients get the bearer token too (may
+                # already be enough), and the TV client - which honours it for
+                # age-restricted / members content - is added as a last resort
+                # (its formats are signature-ciphered, hence slower)
+                it_clients.append(("7", "7.20250101.10.00",
+                                   "Mozilla/5.0 (ChromiumStylePlatform) Cobalt/Version",
+                                   "'clientName': 'TVHTML5', 'clientVersion': '7.20250101.10.00'"))
             for cname, cver, ua, client_ctx in it_clients:
-                http_params = {"header": {"User-Agent": ua, "Content-Type": "application/json", "Origin": "https://www.youtube.com", "X-YouTube-Client-Name": cname, "X-YouTube-Client-Version": cver}, "raw_post_data": True}
+                header = {"User-Agent": ua, "Content-Type": "application/json", "Origin": "https://www.youtube.com", "X-YouTube-Client-Name": cname, "X-YouTube-Client-Version": cver}
+                header.update(authHeader)
+                http_params = {"header": header, "raw_post_data": True}
                 post_data = "{'videoId': '%s', 'params': '2AMB', 'contentCheckOk': true, 'racyCheckOk': true, 'context': {'client': {'hl': '%s', %s,}}}" % (video_id, lang, client_ctx)
                 sts, data = self.cm.getPage(url, http_params, post_data)
                 if not sts:
@@ -621,6 +635,12 @@ class YoutubeIE(object):
                     playerUrl = ph.search(video_webpage, reObj)[0]
                     if playerUrl:
                         break
+            if not playerUrl:
+                # video_webpage is the InnerTube JSON, not HTML - grab base.js
+                # from the watch page instead
+                sts, wp = self.cm.getPage("https://www.youtube.com/watch?v=%s" % video_id)
+                if sts:
+                    playerUrl = self._search_regex([r'"jsUrl":"([^"]+?)"', r'"(?:PLAYER_JS_URL|jsUrl)"\s*:\s*"([^"]+base\.js)"'], wp, "player URL", default="")
             playerUrl = self.cm.getFullUrl(playerUrl.replace("\\", ""), self.cm.meta["url"])
             if playerUrl:
                 decSignatures = CYTSignAlgoExtractor(self.cm).decryptSignatures(signatures, playerUrl)

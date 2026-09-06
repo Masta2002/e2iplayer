@@ -2,6 +2,7 @@
 # Last Modified: 01.07.2026 - Change: configurable YouTube display language, configurable channel name for downloaded files, absolute published date in info view
 # LOCAL import
 from Plugins.Extensions.IPTVPlayer.libs.youtube_dl.extractor.youtube import YoutubeIE
+from Plugins.Extensions.IPTVPlayer.libs.youtube_oauth import YouTubeOAuth
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, IsExecutable
 from Plugins.Extensions.IPTVPlayer.libs.pCommon import common
 from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT as _
@@ -136,7 +137,7 @@ class YouTubeParser:
                         videoId = self.cm.ph.getSearchGroups(data, r"""['"]REDIRECT_TO_VIDEO['"]\s*\,\s*['"]([^'^"]+?)['"]""")[0]
                     if videoId != "":
                         url = "https://www.youtube.com/watch?v=" + videoId
-            linksList = YoutubeIE()._real_extract(url, allowVP9=allowVP9)
+            linksList = YoutubeIE()._real_extract(url, allowVP9=allowVP9, authHeader=self._getAuthHeader())
         except Exception:
             printExc()
             if dashSepareteList:
@@ -813,6 +814,15 @@ class YouTubeParser:
         lang, region = self._getDefaultLangAndRegion()
         return "%s-%s,%s;q=0.9" % (lang, region, lang)
 
+    def _getAuthHeader(self):
+        try:
+            if not hasattr(self, "_oauth"):
+                self._oauth = YouTubeOAuth()
+            return self._oauth.getAuthHeader()
+        except Exception:
+            printExc()
+            return {}
+
     def _applyYoutubeHeaders(self, http_params=None, accept_language=None):
         params = self.http_params if http_params is None else dict(http_params)
         hdr = dict(params.get("header", {}))
@@ -821,7 +831,9 @@ class YouTubeParser:
         hdr["X-YouTube-Client-Name"] = "1"
         hdr["X-YouTube-Client-Version"] = cfg["client_version"]
         hdr["Origin"] = "https://www.youtube.com"
-        hdr["X-Youtube-Bootstrap-Logged-In"] = "false"
+        auth = self._getAuthHeader()
+        hdr["X-Youtube-Bootstrap-Logged-In"] = "true" if auth else "false"
+        hdr.update(auth)
         if cfg["visitor_data"]:
             hdr["X-Goog-Visitor-Id"] = cfg["visitor_data"]
         params["header"] = hdr

@@ -9,6 +9,7 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, IsExecutable
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.tools.iptvfilehost import IPTVFileHost
 from Plugins.Extensions.IPTVPlayer.libs.youtubeparser import YouTubeParser
+from Plugins.Extensions.IPTVPlayer.libs.youtube_oauth import YouTubeOAuth
 from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote_plus
 from Plugins.Extensions.IPTVPlayer.libs.urlmetahelper import buildSidecar, buildYoutubeOptions, decorateYoutubeUrl, decorateYoutubeLinkItems
 from Plugins.Extensions.IPTVPlayer.libs.youtubeuserlinks import YouTubeUserLinksManager
@@ -507,10 +508,68 @@ class Youtube(CBaseHostClass):
 
     def listMainMenu(self):
         printDBG("Youtube.listsMainMenu")
-        for item in self.MAIN_GROUPED_TAB:
+        tab = list(self.MAIN_GROUPED_TAB)
+        if YouTubeOAuth.isLoggedIn():
+            tab += [
+                {"category": "auth_feed", "feed": "subscriptions", "title": _("My subscriptions"), "desc": _("Latest videos from the channels you are subscribed to.")},
+                {"category": "auth_feed", "feed": "watch_later", "title": _("Watch later"), "desc": _("Your 'Watch later' playlist.")},
+                {"category": "auth_feed", "feed": "liked", "title": _("Liked videos"), "desc": _("Videos you have liked.")},
+                {"category": "yt_logout", "title": _("Sign out of Google"), "desc": _("Remove the stored YouTube sign-in.")},
+            ]
+        else:
+            tab += [{"category": "yt_login", "title": _("Sign in to Google (YouTube)"), "desc": _("Sign in to reach your subscriptions, playlists and age-restricted videos.")}]
+        for item in tab:
             params = {"name": "category"}
             params.update(item)
             self.addDir(params)
+
+    def listAuthFeed(self, cItem):
+        printDBG("Youtube.listAuthFeed [%s]" % cItem)
+        feed = cItem.get("feed", "")
+        page = cItem.get("page", "1")
+        url = cItem.get("url", "")
+        if not url:
+            url = {"subscriptions": "https://www.youtube.com/feed/subscriptions",
+                   "watch_later": "https://www.youtube.com/playlist?list=WL",
+                   "liked": "https://www.youtube.com/playlist?list=LL"}.get(feed, "")
+        if not url:
+            return
+        defaultChannel = cItem.get("channel_title", "")
+        if feed == "subscriptions":
+            tmp = self.ytp.getVideosFromChannelList(url, "channel", page, cItem)
+        else:
+            tmp = self.ytp.getVideosApiPlayList(url, "playlist", page, cItem)
+        self._injectChannelNameToItems(tmp, defaultChannel)
+        self.watchedHelper.updateHostListFlags(self, tmp, self._getWatchedKeyForItem)
+        for item in tmp:
+            item.update({"name": "category"})
+            if item.get("type", "") == "more":
+                item.update({"category": "auth_feed", "feed": feed, "title": _("Next page")})
+                self.addMore(item)
+            elif item.get("type", "") == "video":
+                self.addVideo(item)
+            else:
+                self.addDir(item)
+
+    def doGoogleLogin(self):
+        printDBG("Youtube.doGoogleLogin")
+        oauth = YouTubeOAuth()
+        dc = oauth.requestDeviceCode()
+        if not dc.get("user_code"):
+            self.sessionEx.open(MessageBox, _("Could not start the YouTube sign-in."), type=MessageBox.TYPE_ERROR, timeout=8)
+            return
+        msg = _("To sign in to YouTube:\n\n1. On a phone or computer open:\n     %s\n\n2. Enter this code:\n\n     %s\n\n3. Approve the access, then select OK here.") % (dc["verification_url"], dc["user_code"])
+        ret = self.sessionEx.waitForFinishOpen(MessageBox, msg, type=MessageBox.TYPE_YESNO, default=True)
+        if not (ret and ret[0]):
+            return
+        ok = oauth.pollForToken(dc["device_code"], dc["interval"], 120)
+        self.sessionEx.open(MessageBox, _("Signed in to YouTube.") if ok else _("Sign-in was not completed."),
+                            type=MessageBox.TYPE_INFO if ok else MessageBox.TYPE_ERROR, timeout=6)
+
+    def doGoogleLogout(self):
+        printDBG("Youtube.doGoogleLogout")
+        YouTubeOAuth.logout()
+        self.sessionEx.open(MessageBox, _("Signed out of YouTube."), type=MessageBox.TYPE_INFO, timeout=5)
 
     def listCategory(self, cItem, searchMode=False):
         printDBG("Youtube.listCategory cItem[%s]" % cItem)
@@ -977,6 +1036,14 @@ class Youtube(CBaseHostClass):
 
         if None is name:
             self.listMainMenu()
+        elif "yt_login" == category:
+            self.doGoogleLogin()
+            self.listMainMenu()
+        elif "yt_logout" == category:
+            self.doGoogleLogout()
+            self.listMainMenu()
+        elif "auth_feed" == category:
+            self.listAuthFeed(self.currItem)
         elif "from_file" == category:
             self.listCategory(self.currItem)
         elif category in ["channel", "playlist", "movie", "traylist"]:
