@@ -43,7 +43,6 @@ gInfoBar__init__ = None
 
 
 def InfoBar__init__wrapper(self, *args, **kwargs):
-    global gInfoBar__init__
     gInfoBar__init__(self, *args, **kwargs)
     self.onShow.append(doPluginAutostart)
 
@@ -134,6 +133,6 @@ def pinCallback(session, callbackFun, pin=None):
 def sessionstart(reason, **kwargs):
     if reason == 0 and 'session' in kwargs:
         try:
-            import Plugins.Extensions.IPTVPlayer.Web.initiator  # noqa: F401
+            import Plugins.Extensions.IPTVPlayer.web.initiator  # noqa: F401
         except Exception as e:
             print("EXCEPTION initiating IPTVplayer WebComponent:", str(e))

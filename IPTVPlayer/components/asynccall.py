@@ -237,7 +237,7 @@ class Delegate(object):
 
     def __call__(self, *args, **kwargs):
         if self.proxyQueue:
-            if self.proxyQueue.mainThreadName != threading.currentThread().getName():
+            if self.proxyQueue.mainThreadName != threading.current_thread().name:
                 self.event.clear()
 
                 item = CPQItemDelegate(self.function, args, kwargs, self.finished)
@@ -260,7 +260,6 @@ class Delegate(object):
 
 class DelegateToMainThread(Delegate):
     def __init__(self, fnc, mainThreadIdx=0):
-        global gMainFunctionsQueueTab
         Delegate.__init__(self, gMainFunctionsQueueTab[mainThreadIdx], fnc)
 
     # def __del__(self):
@@ -411,7 +410,7 @@ class CFunctionProxyQueue:
         self.session = session
         self.Queue = []
         self.QueueLock = threading.Lock()
-        self.mainThreadName = threading.currentThread().getName()
+        self.mainThreadName = threading.current_thread().name
         self.procFun = None
 
         # this flag will be checked with mutex taken
@@ -423,11 +422,10 @@ class CFunctionProxyQueue:
     #       so there is no need to synchronize it by mutex
     ############################################################
     def setProcFun(self, fun):
-        currThreadName = threading.currentThread().getName()
+        currThreadName = threading.current_thread().name
         if self.mainThreadName != currThreadName:
             printDBG("ERROR CFunctionProxyQueue.registerFunction: thread [%s] is not main thread" % currThreadName)
             raise AssertionError
-            return False
         # field self.procFun is accessed only from main thread
         self.procFun = fun
         return True
@@ -473,11 +471,10 @@ class CFunctionProxyQueue:
 
     def processQueue(self):
        # Queue can be processed only from main thread
-        currThreadName = threading.currentThread().getName()
+        currThreadName = threading.current_thread().name
         if self.mainThreadName != currThreadName:
             printDBG("ERROR CFunctionProxyQueue.processQueue: Queue can be processed only from main thread, thread [%s] is not main thread" % currThreadName)
             raise AssertionError("ERROR CFunctionProxyQueue.processQueue: Queue can be processed only from main thread, thread [%s] is not main thread" % currThreadName)
-            return False
 
         if self.isQueueEmpty():
             return
@@ -501,7 +498,7 @@ class CFunctionProxyQueue:
 
             if isinstance(item, CPQItemCallBack) and None is not self.procFun:
                 self.procFun(item)
-            elif isinstance(item, CPQItemDelegate) and hasattr(item.callFnc, '__call__') and hasattr(item.retFnc, '__call__'):
+            elif isinstance(item, CPQItemDelegate) and callable(item.callFnc) and callable(item.retFnc):
                 item.retFnc(item.callFnc(self.session, *item.args, **item.kwargs))
             else:
                 printDBG("processQueue WRONG TYPE of proxy queue item")

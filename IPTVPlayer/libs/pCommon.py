@@ -278,8 +278,8 @@ class common:
     def getDefaultHeader(browser='firefox'):
         if browser == 'firefox':
             ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0'
-        elif browser == 'iphone_3_0':
-            ua = 'Mozilla/5.0 (iPhone; U; CPU iPhone OS 3_0 like Mac OS X; en-us) AppleWebKit/528.18 (KHTML, like Gecko) Version/4.0 Mobile/7A341 Safari/528.16'
+        elif browser in ('iphone', 'iphone_3_0'):
+            ua = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1'
         else:
             ua = common.HOST
         HTTP_HEADER = {'User-Agent': ua, 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Accept-Encoding': 'gzip, deflate', 'DNT': 1}
@@ -452,7 +452,7 @@ class common:
                 cj = self._pyCurlLoadCookie(cookiefile, ignoreDiscard, ignoreExpires)
             else:
                 cj = http.cookiejar.MozillaCookieJar()
-            cj.load(cookiefile, ignore_discard=ignoreDiscard)
+                cj.load(cookiefile, ignore_discard=ignoreDiscard)
             for cookie in cj:
                 if cookie.name not in leaveNames and (None is removeNames or cookie.name in removeNames):
                     toRemove.append(cookie)
@@ -874,6 +874,11 @@ class common:
                     img = Image.open(file_path)
                     # img.thumbnail((400, 300), Image.LANCZOS)
                     # printDBG("PCommon.convertWebp save %s" % output_path)
+                    if not png and img.mode not in ('RGB', 'L'):
+                        # JPEG can't hold an alpha channel - a webp with
+                        # transparency (RGBA/LA/P) would raise "cannot write
+                        # mode RGBA as JPEG"
+                        img = img.convert('RGB')
                     img.save(output_path, format="png" if png else "jpeg", quality=80)
                     img.close()
                     os.remove(file_path)

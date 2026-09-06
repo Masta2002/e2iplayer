@@ -34,7 +34,6 @@ from Tools.BoundFunction import boundFunction
 ###################################################
 config.plugins.iptvplayer = ConfigSubsection()
 
-config.plugins.iptvplayer.plarformfpuabi = ConfigSelection(default="", choices=[("", ""), ("hard_float", _("Hardware floating point")), ("soft_float", _("Software floating point"))])
 config.plugins.iptvplayer.exteplayer3path = ConfigText(default="", fixed_size=False)
 config.plugins.iptvplayer.set_curr_title = ConfigYesNo(default=False)
 config.plugins.iptvplayer.curr_title_file = ConfigText(default="", fixed_size=False)
@@ -60,6 +59,15 @@ config.plugins.iptvplayer.requestedAudioBuffSize = ConfigInteger(256, (1, 10240)
 config.plugins.iptvplayer.IPTVDMRunAtStart = ConfigYesNo(default=False)
 config.plugins.iptvplayer.IPTVDMShowAfterAdd = ConfigYesNo(default=True)
 config.plugins.iptvplayer.IPTVDMMaxDownloadItem = ConfigSelection(default="1", choices=[("1", "1"), ("2", "2"), ("3", "3"), ("4", "4"), ("5", "5"), ("10", "10"), ("20", "20"), ("30", "30"), ("40", "40"), ("50", "50")])
+config.plugins.iptvplayer.IPTVDMShowNotification = ConfigYesNo(default=True)
+# same seconds-choices pattern as extplayer_infobar_timeout above - 5s
+# matches the fixed duration IPTVDMNotification.showNotify() used before
+# this was configurable
+config.plugins.iptvplayer.IPTVDMNotificationDuration = ConfigSelection(default="5", choices=[
+    ("1", "1 " + _("second")), ("2", "2 " + _("seconds")), ("3", "3 " + _("seconds")),
+    ("4", "4 " + _("seconds")), ("5", "5 " + _("seconds")), ("6", "6 " + _("seconds")), ("7", "7 " + _("seconds")),
+    ("8", "8 " + _("seconds")), ("9", "9 " + _("seconds")), ("10", "10 " + _("seconds"))
+])
 
 config.plugins.iptvplayer.sortuj = ConfigYesNo(default=True)
 config.plugins.iptvplayer.remove_diabled_hosts = ConfigYesNo(default=False)
@@ -135,8 +143,16 @@ config.plugins.iptvplayer.numOfRow = ConfigSelection(default="0", choices=[("1",
 config.plugins.iptvplayer.numOfCol = ConfigSelection(default="0", choices=[("1", "1"), ("2", "2"), ("3", "3"), ("4", "4"), ("5", "5"), ("6", "6"), ("7", "7"), ("8", "8"), ("0", "auto")])
 
 config.plugins.iptvplayer.skinforceinternal = ConfigYesNo(default=False)
+# "all screens" variant of skinforceinternal: also drives openChoiceBox()
+# (on = our IPTVChoiceBoxWidget, off = native Enigma2 ChoiceBox)
+config.plugins.iptvplayer.skinforceallinternal = ConfigYesNo(default=False)
 config.plugins.iptvplayer.skin = ConfigSelection(default="", choices=GetSkinsList())
 config.plugins.iptvplayer.use_colors = ConfigYesNo(default=True)
+# clock/date in the app's own chrome header (E2iPlayerWidget,
+# PlayerSelectorWidget, IPTVFavouritesMainWidget) - not to be confused
+# with extplayer_infobanner_clockformat below, which is the clock inside
+# the video PLAYER's on-screen info banner during playback
+config.plugins.iptvplayer.show_header_clock = ConfigYesNo(default=True)
 
 # Pin code
 config.plugins.iptvplayer.fakePin = ConfigSelection(default="fake", choices=[("fake", "****")])
@@ -208,8 +224,6 @@ def IsMediaNamingNormalized():
 
 
 config.plugins.iptvplayer.usepycurl = ConfigYesNo(default=False)
-
-config.plugins.iptvplayer.prefer_hlsdl_for_pls_with_alt_media = ConfigYesNo(default=True)
 
 ###################################################
 
@@ -292,7 +306,6 @@ for hostName in gListOfHostsNames:
 
 
 def GetListOfHostsNames():
-    global gListOfHostsNames
     return gListOfHostsNames
 
 
@@ -421,9 +434,12 @@ class ConfigMenu(ConfigBaseWidget):
 
         list.append(getConfigListEntry(_("----- SKIN CONFIGURATION -----"),))
         list.append(getConfigListEntry(_("Skin"), config.plugins.iptvplayer.skin))
-        list.append(getConfigListEntry(_("Force internal Skin"), config.plugins.iptvplayer.skinforceinternal))
+        list.append(getConfigListEntry(_("Force internal skin: all E2iPlayer screens"), config.plugins.iptvplayer.skinforceallinternal))
+        if not config.plugins.iptvplayer.skinforceallinternal.value:
+            list.append(getConfigListEntry(_("Force internal skin: main screen only"), config.plugins.iptvplayer.skinforceinternal))
         list.append(getConfigListEntry(_("Use colors"), config.plugins.iptvplayer.use_colors))
-        list.append(getConfigListEntry(_("Info bar clock format"), config.plugins.iptvplayer.extplayer_infobanner_clockformat))
+        list.append(getConfigListEntry(_("Show clock in header"), config.plugins.iptvplayer.show_header_clock))
+        list.append(getConfigListEntry(_("Video player OSD clock format"), config.plugins.iptvplayer.extplayer_infobanner_clockformat))
         list.append(getConfigListEntry(_("Player Skin"), config.plugins.iptvplayer.extplayer_skin))
         list.append(getConfigListEntry(_("Display thumbnails"), config.plugins.iptvplayer.showcover))
         if config.plugins.iptvplayer.showcover.value:
@@ -468,6 +484,9 @@ class ConfigMenu(ConfigBaseWidget):
         list.append(getConfigListEntry(_("Start download manager per default"), config.plugins.iptvplayer.IPTVDMRunAtStart))
         list.append(getConfigListEntry(_("Show download manager after adding new item"), config.plugins.iptvplayer.IPTVDMShowAfterAdd))
         list.append(getConfigListEntry(_("Number of downloaded files simultaneously"), config.plugins.iptvplayer.IPTVDMMaxDownloadItem))
+        list.append(getConfigListEntry(_("Show download notification"), config.plugins.iptvplayer.IPTVDMShowNotification))
+        if config.plugins.iptvplayer.IPTVDMShowNotification.value:
+            list.append(getConfigListEntry("    " + _("Download notification duration"), config.plugins.iptvplayer.IPTVDMNotificationDuration))
         list.append(getConfigListEntry(_("%s e-mail") % ('My JDownloader'), config.plugins.iptvplayer.myjd_login))
         list.append(getConfigListEntry(_("%s password") % ('My JDownloader'), config.plugins.iptvplayer.myjd_password))
         list.append(getConfigListEntry(_("%s device name") % ('My JDownloader'), config.plugins.iptvplayer.myjd_jdname))
@@ -519,8 +538,6 @@ class ConfigMenu(ConfigBaseWidget):
         list.append(getConfigListEntry(_("Remember last search history selection"), config.plugins.iptvplayer.rememberHistorySelection))
         list.append(getConfigListEntry(_("T9 letter jump in lists"), config.plugins.iptvplayer.enableT9MainList))
         list.append(getConfigListEntry(_("Write current title to file:"), config.plugins.iptvplayer.curr_title_file))
-        list.append(getConfigListEntry(_("MIPS Floating Point Architecture"), config.plugins.iptvplayer.plarformfpuabi))
-        list.append(getConfigListEntry(_("Prefer hlsld for playlist with alt. media"), config.plugins.iptvplayer.prefer_hlsdl_for_pls_with_alt_media))
         list.append(getConfigListEntry(_("Debug logs"), config.plugins.iptvplayer.debugprint))
 
     def runSetup(self):
@@ -534,6 +551,22 @@ class ConfigMenu(ConfigBaseWidget):
             self.isOkEnabled = True
             self.isSelectable = False
             self.setOKLabel()
+            # without this, moving off/onto one of these OK-only fake rows
+            # never reflows/hides the MENU icon and "<>" prevnext hint,
+            # since ConfigBaseWidget.onSelectionChanged() (which normally
+            # does this) is skipped entirely on this branch.
+            #
+            # hasMenu is hardcoded False here, NOT bool(self["key_menu"].text) -
+            # fakePin/fakeHostsList/fakExtMoviePlayerList are real ConfigSelection
+            # objects (they need .description/.choices to exist at all),
+            # so Enigma2's own core ConfigListScreen logic that writes
+            # self["key_menu"].text has no idea they're meant to be
+            # excluded and marks them MENU-able anyway. keyMenu() itself
+            # already refuses to do anything for these rows via the
+            # `self.isSelectable` guard (see its own comment in
+            # configbase.py) - the icon must follow that same "no real
+            # MENU action here" fact instead of the core's naive one.
+            self._repositionFooterKeys(False, self.isSelectable)
         else:
             ConfigBaseWidget.onSelectionChanged(self)
 
@@ -557,6 +590,7 @@ class ConfigMenu(ConfigBaseWidget):
         valTab.append(config.plugins.iptvplayer.pluginProtectedByPin.value)
         valTab.append(config.plugins.iptvplayer.skin.value)
         valTab.append(config.plugins.iptvplayer.skinforceinternal.value)
+        valTab.append(config.plugins.iptvplayer.skinforceallinternal.value)
         return valTab
 
     def getMessageAfterSave(self):
@@ -619,7 +653,9 @@ class ConfigMenu(ConfigBaseWidget):
             config.plugins.iptvplayer.osk_type,
             config.plugins.iptvplayer.plugin_autostart,
             config.plugins.iptvplayer.favourites_use_watched_flag,
-            config.plugins.iptvplayer.hostsListType
+            config.plugins.iptvplayer.hostsListType,
+            config.plugins.iptvplayer.skinforceallinternal,
+            config.plugins.iptvplayer.IPTVDMShowNotification
             # config.plugins.iptvplayer.captcha_bypass_free,
             # config.plugins.iptvplayer.captcha_bypass_pay
         ]

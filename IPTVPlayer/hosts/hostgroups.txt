@@ -41,6 +41,7 @@
   "einschalten",
   "megakino",
   "moflixstream",
+  "appletrailers",
   "cineb",
   "sevenreels"
  ],
@@ -54,6 +55,7 @@
   "webstream",
   "footyroom",
   "goals",
+  "hoofootcom",
   "basketballvideocom",
   "eurosportplayer"
  ],
@@ -62,7 +64,8 @@
   "streamliveto",
   "youtube",
   "dailymotion",
-  "eurosportplayer"
+  "eurosportplayer",
+  "ritsatv"
  ],
  "documentary": [
   "dokumentalnenet",
@@ -118,6 +121,7 @@
   "dailymotion",
   "rteieplayer",
   "playrtsiw",
+  "appletrailers",
   "sevenreels",
   "orthobulletscom",
   "vumedicom"
@@ -163,7 +167,8 @@
  ],
  "russian": [
   "youtube",
-  "dailymotion"
+  "dailymotion",
+  "ritsatv"
  ],
  "hungarian": [
   "youtube",

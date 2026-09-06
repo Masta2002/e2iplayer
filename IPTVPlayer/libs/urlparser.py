@@ -565,6 +565,7 @@ class urlparser:
             "vidoza.net": self.pp.parserJWPLAYER,
             "vidoza.org": self.pp.parserJWPLAYER,
             "vidrock.net": self.pp.parserVIDROCK,
+            "vids.st": self.pp.parserVIDSST,
             "vidsonic.net": self.pp.parserVIDSONIC,
             "vidsrc.bz": self.pp.parserVIDSRC,
             "vidsrc.cc": self.pp.parserMEGAFILES,
@@ -1137,7 +1138,7 @@ class pageParser(CaptchaHelper):
                         else:
                             urlsTab.append({"name": quality, "url": media_url})
             except Exception:
-                printExc
+                printExc()
         return urlsTab
 
     def parserVK(self, baseUrl):  # Partly work, Login not work
@@ -2497,7 +2498,13 @@ class pageParser(CaptchaHelper):
 
         embed = ""
         detailsUrl = "%sapi/videos/%s/details" % (ref, mid)
-        sts, data = self.cm.getPage(detailsUrl, {"header": dict(HTTP_HEADER)})
+        # with_metadata=True is required for statusCode() below to see the
+        # real HTTP status: getPageWithPyCurl() treats a 404 as sts=True by
+        # default (ignore_http_code_ranges), and only attaches .meta when
+        # asked to - without it, statusCode() always fell through to its
+        # sts-based 200/0 guess and this 404 retry never actually fired,
+        # even though the site returns a valid JSON body on 404s.
+        sts, data = self.cm.getPage(detailsUrl, {"header": dict(HTTP_HEADER), "with_metadata": True})
         details = tryJson(data) if sts else None
         if details is None or statusCode(data, sts) == 404:
             embed = "embed/"
@@ -2817,7 +2824,10 @@ class pageParser(CaptchaHelper):
         if match:
             match = match.group(1).replace("&quot;", '"').replace("&amp;", "&")
             js = json_loads(match).get("flashvars", {}).get("metadata")
-            js = json_loads(js)
+            if isinstance(js, str):
+                js = json_loads(js) if js else {}
+            if not isinstance(js, dict):
+                js = {}
             url = js.get("hlsManifestUrl") or js.get("ondemandHls") or js.get("hlsMasterPlaylistUrl")
             if url:
                 url = urlparser.decorateUrl(url, {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": host, "Origin": host[:-1]})
@@ -3472,4 +3482,37 @@ class pageParser(CaptchaHelper):
                     urltab.append(item)
             else:
                 urltab.append({"name": label, "url": decoUrl})
+        return urltab
+
+    def parserVIDSST(self, baseUrl):  # add 050926 - vids.st (premiumsmart.eu "VidsST" mirror), bespoke ArtPlayer host
+        printDBG("parserVIDSST baseUrl[%s]" % baseUrl)
+        urltab = []
+        host = urlparser.getDomain(baseUrl, False)
+        HTTP_HEADER = self.cm.getDefaultHeader()
+        HTTP_HEADER["Referer"] = baseUrl
+        sts, data = self.cm.getPage(baseUrl, {"header": HTTP_HEADER})
+        if not sts:
+            return []
+        # the /e/<id> embed page carries the master playlist url in a plain JS const
+        m = re.search(r'''const\s+url\s*=\s*["'](https?:[^"']+\.m3u8[^"']*)["']''', data)
+        if not m:
+            m = re.search(r'''["'](https?:(?:\\?/){2}[^"']+?/master\.m3u8[^"']*)["']''', data)
+        if not m:
+            return []
+        url = m.group(1).replace("\\/", "/")
+        subTracks = []
+        sm = re.search(r'"subtitleUrl"\s*:\s*"([^"]+)"', data)
+        if sm and sm.group(1):
+            lm = re.search(r'"subtitleLabel"\s*:\s*"([^"]*)"', data)
+            label = lm.group(1) if lm else ""
+            subTracks.append({"title": label, "url": sm.group(1).replace("\\/", "/"), "lang": label})
+        url = urlparser.decorateUrl(url, {
+            "User-Agent": HTTP_HEADER["User-Agent"],
+            "Referer": baseUrl,
+            "Origin": host[:-1] if host.endswith("/") else host,
+            "external_sub_tracks": subTracks,
+        })
+        urltab.extend(getDirectM3U8Playlist(url, checkExt=False, checkContent=True))
+        if not urltab:
+            urltab.append({"name": "vids.st", "url": url, "need_resolve": 0})
         return urltab
