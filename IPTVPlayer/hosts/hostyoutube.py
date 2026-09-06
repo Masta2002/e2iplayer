@@ -514,6 +514,7 @@ class Youtube(CBaseHostClass):
                 {"category": "auth_feed", "feed": "subscriptions", "title": _("My subscriptions"), "desc": _("Latest videos from the channels you are subscribed to.")},
                 {"category": "auth_feed", "feed": "watch_later", "title": _("Watch later"), "desc": _("Your 'Watch later' playlist.")},
                 {"category": "auth_feed", "feed": "liked", "title": _("Liked videos"), "desc": _("Videos you have liked.")},
+                {"category": "auth_feed", "feed": "history", "title": _("Watch history"), "desc": _("Videos you have recently watched.")},
                 {"category": "yt_logout", "title": _("Sign out of Google"), "desc": _("Remove the stored YouTube sign-in.")},
             ]
         else:
@@ -527,19 +528,20 @@ class Youtube(CBaseHostClass):
         printDBG("Youtube.listAuthFeed [%s]" % cItem)
         feed = cItem.get("feed", "")
         page = cItem.get("page", "1")
-        url = cItem.get("url", "")
-        if not url:
-            url = {"subscriptions": "https://www.youtube.com/feed/subscriptions",
-                   "watch_later": "https://www.youtube.com/playlist?list=WL",
-                   "liked": "https://www.youtube.com/playlist?list=LL"}.get(feed, "")
-        if not url:
+        # The signed-in feeds only answer to the TVHTML5 InnerTube client, which
+        # returns the living-room "tile" layout - getTvFeed() walks that.
+        browseId = {"subscriptions": "FEsubscriptions",
+                    "watch_later": "VLWL",
+                    "liked": "VLLL",
+                    "history": "FEhistory"}.get(feed, "")
+        if not browseId:
             return
-        defaultChannel = cItem.get("channel_title", "")
-        if feed == "subscriptions":
-            tmp = self.ytp.getVideosFromChannelList(url, "channel", page, cItem)
-        else:
-            tmp = self.ytp.getVideosApiPlayList(url, "playlist", page, cItem)
-        self._injectChannelNameToItems(tmp, defaultChannel)
+        tmp = self.ytp.getTvFeed(browseId, page, cItem)
+        if not tmp:
+            self.addDir({"name": "category", "category": "no_feed", "title": _("(nothing here yet)"),
+                         "desc": _("This feed is empty, or the YouTube sign-in has expired - sign out and in again.")})
+            return
+        self._injectChannelNameToItems(tmp, cItem.get("channel_title", ""))
         self.watchedHelper.updateHostListFlags(self, tmp, self._getWatchedKeyForItem)
         for item in tmp:
             item.update({"name": "category"})
@@ -1044,6 +1046,8 @@ class Youtube(CBaseHostClass):
             self.listMainMenu()
         elif "auth_feed" == category:
             self.listAuthFeed(self.currItem)
+        elif "no_feed" == category:
+            self.listMainMenu()
         elif "from_file" == category:
             self.listCategory(self.currItem)
         elif category in ["channel", "playlist", "movie", "traylist"]:

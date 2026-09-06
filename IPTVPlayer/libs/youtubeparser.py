@@ -831,9 +831,11 @@ class YouTubeParser:
         hdr["X-YouTube-Client-Name"] = "1"
         hdr["X-YouTube-Client-Version"] = cfg["client_version"]
         hdr["Origin"] = "https://www.youtube.com"
-        auth = self._getAuthHeader()
-        hdr["X-Youtube-Bootstrap-Logged-In"] = "true" if auth else "false"
-        hdr.update(auth)
+        # NB: the OAuth bearer token is deliberately NOT added here - InnerTube
+        # rejects it on the WEB client (browse/search/continuations all 400).
+        # It is only usable on the TVHTML5 client (see _tvBrowse) and on the
+        # player request (see getDirectLinks -> _real_extract authHeader=).
+        hdr["X-Youtube-Bootstrap-Logged-In"] = "false"
         if cfg["visitor_data"]:
             hdr["X-Goog-Visitor-Id"] = cfg["visitor_data"]
         params["header"] = hdr
@@ -849,6 +851,115 @@ class YouTubeParser:
         if config.plugins.iptvplayer.youtube_safe_search.value:
             context["user"] = {"enableSafetyMode": True}
         return cfg, context
+
+    # ---- signed-in personal feeds (TVHTML5) ------------------------------
+    # The OAuth token from the "sign in on TV" flow is only honoured by
+    # InnerTube for the TVHTML5 client; the WEB client answers 400 to it. A
+    # TVHTML5 browse reply uses the living-room "tile" renderers, not the web
+    # ytInitialData shape, so it gets its own small walk here.
+    YT_TV_CLIENT_VERSION = "7.20250312.16.00"
+
+    def _tvBrowse(self, browseId, continuation=None):
+        auth = self._getAuthHeader()
+        if not auth:
+            return {}
+        hl, gl = self._getDefaultLangAndRegion()
+        context = {"client": {"clientName": "TVHTML5", "clientVersion": self.YT_TV_CLIENT_VERSION, "hl": hl, "gl": gl}}
+        if config.plugins.iptvplayer.youtube_safe_search.value:
+            context["user"] = {"enableSafetyMode": True}
+        body = {"context": context}
+        if continuation:
+            body["continuation"] = continuation
+        else:
+            body["browseId"] = browseId
+        hdr = {"Content-Type": "application/json",
+               "User-Agent": "Mozilla/5.0 (ChromiumStylePlatform) Cobalt/Version",
+               "Origin": "https://www.youtube.com",
+               "X-YouTube-Client-Name": "7",
+               "X-YouTube-Client-Version": self.YT_TV_CLIENT_VERSION}
+        hdr.update(auth)
+        http_params = {"header": hdr, "raw_post_data": True}
+        sts, data = self.cm.getPage("https://www.youtube.com/youtubei/v1/browse", http_params, json_dumps(body).encode("utf-8"))
+        if not sts:
+            return {}
+        try:
+            return json_loads(data)
+        except Exception:
+            printExc()
+            return {}
+
+    def _iterFind(self, node, key):
+        if isinstance(node, dict):
+            for k, v in node.items():
+                if k == key:
+                    yield v
+                for r in self._iterFind(v, key):
+                    yield r
+        elif isinstance(node, list):
+            for v in node:
+                for r in self._iterFind(v, key):
+                    yield r
+
+    def _firstFind(self, node, key):
+        for v in self._iterFind(node, key):
+            return v
+        return None
+
+    def _tvTileToVideo(self, tile):
+        videoId = self._firstFind(tile.get("onSelectCommand", {}), "videoId") or ""
+        if not videoId:
+            return {}
+        md = tile.get("metadata", {}).get("tileMetadataRenderer", {})
+        title = self._getSimpleText(md.get("title", {}))
+        lines = []
+        for line in md.get("lines", []):
+            parts = [self._getSimpleText(it.get("lineItemRenderer", {}).get("text", {}))
+                     for it in line.get("lineRenderer", {}).get("items", [])]
+            parts = [p for p in parts if p]
+            if parts:
+                lines.append(" ".join(parts))
+        # first line is the channel name, the rest are views / age / etc.
+        owner = lines[0] if lines else ""
+        descLines = lines[1:] if len(lines) > 1 else []
+        icon = ""
+        thumbs = self._firstFind(tile.get("header", {}), "thumbnails")
+        if isinstance(thumbs, list) and thumbs:
+            icon = thumbs[-1].get("url", "")
+        desc = " | ".join(descLines)
+        if owner:
+            desc = (desc + "\n" + owner) if desc else owner
+        return {
+            "type": "video",
+            "category": "video",
+            "title": self._normalizeText(ensure_str(title)),
+            "url": "http://www.youtube.com/watch?v=%s" % videoId,
+            "icon": ensure_str(icon),
+            "time": "",
+            "desc": self._normalizeText(desc),
+            "channel_title": ensure_str(owner),
+            "video_id": ensure_str(videoId),
+        }
+
+    def getTvFeed(self, browseId, page, cItem):
+        printDBG("YouTubeParser.getTvFeed browseId[%s] page[%s]" % (browseId, page))
+        currList = []
+        response = self._tvBrowse(browseId, cItem.get("tv_continuation", "") or None)
+        if not response:
+            return currList
+        seen = set()
+        for tile in self._iterFind(response, "tileRenderer"):
+            params = self._tvTileToVideo(tile)
+            if params and params["video_id"] not in seen:
+                seen.add(params["video_id"])
+                currList.append(params)
+        nextToken = ""
+        for cmd in self._iterFind(response, "continuationCommand"):
+            if isinstance(cmd, dict) and cmd.get("token"):
+                nextToken = cmd["token"]
+        if nextToken and currList:
+            currList.append({"type": "more", "category": cItem.get("category", ""), "title": _("Next page"),
+                             "page": str(int(page) + 1), "tv_continuation": nextToken})
+        return currList
 
     def _extractEntriesFromBrowse(self, response):
         entries = []

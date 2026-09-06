@@ -496,16 +496,19 @@ class YoutubeIE(object):
             video_webpage = ""
             ageReason = ""
             if authHeader:
-                # signed in: the mobile clients get the bearer token too (may
-                # already be enough), and the TV client - which honours it for
-                # age-restricted / members content - is added as a last resort
-                # (its formats are signature-ciphered, hence slower)
+                # Signed in: InnerTube only accepts the OAuth bearer token on
+                # the TVHTML5 client (ANDROID/IOS/WEB + bearer -> HTTP 400), so
+                # it is added as a last-resort client and is the only one the
+                # token is attached to. It honours the token for age-restricted
+                # / members content; its formats are signature-ciphered (hence
+                # slower, and it is tried only after the anonymous clients).
                 it_clients.append(("7", "7.20250101.10.00",
                                    "Mozilla/5.0 (ChromiumStylePlatform) Cobalt/Version",
                                    "'clientName': 'TVHTML5', 'clientVersion': '7.20250101.10.00'"))
             for cname, cver, ua, client_ctx in it_clients:
                 header = {"User-Agent": ua, "Content-Type": "application/json", "Origin": "https://www.youtube.com", "X-YouTube-Client-Name": cname, "X-YouTube-Client-Version": cver}
-                header.update(authHeader)
+                if cname == "7":
+                    header.update(authHeader)
                 http_params = {"header": header, "raw_post_data": True}
                 post_data = "{'videoId': '%s', 'params': '2AMB', 'contentCheckOk': true, 'racyCheckOk': true, 'context': {'client': {'hl': '%s', %s,}}}" % (video_id, lang, client_ctx)
                 sts, data = self.cm.getPage(url, http_params, post_data)
