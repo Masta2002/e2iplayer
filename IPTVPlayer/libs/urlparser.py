@@ -539,6 +539,9 @@ class urlparser:
             "vidply.com": self.pp.parserDOOD,
             "vidcore.io": self.pp.parserVIDCORE,
             "vidcore.net": self.pp.parserVIDCORE,
+            "vidfast.pro": self.pp.parserVIDCORE,
+            "vidfast.vc": self.pp.parserVIDCORE,
+            "vidlink.pro": self.pp.parserVIDLINK,
             "videa.hu": self.pp.parserVIDEA,
             "videakid.hu": self.pp.parserVIDEA,
             "videasy.net": self.pp.parserVIDEASY,
@@ -3454,14 +3457,83 @@ class pageParser(CaptchaHelper):
                 return urltab
         return urltab
 
-    def parserVIDCORE(self, baseUrl):  # add 030926 - vidcore.net/.io + vidup.to (shared codebase); page token -> enc-dec.app enc/dec chain
+    def parserVIDLINK(self, baseUrl):  # add 060926 - vidlink.pro; enc-dec.app encrypts the tmdb id, /api/b returns the sources json directly (no 2nd decrypt)
+        printDBG("parserVIDLINK baseUrl[%s]" % baseUrl)
+        urltab = []
+        m = re.search(r"/(movie|tv)/(\d+)(?:/(\d+)/(\d+))?", baseUrl)
+        if not m:
+            return []
+        mediaType, tmdbId, season, episode = m.group(1), m.group(2), m.group(3), m.group(4)
+        api = "https://enc-dec.app/api"
+        HTTP_HEADER = self.cm.getDefaultHeader()
+        sts, data = self.cm.getPage("%s/enc-vidlink?%s" % (api, urllib_urlencode({"text": tmdbId})), {"header": {"User-Agent": HTTP_HEADER["User-Agent"]}})
+        if not sts:
+            return []
+        try:
+            enc = json_loads(data).get("result")
+        except Exception:
+            printExc()
+            return []
+        if not enc:
+            return []
+        if mediaType == "tv":
+            apiUrl = "https://vidlink.pro/api/b/tv/%s/%s/%s" % (enc, season or "1", episode or "1")
+        else:
+            apiUrl = "https://vidlink.pro/api/b/movie/%s" % enc
+        provHdr = {"User-Agent": HTTP_HEADER["User-Agent"], "Origin": "https://vidlink.pro", "Referer": "https://vidlink.pro/"}
+        sts, data = self.cm.getPage(apiUrl, {"header": provHdr})
+        if not sts:
+            return []
+        try:
+            res = json_loads(data)
+        except Exception:
+            printExc()
+            return []
+        subTracks = []
+        try:
+            for c in ((res.get("stream") or {}).get("captions") or res.get("captions") or []):
+                cu = c.get("url") or c.get("file")
+                if cu:
+                    subTracks.append({"title": c.get("label", ""), "url": cu, "lang": c.get("language", c.get("label", ""))})
+        except Exception:
+            printExc()
+        found = []
+        stack = [res]
+        seen = set()
+        while stack:
+            node = stack.pop()
+            if isinstance(node, dict):
+                stack.extend(node.values())
+            elif isinstance(node, list):
+                stack.extend(node)
+            elif isinstance(node, basestring) and node.startswith("http") and node not in seen and (".m3u8" in node or ".mp4" in node):
+                seen.add(node)
+                found.append(node)
+        for url in found:
+            deco = {"User-Agent": provHdr["User-Agent"], "Referer": "https://vidlink.pro/", "Origin": "https://vidlink.pro", "iptv_use_ffmpeg": True}
+            if subTracks:
+                deco["external_sub_tracks"] = subTracks
+            decoUrl = urlparser.decorateUrl(url, deco)
+            if ".m3u8" in url.lower():
+                for item in getDirectM3U8Playlist(decoUrl, sortWithMaxBitrate=99999999):
+                    item["name"] = ("Vidlink %s" % item.get("name", "")).strip()
+                    urltab.append(item)
+            else:
+                urltab.append({"name": "Vidlink", "url": decoUrl})
+        return urltab
+
+    def parserVIDCORE(self, baseUrl):  # add 030926 / upd 060926 - vidcore.net/.io + vidup.to + vidfast.pro/.vc (shared codebase); page token -> enc-dec.app enc/dec chain
         printDBG("parserVIDCORE baseUrl[%s]" % baseUrl)
         urltab = []
         m = re.search(r"/(movie|tv)/([A-Za-z0-9]+)(?:/(\d+)/(\d+))?", baseUrl)
         if not m:
             return []
         mediaType, mid, season, episode = m.group(1), m.group(2), m.group(3), m.group(4)
-        if "vidup" in baseUrl:
+        lowUrl = baseUrl.lower()
+        if "vidfast" in lowUrl:
+            host = "vidfast.vc" if "vidfast.vc" in lowUrl else "vidfast.pro"
+            name = "vidfast"
+        elif "vidup" in lowUrl:
             host, name = "vidup.to", "vidup"
         else:
             host, name = "vidcore.io", "vidcore"
@@ -3476,10 +3548,21 @@ class pageParser(CaptchaHelper):
         sts, data = self.cm.getPage(pageUrl, {"header": HTTP_HEADER})
         if not sts:
             return []
-        tok = re.search(r'\\"(?:en|token)\\":\\"([^\\"]+)', data)
-        if not tok:
+        # the page carries the real request token as \"en\":\"...\"; a Firebase
+        # service-worker registration on the same page also has a \"token\":\"APA91...\"
+        # - prefer "en", and never hand a Firebase FCM token to the API
+        token = None
+        for pat in (r'\\"en\\":\\"([^\\"]+)', r'\\"token\\":\\"([^\\"]+)'):
+            for cand in re.findall(pat, data):
+                if cand.startswith("APA91") or len(cand) > 400:
+                    continue
+                token = cand
+                break
+            if token:
+                break
+        if not token:
             return []
-        sts, data = self.cm.getPage("%s/enc-%s?%s" % (api, name, urllib_urlencode({"text": tok.group(1)})), {"header": {"User-Agent": HTTP_HEADER["User-Agent"]}})
+        sts, data = self.cm.getPage("%s/enc-%s?%s" % (api, name, urllib_urlencode({"text": token})), {"header": {"User-Agent": HTTP_HEADER["User-Agent"]}})
         if not sts:
             return []
         try:
