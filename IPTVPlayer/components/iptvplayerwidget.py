@@ -1739,7 +1739,8 @@ class E2iPlayerWidget(Screen):
                 printExc()
 
             try:
-                sel = self["list"].l.getCurrentSelection()[0]
+                sel = self["list"].l.getCurrentSelection()
+                sel = sel[0] if sel else None
             except Exception:
                 printExc()
                 self.getRefreshedCurrList()
