@@ -40,6 +40,14 @@ config.plugins.iptvplayer.youtube_safe_search = ConfigYesNo(default=False)
 YT_INNERTUBE_API_KEY = "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8"
 YT_CLIENT_VERSION_FALLBACK = "2.20260904.01.00"
 
+# Fallback region (YouTube gl=) per selectable UI language - only the codes
+# where it isn't simply the language code upper-cased.
+_YT_LANG_DEFAULT_REGION = {
+    "en": "US", "cs": "CZ", "el": "GR", "da": "DK", "sv": "SE", "uk": "UA",
+    "ja": "JP", "ko": "KR", "zh": "CN", "ar": "SA", "sr": "RS", "he": "IL",
+    "hi": "IN", "no": "NO", "nb": "NO", "sl": "SI", "et": "EE",
+}
+
 
 class YouTubeParser:
 
@@ -779,11 +787,9 @@ class YouTubeParser:
         lang = "en"
         region = "US"
         try:
-            selectedLang = ensure_str(config.plugins.iptvplayer.youtube_ui_language.value)
-            if selectedLang == "de":
-                return "de", "DE"
-            if selectedLang == "en":
-                return "en", "US"
+            selectedLang = ensure_str(config.plugins.iptvplayer.youtube_ui_language.value).lower()
+            if selectedLang and selectedLang != "system":
+                return selectedLang, _YT_LANG_DEFAULT_REGION.get(selectedLang, selectedLang.upper())
             locale = ensure_str(language.getLanguage())
             if "_" in locale:
                 tmp = locale.split("_", 1)
@@ -803,15 +809,7 @@ class YouTubeParser:
         return lang, region
 
     def _getAcceptLanguage(self):
-        try:
-            selectedLang = ensure_str(config.plugins.iptvplayer.youtube_ui_language.value)
-            if selectedLang == "de":
-                return "de-DE,de;q=0.9"
-            if selectedLang == "en":
-                return "en-US,en;q=0.9"
-        except Exception:
-            printExc()
-        lang, region = self._getDefaultLangAndRegion()
+        lang, region = self._deriveLangAndRegion()
         return "%s-%s,%s;q=0.9" % (lang, region, lang)
 
     def _getAuthHeader(self):
