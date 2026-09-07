@@ -24,7 +24,7 @@ from Plugins.Extensions.IPTVPlayer.components.cover import Cover3
 from Plugins.Extensions.IPTVPlayer.components.iptvchoicebox import IPTVChoiceBoxWidget, IPTVChoiceBoxItem, openChoiceBox
 from Plugins.Extensions.IPTVPlayer.components.iptvlist import IPTVRadioButtonList, fitPixmapInBox, IPTVPlayerSelectorContextMenuChoiceBoxList
 from Plugins.Extensions.IPTVPlayer.components import skinchrome
-from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, GetIPTVPlayerVersion, GetIconDir, GetLogoDir, GetAvailableIconSize, GetMigratedHostOrderFile
+from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, GetIPTVPlayerVersion, GetIconDir, GetLogoDir, GetAvailableIconSize, GetHostOrderDir
 from Plugins.Extensions.IPTVPlayer.__init__ import _, GRIDSUPPORT
 
 
@@ -642,16 +642,17 @@ class _PlayerSelectorListMode:
             return True
         try:
             gn = self.groupName or ''
-            # GetMigratedHostOrderFile(): same resolver IPTVHostsGroups /
-            # SaveHostsOrderList use, so this checks the file they actually
-            # write (ConfigDir/hostorder/), migrating a legacy /etc/enigma2
-            # copy on the way past
+            # GetHostOrderDir(): the folder IPTVHostsGroups / SaveHostsOrderList
+            # actually write to (ConfigDir/hostorder/). A read-only predicate,
+            # so no migration here - any legacy /etc/enigma2 copy has already
+            # been moved across by the IPTVHostsGroups()/GetHostsOrderList()
+            # call the screen that opens this menu makes first.
             if gn == 'selectgroup':
-                return os.path.isfile(GetMigratedHostOrderFile('iptvplayerhostsgroups.json'))
+                return os.path.isfile(GetHostOrderDir('iptvplayerhostsgroups.json'))
             if gn in ('selecthost', 'all'):
-                return os.path.isfile(GetMigratedHostOrderFile('iptvplayerhostsorder'))
+                return os.path.isfile(GetHostOrderDir('iptvplayerhostsorder'))
             if gn:
-                return os.path.isfile(GetMigratedHostOrderFile('iptvplayer%sgroup.json' % gn))
+                return os.path.isfile(GetHostOrderDir('iptvplayer%sgroup.json' % gn))
         except Exception:
             printExc()
         return False

@@ -11,7 +11,7 @@
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, GetSkinsList, GetHostsList, GetEnabledHostsList, \
                                                           IsExecutable, CFakeMoviePlayerOption, GetCookieDir, GetJSCacheDir, \
                                                           GetSubtitlesDir, GetMovieMetaDataDir, RemoveDirContents, RemoveAllDirsIconsFromPath, \
-                                                          GetSearchHistoryDir, GetFavouritesDir, GetMoviePlayerPerHostDir, GetHostOrderDir
+                                                          GetSearchHistoryDir, GetFavouritesDir, GetMoviePlayerPerHostDir, GetHostOrderDir, IsPathSafeToWipe
 from Plugins.Extensions.IPTVPlayer.components.configbase import ConfigBaseWidget, ConfigIPTVFileSelection, COLORS_DEFINITONS
 from Plugins.Extensions.IPTVPlayer.components.confighost import ConfigHostsMenu
 from Plugins.Extensions.IPTVPlayer.components.iptvdirbrowser import IPTVDirectorySelectorWidget
@@ -474,11 +474,6 @@ class ConfigMenu(ConfigBaseWidget):
             self["key_blue"].setText(_("Info"))
         except Exception:
             printExc()
-        # remember old
-        self.showcoverOld = config.plugins.iptvplayer.showcover.value
-        self.CacheDirOld = config.plugins.iptvplayer.CacheDir.value
-        self.remove_diabled_hostsOld = config.plugins.iptvplayer.remove_diabled_hosts.value
-        self.enabledHostsListOld = GetEnabledHostsList()
         self.runtimeOptionsValues = self.getRuntimeOptionsValues()
 
     def __del__(self):
@@ -701,15 +696,6 @@ class ConfigMenu(ConfigBaseWidget):
         else:
             ConfigBaseWidget.onSelectionChanged(self)
 
-    """
-    def saveAndClose(self):
-        ConfigBaseWidget.saveAndClose(self)
-        if self.showcoverOld != config.plugins.iptvplayer.showcover.value or \
-            self.CacheDirOld != config.plugins.iptvplayer.CacheDir.value:
-            pass
-            # plugin must be restarted if we wont to this options take effect
-    """
-
     def getRuntimeOptionsValues(self):
         valTab = []
         valTab.append(config.plugins.iptvplayer.IPTVWebIterface.value)
@@ -787,6 +773,9 @@ class ConfigMenu(ConfigBaseWidget):
 
     def deleteCacheNowCallback(self, path, ret=False):
         if ret:
+            if not IsPathSafeToWipe(path):
+                self.session.open(MessageBox, _('Refusing to empty "%s" - this does not look like a dedicated cache/config folder. Check the folder paths in the storage configuration.') % path, type=MessageBox.TYPE_ERROR, timeout=8)
+                return
             RemoveDirContents(path)
 
     def deleteIconsCacheNowCallback(self, ret=False):
@@ -794,7 +783,7 @@ class ConfigMenu(ConfigBaseWidget):
         # "icons/" subfolder like the others), so RemoveDirContents()
         # would also wipe cookies/JSCache/etc. - RemoveAllDirsIconsFromPath
         # only targets the recognized icon-batch-dir naming pattern
-        if ret:
+        if ret and IsPathSafeToWipe(config.plugins.iptvplayer.CacheDir.value):
             RemoveAllDirsIconsFromPath(config.plugins.iptvplayer.CacheDir.value)
 
     def keyDefaults(self):

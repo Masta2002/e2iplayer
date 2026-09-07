@@ -446,6 +446,7 @@ class E2iPlayerWidget(Screen):
         # the same (flash/overlay) filesystem as root, so it would itself
         # never pass IsRealStoragePresent() - skip once already switched,
         # or every start would re-show the notification for no reason.
+        storagePathsRerouted = False
         pluginCacheDir = GetPluginDir('cache/')
         if config.plugins.iptvplayer.CacheDir.value != pluginCacheDir and not iptvtools_IsRealStoragePresent(config.plugins.iptvplayer.CacheDir.value):
             self.session.open(MessageBox, _("No storage found for the cache folder. The cache folder will be switched to the plugin's own cache directory."), type=MessageBox.TYPE_INFO, timeout=10)
@@ -453,7 +454,7 @@ class E2iPlayerWidget(Screen):
                 iptvtools_mkdirs(pluginCacheDir)
             config.plugins.iptvplayer.CacheDir.value = pluginCacheDir
             config.plugins.iptvplayer.CacheDir.save()
-            configfile.save()
+            storagePathsRerouted = True
 
         # bufferingPath is pure scratch space - iptvbuffui.py always deletes
         # its single .iptv_buffering.flv file at the end of each playback
@@ -467,6 +468,9 @@ class E2iPlayerWidget(Screen):
         if config.plugins.iptvplayer.bufferingPath.value != config.plugins.iptvplayer.TmpDir.value and not iptvtools_IsRealStoragePresent(config.plugins.iptvplayer.bufferingPath.value):
             config.plugins.iptvplayer.bufferingPath.value = config.plugins.iptvplayer.TmpDir.value
             config.plugins.iptvplayer.bufferingPath.save()
+            storagePathsRerouted = True
+
+        if storagePathsRerouted:
             configfile.save()
 
         # DownloadsDir holds real, permanent downloaded movies - unlike

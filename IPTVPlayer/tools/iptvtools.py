@@ -370,6 +370,9 @@ def _warnIfDirNotCreatable(path, message):
         # own top level, so a module-level import here would be circular
         import Plugins.Extensions.IPTVPlayer.components.asynccall as asynccall
 
+        # DelegateToMainThread invokes this as callFnc(session, *args), so
+        # the leading positional is the session it hands in - unused here
+        # (AddPopup finds the active session itself) but must be accepted
         def showPopup(session=None):
             AddPopup(message % path, type=MessageBox.TYPE_ERROR, timeout=10)
 
@@ -497,12 +500,22 @@ def GetConfigSubDir(dirName, fileName=''):
         # disposable cache) - move the whole subfolder over once, so
         # existing data isn't lost or wiped by "Delete all cache files now"
         oldPath = os.path.join(config.plugins.iptvplayer.CacheDir.value, dirName)
-        if os.path.isdir(oldPath):
+        if os.path.isdir(oldPath) and os.path.realpath(oldPath) != os.path.realpath(path):
+            # copy into a temp sibling first, then rename into place (an
+            # atomic op since both are under ConfigDir), and only then
+            # drop the source - so a cross-filesystem copy that dies
+            # half-way leaves the source untouched to retry next call,
+            # instead of a partial destination that blocks the retry
+            tmpPath = path + '.migrating'
             try:
+                rmtree(tmpPath, ignore_errors=True)
                 mkdirs(config.plugins.iptvplayer.ConfigDir.value)
-                shutil.move(oldPath, path)
+                shutil.copytree(oldPath, tmpPath)
+                os.rename(tmpPath, path)
+                rmtree(oldPath, ignore_errors=True)
             except Exception:
                 printExc()
+                rmtree(tmpPath, ignore_errors=True)
     if not os.path.isdir(path):
         mkdirs(path)
         _warnIfConfigDirNotWritable(path)
@@ -538,21 +551,28 @@ def GetMigratedHostOrderFile(fileName):
     # iptvplayer<group>group.json, iptvplayerhostsorder) used to live in
     # /etc/enigma2/ (GetConfigDir) - moved to ConfigDir/hostorder/ so they
     # sit in their own subfolder instead of cluttering the Enigma2 settings
-    # folder directly. Migrate an existing file once (copy+remove rather
-    # than os.rename, since /etc/enigma2 and ConfigDir can be on different
-    # filesystems) so nothing gets lost, instead of silently starting fresh
+    # folder directly. Migrate an existing file once: write to a temp
+    # sibling and rename into place (atomic, same folder) before removing
+    # the source, so a write that dies half-way can't leave a truncated
+    # file at newPath that the next call would trust and never re-migrate
     newPath = GetHostOrderDir(fileName)
     if not os.path.exists(newPath):
         oldPath = GetConfigDir(fileName)
-        if os.path.exists(oldPath):
+        if os.path.exists(oldPath) and os.path.realpath(oldPath) != os.path.realpath(newPath):
+            tmpPath = newPath + '.tmp'
             try:
                 with open(oldPath, 'rb') as src:
                     data = src.read()
-                with open(newPath, 'wb') as dst:
+                with open(tmpPath, 'wb') as dst:
                     dst.write(data)
+                os.rename(tmpPath, newPath)
                 os.remove(oldPath)
             except Exception:
                 printExc()
+                try:
+                    os.remove(tmpPath)
+                except Exception:
+                    pass
     return newPath
 
 
@@ -1220,6 +1240,31 @@ def CleanOldFilesInDir(path, days):
                     printExc()
     except Exception:
         printExc()
+
+
+def IsPathSafeToWipe(path):
+    # sanity backstop for the "delete everything in this folder" actions -
+    # a misconfigured CacheDir/ConfigDir pointing at "/", a mount root, a
+    # system dir or a home dir must not be bulk-emptied on a single Yes/No.
+    # A dedicated cache/config folder is always a few levels deep and not
+    # itself a mountpoint.
+    try:
+        real = os.path.realpath(path).rstrip('/')
+    except Exception:
+        return False
+    if not real:
+        return False
+    if real in ('/etc', '/etc/enigma2', '/hdd', '/media', '/mnt', '/tmp', '/usr',
+                '/var', '/home', '/root', '/boot', '/bin', '/sbin', '/lib', '/data', '/run'):
+        return False
+    if real.count('/') < 2:
+        return False
+    try:
+        if os.path.ismount(real):
+            return False
+    except Exception:
+        return False
+    return True
 
 
 def RemoveDirContents(path):
