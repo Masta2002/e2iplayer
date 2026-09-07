@@ -566,6 +566,7 @@ class IPTVPlayerSelectOptionChoiceBoxList(IPTVMainNavigatorList):
         'EDIT_FAV': 'BookmarkEditItem.png',
         'HostConfig': 'SettingsItem.png',
         'EditSearchHistory': 'SearchHistoryEditorItem.png',
+        'FIND_ENTRY': 'SearchItem.png',
         'IPTVDM': 'DownloadFolderItem.png',
         'SetActiveMoviePlayer': 'PlayerItem.png',
         'ADD_USER_LINK': 'LinkItem.png',

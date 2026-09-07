@@ -3,7 +3,6 @@ M3U8 parser.
 
 '''
 import re
-from collections import namedtuple
 
 ext_x_targetduration = '#EXT-X-TARGETDURATION'
 ext_x_media_sequence = '#EXT-X-MEDIA-SEQUENCE'
@@ -28,11 +27,13 @@ def parse(content):
     Given a M3U8 playlist content returns a dictionary with all data found
     '''
     data = {
+        'media_sequence': 0,
         'is_variant': False,
         'is_endlist': False,
         'playlists': [],
         'segments': [],
         'alt_media': {},
+        'subtitle_media': {},
         }
 
     state = {
@@ -81,21 +82,60 @@ def parse(content):
 
     try:
         for playlist in data['playlists']:
-            if 'audio' in playlist['stream_info']:
-                if playlist['stream_info']['audio'] in data['alt_media']:
-                    playlist['alt_audio_streams'] = data['alt_media'][playlist['stream_info']['audio']]
+            stream_info = playlist['stream_info']
+            audio_group = stream_info.get('audio')
+            if audio_group in data['alt_media']:
+                playlist['alt_audio_streams'] = data['alt_media'][audio_group]
+            subs_group = stream_info.get('subtitles')
+            if subs_group in data['subtitle_media']:
+                playlist['subtitle_streams'] = data['subtitle_media'][subs_group]
     except Exception:
         pass
 
     return data
 
 
-def _parse_key(line, data):
-    params = ATTRIBUTELISTPATTERN.split(line.replace(ext_x_key + ':', ''))[1::2]
-    data['key'] = {}
+def _parse_attribute_list(prefix, line, attribute_parser=None, default_parser=None):
+    '''
+    Parse an `NAME=VALUE,NAME=VALUE` attribute list (EXT-X-STREAM-INF,
+    EXT-X-MEDIA, EXT-X-KEY ...) into a dict.
+
+    Tolerant on purpose: a token without a `=` (bare flag or trailing comma)
+    is skipped instead of blowing up the whole playlist parse, and a value
+    that fails to cast is stored as None rather than raising.
+    '''
+    params = ATTRIBUTELISTPATTERN.split(line.replace(prefix + ':', ''))[1::2]
+
+    attributes = {}
     for param in params:
-        name, value = param.split('=', 1)
-        data['key'][normalize_attribute(name)] = remove_quotes(value)
+        parts = param.split('=', 1)
+        if len(parts) != 2:
+            continue
+        name, value = parts
+        name = normalize_attribute(name)
+        if attribute_parser and name in attribute_parser:
+            try:
+                value = attribute_parser[name](value)
+            except Exception:
+                value = None
+        elif default_parser is not None:
+            try:
+                value = default_parser(value)
+            except Exception:
+                value = None
+        attributes[name] = value
+
+    return attributes
+
+
+def _cast_bandwidth(value):
+    # BANDWIDTH is spec'd as an integer, but some encoders emit floats or
+    # scientific notation.
+    return int(float(value))
+
+
+def _parse_key(line, data):
+    data['key'] = _parse_attribute_list(ext_x_key, line, default_parser=remove_quotes)
 
 
 def _parse_extinf(line, data, state):
@@ -115,50 +155,58 @@ def _parse_ts_chunk(line, data, state):
 
 
 def _parse_stream_inf(line, data, state):
-    params = ATTRIBUTELISTPATTERN.split(line.replace(ext_x_stream_inf + ':', ''))[1::2]
-
-    stream_info = {}
-    for param in params:
-        name, value = param.split('=', 1)
-        stream_info[normalize_attribute(name)] = value
-
-    if 'codecs' in stream_info:
-        stream_info['codecs'] = remove_quotes(stream_info['codecs'])
-
-    if 'audio' in stream_info:
-        stream_info['audio'] = remove_quotes(stream_info['audio'])
+    attribute_parser = {
+        'codecs': remove_quotes,
+        'audio': remove_quotes,
+        'video': remove_quotes,
+        'subtitles': remove_quotes,
+        'closed_captions': remove_quotes,
+        'video_range': remove_quotes,
+        'program_id': int,
+        'bandwidth': _cast_bandwidth,
+        'average_bandwidth': _cast_bandwidth,
+        'frame_rate': float,
+    }
+    stream_info = _parse_attribute_list(ext_x_stream_inf, line, attribute_parser)
 
     data['is_variant'] = True
     state['stream_info'] = stream_info
 
 
 def _parse_alternate_media(line, data):
-    params = ATTRIBUTELISTPATTERN.split(line.replace(ext_x_media + ':', ''))[1::2]
+    normalize_params = _parse_attribute_list(ext_x_media, line, default_parser=remove_quotes)
 
-    normalize_params = {}
-    for param in params:
-        name, value = param.split('=', 1)
-        normalize_params[normalize_attribute(name)] = remove_quotes(value)
-
-    # skip alternative audio if it does not have URI to media playlist attrib
-    if normalize_params.get('type', '').upper() == 'AUDIO' and not normalize_params.get('uri', None):
+    media_type = (normalize_params.get('type') or '').upper()
+    uri = normalize_params.get('uri')
+    group = normalize_params.get('group_id')
+    if not group:
         return
 
-    group = remove_quotes(normalize_params.pop('group_id', None))
-    if group:
-        if group not in data['alt_media']:
-            data['alt_media'][group] = []
-        if normalize_params.get('default') == "YES":
-            data['alt_media'][group].insert(0, normalize_params)
-        else:
-            data['alt_media'][group].append(normalize_params)
+    if media_type == 'AUDIO':
+        if not uri:
+            return
+        bucket = data['alt_media'].setdefault(group, [])
+    elif media_type == 'SUBTITLES':
+        if not uri:
+            return
+        bucket = data['subtitle_media'].setdefault(group, [])
+    else:
+        # CLOSED-CAPTIONS (no media playlist URI) and VIDEO renditions are
+        # not consumed downstream.
+        return
+
+    if normalize_params.get('default') == 'YES':
+        bucket.insert(0, normalize_params)
+    else:
+        bucket.append(normalize_params)
 
 
 def _parse_variant_playlist(line, data, state):
     stream_info = state.pop('stream_info')
     playlist = {'uri': line,
                 'stream_info': stream_info,
-                'alt_audio_streams': []}
+                'alt_audio_streams': [],
+                'subtitle_streams': []}
     data['playlists'].append(playlist)
 
 

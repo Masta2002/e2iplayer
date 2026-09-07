@@ -43,6 +43,17 @@ class IPTVChoiceBoxWidget(Screen):
         width = self.params.get('width', 300)
         height = self.params.get('height', 300)
 
+        # The screen declares resolution="1280,720" and is centered, and
+        # callers size 'height' to fit every row (numItems * rowHeight +
+        # margin). With many options that exceeds the 720 reference
+        # viewport, so the box hangs off the top and bottom of the screen
+        # and the list - sized e-N against that oversized screen - never
+        # scrolls. Cap both axes to the reference viewport (minus a small
+        # margin) so the list stays on-screen and its own scrollbar takes
+        # over instead.
+        height = min(height, 700)
+        width = min(width, 1240)
+
         # Pure info dialogs (no per-row action, e.g. the OSK's Help screen)
         # pass selectable=False so moving through rows doesn't paint them as
         # if they were a real, actionable selection. The list itself is

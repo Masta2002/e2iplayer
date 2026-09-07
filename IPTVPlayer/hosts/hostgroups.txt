@@ -40,7 +40,10 @@
   "movie2kcx",
   "einschalten",
   "megakino",
-  "moflixstream"
+  "moflixstream",
+  "appletrailers",
+  "cineb",
+  "sevenreels"
  ],
  "cartoonsandanime": [
   "aniworld",
@@ -52,6 +55,7 @@
   "webstream",
   "footyroom",
   "goals",
+  "hoofootcom",
   "basketballvideocom",
   "eurosportplayer"
  ],
@@ -60,7 +64,8 @@
   "streamliveto",
   "youtube",
   "dailymotion",
-  "eurosportplayer"
+  "eurosportplayer",
+  "ritsatv"
  ],
  "documentary": [
   "dokumentalnenet",
@@ -112,9 +117,12 @@
   "putlockertvto",
   "cineto",
   "worldfree4u",
+  "cineb",
   "dailymotion",
   "rteieplayer",
   "playrtsiw",
+  "appletrailers",
+  "sevenreels",
   "orthobulletscom",
   "vumedicom"
  ],
@@ -159,7 +167,8 @@
  ],
  "russian": [
   "youtube",
-  "dailymotion"
+  "dailymotion",
+  "ritsatv"
  ],
  "hungarian": [
   "youtube",

@@ -1,6 +1,5 @@
 
 import os
-import re
 import urllib.parse
 from urllib.request import urlopen
 
@@ -10,16 +9,21 @@ from .parser import parse, is_url
 __all__ = 'M3U8', 'Playlist', 'loads', 'load', 'parse'
 
 
+def _dir_base_uri(uri):
+    '''
+    Directory the playlist lives in, with a trailing slash, so relative
+    child URIs resolve with a plain urljoin(). Query string is dropped.
+    '''
+    return urllib.parse.urljoin(uri, '.')
+
+
 def inits(content, uri):
     '''
     Given a string with a m3u8 content and uri from which
     this content was downloaded returns a M3U8 object.
     Raises ValueError if invalid content
     '''
-    parsed_url = urllib.parse.urlparse(uri)
-    prefix = parsed_url.scheme + '://' + parsed_url.netloc
-    base_path = os.path.normpath(parsed_url.path + '/..')
-    base_uri = urllib.parse.urljoin(prefix, base_path)
+    base_uri = _dir_base_uri(uri) if uri else None
     return M3U8(content, base_uri=base_uri)
 
 
@@ -46,11 +50,7 @@ def _load_from_uri(uri):
     open = urlopen(uri)
     uri = open.geturl()
     content = open.read().strip()
-    parsed_url = urllib.parse.urlparse(uri)
-    prefix = parsed_url.scheme + '://' + parsed_url.netloc
-    base_path = os.path.normpath(parsed_url.path + '/..')
-    base_uri = urllib.parse.urljoin(prefix, base_path)
-    return M3U8(content, base_uri=base_uri)
+    return M3U8(content, base_uri=_dir_base_uri(uri))
 
 
 def _load_from_file(uri):

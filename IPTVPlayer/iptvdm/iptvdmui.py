@@ -31,6 +31,7 @@ from enigma import eTimer, eConsoleAppContainer
 from Components.config import config
 from Components.ActionMap import ActionMap
 from Components.Label import Label
+from Components.Pixmap import Pixmap
 from Components.Sources.List import List
 from Components.Sources.StaticText import StaticText
 from Tools.LoadPixmap import LoadPixmap
@@ -62,17 +63,24 @@ class IPTVDMWidget(Screen):
     # this screen already declares `resolution="1280,720"` and uses plain
     # HD-reference pixel values throughout, exactly the shape those are
     # for (no fixed-pixel grid content fighting the auto-scale, unlike
-    # PlayerSelectorWidget). "titel" (the "Manager status: STARTED/STOPPED"
-    # label) sits in the header's top-right corner with zPosition="2" so
-    # it paints above the header's own much-wider Title label background -
-    # same convention as iptvplayerwidget.py/iptvfavouriteswidgets.py/
+    # PlayerSelectorWidget). The status cluster in the header's top-right
+    # corner - DownloadManagerItem.png + "titel" ("Manager status:") +
+    # "titelStateIcon" (running/stopped) + "titelState" (STARTED/STOPPED) -
+    # sits at zPosition="2"/"3" so it paints above the header's own
+    # much-wider Title label background. Icons are 26px and the text is
+    # Regular;20 to line up with the header's own Title font, same
+    # convention as iptvplayerwidget.py/iptvfavouriteswidgets.py/
     # playerselector.py's own headers.
     def __prepareSkin(self):
         iconBase = skinchrome.getIconBase()
+        genIconDir = GetIconDir()
         return """
         <screen name="IPTVDMWidget" position="center,center" title="%s" size="1180,696" resolution="1280,720" flags="wfNoBorder">
             %s
-            <widget name="titel" position="800,10" size="370,40" foregroundColor="white" backgroundColor="black" borderWidth="1" borderColor="black" transparent="1" zPosition="2" font="Regular;24" valign="center" />
+            <ePixmap pixmap="%sDownloadManagerItem.png" position="817,17" size="26,26" scale="1" alphatest="blend" transparent="1" zPosition="3" />
+            <widget name="titel" position="851,10" size="175,40" foregroundColor="white" backgroundColor="black" borderWidth="1" borderColor="black" transparent="1" zPosition="2" font="Regular;20" halign="left" valign="center" />
+            <widget name="titelStateIcon" position="1036,17" size="26,26" scale="1" alphatest="blend" transparent="1" zPosition="3" />
+            <widget name="titelState" position="1070,10" size="90,40" foregroundColor="white" backgroundColor="black" borderWidth="1" borderColor="black" transparent="1" zPosition="2" font="Regular;20" halign="left" valign="center" />
             <widget source="downloadlist" render="Listbox" position="10,66" zPosition="2" size="1160,560" scrollbarMode="showOnDemand" scrollbarSliderBorderWidth="1" scrollbarForegroundColor="#1b5a91" scrollbarBorderColor="#00b6b6b6" transparent="1" foregroundColor="white" backgroundColor="black" foregroundColorSelected="white" backgroundColorSelected="#1b5a91" shadowColor="black" shadowOffset="-2,-2" enableWrapAround="1">
                 <convert type="TemplatedMultiContent">
                 {"template": [
@@ -90,6 +98,7 @@ class IPTVDMWidget(Screen):
         </screen>""" % (
             _("%s download manager") % "E2iPlayer",
             skinchrome.build_header_auto(iconBase=iconBase),
+            genIconDir,
             # RED (Stop) + GREEN (Start) merged into one alternating
             # GREEN toggle, YELLOW (Archive) + BLUE (Downloads) merged
             # into one alternating YELLOW toggle - see
@@ -126,6 +135,18 @@ class IPTVDMWidget(Screen):
         }, -1)
 
         self["titel"] = Label()
+        self["titelState"] = Label()
+        self["titelStateIcon"] = Pixmap()
+        # the running/stopped icon next to the status word - kept as pixmaps
+        # so setManagerStatus() can swap it without a skin reload
+        self._statePIX = {}
+        for state, pixFile in (('active', 'DownloadsActiveItem.png'), ('inactive', 'DownloadsInactiveItem.png')):
+            try:
+                self._statePIX[state] = LoadPixmap(cached=True, path=GetIconDir(pixFile))
+            except Exception:
+                printExc()
+        # instance only exists after the skin is applied
+        self.onLayoutFinish.append(self.setManagerStatus)
 
         self.dictPIX = {}
         for key in self.ICONS_FILESNAMES.keys():
@@ -385,17 +406,20 @@ class IPTVDMWidget(Screen):
         return
 
     def setManagerStatus(self):
-        status = _("Manager status:") + " "
+        self["titel"].setText(_("Manager status:"))
         # key_green's label mirrors the same isRunning() check this
         # already makes for the title - describes the action pressing it
         # performs, same "what will happen" convention as e.g.
         # ConfigHostsMenu's reordering toggle.
-        if self.DM.isRunning():
-            self["titel"].setText(status + _("STARTED"))
-            self["key_green"].setText(_("Stop"))
-        else:
-            self["titel"].setText(status + _("STOPPED"))
-            self["key_green"].setText(_("Start"))
+        running = self.DM.isRunning()
+        self["titelState"].setText(_("STARTED") if running else _("STOPPED"))
+        self["key_green"].setText(_("Stop") if running else _("Start"))
+        try:
+            pix = self._statePIX.get('active' if running else 'inactive')
+            if pix is not None and self["titelStateIcon"].instance is not None:
+                self["titelStateIcon"].instance.setPixmap(pix)
+        except Exception:
+            printExc()
 
     def onListChanged(self):
         global gIPTVDM_listChanged

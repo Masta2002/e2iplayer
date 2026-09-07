@@ -61,11 +61,17 @@ class IPTVSubtitlesHandler:
 
     def _srtTc2ms(self, time):
         try:
+            time = time.strip()
+            # WebVTT keeps the cue settings (e.g. "align:middle line:83%")
+            # on the same line as the end timestamp - drop everything past
+            # the first whitespace so only the HH:MM:SS.mmm token is parsed.
+            time = time.split()[0]
             if ',' in time:
                 split_time = time.split(',')
             else:
                 split_time = time.split('.')
-            minor = int(split_time[1])  # milliseconds
+            msMatch = re.match(r'\d+', split_time[1])
+            minor = int(msMatch.group(0)) if msMatch else 0  # milliseconds
             major = split_time[0].split(':')
             if len(major) == 2:  # format: mm:ss,mmm
                 minutes = int(major[0])
@@ -93,22 +99,38 @@ class IPTVSubtitlesHandler:
                 st = st.split('\n')
                 if len(st) < 2:
                     continue  # less than two items are for sure garbage, so let's skip
-                while st[0] == '':
-                    st.pop(0)
-                while ' --> ' not in st[0]:
+                # WebVTT header / metadata blocks (WEBVTT, NOTE, STYLE, REGION,
+                # X-TIMESTAMP-MAP) carry no cue and no ' --> ' - skip them
+                # instead of popping the whole block away line by line.
+                if re.match(r'^(WEBVTT|NOTE|STYLE|REGION|X-TIMESTAMP-MAP)\b', st[0]):
+                    continue
+                while st and (st[0] == '' or ' --> ' not in st[0]):
                     st.pop(0)  # remove line numbers and other unused lines existing before time
-                if 1:  # tests only
-                    printDBG("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-                    printDBG(st)
-                    printDBG("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
                 if len(st) >= 2:
                     subtimes = st[0].split(' --> ')
                     subStartTime = subtimes[0].strip()
                     subEndTime = subtimes[1].strip()
-                    subText = st[1:]
-                    subAtoms.append({'start': self._srtTc2ms(subStartTime), 'end': self._srtTc2ms(subEndTime), 'text': self._srtClearText('\n'.join(j for j in subText))})
+                    start = self._srtTc2ms(subStartTime)
+                    end = self._srtTc2ms(subEndTime)
+                    if end <= start:
+                        continue  # unparsable timing - a cue with end <= start never shows
+                    # strip markup first (WebVTT <c.foo> spans sit on their own
+                    # lines), then drop the blank lines they leave behind
+                    subText = self._srtClearText('\n'.join(st[1:]))
+                    subText = '\n'.join(j.strip() for j in subText.split('\n') if j.strip())
+                    subAtoms.append({'start': start, 'end': end, 'text': subText})
             except Exception:
                 printExc("Sub line number: %d, content:\n>>>>>\n%s\n<<<<<" % (line, st))
+        # Some broadcasters (e.g. Das Erste / ARD) anchor their subtitle files
+        # at a 10h wall-clock base - shift everything back so the cues line up
+        # with playback time. Mirrors the workaround in the C-parser path.
+        try:
+            if subAtoms and min(a['start'] for a in subAtoms) >= 36000000:
+                for a in subAtoms:
+                    a['start'] -= 36000000
+                    a['end'] -= 36000000
+        except Exception:
+            printExc()
         return subAtoms
 
     def _mplClearText(self, text):
@@ -187,7 +209,10 @@ class IPTVSubtitlesHandler:
 
     def _getCacheFileName(self, filePath):
         tmp = filePath.split('/')[-1]
-        return GetSubtitlesDir(tmp + '.iptv')
+        # ".iptv2" - bumped from ".iptv" so caches written by the old parser
+        # (WebVTT cue settings broke every end timestamp -> unusable atoms)
+        # are ignored and the subtitles are re-parsed once with the fix.
+        return GetSubtitlesDir(tmp + '.iptv2')
 
     def _loadFromCache(self, orgFilePath, encoding='utf-8'):
         sts = False

@@ -196,6 +196,15 @@ config.plugins.iptvplayer.debugprint = ConfigSelection(default="", choices=[("",
                                                                             ("/tmp/iptv.dbg", _("Yes, to file /tmp/iptv.dbg")),
                                                                             ("/home/root/logs/iptv.dbg", _("Yes, to file /home/root/logs/iptv.dbg")),
                                                                             ])
+config.plugins.iptvplayer.debug_clear_on_start = ConfigYesNo(default=True)
+config.plugins.iptvplayer.debug_max_size = ConfigSelection(default="0", choices=[
+    ("0", _("unlimited")), ("2", "2 MB"), ("5", "5 MB"), ("10", "10 MB"),
+    ("20", "20 MB"), ("50", "50 MB"), ("100", "100 MB")])
+config.plugins.iptvplayer.debug_on_limit = ConfigSelection(default="truncate", choices=[
+    ("truncate", _("truncate the file")),
+    ("rotate", _("rotate (keep the old one as iptv-<date>.dbg)"))])
+config.plugins.iptvplayer.debug_rotate_keep = ConfigSelection(default="3", choices=[
+    ("1", "1"), ("2", "2"), ("3", "3"), ("5", "5"), ("10", "10")])
 
 # icons
 config.plugins.iptvplayer.IconsSize = ConfigSelection(default="100", choices=[("100", "100x100"), ("120", "120x120"), ("135", "135x135")])
@@ -266,6 +275,19 @@ config.plugins.iptvplayer.watched_item_color = ConfigSelection(default="#808080"
 config.plugins.iptvplayer.started_item_color = ConfigSelection(default="#FFFF00", choices=COLORS_DEFINITONS)
 config.plugins.iptvplayer.sidecar_enabled = ConfigYesNo(default=True)
 config.plugins.iptvplayer.normalize_media_names = ConfigYesNo(default=True)
+# OFF by default. The 7reels/cineb community-host resolvers VidEasy,
+# VidCore/VidFast, VidLink and Peachify cannot decrypt their links on the
+# box - they POST the site's encrypted stream token (which carries the
+# TMDb id of what is being played) to the third-party web service
+# enc-dec.app. The settings screen makes the user confirm twice before
+# this can be turned on (see ConfigMenu._confirmExternalResolve).
+config.plugins.iptvplayer.allow_external_resolve = ConfigYesNo(default=False)
+
+
+def IsExternalResolveAllowed():
+    # asked by parserVIDEASY / parserVIDCORE / parserVIDLINK / parserPEACHIFY
+    # before they contact enc-dec.app
+    return config.plugins.iptvplayer.allow_external_resolve.value
 
 
 def IsSidecarEnabled():
@@ -366,7 +388,6 @@ for hostName in gListOfHostsNames:
 
 
 def GetListOfHostsNames():
-    global gListOfHostsNames
     return gListOfHostsNames
 
 
@@ -443,10 +464,16 @@ class E2iVKQuickSettings(ConfigBaseWidget):
 
 class ConfigMenu(ConfigBaseWidget):
 
+    HAS_BLUE_KEY = True
+
     def __init__(self, session):
         printDBG("ConfigMenu.__init__ -------------------------------")
         self.list = []
         ConfigBaseWidget.__init__(self, session)
+        try:
+            self["key_blue"].setText(_("Info"))
+        except Exception:
+            printExc()
         # remember old
         self.showcoverOld = config.plugins.iptvplayer.showcover.value
         self.CacheDirOld = config.plugins.iptvplayer.CacheDir.value
@@ -465,6 +492,13 @@ class ConfigMenu(ConfigBaseWidget):
         ConfigBaseWidget.layoutFinished(self)
         self.setTitle(_("E2iPlayer - settings"))
 
+    def keyBlue(self):
+        try:
+            from Plugins.Extensions.IPTVPlayer.components.iptvplayerinfoview import OpenInfoView
+            OpenInfoView(self.session)
+        except Exception:
+            printExc()
+
     @staticmethod
     def fillConfigList(list,):
         list.append(getConfigListEntry(_("----- BASIC CONFIGURATION -----"),))
@@ -478,6 +512,7 @@ class ConfigMenu(ConfigBaseWidget):
         list.append(getConfigListEntry(_("Disable live at plugin start"), config.plugins.iptvplayer.disable_live))
         list.append(getConfigListEntry(_("Use the PyCurl for HTTP(S) requests"), config.plugins.iptvplayer.usepycurl))
         list.append(getConfigListEntry(_("https - validate SSL certificates"), config.plugins.iptvplayer.httpssslcertvalidation))
+        list.append(getConfigListEntry(_("Allow external link-decryption service (enc-dec.app)"), config.plugins.iptvplayer.allow_external_resolve))
         list.append(getConfigListEntry(_("----- SERVICE CONFIGURATION -----"),))
         list.append(getConfigListEntry(_("Services configuration"), config.plugins.iptvplayer.fakeHostsList))
         list.append(getConfigListEntry(_("Remove disabled services"), config.plugins.iptvplayer.remove_diabled_hosts))
@@ -619,7 +654,16 @@ class ConfigMenu(ConfigBaseWidget):
         list.append(getConfigListEntry(_("Remember last search history selection"), config.plugins.iptvplayer.rememberHistorySelection))
         list.append(getConfigListEntry(_("T9 letter jump in lists"), config.plugins.iptvplayer.enableT9MainList))
         list.append(getConfigListEntry(_("Write current title to file:"), config.plugins.iptvplayer.curr_title_file))
+
+        list.append(getConfigListEntry(_("----- DEBUG CONFIGURATION -----"), ))
         list.append(getConfigListEntry(_("Debug logs"), config.plugins.iptvplayer.debugprint))
+        if config.plugins.iptvplayer.debugprint.value not in ("", "console"):
+            list.append(getConfigListEntry("    " + _("Clear the log file at plugin start"), config.plugins.iptvplayer.debug_clear_on_start))
+            list.append(getConfigListEntry("    " + _("Maximum log file size"), config.plugins.iptvplayer.debug_max_size))
+            if config.plugins.iptvplayer.debug_max_size.value != "0":
+                list.append(getConfigListEntry("    " + _("When the maximum is reached"), config.plugins.iptvplayer.debug_on_limit))
+                if config.plugins.iptvplayer.debug_on_limit.value == "rotate":
+                    list.append(getConfigListEntry("        " + _("Number of rotated files to keep"), config.plugins.iptvplayer.debug_rotate_keep))
 
     def runSetup(self):
         self.list = []
@@ -765,6 +809,52 @@ class ConfigMenu(ConfigBaseWidget):
         message = _("Are you sure you want to reset all settings to their default values?")
         self.session.openWithCallback(keyDefaultsConfirm, MessageBox, text=message, type=MessageBox.TYPE_YESNO)
 
+    def keyLeft(self):
+        ConfigBaseWidget.keyLeft(self)
+        self._confirmExternalResolve()
+
+    def keyRight(self):
+        ConfigBaseWidget.keyRight(self)
+        self._confirmExternalResolve()
+
+    def _confirmExternalResolve(self):
+        # fires only when the "Allow external link-decryption service" row was
+        # just switched ON - shows an info screen, then a separate yes/no
+        # confirmation, and flips the option back off unless the user confirms.
+        try:
+            cur = self["config"].getCurrent()
+            if not cur or len(cur) < 2 or cur[1] is not config.plugins.iptvplayer.allow_external_resolve:
+                return
+            if not config.plugins.iptvplayer.allow_external_resolve.value:
+                return
+
+            def revert(confirmed):
+                if not confirmed:
+                    config.plugins.iptvplayer.allow_external_resolve.value = False
+                    self.runSetup()
+
+            def askConfirm(unused=None):
+                self.session.openWithCallback(
+                    revert, MessageBox,
+                    text=_("Send data to enc-dec.app on every link resolve?"),
+                    type=MessageBox.TYPE_YESNO, default=False)
+
+            info = _("The 7reels / cineb resolvers 'VidEasy', 'VidCore/VidFast', "
+                     "'VidLink' and 'Peachify' cannot decrypt their links on the "
+                     "receiver.\n\n"
+                     "With this option ON, every time you open one of them E2iPlayer "
+                     "sends the site's encrypted stream token - which contains the "
+                     "TMDb id of the movie or episode you are opening - to the "
+                     "third-party web service enc-dec.app (operated by a private "
+                     "individual). That server then sees the id and your IP address "
+                     "on each play. Nothing else is transmitted, and it is only used "
+                     "for these four resolvers.\n\n"
+                     "Leave this OFF if you do not want that. The other resolvers "
+                     "(AdRock/vidrock, VidNest, ...) are not affected.")
+            self.session.openWithCallback(askConfirm, MessageBox, text=info, type=MessageBox.TYPE_INFO)
+        except Exception:
+            printExc()
+
     def getSubOptionsList(self):
         tab = [
             config.plugins.iptvplayer.buforowanie,
@@ -780,7 +870,10 @@ class ConfigMenu(ConfigBaseWidget):
             config.plugins.iptvplayer.storageExpertMode,
             config.plugins.iptvplayer.hostsListType,
             config.plugins.iptvplayer.skinforceallinternal,
-            config.plugins.iptvplayer.IPTVDMShowNotification
+            config.plugins.iptvplayer.IPTVDMShowNotification,
+            config.plugins.iptvplayer.debugprint,
+            config.plugins.iptvplayer.debug_max_size,
+            config.plugins.iptvplayer.debug_on_limit
             # config.plugins.iptvplayer.captcha_bypass_free,
             # config.plugins.iptvplayer.captcha_bypass_pay
         ]

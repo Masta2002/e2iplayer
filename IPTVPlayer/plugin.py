@@ -10,7 +10,6 @@ from Plugins.Plugin import PluginDescriptor
 from Screens.MessageBox import MessageBox
 from Tools.BoundFunction import boundFunction
 from Components.config import config
-import os
 
 
 def Plugins(**kwargs):
@@ -43,7 +42,6 @@ gInfoBar__init__ = None
 
 
 def InfoBar__init__wrapper(self, *args, **kwargs):
-    global gInfoBar__init__
     gInfoBar__init__(self, *args, **kwargs)
     self.onShow.append(doPluginAutostart)
 
@@ -112,13 +110,26 @@ class pluginAutostart(Screen):
 
 
 def doRunMain(session):
-    for DBGfile in ['/hdd/iptv.dbg', '/tmp/iptv.dbg', '/home/root/logs/iptv.dbg']:
-        if os.path.exists(DBGfile):
-            os.remove(DBGfile)
     session.open(E2iPlayerWidget)
 
 
 def runMain(session, nextFunction=doRunMain):
+    # clear the debug log(s) here so every entry path (incl. the wizard
+    # autostart) behaves the same; ClearDebugLogsAtStart() itself honors
+    # config.plugins.iptvplayer.debug_clear_on_start (default: on)
+    cleared = False
+    try:
+        from Plugins.Extensions.IPTVPlayer.tools.iptvtools import ClearDebugLogsAtStart
+        cleared = ClearDebugLogsAtStart()
+    except Exception:
+        pass
+    # fire the binary probe once and drop the full system snapshot near
+    # the top of the (now fresh) debug log
+    try:
+        from Plugins.Extensions.IPTVPlayer.components.iptvplayerinfoview import LogSystemInfoAtStartup
+        LogSystemInfoAtStartup(force=cleared)
+    except Exception:
+        pass
     nextFunction(session)
 
 

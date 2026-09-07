@@ -24,7 +24,7 @@ from Plugins.Extensions.IPTVPlayer.components.cover import Cover3
 from Plugins.Extensions.IPTVPlayer.components.iptvchoicebox import IPTVChoiceBoxWidget, IPTVChoiceBoxItem, openChoiceBox
 from Plugins.Extensions.IPTVPlayer.components.iptvlist import IPTVRadioButtonList, fitPixmapInBox, IPTVPlayerSelectorContextMenuChoiceBoxList
 from Plugins.Extensions.IPTVPlayer.components import skinchrome
-from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, GetIPTVPlayerVersion, GetIconDir, GetLogoDir, GetAvailableIconSize
+from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, GetIPTVPlayerVersion, GetIconDir, GetLogoDir, GetAvailableIconSize, GetMigratedHostOrderFile
 from Plugins.Extensions.IPTVPlayer.__init__ import _, GRIDSUPPORT
 
 
@@ -496,6 +496,7 @@ class _PlayerSelectorListMode:
             self["statustext"].setText(_("MOVE: %s") % self.currList[self.moveIndex][0])
             if self.moveIndex != idx:
                 _moveListElement(self.currList, self.moveIndex, idx)
+                self._markLayoutDirty()
                 # only meaningful for GRIDSUPPORT's own icon-grid mode
                 # (pixmapList drives each cell's icon there); in list
                 # mode PlayerSelectorHostList.buildEntry() never reads
@@ -586,6 +587,14 @@ class _PlayerSelectorListMode:
         return _getSearchResultsHeight(numItems)
 
     def showInfo(self):
+        try:
+            from Plugins.Extensions.IPTVPlayer.components.iptvplayerinfoview import OpenInfoView
+            if OpenInfoView(self.session):
+                return
+        except Exception:
+            printExc()
+
+        # fallback - the plain "About" MessageBox
         TextMSG = _('version') + " :\n" + GetIPTVPlayerVersion() + '\n\n'
         TextMSG += _("www:") + " " + "\nhttps://github.com/oe-mirrors/e2iplayer" + '\n\n'
         TextMSG += _("Developers:") + " " + "\n"
@@ -603,14 +612,49 @@ class _PlayerSelectorListMode:
             'Blindspot76',
             'Max (maxbambi)',
             '-=Mario=- (zadmario)',
+            'MohamedOS',
             'Lululla (Belfagor2005)',
             'jbleyel',
+            'Mr.X',
             'and others'
         ]
         TextMSG += ", ".join(developers)
         TextMSG += '\n\n' + _("Skinners:") + " " + "\n"
         TextMSG += ", ".join(('stein17', 'and others'))
         self.session.open(MessageBox, TextMSG, type=MessageBox.TYPE_INFO)
+
+    def _markLayoutDirty(self):
+        # in-session flag so "Reset to defaults" (openContextMenu) shows up
+        # the moment the user sorts / reorders / hides something, not only
+        # after that change has been written to its file on close and the
+        # screen reopened (the file is what _hasCustomizedLayout() otherwise
+        # keys off, and it isn't written until __onClose()).
+        self._layoutDirty = True
+
+    def _hasCustomizedLayout(self):
+        # True when this view has a persisted layout the user could want back
+        # at defaults: for the group list that's the whole groups file (order
+        # + hidden groups); for the top host list / the "all" group it's the
+        # hosts-order file that "Sort by name" and manual reordering write;
+        # for a real group it's that group's own file. "reset_group" then
+        # clears the matching one (iptvplayerwidget.selectItemCallback).
+        if getattr(self, '_layoutDirty', False):
+            return True
+        try:
+            gn = self.groupName or ''
+            # GetMigratedHostOrderFile(): same resolver IPTVHostsGroups /
+            # SaveHostsOrderList use, so this checks the file they actually
+            # write (ConfigDir/hostorder/), migrating a legacy /etc/enigma2
+            # copy on the way past
+            if gn == 'selectgroup':
+                return os.path.isfile(GetMigratedHostOrderFile('iptvplayerhostsgroups.json'))
+            if gn in ('selecthost', 'all'):
+                return os.path.isfile(GetMigratedHostOrderFile('iptvplayerhostsorder'))
+            if gn:
+                return os.path.isfile(GetMigratedHostOrderFile('iptvplayer%sgroup.json' % gn))
+        except Exception:
+            printExc()
+        return False
 
     def openContextMenu(self):
         # BLUE key - was named keyBlue() (GRIDSUPPORT) / keyMenu()
@@ -644,8 +688,10 @@ class _PlayerSelectorListMode:
                     options.append((_("Disable/Enable services"), "config_hosts"))
                 elif self.groupName in ['selectgroup']:
                     options.append((_("Disable/Enable groups"), "config_groups"))
-                else:
-                    options.append((_("Reset group"), "reset_group"))
+                # only offered once this view actually has a persisted
+                # order / hidden-group state to undo (see _hasCustomizedLayout)
+                if self._hasCustomizedLayout():
+                    options.append((_("Reset to defaults"), "reset_group"))
 
             if not self.simpleListMode:
                 if self.groupName == 'selecthost':
@@ -1046,7 +1092,10 @@ if GRIDSUPPORT:
                 if ret == "SORT_NAME":
                     self.moveIndex = -1
                     self.reorderingMode = False
+                    beforeOrder = [x[1] for x in self.currList]
                     self.currList = sorted(self.currList, key=lambda x: x[1])
+                    if [x[1] for x in self.currList] != beforeOrder:
+                        self._markLayoutDirty()
                     self.pixmapList = []
                     for idx in range(self.numOfItems):
                         icon = _getPlayerSelectorIcon(self.currList[idx][1], self.iconSize)
@@ -1060,7 +1109,7 @@ if GRIDSUPPORT:
                     def keyDefaultsConfirm(result):
                         if result:
                             self.close((_("Disable not used services"), "reset_group", self.groupName))
-                    message = _("Are you sure you want to reset all hosts in this group to defaults?")
+                    message = _("Reset this list to its default layout?")
                     self.session.openWithCallback(keyDefaultsConfirm, MessageBox, text=message, type=MessageBox.TYPE_YESNO)
                 elif ret in ["config_hosts", "config_groups"]:
                     self.close((_("Disable not used services"), ret))
@@ -1139,6 +1188,7 @@ if GRIDSUPPORT:
             if idx < self.numOfItems:
                 del self.currList[idx]
                 del self.pixmapList[idx]
+                self._markLayoutDirty()
                 self.reInitDisplayList()
 
         def getSelectedItem(self):
@@ -1816,6 +1866,7 @@ else:
 
             if self.reorderingItemSelected:
                 if prev_idx != new_idx:
+                    self._markLayoutDirty()
                     prevHost = self.currList[prev_idx]
                     prevPixmap = self.pixmapList[prev_idx]
                     del self.currList[prev_idx]
@@ -1892,7 +1943,10 @@ else:
                 if ret == "SORT_NAME":
                     self.moveIndex = -1
                     self.reorderingMode = False
+                    beforeOrder = [x[1] for x in self.currList]
                     self.currList = sorted(self.currList, key=lambda x: x[1])
+                    if [x[1] for x in self.currList] != beforeOrder:
+                        self._markLayoutDirty()
                     if not self.listMode:
                         self.pixmapList = []
                         for idx in range(self.numOfItems):
@@ -1907,7 +1961,7 @@ else:
                     def keyDefaultsConfirm(result):
                         if result:
                             self.close((_("Disable not used services"), "reset_group", self.groupName))
-                    message = _("Are you sure you want to reset all hosts in this group to defaults?")
+                    message = _("Reset this list to its default layout?")
                     self.session.openWithCallback(keyDefaultsConfirm, MessageBox, text=message, type=MessageBox.TYPE_YESNO)
                 elif ret in ["config_hosts", "config_groups"]:
                     self.close((_("Disable not used services"), ret))
@@ -1965,6 +2019,7 @@ else:
                     # keep pointing at the same logical item.
                     if self.lastSelection > 0:
                         self.lastSelection -= 1
+                self._markLayoutDirty()
                 self.reInitDisplayList()
 
         def changeReorderingMode(self):

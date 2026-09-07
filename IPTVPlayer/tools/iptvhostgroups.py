@@ -165,6 +165,21 @@ class IPTVHostsGroups:
         if isfile(groupFile):
             unlink(groupFile)
 
+    def resetGroupList(self):
+        # drop the whole groups file -> getGroupsList() rebuilds order and
+        # visibility from hostgroups.txt defaults
+        printDBG("IPTVHostsGroups.resetGroupList")
+        if isfile(self.GROUPS_FILE):
+            unlink(self.GROUPS_FILE)
+
+    def resetHostsOrder(self):
+        # drop the top-level hosts-order file (what "Sort by name" / manual
+        # reordering of the main list and the "all" group persist)
+        printDBG("IPTVHostsGroups.resetHostsOrder")
+        orderFile = GetMigratedHostOrderFile('iptvplayerhostsorder')
+        if isfile(orderFile):
+            unlink(orderFile)
+
     def _saveHosts(self, outObj, groupFile):
         printDBG("IPTVHostsGroups._saveHosts")
         ret = True

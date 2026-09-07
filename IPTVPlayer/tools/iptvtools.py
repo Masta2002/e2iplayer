@@ -725,7 +725,95 @@ def getDebugMode():
     return DBG
 
 
+# the three file paths the debug-log config UI offers
+DEBUG_LOG_PATHS = ('/hdd/iptv.dbg', '/tmp/iptv.dbg', '/home/root/logs/iptv.dbg')
+
+
+def GetDebugLogPath():
+    """The resolved debug file path, or '' when logging is off / to console."""
+    DBG = getDebugMode()
+    if not DBG or DBG == 'console':
+        return ''
+    return '/hdd/iptv.dbg' if DBG == 'debugfile' else DBG
+
+
+def _debugCfg(name, default):
+    try:
+        return getattr(config.plugins.iptvplayer, name).value
+    except Exception:
+        return default
+
+
+def _rotatedGlob(path):
+    base, ext = os.path.splitext(path)
+    try:
+        import glob
+        return sorted(glob.glob(base + '-*' + ext))
+    except Exception:
+        return []
+
+
+def ClearDebugLogsAtStart():
+    """Called from plugin start. Deletes the active debug file plus every
+    preset path plus their rotated <base>-<date><ext> siblings - unless the
+    user turned 'clear at start' off (default on = the old behaviour).
+    Returns True when it actually removed something."""
+    if not _debugCfg('debug_clear_on_start', True):
+        return False
+    targets = set(DEBUG_LOG_PATHS)
+    cur = GetDebugLogPath()
+    if cur:
+        targets.add(cur)
+    removed = False
+    for path in targets:
+        for f in [path] + _rotatedGlob(path):
+            try:
+                if os.path.exists(f):
+                    os.remove(f)
+                    removed = True
+            except Exception:
+                pass
+    return removed
+
+
+_g_dbg_calls = 0
+
+
+def _enforceDebugLogLimit(path):
+    try:
+        maxMB = int(_debugCfg('debug_max_size', '0') or '0')
+    except Exception:
+        maxMB = 0
+    if maxMB <= 0:
+        return
+    try:
+        if os.path.getsize(path) < maxMB * 1024 * 1024:
+            return
+    except Exception:
+        return
+    try:
+        if _debugCfg('debug_on_limit', 'truncate') == 'rotate':
+            base, ext = os.path.splitext(path)
+            stamp = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
+            os.rename(path, '%s-%s%s' % (base, stamp, ext))
+            try:
+                keep = int(_debugCfg('debug_rotate_keep', '3') or '3')
+            except Exception:
+                keep = 3
+            old = _rotatedGlob(path)
+            for f in (old[:-keep] if keep > 0 else old):
+                try:
+                    os.remove(f)
+                except Exception:
+                    pass
+        else:
+            open(path, 'w').close()
+    except Exception:
+        pass
+
+
 def printDBG(DBGtxt, writeMode='a'):
+    global _g_dbg_calls
     DBG = getDebugMode()
     if DBG == '':
         return
@@ -736,6 +824,9 @@ def printDBG(DBGtxt, writeMode='a'):
             DBGfile = '/hdd/iptv.dbg'  # backward compatibility
         else:
             DBGfile = DBG
+        _g_dbg_calls += 1
+        if _g_dbg_calls % 250 == 0:
+            _enforceDebugLogLimit(DBGfile)
         try:
             with open(DBGfile, writeMode) as f:
                 f.write(str(DBGtxt) + '\n')
@@ -1646,9 +1737,8 @@ class CMoviePlayerPerHost():
                 data['buffering'] = self.activePlayer['buffering']
                 data['player'] = {'value': self.activePlayer['player'].value, 'text': self.activePlayer['player'].getText()}
                 data = json_dumps(ensure_str(data))
-                file = codecs.open(self.filePath, 'w', 'utf-8', 'replace')
-                file.write(data)
-                file.close
+                with codecs.open(self.filePath, 'w', 'utf-8', 'replace') as file:
+                    file.write(data)
                 sts = True
         except Exception:
             printExc()
@@ -1746,6 +1836,29 @@ def GetIPTVPlayerComitStamp():
 
 def GetShortPythonVersion():
     return "%d.%d" % (sys.version_info[0], sys.version_info[1])
+
+
+def GetImageName():
+    """The image's PRETTY_NAME from /etc/os-release, or '' if unavailable."""
+    try:
+        with open('/etc/os-release') as f:
+            for line in f:
+                if line.startswith('PRETTY_NAME='):
+                    return line.split('=', 1)[1].strip().strip('"')
+    except Exception:
+        pass
+    return ''
+
+
+def GetShortSystemInfo():
+    """A one-line image/box/python string for the top of the debug log."""
+    box = ''
+    try:
+        import boxbranding
+        box = boxbranding.getBoxType()
+    except Exception:
+        pass
+    return "image[%s] box[%s] python[%s]" % (GetImageName() or '?', box or '?', GetShortPythonVersion())
 
 
 def GetVersionNum(ver):

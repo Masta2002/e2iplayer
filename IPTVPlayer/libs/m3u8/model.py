@@ -194,16 +194,24 @@ class BasePathMixin(object):
 
     @property
     def absolute_uri(self):
+        if self.uri is None:
+            return None
         if parser.is_url(self.uri):
             uri = self.uri
         else:
             if self.base_uri is None:
                 raise ValueError('There can not be `absolute_uri` with no `base_uri` set')
-            uri = _urijoin(self.base_uri, self.uri)
+            # Plain RFC 3986 join. `base_uri` is expected to carry a trailing
+            # slash (see `M3U8` / `inits`), so a relative playlist/segment path
+            # resolves against the playlist directory. Unlike the old
+            # os.path.normpath() approach this keeps query strings intact even
+            # when a signed token contains slashes (e.g. `?hdnts=...~acl=/*~`).
+            uri = urllib.parse.urljoin(self.base_uri, self.uri)
 
-        # ugly workaround to be fixed
+        # BBC web-proxy passthrough (config.plugins.iptvplayer.bbc_use_web_proxy):
+        # if the playlist was fetched through the proxy, keep its children on it.
         proxyUri = 'englandproxy.co.uk'
-        if proxyUri in self.base_uri and proxyUri not in uri:
+        if self.base_uri and proxyUri in self.base_uri and proxyUri not in uri:
             try:
                 uri = 'http://www.englandproxy.co.uk/' + uri[uri.find('://') + 3:]
             except Exception:
@@ -305,11 +313,15 @@ class Key(BasePathMixin):
 
     '''
 
-    def __init__(self, method, uri, base_uri, iv=None):
+    def __init__(self, method=None, uri=None, base_uri=None, iv=None, **kwargs):
         self.method = method
         self.uri = uri
         self.iv = iv
         self.base_uri = base_uri
+        # KEYFORMAT / KEYFORMATVERSIONS and other modern EXT-X-KEY attributes
+        # are kept but not acted on - swallowing them here keeps a media
+        # playlist with e.g. Widevine/FairPlay keys from aborting the parse.
+        self.extra_params = kwargs
 
     def __str__(self):
         output = [
@@ -323,15 +335,39 @@ class Key(BasePathMixin):
 
 
 class AudioStream(BasePathMixin):
-    def __init__(self, uri, name, language, base_uri):
+    def __init__(self, uri, name, language, base_uri, channels=None, characteristics=None, default=None, forced=None):
 
         self.uri = uri
         self.base_uri = base_uri
         self.language = language
         self.name = name
+        self.channels = channels
+        self.characteristics = characteristics
+        self.default = (default == 'YES')
+        self.forced = (forced == 'YES')
 
     def __str__(self):
         # ToDO
+        return ''
+
+
+class SubtitleStream(BasePathMixin):
+    '''
+    An alternate SUBTITLES rendition referenced from a variant playlist
+    (EXT-X-MEDIA:TYPE=SUBTITLES). `uri` points to the WebVTT media playlist.
+    '''
+
+    def __init__(self, uri, name, language, base_uri, forced=None, default=None, characteristics=None):
+
+        self.uri = uri
+        self.base_uri = base_uri
+        self.language = language
+        self.name = name
+        self.characteristics = characteristics
+        self.forced = (forced == 'YES')
+        self.default = (default == 'YES')
+
+    def __str__(self):
         return ''
 
 
@@ -344,7 +380,7 @@ class Playlist(BasePathMixin):
     More info: http://tools.ietf.org/html/draft-pantos-http-live-streaming-07#section-3.3.10
     '''
 
-    def __init__(self, uri, stream_info, alt_audio_streams, base_uri):
+    def __init__(self, uri, stream_info, alt_audio_streams=None, subtitle_streams=None, base_uri=None):
 
         self.uri = uri
         self.base_uri = base_uri
@@ -352,7 +388,7 @@ class Playlist(BasePathMixin):
         resolution = stream_info.get('resolution')
         if resolution is not None:
             try:
-                values = resolution.replace('"', '').split('x')
+                values = str(resolution).replace('"', '').split('x')
                 resolution_pair = (int(values[0]), int(values[1]))
             except Exception:
                 resolution_pair = None
@@ -360,18 +396,28 @@ class Playlist(BasePathMixin):
             resolution_pair = None
 
         self.stream_info = StreamInfo(bandwidth=stream_info.get('bandwidth'),
+                                      average_bandwidth=stream_info.get('average_bandwidth'),
                                       program_id=stream_info.get('program_id'),
                                       resolution=resolution_pair,
-                                      codecs=stream_info.get('codecs'))
-        self.alt_audio_streams = [AudioStream(base_uri=self.base_uri, uri=alt_audio_stream.get('uri'), name=alt_audio_stream.get('name'), language=alt_audio_stream.get('language'))
-                                    for alt_audio_stream in alt_audio_streams]
+                                      codecs=stream_info.get('codecs'),
+                                      frame_rate=stream_info.get('frame_rate'),
+                                      video_range=stream_info.get('video_range'),
+                                      audio=stream_info.get('audio'),
+                                      subtitles=stream_info.get('subtitles'))
+        self.alt_audio_streams = [AudioStream(base_uri=self.base_uri, uri=s.get('uri'), name=s.get('name'), language=s.get('language'),
+                                              channels=s.get('channels'), characteristics=s.get('characteristics'),
+                                              default=s.get('default'), forced=s.get('forced'))
+                                    for s in (alt_audio_streams or [])]
+        self.subtitle_streams = [SubtitleStream(base_uri=self.base_uri, uri=s.get('uri'), name=s.get('name'), language=s.get('language'),
+                                                forced=s.get('forced'), default=s.get('default'), characteristics=s.get('characteristics'))
+                                    for s in (subtitle_streams or [])]
 
     def __str__(self):
         stream_inf = []
         if self.stream_info.program_id:
-            stream_inf.append('PROGRAM-ID=' + self.stream_info.program_id)
+            stream_inf.append('PROGRAM-ID=' + str(self.stream_info.program_id))
         if self.stream_info.bandwidth:
-            stream_inf.append('BANDWIDTH=' + self.stream_info.bandwidth)
+            stream_inf.append('BANDWIDTH=' + str(self.stream_info.bandwidth))
         if self.stream_info.resolution:
             res = str(self.stream_info.resolution[0]) + 'x' + str(self.stream_info.resolution[1])
             stream_inf.append('RESOLUTION=' + res)
@@ -380,7 +426,9 @@ class Playlist(BasePathMixin):
         return '#EXT-X-STREAM-INF:' + ','.join(stream_inf) + '\n' + self.uri
 
 
-StreamInfo = namedtuple('StreamInfo', ['bandwidth', 'program_id', 'resolution', 'codecs'])
+StreamInfo = namedtuple('StreamInfo', ['bandwidth', 'average_bandwidth', 'program_id',
+                                       'resolution', 'codecs', 'frame_rate', 'video_range',
+                                       'audio', 'subtitles'])
 
 
 class PlaylistList(list, GroupedBasePathMixin):
@@ -396,24 +444,6 @@ def denormalize_attribute(attribute):
 
 def quoted(string):
     return '"%s"' % string
-
-
-def _urijoin(base_uri, path):
-    if parser.is_url(path):
-        return path
-    elif parser.is_url(base_uri):
-        if path.startswith('/'):
-            return urllib.parse.urljoin(base_uri, path)
-
-        parsed_url = urllib.parse.urlparse(base_uri)
-        prefix = parsed_url.scheme + '://' + parsed_url.netloc
-        new_path = os.path.normpath(parsed_url.path + '/' + path)
-        full_uri = urllib.parse.urljoin(prefix, new_path.strip('/'))
-        if not parser.is_url(full_uri):
-            full_uri = urllib.parse.urljoin(prefix, '/' + new_path.strip('/'))
-        return full_uri
-    else:
-        return os.path.normpath(os.path.join(base_uri, path.strip('/')))
 
 
 def int_or_float_to_string(number):

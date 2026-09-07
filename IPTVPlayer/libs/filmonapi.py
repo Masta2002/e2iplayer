@@ -101,7 +101,7 @@ class FilmOnComApi:
                         if url.startswith('rtmp'):
                             flashplayer = 'http://www.filmon.com/tv/modules/FilmOnTV/files/flashapp/filmon/FilmonPlayer.swf?v=55'
                             pageUrl = 'http://www.filmon.com/tv/channel/export?channel_id=' + str(channelID)
-                            url = url + '/' + stream['name'] + ' swfUrl=' + flashplayer + ' pageUrl=' + url
+                            url = url + '/' + stream['name'] + ' swfUrl=' + flashplayer + ' pageUrl=' + pageUrl
                         url = urlparser.decorateUrl(url)
                         url.meta.update({'iptv_urlwithlimit': False, 'iptv_livestream': not seekable})
                         urlsList.append({'name': name, 'url': url})
