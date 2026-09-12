@@ -1,0 +1,73 @@
+name: Bug scan (advisory)
+
+# Advisory only - this workflow NEVER fails the build. It surfaces likely
+# bugs that the main `ruff` gate (E/F/W) does not cover:
+#   * ruff bugbear / pylint-error rules (B018 useless-expression = the
+#     "call without parens" class, PLW0127 self-assign, SIM223 `and False`,
+#     B023 loop-closure, ...)
+#   * pyflakes scope analysis (used-before-assignment), which is stronger
+#     than ruff's F-rule reimplementation and is the only thing that catches
+#     bugs hidden in the ruff-excluded monolith hosts/hostxxx.py
+#
+# Findings land in the run's Job Summary and as PR annotations.
+
+on:
+  push:
+    branches: [ python3 ]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    name: Bug scan (advisory)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+
+      - name: Install tools
+        run: python -m pip install --require-hashes -r .github/workflows/bugscan-requirements.txt
+
+      - name: Ruff bug-focused rules
+        run: |
+          set +e
+          cd IPTVPlayer
+          SEL='B012,B014,B015,B017,B018,B023,B033,B034,PLE,PLW0127,PLW0128,PLW0129,PLW0133,PLW0602,PLW0711,PLW1501,PLW3301,RUF018,RUF100,SIM222,SIM223'
+          EXCL='libs/youtube_dl,libs/ecdsa,libs/pyaes,libs/aesgcm'
+          {
+            echo '## Ruff bug-focused scan'
+            echo '_Advisory - does not block merge. `hostxxx.py` is included here even though the main lint job skips it._'
+            echo
+            echo '```'
+            ruff check . hosts/hostxxx.py --exit-zero --output-format=concise --extend-exclude "$EXCL" --select "$SEL"
+            echo '```'
+            echo '### Rule counts'
+            echo '```'
+            ruff check . hosts/hostxxx.py --exit-zero --statistics --extend-exclude "$EXCL" --select "$SEL"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          # emit GitHub annotations too
+          ruff check . hosts/hostxxx.py --exit-zero --output-format=github --extend-exclude "$EXCL" --select "$SEL"
+          exit 0
+
+      - name: Pyflakes scope analysis
+        run: |
+          set +e
+          findings=$(python -m pyflakes IPTVPlayer 2>&1 \
+            | grep -E "referenced before assignment|undefined name|redefinition of unused" \
+            | grep -v "unable to detect" \
+            | grep -vE "libs/(youtube_dl|ecdsa|pyaes|aesgcm)")
+          {
+            echo '## Pyflakes (used-before-assignment / undefined / shadowing)'
+            echo
+            echo '```'
+            echo "${findings:-no high-signal pyflakes findings}"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 0

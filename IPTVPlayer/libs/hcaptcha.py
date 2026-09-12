@@ -1114,8 +1114,11 @@ class UnCaptchahCaptcha:
             for n in range(hCaptcha['imgNumber']):
                 if n in answer:
                     check_answers[hCaptcha['tasklist'][n]["task_key"]] = "true"
-                    # add click in motion data
-                    md.append(mu_click[n])
+                    # add click in motion data - mouse-down uses the down
+                    # timestamps (md_click), mouse-up the up timestamps a few
+                    # ms later (mu_click); previously md_click was unused and
+                    # both got mu_click, making every synthetic click 0ms long
+                    md.append(md_click[n])
                     mu.append(mu_click[n])
                 else:
                     check_answers[hCaptcha['tasklist'][n]["task_key"]] = "false"

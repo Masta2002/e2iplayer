@@ -1,0 +1,24 @@
+version: 2
+updates:
+  # keep the GitHub Actions used in .github/workflows/ up to date - one
+  # grouped PR per week instead of one per action
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    commit-message:
+      prefix: "ci"
+
+  # keep the hash-locked lint tools in bugscan-requirements.txt current
+  - package-ecosystem: "pip"
+    directory: "/.github/workflows"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "ci"

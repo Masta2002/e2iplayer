@@ -42,15 +42,15 @@ class FootyRoom(CBaseHostClass):
                 from six.moves.html_parser import HTMLParser
 
                 s = HTMLParser().unescape(s)
-            except:
+            except Exception:
                 try:
                     import html
 
                     s = html.unescape(s)
-                except:
+                except Exception:
                     pass
             return s.strip()
-        except:
+        except Exception:
             return ""
 
     def _getPage(self, url, addParams=None, post_data=None):
@@ -63,7 +63,7 @@ class FootyRoom(CBaseHostClass):
                     hdr.update(addParams.get("header", {}))
                     params["header"] = hdr
             return self.cm.getPage(url, params, post_data)
-        except:
+        except Exception:
             printExc()
         return False, ""
 
@@ -111,7 +111,7 @@ class FootyRoom(CBaseHostClass):
                         comps.append({"title": title, "url": href})
                 if comps:
                     out.append({"title": country, "comps": comps})
-        except:
+        except Exception:
             printExc()
         return out
 
@@ -166,7 +166,7 @@ class FootyRoom(CBaseHostClass):
                     slug = url_norm.split("/matches/")[-1].replace("/review", "")
                     slug = re.sub(r"^\d+/", "", slug)
                     title = slug.replace("-", " ").strip()
-                except:
+                except Exception:
                     title = "Match"
             added.add(url_norm)
             matches.append({"title": title or "Match", "url": url_norm, "icon": icon})
@@ -197,7 +197,7 @@ class FootyRoom(CBaseHostClass):
                     slug = href_norm.split("/matches/")[-1].replace("/review", "")
                     slug = re.sub(r"^\d+/", "", slug)
                     title = slug.replace("-", " ").strip()
-                except:
+                except Exception:
                     title = "Match"
             matches.append({"title": title or "Match", "url": href_norm, "icon": self.DEFAULT_ICON_URL})
         return matches
@@ -260,7 +260,7 @@ class FootyRoom(CBaseHostClass):
         countries = self._getCountries(force=True)
         try:
             idx = int(str(cItem.get("country_idx", "-1")).strip())
-        except:
+        except Exception:
             idx = -1
         comps = []
         if 0 <= idx < len(countries):
@@ -330,7 +330,7 @@ class FootyRoom(CBaseHostClass):
                             src = "https://www.youtube.com/watch?v=" + vid.group(1)
                     if src:
                         urlTab.append({"name": provider + ": " + title[:50], "url": src, "need_resolve": 1})
-            except:
+            except Exception:
                 printExc()
         # 2) Fallback: JSON-LD
         if not urlTab:
@@ -341,7 +341,7 @@ class FootyRoom(CBaseHostClass):
                     embed = ld_data.get("embedUrl", "")
                     if embed and "youtube" in embed:
                         urlTab.append({"name": "YouTube", "url": embed.replace("/embed/", "/watch?v="), "need_resolve": 1})
-                except:
+                except Exception:
                     printExc()
         return urlTab
 
@@ -349,7 +349,7 @@ class FootyRoom(CBaseHostClass):
         """Resolve video URL via urlparser"""
         try:
             return self.up.getVideoLinkExt(url)
-        except:
+        except Exception:
             printExc()
         return []
 
@@ -369,7 +369,7 @@ class FootyRoom(CBaseHostClass):
                 self.listMatches(self.currItem)
             else:
                 self.listMainMenu(self.currItem)
-        except:
+        except Exception:
             printExc()
         CBaseHostClass.endHandleService(self, index, refresh)
 

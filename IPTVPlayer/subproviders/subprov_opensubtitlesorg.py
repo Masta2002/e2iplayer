@@ -49,7 +49,7 @@ class OpenSubOrgProvider(CBaseSubProviderClass):
     def __init__(self, params={}):
         self.USER_AGENT = 'IPTVPlayer v1'
         self.HTTP_HEADER = {'User-Agent': self.USER_AGENT, 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Accept-Encoding': 'gzip, deflate'}
-        self.MAIN_URL = 'http://api.opensubtitles.org/xml-rpc'
+        self.MAIN_URL = 'http://api.opensubtitles.org/xml-rpc'  # NOSONAR - xml-rpc endpoint, kept on http (matches subprov_opensubtitlesorg3)
 
         params['cookie'] = 'opensubtitlesorg.cookie'
         CBaseSubProviderClass.__init__(self, params)

@@ -394,7 +394,7 @@ class Filman(CBaseHostClass, CaptchaHelper):
             decoded_base64 = ensure_str(base64.b64decode(encoded_string))
             decoded_rot13 = self.rot13(decoded_base64)
             return decoded_rot13
-        except:
+        except Exception:
             return ""
 
     def _xd_decode(self, enc, key):
@@ -415,7 +415,7 @@ class Filman(CBaseHostClass, CaptchaHelper):
             host = re.search(r'https?://([^/]+)', url).group(1)
             host = host.replace('www.', '')
             return host.split('.')[0]
-        except:
+        except Exception:
             return "filman"
 
     def _tryDecodeXdFromData(self, data):
@@ -506,9 +506,9 @@ class Filman(CBaseHostClass, CaptchaHelper):
                             try:
                                 player_data_json = json.loads(decoded)
                                 playerUrl = player_data_json.get("src", "")
-                            except:
+                            except Exception:
                                 playerUrl = decoded
-                        except:
+                        except Exception:
                             playerUrl = ""
 
                         if playerUrl and playerUrl.startswith('http'):

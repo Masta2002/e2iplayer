@@ -58,7 +58,7 @@ class Proxy(SimpleHTTPRequestHandler):
             if url.startswith('/https/'):
                 url = 'https://' + url[7:]
             elif url.startswith('/http/'):
-                url = 'http://' + url[6:]
+                url = 'http://' + url[6:]  # NOSONAR - rebuilds whatever scheme the /http/ proxy path asked for
 
             sts, resp = getPage(url, HTTP_HEADER)
             if sts:

@@ -51,7 +51,7 @@ def GetConfigList():
 class Napisy24plProvider(CBaseSubProviderClass):
 
     def __init__(self, params={}):
-        self.MAIN_URL = 'http://napisy24.pl/'
+        self.MAIN_URL = 'https://napisy24.pl/'
         self.USER_AGENT = 'DMnapi 13.1.30'
         self.HTTP_HEADER = {'User-Agent': self.USER_AGENT, 'Referer': self.MAIN_URL, 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Accept-Encoding': 'gzip, deflate'}
 
@@ -108,7 +108,7 @@ class Napisy24plProvider(CBaseSubProviderClass):
             else:
                 self.logedIn = True
         else:
-            self.sessionEx.open(MessageBox, _('Service %s requires registration. \nPlease fill your login and password in the %s configuration.') % ('http://napisy24.pl/', 'E2iPlayer'), type=MessageBox.TYPE_ERROR, timeout=10)
+            self.sessionEx.open(MessageBox, _('Service %s requires registration. \nPlease fill your login and password in the %s configuration.') % ('https://napisy24.pl/', 'E2iPlayer'), type=MessageBox.TYPE_ERROR, timeout=10)
 
     def sortSubtitlesByDurationMatch(self):
         # we need duration to sort
@@ -313,7 +313,7 @@ class Napisy24plProvider(CBaseSubProviderClass):
         fileName = self._getFileName(title, lang, subId, imdbid)
         fileName = GetSubtitlesDir(fileName)
 
-        url = 'http://napisy24.pl/download?napisId={0}&typ=sru'.format(subId)
+        url = 'https://napisy24.pl/download?napisId={0}&typ=sru'.format(subId)
         tmpFile = GetTmpDir(self.TMP_FILE_NAME)
         tmpFileZip = tmpFile + '.zip'
 

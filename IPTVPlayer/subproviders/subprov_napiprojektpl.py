@@ -45,7 +45,7 @@ def GetConfigList():
 class NapiProjektProvider(CBaseSubProviderClass):
 
     def __init__(self, params={}):
-        self.MAIN_URL = 'http://www.napiprojekt.pl/'
+        self.MAIN_URL = 'https://www.napiprojekt.pl/'
         self.USER_AGENT = 'DMnapi 13.1.30'
         self.HTTP_HEADER = {'User-Agent': 'Mozilla/5.0', 'Referer': self.MAIN_URL, 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Accept-Encoding': 'gzip, deflate'}
         self.AJAX_HEADER = {'User-Agent': 'Mozilla/5.0', 'Referer': self.MAIN_URL, 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Accept-Encoding': 'gzip, deflate', 'X-Requested-With': 'XMLHttpRequest'}

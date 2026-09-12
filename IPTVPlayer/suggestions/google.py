@@ -19,7 +19,7 @@ class SuggestionsProvider:
 
     def getSuggestions(self, text, locale):
         lang = locale.split('-', 1)[0]
-        url = 'http://suggestqueries.google.com/complete/search?output=firefox&hl=%s&gl=%s%s&q=%s' % (lang, lang, '&ds=yt' if self.forYouyube else '', urllib_quote(text))
+        url = 'https://suggestqueries.google.com/complete/search?output=firefox&hl=%s&gl=%s%s&q=%s' % (lang, lang, '&ds=yt' if self.forYouyube else '', urllib_quote(text))
         sts, data = self.cm.getPage(url)
         if sts:
             retList = []

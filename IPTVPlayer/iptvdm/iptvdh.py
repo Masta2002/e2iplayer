@@ -22,7 +22,6 @@ from Tools.Directories import resolveFilename, SCOPE_PLUGINS
 from Tools.Directories import fileExists
 import datetime
 import os
-import re
 ###################################################
 
 
@@ -46,6 +45,11 @@ class DMItemBase:
         # instance of downloader
         self.downloader = None
         self.callback = None
+        # downloader.getName() at the moment it was created - kept
+        # separately from self.downloader (which is cleared once the
+        # download finishes) so the UI can still show which downloader was
+        # used for an already-finished/aborted item
+        self.downloaderName = ""
 
     def __del__(self):
         printDBG("DMItemBase.__del__  ---------------------")
@@ -164,21 +168,6 @@ class DMHelper:
             return newFileName, tmpFileName
         else:
             return newFileName
-
-    @staticmethod
-    def getProgressFromF4fSTSFile(file):
-        ret = 0
-        try:
-            fo = open(file, "r")
-            lines = fo.readlines()
-            fo.close()
-        except Exception:
-            return ret
-        if 0 < len(lines):
-            match = re.search("|PROGRESS|([0-9]+?)/([0-9]+?)|", lines[1])
-            if match:
-                ret = 100 * int(match.group(1)) / int(match.group(2))
-        return ret
 
     @staticmethod
     def getFileSize(filename):

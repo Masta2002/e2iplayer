@@ -213,4 +213,4 @@ class IPTVHost(CHostBase):
         CHostBase.__init__(self, Premiumsmarteu(), True, [])
 
     def withArticleContent(self, cItem):
-        return cItem["category"] in ["video", "list_seasons", "list_episodes"]
+        return cItem.get("category") in ["video", "list_seasons", "list_episodes"]

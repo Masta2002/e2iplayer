@@ -2,6 +2,7 @@
 import base64
 from binascii import hexlify
 import gzip
+from http.client import IncompleteRead
 import http.cookiejar
 from io import BytesIO, StringIO
 import os
@@ -512,6 +513,10 @@ class common:
             GetIPTVNotify().push(r'\s'.join([msg1, msg2]), 'error', 40)
             raise Exception("Wrong usage!")
 
+        # work on our own copy - the code below mutates params (return_data,
+        # save_to_file, use_cookie, ssl_protocol) and callers pass shared dicts
+        params = dict(params)
+
         # by default we will work in return_data mode
         if 'return_data' not in params:
             params['return_data'] = True
@@ -842,7 +847,7 @@ class common:
                 try:
                     move(params['save_to_file'], new_name)
                     self.convertWebp(new_name)
-                except:
+                except Exception:
                     pass
 
         except pycurl.error as e:
@@ -885,7 +890,7 @@ class common:
                     move(output_path, file_path)
                     # printDBG("PCommon.convertWebp rename %s %s" % (output_path, file_path))
                     return
-                except:
+                except Exception:
                     printExc()
                     return
 
@@ -960,6 +965,24 @@ class common:
             for header, value in responseHeaders.items():
                 metadata[header.lower()] = responseHeaders[header]
 
+    def _readHttpResponse(self, fp, maxSize=-1):
+        # Some servers close the connection before delivering the full
+        # response promised by Content-Length. http.client then raises
+        # IncompleteRead and the partial body would otherwise be lost
+        # entirely - use what was actually received instead. This used
+        # to be handled per-host via a global
+        # httplib.HTTPResponse.read monkeypatch (e.g. hostxxx.py); doing
+        # it once here, at the only place that actually calls read(),
+        # covers every caller of getPage()/getURLRequestData() without
+        # touching process-wide state.
+        try:
+            if maxSize == -1:
+                return fp.read()
+            return fp.read(maxSize)
+        except IncompleteRead as e:
+            printDBG("common._readHttpResponse: IncompleteRead, using partial data (%d bytes)" % len(e.partial or b''))
+            return e.partial
+
     def getPage(self, url, addParams={}, post_data=None):
         ''' wraps getURLRequestData '''
 
@@ -989,7 +1012,7 @@ class common:
                     metadata['status_code'] = e.code
                     self.fillHeaderItems(metadata, e.fp.info(), True, collectAllHeaders=addParams.get('collect_all_headers'))
 
-                    data = e.fp.read(addParams.get('max_data_size', -1))
+                    data = self._readHttpResponse(e.fp, addParams.get('max_data_size', -1))
                     if e.fp.info().get('Content-Encoding', '') == 'gzip':
                         data = DecodeGzipped(data)
 
@@ -1189,7 +1212,7 @@ class common:
         if protocolName == 'TLSv1_2':
             return ssl.PROTOCOL_TLSv1_2
         elif protocolName == 'TLSv1_1':
-            return ssl.PROTOCOL_TLSv1_1
+            return ssl.PROTOCOL_TLSv1_1  # NOSONAR
         return None
 
     def getPyCurlSSLProtocolVersion(self, protocolName):
@@ -1229,6 +1252,9 @@ class common:
             msg2 = _('You should never perform block I/O operations in the __init__.')
             GetIPTVNotify().push(r'\s'.join([msg1, msg2]), 'error', 40)
             raise Exception("Wrong usage!")
+
+        # our own copy - the cookie block below does params['use_cookie'] = True
+        params = dict(params)
 
         if 'max_data_size' in params and not params.get('return_data', False):
             raise Exception("return_data == False is not accepted with max_data_size.\nPlease also note that return_data == False is deprecated and not supported with PyCurl HTTP backend!")
@@ -1295,10 +1321,11 @@ class common:
         # customOpeners.append(urllib2.HTTPHandler(debuglevel=1))
         if not IsHttpsCertValidationEnabled():
             try:
+                # unverified TLS is opt-in only, gated by the IsHttpsCertValidationEnabled() check above
                 if sslProtoVer is not None:
-                    ctx = ssl._create_unverified_context(sslProtoVer)
+                    ctx = ssl._create_unverified_context(sslProtoVer)  # NOSONAR
                 else:
-                    ctx = ssl._create_unverified_context()
+                    ctx = ssl._create_unverified_context()  # NOSONAR
                 customOpeners.append(HTTPSHandler(context=ctx))
             except Exception:
                 pass
@@ -1361,10 +1388,7 @@ class common:
                     pass
 
                 max = params.get('max_data_size', -1)
-                if max == -1:
-                    data = response.read()
-                else:
-                    data = response.read(max)
+                data = self._readHttpResponse(response, max)
                 response.close()
             except HTTPError as e:
                 ignoreCodeRanges = params.get('ignore_http_code_ranges', [(404, 404), (500, 500)])
@@ -1385,10 +1409,7 @@ class common:
                     except Exception:
                         pass
                     max = params.get('max_data_size', -1)
-                    if max == -1:
-                        data = e.fp.read()
-                    else:
-                        data = e.fp.read(max)
+                    data = self._readHttpResponse(e.fp, max)
                     # e.msg
                     # e.headers
                 elif e.code == 503:
@@ -1494,6 +1515,9 @@ class common:
         return strTab
 
     def getPageRequest(self, baseUrl, params={}, post_data=None):
+
+        # our own copy - the cookie block below does params['use_cookie'] = True
+        params = dict(params)
 
         self.meta = {}
         metadata = self.meta

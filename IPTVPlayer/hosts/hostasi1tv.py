@@ -186,7 +186,7 @@ class Asi1TV(CBaseHostClass):
             if current_match:
                 try:
                     current_page = int(current_match.group(1))
-                except:
+                except Exception:
                     current_page = 1
             all_page_numbers = re.findall(r'<a[^>]+href=["\'][^"\']*page/(\d+)/?["\'][^>]*>([\d,٬]+)</a>', pagination)
             if all_page_numbers:
@@ -194,7 +194,7 @@ class Asi1TV(CBaseHostClass):
                 clean_num = last_num_str.replace(",", "").replace("٬", "")
                 try:
                     total_pages = int(clean_num)
-                except:
+                except Exception:
                     total_pages = current_page + 1
             else:
                 total_pages = current_page + 1
@@ -460,7 +460,7 @@ class Asi1TV(CBaseHostClass):
                     try:
                         idx = int(m.group(0))
                         return k_list[idx] if idx < len(k_list) else m.group(0)
-                    except:
+                    except Exception:
                         return m.group(0)
 
                 return re.sub(r"\b\d+\b", repl, text)

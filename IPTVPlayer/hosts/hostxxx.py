@@ -19,11 +19,6 @@ import base64
 import random
 
 try:
-	import http.client as httplib  # Python 3
-except ImportError:
-	import httplib  # Python 2
-
-try:
 	import json
 except ImportError:
 	import simplejson as json
@@ -637,6 +632,12 @@ class Host(CBaseHostClass, XXXParser):
 		return url
 
 	def getPage(self, baseUrl, cookie_domain, cloud_domain, params={}, post_data=None, userAgent=None):
+		# work on our own copy - params defaults to a shared dict (and callers
+		# pass self.defaultParams, itself reused/reassigned all over this
+		# class), so mutating it in place here would leak cloudflare_params
+		# (and whatever getPageCFProtection() adds on top: header/cookiefile/
+		# CFProtection) into unrelated later calls that share the same dict
+		params = dict(params)
 		COOKIEFILE = join(GetCookieDir(), cookie_domain)
 		agent = userAgent or USER_AGENT
 		self.HEADER = {'User-Agent': agent, 'Accept': 'text/html'}
@@ -647,32 +648,20 @@ class Host(CBaseHostClass, XXXParser):
 		def _getFullUrl(url):
 			return url if self.cm.isValidUrl(url) else urljoin(baseUrl, url)
 
-		if params == {}:
-			params = dict(self.defaultParams)
+		# own copy for the same reason as getPage() above
+		params = dict(params) if params else dict(self.defaultParams)
 		COOKIEFILE = join(GetCookieDir(), cookie_domain)
 		params['cookie_items'] = {'xxx': 'ok'}
 		params['cloudflare_params'] = {'domain': cloud_domain, 'cookie_file': COOKIEFILE, 'User-Agent': USER_AGENT, 'full_url_handle': _getFullUrl}
 		return self.cm.getPageCFProtection(baseUrl, params, post_data)
 
 	def _getPage(self, url, addParams={}, post_data=None):
-		try:
-			def patch_http_response_read(func):
-				def inner(*args):
-					try:
-						return func(*args)
-					except httplib.IncompleteRead as e:
-						return e.partial
-				return inner
-			prev_read = httplib.HTTPResponse.read
-			httplib.HTTPResponse.read = patch_http_response_read(httplib.HTTPResponse.read)
-		except Exception:
-			printExc()
-		sts, data = self.cm.getPage(url, addParams, post_data)
-		try:
-			httplib.HTTPResponse.read = prev_read
-		except Exception:
-			printExc()
-		return sts, data
+		# IncompleteRead (server closes the connection before delivering the
+		# full advertised Content-Length) is now handled centrally in
+		# common._readHttpResponse(), which falls back to the partial body
+		# instead of losing the response - no more need to monkeypatch
+		# httplib.HTTPResponse.read process-wide from here.
+		return self.cm.getPage(url, addParams, post_data)
 
 	def getPageWithCFBypass(self, url, max_retries=3, params=None):
 		printDBG("getPageWithCFBypass >>> url: " + url)
@@ -736,9 +725,9 @@ class Host(CBaseHostClass, XXXParser):
 	def getJumpItem(self, max_page, url, name):
 		name = name.split('-')[0] + "-JUMP"
 		if max_page:
-			return CDisplayListItem(_("Jump"), _("Jump to a selected page, max: {}").format(max_page), CDisplayListItem.TYPE_CATEGORY, [url], name, '', str(max_page) if max_page else None, imageType="JUMP")
+			return CDisplayListItem(_("Jump"), _("Jump to a selected page, max: {}").format(max_page), CDisplayListItem.TYPE_CATEGORY, [url], name, '', str(max_page), imageType="JUMP")
 		else:
-			return CDisplayListItem(_("Jump"), _("Jump to a selected page"), CDisplayListItem.TYPE_CATEGORY, [url], name, '', str(max_page) if max_page else None, imageType="JUMP")
+			return CDisplayListItem(_("Jump"), _("Jump to a selected page"), CDisplayListItem.TYPE_CATEGORY, [url], name, '', None, imageType="JUMP")
 
 	def getLastItem(self, last_number, url, name):
 		return CDisplayListItem(_("Last"), _('Page:') + " " + str(last_number), CDisplayListItem.TYPE_CATEGORY, [url], name, '', 'last_page', imageType="LAST")
@@ -5162,7 +5151,7 @@ class Host(CBaseHostClass, XXXParser):
 			sts, data = self._getPage(url, self.defaultParams)
 			if not sts:
 				return ''
-			data = data = data.split('<li><a href')
+			data = data.split('<li><a href')
 			if len(data):
 				del data[0]
 			for item in data:
@@ -19536,11 +19525,11 @@ class Host(CBaseHostClass, XXXParser):
 			prev = self.cm.ph.getSearchGroups(data, 'prev"><a href=["]([^"]+?)["]', 1, True)[0]
 			if prev:
 				printDBG('PREVIOUS: ' + prev)
-			first = self.cm.ph.getSearchGroups(data, 'first"><a href=["]([^"]+?)["]', 1, True)[0]
-			if first:
-				if first.startswith('/'):
-					first = self.MAIN_URL + first
-				printDBG('FIRST: ' + first)
+			firstHref = self.cm.ph.getSearchGroups(data, 'first"><a href=["]([^"]+?)["]', 1, True)[0]
+			if firstHref:
+				if firstHref.startswith('/'):
+					firstHref = self.MAIN_URL + firstHref
+				printDBG('FIRST: ' + firstHref)
 			data = data.split('class="item  "')
 			if len(data):
 				del data[0]
@@ -19580,9 +19569,9 @@ class Host(CBaseHostClass, XXXParser):
 				printDBG('PREV NUMBER: ' + str(prev_number))
 				if int(prev_number) >= 2:
 					valTab.append(self.getPreviousItem(str(prev_number), previous, name, "previous"))
-			if first:
+			if firstHref:
 				if int(next_number) >= 3 or int(last_number) >= 3:
-					valTab.append(self.getFirstItem('', first, name, 'first'))
+					valTab.append(self.getFirstItem('', firstHref, name, 'first'))
 			return valTab
 
 		if 'W1MP' == name:

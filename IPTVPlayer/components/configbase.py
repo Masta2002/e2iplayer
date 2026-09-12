@@ -97,7 +97,7 @@ class ConfigBaseWidget(Screen, ConfigListScreen):
         skin = ["""
         <screen position="center,center" size="1020,660" resolution="1280,720" title="" backgroundColor="#34111112" flags="wfNoBorder">
             <widget source="Title" render="Label" position="240,10" size="780,40" foregroundColor="white" backgroundColor="black" borderWidth="1" borderColor="black" transparent="1" zPosition="1" font="Regular;24" valign="center" />
-            <widget name="config" position="10,64" size="1000,530" itemHeight="32" font="Regular;20" scrollbarMode="showOnDemand" scrollbarSliderBorderWidth="1" scrollbarForegroundColor="#1b5a91" scrollbarBorderColor="#00b6b6b6" enableWrapAround="1" transparent="1" foregroundColor="white" backgroundColor="black" foregroundColorSelected="white" backgroundColorSelected="#1b5a91" borderWidth="1" borderColor="black" shadowColor="black" shadowOffset="-2,-2" />
+            <widget name="config" position="10,64" size="1000,530" itemHeight="32" font="Regular;20" scrollbarMode="showOnDemand" scrollbarSliderBorderWidth="1" scrollbarForegroundColor="#1b5a91" scrollbarBorderColor="#00b6b6b6" enableWrapAround="1" transparent="1" foregroundColor="white" backgroundColor="black" foregroundColorSelected="white" backgroundColorSelected="#1b5a91" borderWidth="1" borderColor="black" />
             <widget name="footnote" position="150,12" size="100,30" foregroundColor="white" backgroundColor="black" borderWidth="1" borderColor="black" transparent="1" zPosition="1" font="Regular;24" valign="center" />
             <ePixmap pixmap="%s/iptvlogo.png" position="12,10" size="100,40" alphatest="blend" transparent="1" />
             <eLabel name="BG_Title" position="0,0" size="1020,60" backgroundColor="#100d0f16" zPosition="-1" />

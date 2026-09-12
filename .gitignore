@@ -1,2 +1,7 @@
 *.pyc
 .DS_Store
+
+# transient files from IPTVPlayer/locale/updateallpo.sh
+*.pot.bak
+*.pot.old
+*.pot.new

@@ -126,9 +126,9 @@ class Favourites(CBaseHostClass):
             self.hostName = None
             retlist = []
             urlList = self.up.getVideoLinkExt(item.data)
-            for item in urlList:
-                name = self.host.cleanHtmlStr(item["name"])
-                url = item["url"]
+            for urlItem in urlList:
+                name = self.cleanHtmlStr(urlItem["name"])
+                url = urlItem["url"]
                 retlist.append(CUrlItem(name, url, 0))
             ret = RetHost(RetHost.OK, value=retlist)
         elif CFavItem.RESOLVER_DIRECT_LINK == item.resolver:
@@ -412,7 +412,6 @@ class IPTVHost(CHostBase):
                     if self.isItemWatched(idx, ret.value[idx]):
                         ret.value[idx].isWatched = True
                         ret.value[idx].isStarted = False
-                        ret.value[idx].name = ret.value[idx].name
                     elif self.isItemStarted(idx, ret.value[idx]):
                         ret.value[idx].isStarted = True
             self.cachedRet = ret

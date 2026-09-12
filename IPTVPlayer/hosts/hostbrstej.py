@@ -502,7 +502,7 @@ class Brstej(CBaseHostClass):
                             server_tag = parts[-2]
                         else:
                             server_tag = host
-                    except:
+                    except Exception:
                         server_tag = ""
                     if server_tag:
                         final_name = "%s [ %s ]" % (server_name, server_tag)
@@ -525,7 +525,7 @@ class Brstej(CBaseHostClass):
                         server_tag = parts[-2]
                     else:
                         server_tag = host
-                except:
+                except Exception:
                     server_tag = ""
                 if server_tag:
                     name = "السيرفر الافتراضي [ %s ]" % server_tag

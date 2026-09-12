@@ -1,0 +1,79 @@
+name: Update translation templates
+
+# Proposal: automate the mechanical part of translation upkeep.
+#
+# After every merge to python3 this regenerates IPTVPlayer.pot and runs
+# msgmerge over every language via IPTVPlayer/locale/updateallpo.sh, then -
+# only if something actually changed - opens (or updates) ONE pull request
+# with the result. Nothing is pushed to python3 directly and nothing is
+# translated: new source strings land as untranslated msgid entries and fall
+# back to English at runtime until a human fills them in.
+#
+# It replaces the recurring hand-run "update pot" commits, not the actual
+# "update <language> translation" work.
+#
+# NOT ACTIVE YET - manual trigger only. Before wiring the automatic
+# `push` trigger (commented out below), run updateallpo.sh once on a clean
+# checkout and confirm `git status` stays clean: the script must reproduce
+# the committed .pot/.po byte-for-byte, otherwise the first PR is a huge
+# reformat diff. This file is here as a reviewed proposal, meant to go to
+# oe-mirrors - it does nothing until someone runs it from the Actions tab.
+
+on:
+  workflow_dispatch:
+  # once verified, enable automatic runs after each merge to python3:
+  # push:
+  #   branches: [ python3 ]
+  #   paths:
+  #     - 'IPTVPlayer/**/*.py'
+  #     - 'IPTVPlayer/locale/updateallpo.sh'
+  #     - '.github/workflows/translations.yml'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: translation-templates
+  cancel-in-progress: true
+
+jobs:
+  update-pot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install gettext
+        run: |
+          sudo apt-get -q update
+          sudo apt-get install -y gettext
+
+      - name: Regenerate .pot / .po / .mo
+        run: |
+          cd IPTVPlayer/locale
+          chmod +x updateallpo.sh
+          ./updateallpo.sh
+
+      - name: Open or update the translation-templates PR
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1  # v8.1.1
+        with:
+          add-paths: IPTVPlayer/locale/**
+          branch: chore/translation-templates
+          base: python3
+          delete-branch: true
+          commit-message: "translation templates: regenerate .pot / .po"
+          title: "translation templates: regenerate .pot / .po"
+          labels: translations
+          body: |
+            Automated `xgettext` + `msgmerge` run via
+            `IPTVPlayer/locale/updateallpo.sh` (triggered by the last merge to
+            `python3`).
+
+            * mechanical extraction only - **no strings were translated**
+            * new source strings appear as `msgstr ""` and fall back to English
+              at runtime until someone translates them
+            * `.mo` files only change here when a string was *removed* upstream
+              (msgfmt drops untranslated entries)
+
+            Merge to pick up new / changed `_()` strings. The actual
+            translations are still added in separate commits.

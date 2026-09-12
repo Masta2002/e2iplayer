@@ -197,7 +197,7 @@ class webhuplayer(CBaseHostClass):
                         if self._copy(destination_fo + '/*', self.path_webh):
                             msg = 'Sikerült a webmedia könyvtár frissítése/telepítése!'
                             self.sessionEx.open(MessageBox, msg, type=MessageBox.TYPE_INFO, timeout=10)
-                            self.list_tartalom()
+                            self.list_tartalom({'name': 'category'})
                         else:
                            msg = 'A frissítés/telepítés sikertelen! (Másolási hiba)'
                            self.sessionEx.open(MessageBox, msg, type=MessageBox.TYPE_ERROR, timeout=20)

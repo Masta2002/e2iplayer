@@ -32,7 +32,7 @@ class WebCameraApi(CBaseHostClass):
     def __init__(self):
         CBaseHostClass.__init__(self)
         self.MAIN_URL = 'https://www.webcamera.pl/'
-        self.DEFAULT_ICON_URL = 'http://static.webcamera.pl/webcamera/img/loader-min.png'
+        self.DEFAULT_ICON_URL = 'https://static.webcamera.pl/webcamera/img/loader-min.png'
         self.HEADER = {'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:21.0) Gecko/20100101 Firefox/21.0', 'Referer': self.getMainUrl(), 'Accept': 'text/html'}
         self.AJAX_HEADER = dict(self.HEADER)
         self.AJAX_HEADER.update({'X-Requested-With': 'XMLHttpRequest'})

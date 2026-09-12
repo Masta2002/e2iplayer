@@ -103,19 +103,19 @@ class MovizHome(CBaseHostClass):
         for item in data:
             try:
                 url = self.getFullUrl(self.cm.ph.getSearchGroups(item, '<a[^>]+href="([^"]+)"')[0])
-            except:
+            except Exception:
                 continue
             try:
                 title = unescape(self.cleanHtmlStr(self.cm.ph.getSearchGroups(item, 'title="([^"]+)"')[0]))
                 title = re.sub(r"^(فيلم|مسلسل|انمي|برنامج)\s+", "", title).strip()
-            except:
+            except Exception:
                 try:
                     title = unescape(self.cleanHtmlStr(self.cm.ph.getSearchGroups(item, '<h3 class="title">([^<]+)</h3>')[0]))
-                except:
+                except Exception:
                     title = ""
             try:
                 icon = self.getFullIconUrl(self.cm.ph.getSearchGroups(item, 'data-src="([^"]+)"')[0])
-            except:
+            except Exception:
                 icon = ""
             genre = self.cm.ph.getSearchGroups(item, r'<li[^>]*class="genre"[^>]*>\s*([^<]+)')
             quality = self.cm.ph.getSearchGroups(item, r'<li[^>]*class="quality"[^>]*>\s*([^<]+)')
@@ -132,7 +132,7 @@ class MovizHome(CBaseHostClass):
                 try:
                     imdb_val = float(imdb)
                     imdb_color = G if imdb_val >= 6.0 else R
-                except:
+                except Exception:
                     imdb_color = W
                 desc_lines.append("%sIMDB Rating:%s %s%s%s" % (Y, W, imdb_color, imdb, W))
             desc = "\n".join(desc_lines)
@@ -155,17 +155,17 @@ class MovizHome(CBaseHostClass):
         for item in items:
             try:
                 url = self.cm.ph.getSearchGroups(item, r'<a[^>]+href="([^"]+)"')[0]
-            except:
+            except Exception:
                 url = ""
             try:
                 title = self.cm.ph.getSearchGroups(item, r'<h3 class="title">(.*?)</h3>')[0]
                 title = self.cleanHtmlStr(title)
                 title = re.sub(r"^(فيلم|مسلسل|انمي|برنامج)\s+", "", title).strip()
-            except:
+            except Exception:
                 title = ""
             try:
                 icon = self.cm.ph.getSearchGroups(item, r'data-src="([^"]+)"')[0]
-            except:
+            except Exception:
                 icon = ""
             genre = self.cm.ph.getSearchGroups(item, r'<li[^>]*class="genre"[^>]*>\s*([^<]+)')
             quality = self.cm.ph.getSearchGroups(item, r'<li[^>]*class="quality"[^>]*>\s*([^<]+)')
@@ -182,7 +182,7 @@ class MovizHome(CBaseHostClass):
                 try:
                     imdb_val = float(imdb)
                     imdb_color = G if imdb_val >= 6.0 else R
-                except:
+                except Exception:
                     imdb_color = W
                 desc_lines.append("%sIMDB Rating:%s %s%s%s" % (Y, W, imdb_color, imdb, W))
             desc = "\n".join(desc_lines)

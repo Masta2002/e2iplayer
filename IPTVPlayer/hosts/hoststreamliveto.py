@@ -70,7 +70,6 @@ class StreamLiveTo(CBaseHostClass):
 
     def getPage(self, url, params={}, post_data=None):
         return self.cm.getPage(url, params, post_data)
-        return self.checkBotProtection(url, params)
 
     def cleanHtmlStr(self, data):
         data = data.replace('&nbsp;', ' ')

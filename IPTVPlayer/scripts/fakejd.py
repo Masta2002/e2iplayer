@@ -135,8 +135,8 @@ def encrypt(secret_token, data):
 class Myjdapi:
     def __init__(self):
         self._request_id = int(time.time() * 1000)
-        self._api_url = "http://api.jdownloader.org"
-        self._app_key = "http://git.io/vmcsk"
+        self._api_url = "http://api.jdownloader.org"  # NOSONAR - MyJDownloader API base; requests are AES-signed on top
+        self._app_key = "http://git.io/vmcsk"  # NOSONAR - fixed protocol identifier string, never dereferenced
         self._api_version = 1
         self._devices = None
         self._login_secret = None
@@ -286,7 +286,7 @@ class Myjdapi:
             if params is not None:
                 response = self._decrypt(self._device_encryption_token, encrypted_response_text)
             else:
-                return {"data": response}
+                return {"data": encrypted_response_text.decode('utf-8')}
         jsondata = json.loads(response.decode('utf-8'))
         if jsondata['rid'] != self._request_id:
             self.update_request_id()

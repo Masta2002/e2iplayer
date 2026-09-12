@@ -166,7 +166,7 @@ class CineTO(CBaseHostClass, CaptchaHelper):
         cItem['category'] = nextCategory
 
         try:
-            data = json_loads(data, '', True)['genres']
+            data = json_loads(data)['genres']
             for item in self.cacheFilters['genres']:
                 params = dict(cItem)
                 params.update(item)
@@ -225,7 +225,7 @@ class CineTO(CBaseHostClass, CaptchaHelper):
             return []
 
         try:
-            data = json_loads(data, noneReplacement='', baseTypesAsString=True)
+            data = json_loads(data)
             for item in data['entries']:
                 self._addItem(item, cItem, nextCategory)
         except Exception:
@@ -254,7 +254,7 @@ class CineTO(CBaseHostClass, CaptchaHelper):
             return []
 
         try:
-            data = json_loads(data, noneReplacement='', baseTypesAsString=True)['entry']
+            data = json_loads(data)['entry']
             icon = self.getFullIconUrl(data.get('cover', cItem.get('icon', '')))
             printDBG("+++++++++++++++++++++++++++++++++++++++")
             printDBG(data)
@@ -338,7 +338,7 @@ class CineTO(CBaseHostClass, CaptchaHelper):
             if not sts:
                 return []
 
-            data = json_loads(data, '', True)['links']
+            data = json_loads(data)['links']
             printDBG(data)
 
             for hosting in data:
@@ -432,7 +432,7 @@ class CineTO(CBaseHostClass, CaptchaHelper):
         icon = ''
 
         try:
-            data = json_loads(data, noneReplacement='', baseTypesAsString=True)['entry']
+            data = json_loads(data)['entry']
             icon = self.getFullIconUrl(data.get('cover', cItem.get('icon', '')))
             title = self.cleanHtmlStr(data['title'])
 

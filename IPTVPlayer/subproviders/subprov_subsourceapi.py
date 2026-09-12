@@ -443,11 +443,10 @@ class SubsourceAPIProvider(CBaseSubProviderClass):
             response = requests.get(
                 __getSubdown,
                 headers=headers,
-                verify=False,
                 allow_redirects=True,
                 timeout=60,
                 stream=True,
-            )  # NOSONAR
+            )
             response.raise_for_status()
             with open(filePath, "wb") as f:
                 for chunk in response.iter_content(chunk_size=8192):

@@ -3775,7 +3775,7 @@ class XXXParser:
 			if not videoUrl:
 				videoUrl = self.cm.ph.getSearchGroups(data, r'source\ssrc=["]([^"]+?)["]', 1, True)[0]
 			if not videoUrl:
-				videoUrl = videoUrl = self.cm.ph.getSearchGroups(data, 'src=["]([^"]+?mp4)["]', 1, True)[0]
+				videoUrl = self.cm.ph.getSearchGroups(data, 'src=["]([^"]+?mp4)["]', 1, True)[0]
 			return urlparser.decorateUrl(videoUrl, {'Referer': url, 'User-Agent': self.USER_AGENT})
 
 		if parser == 'https://xdporner.com':

@@ -1570,8 +1570,6 @@ class Lodynet(CBaseHostClass):
                             label = "576p"
                         elif "384" in label:
                             label = "384p"
-                        else:
-                            label = label
                     else:
                         if ".m3u8" in video_url.lower():
                             label = "HLS Stream"

@@ -236,7 +236,7 @@ class OpenSubtitlesRest(CBaseSubProviderClass):
 
         login = config.plugins.iptvplayer.opensuborg_login.value
         password = config.plugins.iptvplayer.opensuborg_password.value
-        loginUrl = 'http://api.opensubtitles.org/xml-rpc'
+        loginUrl = 'http://api.opensubtitles.org/xml-rpc'  # NOSONAR - see the https->http normalisation below
         loginData = '''<methodCall>
                          <methodName>LogIn</methodName>
                            <params>
@@ -256,7 +256,7 @@ class OpenSubtitlesRest(CBaseSubProviderClass):
                        </methodCall>'''
 
         if baseUrl.startswith('https://'):
-            baseUrl = 'http://' + baseUrl.split('://', 1)[-1]
+            baseUrl = 'http://' + baseUrl.split('://', 1)[-1]  # NOSONAR - opensubtitles xml-rpc is used over http on purpose (box TLS)
 
         url = baseUrl
         attempt = 0

@@ -425,7 +425,7 @@ class CFunctionProxyQueue:
         currThreadName = threading.current_thread().name
         if self.mainThreadName != currThreadName:
             printDBG("ERROR CFunctionProxyQueue.registerFunction: thread [%s] is not main thread" % currThreadName)
-            raise AssertionError
+            raise AssertionError("CFunctionProxyQueue.setProcFun can only be called from the main thread, not [%s]" % currThreadName)
         # field self.procFun is accessed only from main thread
         self.procFun = fun
         return True

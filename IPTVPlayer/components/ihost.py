@@ -233,12 +233,12 @@ class ArticleContent:
         "translation": "Translation:"
     }
 
-    def __init__(self, title='', text='', images=[], trailers=[], richDescParams={}, visualizer=None):
+    def __init__(self, title='', text='', images=None, trailers=None, richDescParams=None, visualizer=None):
         self.title = title
         self.text = text
-        self.images = images
-        self.trailers = trailers
-        self.richDescParams = richDescParams
+        self.images = images if images is not None else []
+        self.trailers = trailers if trailers is not None else []
+        self.richDescParams = richDescParams if richDescParams is not None else {}
         if None is visualizer:
             self.visualizer = ArticleContent.VISUALIZER_DEFAULT
         else:
@@ -959,7 +959,7 @@ class CBaseHostClass:
 
     def listsHistory(self, baseItem={'name': 'history', 'category': 'search'}, desc_key='plot', desc_base=None):
         if desc_base is None:
-            desc_base = _("Type: ")
+            desc_base = _("Type:") + " "
         list = self.history.getHistoryList()
         for histItem in list:
             plot = ''

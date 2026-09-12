@@ -51,7 +51,7 @@ def IsHlsLikeUrl(url):
     return False
 
 
-def DownloaderCreator(url):
+def DownloaderCreator(url, forDownload=False):
     printDBG("DownloaderCreator url[%r]" % url)
     downloader = None
     downloaderParams = {}
@@ -114,31 +114,20 @@ def DownloaderCreator(url):
         useFFmpeg = False
 
     printDBG("DownloaderCreator url[%s]" % url)
-    printDBG("DownloaderCreator iptv_proto[%s] iptv_use_ffmpeg[%s] iptv_ffmpeg_case[%s]" % (proto, useFFmpeg, ffmpegCase))
+    printDBG("DownloaderCreator iptv_proto[%s] iptv_use_ffmpeg[%s] iptv_ffmpeg_case[%s] forDownload[%s]" % (proto, useFFmpeg, ffmpegCase, forDownload))
     printDBG("DownloaderCreator downloaderParams[%s]" % downloaderParams)
-
-    #################################################
-    # IMPORTANT: If iptv_use_ffmpeg=True is set,
-    # then ALWAYS prefer FFMPEGDownloader,
-    # even for m3u8/HLS.
-    #################################################
-    if useFFmpeg or ffmpegCase in ['kinoger', 'pornslash']:
-        printDBG("DownloaderCreator: force FFMPEGDownloader by iptv_use_ffmpeg=True or iptv_ffmpeg_case[%s]" % ffmpegCase)
-        try:
-            return FFMPEGDownloader()
-        except Exception:
-            printExc()
-            downloader = None
 
     #################################################
     # merge:// with HLS/DASH components (separate
     # audio+video renditions, e.g. Arte CMAF, Apple
-    # bipbop) must be muxed with ffmpeg. HLSDownloader's
-    # "-a" alt-audio path only naively interleaves TS
-    # packets and yields an unplayable file for fMP4,
-    # and MergeDownloader wgets each component (fine for
-    # progressive URLs, wrong for .m3u8/.mpd playlists).
+    # bipbop) must be muxed with ffmpeg regardless of
+    # caller. HLSDownloader's "-a" alt-audio path only
+    # naively interleaves TS packets and yields an
+    # unplayable file for fMP4, and MergeDownloader wgets
+    # each component whole (fine for progressive URLs,
+    # wrong for .m3u8/.mpd playlists).
     #################################################
+    mergeNeedsFFmpeg = False
     try:
         if isinstance(url, str) and url.startswith('merge://'):
             compUrls = []
@@ -147,11 +136,53 @@ def DownloaderCreator(url):
                     compUrls.append(str(urlMeta.get(key, key)))
             except Exception:
                 printExc()
-            if any((IsHlsLikeUrl(u) or '.mpd' in u.lower()) for u in compUrls):
-                printDBG("DownloaderCreator: merge:// with HLS/DASH components -> FFMPEGDownloader")
-                return FFMPEGDownloader()
+            mergeNeedsFFmpeg = any((IsHlsLikeUrl(u) or '.mpd' in u.lower()) for u in compUrls)
     except Exception:
         printExc()
+
+    #################################################
+    # A real Download Manager download of a YouTube merge://
+    # (progressive audio+video, identified by the youtube_id
+    # meta key youtubeparser.py/urlparser.py always stamp on
+    # these URLs) prefers MergeDownloader over the
+    # iptv_use_ffmpeg force below: it has sidecar (.txt/.jpg)
+    # and MKV-chapter support FFMPEGDownloader lacks, plus its
+    # own hardened completeness check for exactly this case.
+    # iptv_use_ffmpeg on these URLs exists only to speed up
+    # buffered *playback* (progressive muxing instead of
+    # download-then-play) and must not steer a real download
+    # away from MergeDownloader too. Scoped to youtube_id (not
+    # merge:// in general) so other iptv_use_ffmpeg merge://
+    # users - e.g. ARTE's split CMAF/fMP4 renditions, which
+    # genuinely need ffmpeg for both playback and download -
+    # are untouched.
+    #################################################
+    if forDownload and proto == 'merge' and urlMeta.get('youtube_id') and not mergeNeedsFFmpeg:
+        printDBG("DownloaderCreator: real download of YouTube merge:// -> MergeDownloader")
+        try:
+            return MergeDownloader()
+        except Exception:
+            printExc()
+
+    #################################################
+    # IMPORTANT: If iptv_use_ffmpeg=True is set,
+    # then ALWAYS prefer FFMPEGDownloader,
+    # even for m3u8/HLS.
+    #################################################
+    if useFFmpeg or ffmpegCase in ['kinoger']:
+        printDBG("DownloaderCreator: force FFMPEGDownloader by iptv_use_ffmpeg=True or iptv_ffmpeg_case[%s]" % ffmpegCase)
+        try:
+            return FFMPEGDownloader()
+        except Exception:
+            printExc()
+            downloader = None
+
+    if mergeNeedsFFmpeg:
+        printDBG("DownloaderCreator: merge:// with HLS/DASH components -> FFMPEGDownloader")
+        try:
+            return FFMPEGDownloader()
+        except Exception:
+            printExc()
 
     #################################################
     # Default assignment by protocol

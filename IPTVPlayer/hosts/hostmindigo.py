@@ -279,7 +279,7 @@ class EPGProvider:
             if len(self.cache) > 100:
                 self.cache.popitem()
             self.cache[chId] = item
-        except:
+        except Exception:
             printExc()
             return None
         return item
@@ -392,7 +392,7 @@ class MindiGoHU(CBaseHostClass):
         try:
             from Plugins.Extensions.IPTVPlayer.epgproviders.porthu import EPGProvider as EPGProvider_porthu
             self.epgProvider_porthu = EPGProvider_porthu()
-        except:
+        except Exception:
             self.epgProvider_porthu = EPGProviderNone()
 
     def getFullIconUrl(self, url):
@@ -954,7 +954,7 @@ class MindiGoHU(CBaseHostClass):
                         data = json_loads(data)["errorMessage"]
                         if data:
                             SetIPTVPlayerLastHostError(data)
-                    except:
+                    except Exception:
                         pass
                     return []
                 data = json_loads(data)
@@ -973,7 +973,7 @@ class MindiGoHU(CBaseHostClass):
                                 data = json_loads(data)["errorMessage"]
                                 if data:
                                     SetIPTVPlayerLastHostError(data)
-                            except:
+                            except Exception:
                                 pass
                             return []
                         data = json_loads(data)
@@ -1132,7 +1132,7 @@ class MindiGoHU(CBaseHostClass):
             self.token = token.value
             self.getChannels()
             return True
-        except:
+        except Exception:
             printExc()
             self.sessionEx.open(MessageBox, _('Login failed.'), type=MessageBox.TYPE_ERROR, timeout=10)
         # self.userProducts = set()

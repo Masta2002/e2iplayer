@@ -60,7 +60,7 @@ def _getImageExtKey(images, role):
         for i in images:
             if i.get('role') == role:
                 return i['external_key']
-    except:
+    except Exception:
         pass
     return None
 
@@ -68,11 +68,11 @@ def _getImageExtKey(images, role):
 def _updateOtherInfo(otherInfo, item):
     try:
         otherInfo['duration'] = str(datetime.timedelta(seconds=item['duration']))
-    except:
+    except Exception:
         pass
     try:
         otherInfo['age_limit'] = str(item['csa']['sort_index'])
-    except:
+    except Exception:
         pass
 
 
@@ -483,7 +483,7 @@ class RtlMostHU(CBaseHostClass):
             cj.save(self.COOKIE_FILE)
             self.loggedIn = True
             return True
-        except:
+        except Exception:
            printExc()
            self.sessionEx.open(MessageBox, _('Login failed.'), type=MessageBox.TYPE_ERROR, timeout=10)
         return False

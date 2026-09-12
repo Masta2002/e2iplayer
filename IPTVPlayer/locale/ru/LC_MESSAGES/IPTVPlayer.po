@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-04 17:31+0200\n"
+"POT-Creation-Date: 2026-09-12 19:05+0000\n"
 "PO-Revision-Date: 2026-07-27 16:55+0200\n"
 "Last-Translator: Warder <ciksa@seznam.cz>\n"
 "Language-Team: \n"
@@ -128,10 +128,6 @@ msgid "%s returned %s: %s"
 msgstr "%s возвращены %s: %s"
 
 #, python-format
-msgid "%s said: This page is currently unavailable in your region"
-msgstr "%s заявил: Сейчас эта страница недоступна в вашем регионе"
-
-#, python-format
 msgid "%s services configuration"
 msgstr "%s конфигурация сервисов"
 
@@ -151,6 +147,13 @@ msgstr ""
 "%s использует \"геоблокирующие\" меры, чтобы предотвратить доступ к услугам из-за рубежа.\n"
 " Страна-хозяйка: %s, ваша страна: %s"
 
+msgid "(nothing here yet)"
+msgstr ""
+
+#, fuzzy
+msgid "(reading...)"
+msgstr "В тренде"
+
 msgid "++"
 msgstr "++"
 
@@ -168,6 +171,10 @@ msgstr "----- КОНФИГУРАЦИЯ БУФЕРИЗАЦИИ -----"
 
 msgid "----- CAPTCHA CONFIGURATION -----"
 msgstr "----- КОНФИГУРАЦИЯ CAPTCHA -----"
+
+#, fuzzy
+msgid "----- DEBUG CONFIGURATION -----"
+msgstr "----- КОНФИГУРАЦИЯ БУФЕРИЗАЦИИ -----"
 
 msgid "----- DOWNLOADING CONFIGURATION -----"
 msgstr "----- ЗАГРУЗКА КОНФИГУРАЦИИ -----"
@@ -226,9 +233,6 @@ msgstr "----------  Поиск \"%s\"  ----------"
 
 msgid "----------------- External exteplayer3 options -----------------"
 msgstr "----------------- Внешние exteplayer3 варианты -----------------"
-
-msgid "----------Other----------"
-msgstr "----- ДРУГИЕ НАСТРОЙКИ -----"
 
 msgid "--All Episodes--"
 msgstr "--Все Эпизоды--"
@@ -305,6 +309,9 @@ msgstr "ВНИМАНИЕ !"
 msgid "Aborted"
 msgstr "Отменено"
 
+msgid "About"
+msgstr ""
+
 msgid "Accept"
 msgstr "Принять"
 
@@ -317,6 +324,9 @@ msgstr "Доступ запрещен. Просим проверить паро�
 #, fuzzy
 msgid "Accessible"
 msgstr "Доступ запрещен"
+
+msgid "Action & Thriller"
+msgstr ""
 
 msgid "Active host"
 msgstr "Активный хост"
@@ -370,9 +380,6 @@ msgstr "Добавлено: %s, каталог: %s"
 msgid "Age limit:"
 msgstr "Возрастное ограничение:"
 
-msgid "Age-gate bypass:"
-msgstr "Обход возрастного барьера:"
-
 msgid "All"
 msgstr "Все"
 
@@ -405,6 +412,9 @@ msgstr "Допустимый VP9 кодек:"
 
 msgid "Allow dash format:"
 msgstr "Допустимый формат тире:"
+
+msgid "Allow external link-decryption service (enc-dec.app)"
+msgstr ""
 
 #, fuzzy
 msgid "Allow host to override suggestions provider"
@@ -505,9 +515,6 @@ msgstr "Вы уверены, что хотите удалить историю �
 msgid "Are you sure you want to remove file \"%s\"?"
 msgstr "Вы действительно хотите удалить файл \"%s\"?"
 
-msgid "Are you sure you want to reset all hosts in this group to defaults?"
-msgstr "Вы уверены, что хотите сбросить все хосты в этой группе к значениям по умолчанию?"
-
 msgid "Are you sure you want to reset all settings to their default values?"
 msgstr "Вы уверены, что хотите сбросить все настройки до значений по умолчанию?"
 
@@ -536,6 +543,10 @@ msgstr "Аудио дорожки"
 msgid "Auto"
 msgstr "Авто"
 
+#, python-format
+msgid "Auto refresh: %s"
+msgstr ""
+
 msgid "Auto selection based on the settings"
 msgstr "Автоматический выбор на основе настроек"
 
@@ -544,6 +555,10 @@ msgstr "Метод автоматического запуска"
 
 msgid "Auto-translate"
 msgstr "Авто-перевод"
+
+#, fuzzy
+msgid "Automatic"
+msgstr "Авто"
 
 msgid "Automatically turn on external subtitles"
 msgstr "Автовключение внешних субтитров"
@@ -572,6 +587,9 @@ msgstr "Базовая Наука"
 msgid "Best"
 msgstr "Лучшие"
 
+msgid "Binaries"
+msgstr ""
+
 #, fuzzy
 msgid "Bing Suggestions"
 msgstr "Google Предложения"
@@ -592,8 +610,14 @@ msgstr "Блок wmv файлов"
 msgid "Board Review"
 msgstr "Обзор совета директоров"
 
+msgid "Box"
+msgstr ""
+
 msgid "Broadcast:"
 msgstr "Трансляция:"
+
+msgid "Browse by genre"
+msgstr ""
 
 msgid "Browse videos"
 msgstr "Обзор видео"
@@ -693,6 +717,20 @@ msgstr "Кино фильмы"
 msgid "Clear"
 msgstr "Ясно"
 
+#, fuzzy
+msgid "Clear log"
+msgstr "Ясно"
+
+#, fuzzy, python-format
+msgid ""
+"Clear the debug log file?\n"
+"%s"
+msgstr "Удалить лог файл"
+
+#, fuzzy
+msgid "Clear the log file at plugin start"
+msgstr "Отключить прямой эфир при запуске плагина"
+
 msgid "Click"
 msgstr "Клик"
 
@@ -714,11 +752,22 @@ msgstr "Коллекции"
 msgid "Columbia"
 msgstr "Колумбия"
 
+msgid "Comedy"
+msgstr ""
+
 msgid "Commits"
 msgstr "Фиксации"
 
+#, fuzzy
+msgid "Competitions"
+msgstr "Коллекции"
+
 msgid "Concert"
 msgstr ""
+
+#, fuzzy
+msgid "Config"
+msgstr "Настроить %s"
 
 msgid "Configuration"
 msgstr "Конфигурация"
@@ -750,6 +799,10 @@ msgid "Connection to server failed!"
 msgstr "Подключение к серверу не прошло!"
 
 #, fuzzy
+msgid "Connection to the weeb.tv server failed."
+msgstr "Подключение к серверу не прошло!"
+
+#, fuzzy
 msgid "Content not available"
 msgstr "Полное описание недоступно"
 
@@ -762,11 +815,23 @@ msgstr "Копировать"
 msgid "Could not add the user link."
 msgstr "Не удалось добавить ссылку пользователя."
 
+#, fuzzy
+msgid "Could not start the YouTube sign-in."
+msgstr "Не удалось добавить ссылку пользователя."
+
+#, fuzzy
+msgid "Could not write the file."
+msgstr "Провал в записи этого файла \"%s\"."
+
 msgid "Countries"
 msgstr "Страны"
 
 msgid "Country"
 msgstr "Страна"
+
+#, fuzzy
+msgid "Country / store:"
+msgstr "Страна:"
 
 msgid "Country:"
 msgstr "Страна:"
@@ -839,6 +904,10 @@ msgstr "Отладочный файл не существует - нечего �
 
 msgid "Debug file has been deleted"
 msgstr "Файл отладки удалён"
+
+#, fuzzy
+msgid "Debug log"
+msgstr "Отчеты об ошибках"
 
 msgid "Debug logs"
 msgstr "Отчеты об ошибках"
@@ -1088,6 +1157,9 @@ msgstr "Загрузки"
 msgid "Downloads location"
 msgstr "Место загрузки"
 
+msgid "Drama"
+msgstr ""
+
 #, fuzzy
 msgid "DuckDuckGo Suggestions"
 msgstr "Google Предложения"
@@ -1240,7 +1312,6 @@ msgstr "Введите старый pin"
 msgid "Enter page number"
 msgstr "Введите номер страницы"
 
-#, python-brace-format
 msgid "Enter page number (MAX PAGE: {})"
 msgstr "Введите номер страницы (МАКС. СТРАНИЦА: {})"
 
@@ -1454,6 +1525,9 @@ msgstr "Группы избранного"
 msgid "Favorites manager"
 msgstr "Менеджер избранного"
 
+msgid "Featured"
+msgstr ""
+
 #, python-format
 msgid "File \"%s\" already exists"
 msgstr "Файл \"%s\" уже существует"
@@ -1465,9 +1539,17 @@ msgstr "Файл \"%s\" уже существует!"
 msgid "File Not Found."
 msgstr "Файл Не Найден."
 
+#, fuzzy, python-format
+msgid "File [%s] is already in the downloading queue."
+msgstr "Файл [%s] добавлен в очередь загрузки."
+
 #, python-format
 msgid "File [%s] was added to downloading queue."
 msgstr "Файл [%s] добавлен в очередь загрузки."
+
+#, fuzzy
+msgid "File can not be downloaded. Download manager is not available."
+msgstr "Файл не скачиваем. Протокол [%s] не поддерживается"
 
 #, python-format
 msgid "File can not be downloaded. Protocol [%s] is unsupported"
@@ -1492,6 +1574,9 @@ msgstr "Фильм"
 
 msgid "Filmweb Suggestions"
 msgstr "Filmweb Предложения"
+
+msgid "Find item"
+msgstr ""
 
 msgid "First Page"
 msgstr "Первая страница"
@@ -1615,6 +1700,9 @@ msgstr "Перейдите к конфигурации хоста, доступ�
 msgid "Google Suggestions"
 msgstr "Google Предложения"
 
+msgid "Google account"
+msgstr ""
+
 msgid "Graphic services selector"
 msgstr "Выбор графических сервисов"
 
@@ -1636,10 +1724,6 @@ msgstr "Групповые ссылки на категории:"
 msgid "Group with id[%s] not found."
 msgstr "Группа с id[%s] не найдена."
 
-#, python-format
-msgid "Guest timeout: %s"
-msgstr "Задержка пребывания: %s"
-
 msgid "HLS/m3u8"
 msgstr "HLS/m3u8"
 
@@ -1649,9 +1733,6 @@ msgstr "Ошибка HTTPS соединения \"%s\"\n"
 
 msgid "Hand"
 msgstr "Рука"
-
-msgid "Hardware floating point"
-msgstr "Аппаратная плавающая точка"
 
 msgid "Health"
 msgstr ""
@@ -1684,6 +1765,9 @@ msgstr "Главная"
 
 msgid "Home page"
 msgstr "Главная страница"
+
+msgid "Horror"
+msgstr ""
 
 #, python-format
 msgid "Hosting \"%s\" not supported."
@@ -1731,6 +1815,9 @@ msgstr "качество"
 
 msgid "Icons size"
 msgstr "Размер иконки"
+
+msgid "Image"
+msgstr ""
 
 msgid "Indian Movies"
 msgstr "Индийские фильмы"
@@ -1866,9 +1953,14 @@ msgstr ""
 msgid "Jump to a selected page"
 msgstr "Перейти на выбранную страницу"
 
-#, python-brace-format
 msgid "Jump to a selected page, max: {}"
 msgstr "Перейти на выбранную страницу, максимум: {}"
+
+msgid "Keep FFmpeg command files (.iptv.cmd)"
+msgstr ""
+
+msgid "Keep temporary JS scripts"
+msgstr ""
 
 msgid "Knee & Sports"
 msgstr "Колени & Спорт"
@@ -1937,8 +2029,14 @@ msgstr "Последние"
 msgid "Latest added"
 msgstr "Последние добавленные"
 
+msgid "Latest highlights"
+msgstr ""
+
 msgid "Latest update"
 msgstr "Последнее обновление"
+
+msgid "Latest videos from the channels you are subscribed to."
+msgstr ""
 
 msgid "Latino"
 msgstr "Латиноамериканец"
@@ -1951,6 +2049,10 @@ msgstr "Уровень:"
 
 msgid "Lightgray"
 msgstr "Светлосерий"
+
+#, fuzzy
+msgid "Liked videos"
+msgstr "Обзор видео"
 
 msgid "Line Spacing"
 msgstr "Межстрочный Интервал"
@@ -2034,6 +2136,10 @@ msgstr "Локальный ID не совпадает! %s <> %s"
 msgid "Localization"
 msgstr "Локализация"
 
+#, fuzzy
+msgid "Log"
+msgstr "Логи"
+
 msgid "Login"
 msgstr "Войти"
 
@@ -2095,12 +2201,12 @@ msgstr ""
 msgid "MENU=Options"
 msgstr "Варианты видео"
 
-msgid "MIPS Floating Point Architecture"
-msgstr "Архитектура MIPS с плавающей точкой"
-
 #, python-format
 msgid "MOVE: %s"
 msgstr "ХОД: %s"
+
+msgid "MOVING"
+msgstr ""
 
 msgid "Main"
 msgstr "Главная"
@@ -2118,6 +2224,10 @@ msgstr "Статус менеджера:"
 msgid "Masrahyat"
 msgstr "Масрахят"
 
+#, fuzzy
+msgid "Matching entries"
+msgstr "Услуги по решению капчи"
+
 #, python-format
 msgid "Max connections: %s"
 msgstr "Максимальное количество подключений: %s"
@@ -2127,6 +2237,10 @@ msgstr "Макс число тем на странице"
 
 msgid "Max number of parallel downloads has been reached."
 msgstr "Макс число параллельных загрузок исчерпано."
+
+#, fuzzy
+msgid "Maximum log file size"
+msgstr "Показать размер файла"
 
 msgid "Medtryx Marketing"
 msgstr "Medtryx Маркетинг"
@@ -2142,6 +2256,9 @@ msgstr "Пропущенный"
 
 msgid "Missed the show?"
 msgstr "Пропустили шоу?"
+
+msgid "Missing API key - set it in Settings, Web streams, Windy Webcams"
+msgstr ""
 
 msgid "More"
 msgstr "Больше"
@@ -2228,6 +2345,10 @@ msgstr "Мой J-Загрузчик reCAPTCHA v2 решение"
 
 msgid "My list"
 msgstr "Мой список"
+
+#, fuzzy
+msgid "My subscriptions"
+msgstr "Описание:"
 
 msgid "MyE2i Cloudflare solution"
 msgstr "Решение MyE2i Cloudflare"
@@ -2357,6 +2478,9 @@ msgstr ""
 msgid "Nothing has been downloaded yet."
 msgstr "Ещё ничего не загружено."
 
+msgid "Nothing to save - the debug log is not active."
+msgstr ""
+
 #, fuzzy
 msgid "Now"
 msgstr "Нет"
@@ -2370,6 +2494,10 @@ msgstr "Количество одновременно скачанных фай�
 #, python-format
 msgid "Number of items in search history: %d"
 msgstr "Количество элементов в истории поиска: %d"
+
+#, fuzzy
+msgid "Number of rotated files to keep"
+msgstr "Количество одновременно скачанных файлов"
 
 msgid "Number of rows"
 msgstr "Количество строк"
@@ -2434,9 +2562,6 @@ msgstr "В ОЖИДАНИИ"
 
 msgid "PLAY"
 msgstr ""
-
-msgid "PORT"
-msgstr "ПОРТ"
 
 msgid "PREVIOUS/NEXT"
 msgstr ""
@@ -2593,17 +2718,11 @@ msgstr "Презентация Powerpoint"
 msgid "Practice Management"
 msgstr "Практика управления"
 
-msgid "Prefer hlsld for playlist with alt. media"
-msgstr "Предпочитать hlsld для плейлиста с альтернативными медиа"
-
 msgid "Prefered format"
 msgstr "Желаемый формат"
 
 msgid "Prefered quality"
 msgstr "Желаемое качество"
-
-msgid "Preferred quality"
-msgstr "Предпочтительное качество"
 
 msgid "Preferred streaming protocol"
 msgstr "Желаемый протокол потока"
@@ -2653,17 +2772,14 @@ msgstr "Программы"
 msgid "Promote item"
 msgstr "Продвижение пункта"
 
-msgid "Protocol:"
-msgstr "Протокол:"
-
 msgid "Published"
 msgstr "Опубликовано"
 
+msgid "Python modules"
+msgstr ""
+
 msgid "Quality:"
 msgstr "Качество:"
-
-msgid "RADIO"
-msgstr "РАДИО"
 
 msgid "RAM buffer size [MB] for local files"
 msgstr "RAM размер буфера [MB] для локальных файлов"
@@ -2723,6 +2839,9 @@ msgstr "Рейтинг %s"
 
 msgid "Rating:"
 msgstr "Рейтинг:"
+
+msgid "Reading binaries..."
+msgstr ""
 
 msgid "Recon"
 msgstr "Recon"
@@ -2796,8 +2915,12 @@ msgstr "Переименовать файл"
 msgid "Reset State"
 msgstr "Состояние Cброса"
 
-msgid "Reset group"
-msgstr "Сбросить группу"
+msgid "Reset this list to its default layout?"
+msgstr ""
+
+#, fuzzy
+msgid "Reset to defaults"
+msgstr "Состояние Cброса"
 
 msgid "Reset to saved order"
 msgstr ""
@@ -2833,6 +2956,10 @@ msgstr ""
 msgid "Right"
 msgstr ""
 
+#, fuzzy
+msgid "Romance"
+msgstr "Актуальность"
+
 msgid "Russian"
 msgstr "Русский"
 
@@ -2851,14 +2978,26 @@ msgstr "НАЧАТЫЙ"
 msgid "STOPPED"
 msgstr "ОСТАНОВЛЕН"
 
+msgid "Safe search (restricted mode):"
+msgstr ""
+
 msgid "Save"
 msgstr "Сохранить"
 
 msgid "Save changes?"
 msgstr "Сохранить изменения?"
 
+#, python-format
+msgid ""
+"Saved to:\n"
+"%s"
+msgstr ""
+
 msgid "Schedule"
 msgstr "Расписание"
+
+msgid "Sci-Fi & Fantasy"
+msgstr ""
 
 msgid "Science"
 msgstr "Наука"
@@ -2918,6 +3057,10 @@ msgid "Search only in TV Series"
 msgstr "Поиск только в ТВ Сериалах"
 
 msgid "Search results"
+msgstr "Результаты поиска"
+
+#, fuzzy
+msgid "Search results region:"
 msgstr "Результаты поиска"
 
 msgid "Search type"
@@ -3025,6 +3168,9 @@ msgstr "Выбор"
 
 msgid "Send"
 msgstr "Отправить"
+
+msgid "Send data to enc-dec.app on every link resolve?"
+msgstr ""
 
 msgid "Series"
 msgstr "Серии"
@@ -3157,6 +3303,15 @@ msgstr "Шоу"
 msgid "Shows A-Z"
 msgstr "Шоу"
 
+msgid "Sign-in was not completed."
+msgstr ""
+
+msgid "Signed in to YouTube."
+msgstr ""
+
+msgid "Signed out of YouTube."
+msgstr ""
+
 msgid "Simple list"
 msgstr "Простой список"
 
@@ -3180,9 +3335,6 @@ msgstr ""
 
 msgid "Software decoding as"
 msgstr "Программное декодирование как"
-
-msgid "Software floating point"
-msgstr "ПО с плавающей точкой"
 
 msgid "Some changes will be applied only after movie player restart."
 msgstr "Внесение некоторых изменений произойдет только после перезапуска плеера."
@@ -3279,6 +3431,9 @@ msgstr "Стоп просмотра с сохранением буфера"
 
 msgid "Stop playing?"
 msgstr "Остановить просмотр?"
+
+msgid "Storage"
+msgstr ""
 
 msgid "Streamed"
 msgstr "Транслировалось"
@@ -3446,9 +3601,6 @@ msgstr ""
 msgid "TMDb Rating:"
 msgstr "Рейтинг TMDb:"
 
-msgid "TV"
-msgstr "ТВ"
-
 msgid "TV Series"
 msgstr "ТВ Сериалы"
 
@@ -3467,6 +3619,13 @@ msgstr "Телесериалы"
 msgid "Techniques"
 msgstr "Методы"
 
+msgid "Temp"
+msgstr ""
+
+#, fuzzy
+msgid "Testers:"
+msgstr "Сценаристы:"
+
 #, fuzzy
 msgid "Text field alignment"
 msgstr "Задать имя файла"
@@ -3477,6 +3636,14 @@ msgstr "Текстовые файлы ytlist и urllist находятся в:"
 #, python-format
 msgid "The %s utility is necessary here but it was not detected."
 msgstr "Здесь нужна %s утилита, однако её не обнаружили."
+
+msgid ""
+"The 7reels / cineb resolvers 'VidEasy', 'VidCore/VidFast', 'VidLink' and 'Peachify' cannot decrypt their links on the receiver.\n"
+"\n"
+"With this option ON, every time you open one of them E2iPlayer sends the site's encrypted stream token - which contains the TMDb id of the movie or episode you are opening - to the third-party web service enc-dec.app (operated by a private individual). That server then sees the id and your IP address on each play. Nothing else is transmitted, and it is only used for these four resolvers.\n"
+"\n"
+"Leave this OFF if you do not want that. The other resolvers (AdRock/vidrock, VidNest, ...) are not affected."
+msgstr ""
 
 msgid "The YouTube video ID is invalid."
 msgstr "YouTube видео ID недействителен."
@@ -3493,6 +3660,24 @@ msgstr "Цвет отображаемого ресурса"
 
 msgid "The color of the viewed item"
 msgstr "Цвет отображаемого ресурса"
+
+msgid "The connection limit for your weeb.tv account has been reached."
+msgstr ""
+
+#, python-format
+msgid ""
+"The debug log file is empty:\n"
+"%s"
+msgstr ""
+
+msgid ""
+"The debug log is disabled or set to console output.\n"
+"\n"
+"Enable it in the E2iPlayer configuration (Debug -> log to file) and reproduce the problem, then come back here."
+msgstr ""
+
+msgid "The debug log is not active."
+msgstr ""
 
 msgid "The default aspect ratio for the external player"
 msgstr "Пропорции по умолчанию для внешнего проигрывателя"
@@ -3563,10 +3748,32 @@ msgid "There is no hosts in this group."
 msgstr "В этой группе нет хостов."
 
 #, fuzzy
+msgid "This channel does not exist."
+msgstr "Каталог \"%s\" не существует."
+
+#, fuzzy
+msgid "This channel is currently offline."
+msgstr "Эта модель недоступна."
+
+#, fuzzy
+msgid "This channel is not available in your country (geo-blocking)."
+msgstr "%s заявил: Сейчас эта страница недоступна в вашем регионе"
+
+#, fuzzy
+msgid "This channel is temporarily unavailable. Please try again later."
+msgstr "Это шоу закрытое. Попробуйте еще раз позже!"
+
+msgid "This channel requires a premium account, or the free connection limit has been reached. Enter your weeb.tv login data in the host configuration."
+msgstr ""
+
+#, fuzzy
 msgid "This content is not available in your region."
 msgstr "%s заявил: Сейчас эта страница недоступна в вашем регионе"
 
 msgid "This content is only available in Switzerland."
+msgstr ""
+
+msgid "This feed is empty, or the YouTube sign-in has expired - sign out and in again."
 msgstr ""
 
 msgid "This host has been added already to this group."
@@ -3590,11 +3797,28 @@ msgstr "Это видео является личным."
 msgid "This video is a private."
 msgstr "Это частное видео."
 
+msgid "This video requires you to sign in to a YouTube account."
+msgstr ""
+
 msgid "Tip! You can connect USB flash drive to fix this problem."
 msgstr "Совет! Можно подключить USB для устранения этой проблемы."
 
 msgid "Title:"
 msgstr "Заголовок:"
+
+#, python-format
+msgid ""
+"To sign in to YouTube:\n"
+"\n"
+"1. On a phone or computer open:\n"
+"     %s\n"
+"\n"
+"2. Enter this code:\n"
+"\n"
+"     %s\n"
+"\n"
+"3. Approve the access, then select OK here."
+msgstr ""
 
 msgid ""
 "To watch videos from https://vk.com/ you need to login.\n"
@@ -3608,6 +3832,12 @@ msgstr "Сегодня"
 
 msgid "Top"
 msgstr "Сверху"
+
+msgid "Top IMDb"
+msgstr ""
+
+msgid "Top in your country"
+msgstr ""
 
 msgid "Top rated"
 msgstr "Лучшие по рейтингу"
@@ -3645,6 +3875,10 @@ msgstr "Тренд"
 msgid "Trending"
 msgstr "В тренде"
 
+#, fuzzy
+msgid "Trending this week"
+msgstr "В тренде"
+
 msgid "Try to change extplayer or disable IFD in GSTplayer configuration"
 msgstr "Попробуйте изменить extplayer или отключить IFD в конфигурации GSTplayer"
 
@@ -3657,17 +3891,11 @@ msgstr "Турецкие сериалы"
 msgid "Turkish TV series"
 msgstr "Турецкие сериалы"
 
-msgid "Turn off buffering for http://prognoza.pogody.tv/"
-msgstr "Отключение буферизации для http://prognoza.pogody.tv/"
-
 msgid "Tutorials"
 msgstr "Учебники"
 
 msgid "Type:"
 msgstr "Тип:"
-
-msgid "Type: "
-msgstr "Тип: "
 
 #, python-format
 msgid "Type: %s"
@@ -3727,6 +3955,10 @@ msgstr "Не установлено просмотрено"
 msgid "Unzip error code[%s]."
 msgstr "Unzip код ошибки[%s]."
 
+#, fuzzy
+msgid "Updates"
+msgstr "Дата загрузки"
+
 msgid "Upload date"
 msgstr "Дата загрузки"
 
@@ -3735,9 +3967,6 @@ msgstr "СписокUrl плеера"
 
 msgid "Use HLS streams (adaptive):"
 msgstr ""
-
-msgid "Use Polish proxy for http://prognoza.pogody.tv/"
-msgstr "Использовать Польский прокси для http://prognoza.pogody.tv/"
 
 msgid "Use colors"
 msgstr "Используйте цвета"
@@ -3753,9 +3982,6 @@ msgstr "Использовать кэш ссылок"
 
 msgid "Use login"
 msgstr "Использовать логин"
-
-msgid "Use preferred quality"
-msgstr "Желаемое качество"
 
 msgid "Use proxy server:"
 msgstr "Использовать прокси-сервер:"
@@ -3828,9 +4054,6 @@ msgstr "Видео"
 msgid "Video buffer size [MB]"
 msgstr "Размер видеобуфера [МБ]"
 
-msgid "Video format:"
-msgstr "Видео формат:"
-
 msgid "Video mode"
 msgstr "Видео режим"
 
@@ -3856,6 +4079,12 @@ msgstr "Видео"
 #, python-format
 msgid "Videos count: %s"
 msgstr "Число видео: %s"
+
+msgid "Videos you have liked."
+msgstr ""
+
+msgid "Videos you have recently watched."
+msgstr ""
 
 msgid "View count"
 msgstr "Количество просмотров"
@@ -3888,6 +4117,14 @@ msgstr "Смотреть"
 msgid "Watch Videos Online"
 msgstr "Просмотр Онлайн Видео"
 
+#, fuzzy
+msgid "Watch history"
+msgstr "История поиска"
+
+#, fuzzy
+msgid "Watch later"
+msgstr "Смотреть"
+
 msgid "Web component has been reset and all threads are stopped. :)"
 msgstr "Веб-компонент был сброшен, и все потоки остановлены. :)"
 
@@ -3896,6 +4133,9 @@ msgstr "Web компонент был сброшен, следующие пот�
 
 msgid "Web interface version"
 msgstr "Web интерфейс версия"
+
+msgid "When the maximum is reached"
+msgstr ""
 
 msgid "Whole file must be downloaded to start playback!"
 msgstr "Для начала просмотра нужно загрузить весь файл целиком!"
@@ -3935,6 +4175,9 @@ msgstr "Не те индексы."
 
 msgid "Wrong uri."
 msgstr "Не тот uri."
+
+msgid "Wrong weeb.tv username or password."
+msgstr ""
 
 msgid "Xtream Live Stream"
 msgstr "Xtream Прямая трансляция"
@@ -4007,6 +4250,9 @@ msgstr "Запрещается выполнять операции ввода/в
 msgid "YouTube User Links Editor"
 msgstr "Редактор ссылок пользователей YouTube"
 
+msgid "Your 'Watch later' playlist."
+msgstr ""
+
 msgid "Your search entry"
 msgstr "Запись поиска"
 
@@ -4078,9 +4324,6 @@ msgstr "авто"
 msgid "available until %s"
 msgstr ""
 
-msgid "average"
-msgstr "средний"
-
 msgid "black"
 msgstr "черный"
 
@@ -4106,6 +4349,9 @@ msgstr "Сохранить изменения?"
 msgid "cobalt"
 msgstr "кобальт"
 
+msgid "could not run the probe"
+msgstr ""
+
 msgid "default"
 msgstr "по умолчанию"
 
@@ -4124,6 +4370,9 @@ msgstr "внешний eplayer3"
 msgid "external gstplayer"
 msgstr "внешний gstplayer"
 
+msgid "file"
+msgstr ""
+
 msgid "first check if host works properly in GUI and web <b>BEFORE</b> reporting error in it !!!"
 msgstr "сперва проверьте корректность работы хоста в GUI и web <b>ДО</b> сообщения об ошибке в нем !!!"
 
@@ -4132,6 +4381,9 @@ msgstr ""
 
 msgid "format"
 msgstr "формат"
+
+msgid "free"
+msgstr ""
 
 msgid "from E2 settings"
 msgstr "из E2 параметров"
@@ -4175,11 +4427,21 @@ msgstr "https источник"
 msgid "https - validate SSL certificates"
 msgstr "https - проверка SSL сертификатов"
 
+#, fuzzy
+msgid "import failed"
+msgstr "Не удалось отредактировать."
+
+msgid "installed"
+msgstr ""
+
 msgid "internal"
 msgstr "внутренние"
 
 msgid "jersey"
 msgstr "джерси"
+
+msgid "kernel reports"
+msgstr ""
 
 msgid "large"
 msgstr "большой"
@@ -4192,6 +4454,9 @@ msgstr "лайм"
 
 msgid "line"
 msgstr "линия"
+
+msgid "loaded (no version)"
+msgstr ""
 
 msgid "login"
 msgstr "логин"
@@ -4214,11 +4479,31 @@ msgstr "средний"
 msgid "navy"
 msgstr "морской"
 
+msgid "not found"
+msgstr ""
+
+msgid "not installed"
+msgstr ""
+
+msgid "off"
+msgstr ""
+
+#, fuzzy
+msgid "off / console"
+msgstr "Да, для утешения"
+
 msgid "olive"
 msgstr "оливковый"
 
+#, fuzzy
+msgid "on"
+msgstr "Нет"
+
 msgid "or"
 msgstr "или"
+
+msgid "other binaries"
+msgstr ""
 
 msgid "password"
 msgstr "пароль"
@@ -4235,17 +4520,37 @@ msgstr "красный"
 msgid "rootfs"
 msgstr "rootfs"
 
+msgid "rotate (keep the old one as iptv-<date>.dbg)"
+msgstr ""
+
 msgid "rtmp"
 msgstr "ртмп"
 
 msgid "saved"
 msgstr ""
 
+msgid "saved in the temporary data folder"
+msgstr ""
+
+#, fuzzy
+msgid "saved next to the downloaded video file"
+msgstr "Добавить название канала к загруженному файлу"
+
 msgid "second"
 msgstr "секунда"
 
 msgid "seconds"
 msgstr "секунд"
+
+#, fuzzy
+msgid "select to sign out"
+msgstr "Выбрать группу"
+
+msgid "sign in (subscriptions, playlists, age-restricted videos)"
+msgstr ""
+
+msgid "signed in"
+msgstr ""
 
 msgid "silver"
 msgstr "cеребристый"
@@ -4255,6 +4560,10 @@ msgstr "маленький"
 
 msgid "standard"
 msgstr "стандарт"
+
+#, fuzzy
+msgid "status"
+msgstr "Статус:"
 
 msgid "teal"
 msgstr "аквамарин"
@@ -4271,12 +4580,22 @@ msgstr ""
 msgid "top"
 msgstr "вверх"
 
+#, fuzzy
+msgid "truncate the file"
+msgstr "Выбрать файл"
+
 msgid "unknown"
 msgstr "неизвестно"
+
+msgid "unlimited"
+msgstr ""
 
 #, fuzzy
 msgid "unsorted"
 msgstr "Отменено"
+
+msgid "upzone.cc: free transfer limit reached - PREMIUM account required."
+msgstr ""
 
 msgid "version"
 msgstr "версия"
@@ -4304,6 +4623,13 @@ msgstr "подождите %s секунд"
 #, python-format
 msgid "wait %s seconds"
 msgstr "подождите %s секунды"
+
+#, python-format
+msgid "weeb.tv did not return a valid stream (error %s)."
+msgstr ""
+
+msgid "weeb.tv did not return a valid stream for this channel."
+msgstr ""
 
 msgid "white"
 msgstr "белый"

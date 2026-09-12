@@ -764,6 +764,17 @@ def _debugCfg(name, default):
         return default
 
 
+def KeepDebugArtifact(configName):
+    """True when debug logging is enabled AND the given per-artifact
+    'keep debug files' toggle (config.plugins.iptvplayer.<configName>) is on.
+    Used by call sites that leave a helper file (e.g. an .iptv.cmd, a
+    temporary JS script) on disk for troubleshooting instead of deleting it
+    right away."""
+    if getDebugMode() == '':
+        return False
+    return _debugCfg(configName, True)
+
+
 def _rotatedGlob(path):
     base, ext = os.path.splitext(path)
     try:
@@ -827,7 +838,8 @@ def _enforceDebugLogLimit(path):
                 except Exception:
                     pass
         else:
-            open(path, 'w').close()
+            with open(path, 'w'):
+                pass
     except Exception:
         pass
 
@@ -1557,7 +1569,7 @@ class CSearchHistoryHelper():
             if os.path.isfile(self.PATH_FILE):
                 os.remove(self.PATH_FILE)
                 msg = 0, _('Search History successfully deleted.')
-        except:
+        except Exception:
             pass
         return msg
 
@@ -1566,13 +1578,9 @@ class CSearchHistoryHelper():
             self.length = 0
             if os.path.isfile(self.PATH_FILE):
                 try:
-                    num = 0
-                    file = codecs.open(GetSearchHistoryDir("ytlist.txt"), 'r', 'utf-8', 'ignore')
-                    for line in file:
-                        num = num + 1
-                    file.close()
-                    self.length = num
-                except:
+                    with codecs.open(GetSearchHistoryDir("ytlist.txt"), 'r', 'utf-8', 'ignore') as file:
+                        self.length = sum(1 for _line in file)
+                except Exception:
                     pass
 
         if self.length:
@@ -2236,7 +2244,8 @@ def readCFG(cfgName, defVal=''):
         if os.path.exists(myPath):
             cfgPath = os.path.join(myPath, cfgName)
             if os.path.exists(cfgPath):
-                retVal = open(cfgPath, 'r').readline().strip()
+                with open(cfgPath, 'r') as f:
+                    retVal = f.readline().strip()
                 if retVal == 'True':
                     retVal = True
                 elif retVal == 'False':
@@ -2248,7 +2257,8 @@ def readCFG(cfgName, defVal=''):
                         line = line.strip()
                         if line.startswith('config.plugins.iptvplayer.%s=' % cfgName):
                             defVal = line.split('=')[1]
-                            open(cfgPath, 'w').write(defVal)
+                            with open(cfgPath, 'w') as fOut:
+                                fOut.write(defVal)
     return defVal
 
 

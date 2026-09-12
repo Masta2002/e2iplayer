@@ -12,16 +12,18 @@ jobs:
     name: Build
     runs-on: ubuntu-24.04
     strategy:
+      fail-fast: false
       matrix:
-        python: ['3.10','3.11','3.12','3.13']
+        python: ['3.10','3.11','3.12','3.13','3.14']
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
+          allow-prereleases: true
 
       - name: Build plugins, python ${{ matrix.python }}
         run: |

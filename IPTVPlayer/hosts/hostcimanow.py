@@ -853,7 +853,7 @@ class CimaNow(CBaseHostClass):
             season_num = re.search(r'(\d+)', season_title)
             try:
                 season_num = int(season_num.group(1)) if season_num else 0
-            except:
+            except Exception:
                 season_num = 0
 
             # --- Combine full title ---

@@ -75,7 +75,7 @@ class TVJWORG(CBaseHostClass):
             elif not url.startswith('http'):
                 url = baseUrl + url
         if not baseUrl.startswith('https://'):
-            url = url.replace('https://', 'http://')
+            url = url.replace('https://', 'http://')  # NOSONAR - deliberate scheme match to a non-https MAIN_URL
         return url
 
     def cleanHtmlStr(self, data):

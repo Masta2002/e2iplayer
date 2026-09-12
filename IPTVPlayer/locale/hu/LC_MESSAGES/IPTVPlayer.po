@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-04 17:31+0200\n"
+"POT-Creation-Date: 2026-09-12 19:05+0000\n"
 "PO-Revision-Date: 2026-07-27 16:49+0200\n"
 "Last-Translator: Warder <ciksa@seznam.cz>\n"
 "Language-Team: \n"
@@ -128,10 +128,6 @@ msgid "%s returned %s: %s"
 msgstr "%s visszaadott %s: %s"
 
 #, python-format
-msgid "%s said: This page is currently unavailable in your region"
-msgstr "%s azt írta: Ez az oldal jelenleg nem érhető el az Ön régiójában"
-
-#, python-format
 msgid "%s services configuration"
 msgstr "%s szolgáltatások konfigurációja"
 
@@ -151,6 +147,13 @@ msgstr ""
 "A(z) %s \"geo-blokkoló\" intézkedéseket alkalmaz annak megakadályozására, hogy külföldi szolgáltatásokhoz férjen hozzá.\n"
 "Fogadó ország: %s, az Ön országa: %s"
 
+msgid "(nothing here yet)"
+msgstr ""
+
+#, fuzzy
+msgid "(reading...)"
+msgstr "Felkapott"
+
 msgid "++"
 msgstr "++"
 
@@ -168,6 +171,10 @@ msgstr "----- PUFFER KONFIGURÁCIÓ -----"
 
 msgid "----- CAPTCHA CONFIGURATION -----"
 msgstr "----- CAPTCHA KONFIGURÁCIÓ -----"
+
+#, fuzzy
+msgid "----- DEBUG CONFIGURATION -----"
+msgstr "----- PUFFER KONFIGURÁCIÓ -----"
 
 msgid "----- DOWNLOADING CONFIGURATION -----"
 msgstr "----- KONFIGURÁCIÓ LETÖLTÉSE -----"
@@ -226,9 +233,6 @@ msgstr "----------  \"%s\" keresése  ----------"
 
 msgid "----------------- External exteplayer3 options -----------------"
 msgstr "------------------- Külső exteplayer3 opciók -----------------"
-
-msgid "----------Other----------"
-msgstr "- Egyéb források"
 
 msgid "--All Episodes--"
 msgstr "--Összes epizód--"
@@ -305,6 +309,9 @@ msgstr "FIGYELEM!"
 msgid "Aborted"
 msgstr "MEGSZAKÍTVA"
 
+msgid "About"
+msgstr ""
+
 msgid "Accept"
 msgstr "Elfogadás"
 
@@ -317,6 +324,9 @@ msgstr "Hozzáférés megtagadva. Kérjük, ellenőrizze a jelszót."
 #, fuzzy
 msgid "Accessible"
 msgstr "Hozzáférés tiltva"
+
+msgid "Action & Thriller"
+msgstr ""
 
 msgid "Active host"
 msgstr "Aktív host"
@@ -370,9 +380,6 @@ msgstr "Hozzáadta: %s, könyvtár: %s"
 msgid "Age limit:"
 msgstr "Korhatár:"
 
-msgid "Age-gate bypass:"
-msgstr "Korhatár-besorolás megkerülése:"
-
 msgid "All"
 msgstr "Összes"
 
@@ -405,6 +412,9 @@ msgstr "VP9 kodek engedélyezése:"
 
 msgid "Allow dash format:"
 msgstr "Kötőjel formátum engedélyezése:"
+
+msgid "Allow external link-decryption service (enc-dec.app)"
+msgstr ""
 
 #, fuzzy
 msgid "Allow host to override suggestions provider"
@@ -505,9 +515,6 @@ msgstr "Biztosan törölni szeretnéd a keresési előzményeket?"
 msgid "Are you sure you want to remove file \"%s\"?"
 msgstr "Biztosan eltávolítja a(z) „%s” fájlt?"
 
-msgid "Are you sure you want to reset all hosts in this group to defaults?"
-msgstr "Biztosan vissza szeretné állítani a csoport összes gazdagépét az alapértelmezett beállításokra?"
-
 msgid "Are you sure you want to reset all settings to their default values?"
 msgstr "Biztosan vissza szeretné állítani az összes beállítást az alapértelmezett értékekre?"
 
@@ -536,6 +543,10 @@ msgstr "Hangsávok"
 msgid "Auto"
 msgstr "Automatikus"
 
+#, python-format
+msgid "Auto refresh: %s"
+msgstr ""
+
 msgid "Auto selection based on the settings"
 msgstr "Automatikus kiválasztás a beállítások alapján"
 
@@ -544,6 +555,10 @@ msgstr "Automatikus indítási módszer"
 
 msgid "Auto-translate"
 msgstr "Automatikus fordítás"
+
+#, fuzzy
+msgid "Automatic"
+msgstr "Automatikus"
 
 msgid "Automatically turn on external subtitles"
 msgstr "Automatikusan kapcsolja be a külső feliratokat"
@@ -572,6 +587,9 @@ msgstr "Alaptudomány"
 msgid "Best"
 msgstr "Legjobb"
 
+msgid "Binaries"
+msgstr ""
+
 #, fuzzy
 msgid "Bing Suggestions"
 msgstr "Google-javaslatok"
@@ -592,9 +610,15 @@ msgstr "Wmv fájlok blokkolása"
 msgid "Board Review"
 msgstr "Igazgatótanácsi felülvizsgálat"
 
+msgid "Box"
+msgstr ""
+
 # GPT: A „Broadcast” lehet „közvetítés” (műsor/stream) vagy „szórás” (rádiós/technikai értelemben); itt címkeként a legvalószínűbb UI-jelentésű „Közvetítés:”-t választottam.
 msgid "Broadcast:"
 msgstr "Közvetítés:"
+
+msgid "Browse by genre"
+msgstr ""
 
 msgid "Browse videos"
 msgstr "Videók böngészése"
@@ -695,6 +719,20 @@ msgstr "Mozifilmek"
 msgid "Clear"
 msgstr "Derült"
 
+#, fuzzy
+msgid "Clear log"
+msgstr "Derült"
+
+#, fuzzy, python-format
+msgid ""
+"Clear the debug log file?\n"
+"%s"
+msgstr "Naplófájl törlése"
+
+#, fuzzy
+msgid "Clear the log file at plugin start"
+msgstr "Élő megjelenítés letiltása a bővítmény indításakor"
+
 msgid "Click"
 msgstr "Kattintás"
 
@@ -716,11 +754,22 @@ msgstr "Kiszerelések"
 msgid "Columbia"
 msgstr "Kolumbia"
 
+msgid "Comedy"
+msgstr ""
+
 msgid "Commits"
 msgstr "Commits"
 
+#, fuzzy
+msgid "Competitions"
+msgstr "Kiszerelések"
+
 msgid "Concert"
 msgstr ""
+
+#, fuzzy
+msgid "Config"
+msgstr "%s konfigurálása"
 
 msgid "Configuration"
 msgstr "Konfiguráció"
@@ -752,6 +801,10 @@ msgid "Connection to server failed!"
 msgstr "Kapcsolódás a szerverhez sikertelen!"
 
 #, fuzzy
+msgid "Connection to the weeb.tv server failed."
+msgstr "Kapcsolódás a szerverhez sikertelen!"
+
+#, fuzzy
 msgid "Content not available"
 msgstr "A teljes leírás nem érhető el"
 
@@ -764,11 +817,23 @@ msgstr "Másolás"
 msgid "Could not add the user link."
 msgstr "Nem sikerült hozzáadni a felhasználói hivatkozást."
 
+#, fuzzy
+msgid "Could not start the YouTube sign-in."
+msgstr "Nem sikerült hozzáadni a felhasználói hivatkozást."
+
+#, fuzzy
+msgid "Could not write the file."
+msgstr "Hiba a \"%s\" fájl írása közben."
+
 msgid "Countries"
 msgstr "Országok"
 
 msgid "Country"
 msgstr "Ország"
+
+#, fuzzy
+msgid "Country / store:"
+msgstr "Ország:"
 
 msgid "Country:"
 msgstr "Ország:"
@@ -841,6 +906,10 @@ msgstr "A hibakeresési fájl nem létezik - semmit sem kell letölteni"
 
 msgid "Debug file has been deleted"
 msgstr "A hibakereső fájl törölve lett"
+
+#, fuzzy
+msgid "Debug log"
+msgstr "Hibakeresési naplók"
 
 msgid "Debug logs"
 msgstr "Hibakeresési naplók"
@@ -1090,6 +1159,9 @@ msgstr "Letöltések"
 msgid "Downloads location"
 msgstr "Letöltések helye"
 
+msgid "Drama"
+msgstr ""
+
 #, fuzzy
 msgid "DuckDuckGo Suggestions"
 msgstr "Google-javaslatok"
@@ -1242,7 +1314,6 @@ msgstr "Írja be a régi PIN-kódot"
 msgid "Enter page number"
 msgstr "Adja meg az oldalszámot"
 
-#, python-brace-format
 msgid "Enter page number (MAX PAGE: {})"
 msgstr "Adja meg az oldalszámot (MAX. OLDAL: {})"
 
@@ -1456,6 +1527,9 @@ msgstr "Kedvencek csoportjai"
 msgid "Favorites manager"
 msgstr "Kedvencek kezelője"
 
+msgid "Featured"
+msgstr ""
+
 #, python-format
 msgid "File \"%s\" already exists"
 msgstr "A(z) \"%s\" fájl már létezik"
@@ -1467,9 +1541,17 @@ msgstr "\"%s\" fájl már létezik!"
 msgid "File Not Found."
 msgstr "Lejátszási lista fájl nem található."
 
+#, fuzzy, python-format
+msgid "File [%s] is already in the downloading queue."
+msgstr "A(z) [%s] fájl hozzáadva a letöltési sorhoz."
+
 #, python-format
 msgid "File [%s] was added to downloading queue."
 msgstr "A(z) [%s] fájl hozzáadva a letöltési sorhoz."
+
+#, fuzzy
+msgid "File can not be downloaded. Download manager is not available."
+msgstr "Letöltés sikertelen. A [%s] protokoll nem támogatott"
 
 #, python-format
 msgid "File can not be downloaded. Protocol [%s] is unsupported"
@@ -1494,6 +1576,9 @@ msgstr "Film"
 
 msgid "Filmweb Suggestions"
 msgstr "Filmweb-javaslatok"
+
+msgid "Find item"
+msgstr ""
 
 msgid "First Page"
 msgstr "Első oldal"
@@ -1617,6 +1702,9 @@ msgstr "A host konfigurációját a kék gomb segítségével lehet megtenni."
 msgid "Google Suggestions"
 msgstr "Google-javaslatok"
 
+msgid "Google account"
+msgstr ""
+
 msgid "Graphic services selector"
 msgstr "Grafikai szolgáltatások választója"
 
@@ -1638,10 +1726,6 @@ msgstr "Csoportok linkje ebbe a kategóriába"
 msgid "Group with id[%s] not found."
 msgstr "A(z)[%s] azonosítójú csoport nem található."
 
-#, python-format
-msgid "Guest timeout: %s"
-msgstr "Vendég időkorlátja: %s"
-
 msgid "HLS/m3u8"
 msgstr "HLS/m3u8"
 
@@ -1651,9 +1735,6 @@ msgstr "HTTPS csatlakozási hiba: \"%s\"\n"
 
 msgid "Hand"
 msgstr "Kéz"
-
-msgid "Hardware floating point"
-msgstr "Hardveres lebegőpont"
 
 msgid "Health"
 msgstr ""
@@ -1686,6 +1767,9 @@ msgstr "Főoldal"
 
 msgid "Home page"
 msgstr "Főoldal"
+
+msgid "Horror"
+msgstr ""
 
 #, python-format
 msgid "Hosting \"%s\" not supported."
@@ -1733,6 +1817,9 @@ msgstr "minőség"
 
 msgid "Icons size"
 msgstr "Ikonok mérete"
+
+msgid "Image"
+msgstr ""
 
 msgid "Indian Movies"
 msgstr "Indiai filmek"
@@ -1868,9 +1955,14 @@ msgstr ""
 msgid "Jump to a selected page"
 msgstr "Ugrás a kiválasztott oldalra"
 
-#, python-brace-format
 msgid "Jump to a selected page, max: {}"
 msgstr "Ugrás a kiválasztott oldalra, max.: {}"
+
+msgid "Keep FFmpeg command files (.iptv.cmd)"
+msgstr ""
+
+msgid "Keep temporary JS scripts"
+msgstr ""
 
 msgid "Knee & Sports"
 msgstr "Térd és sport"
@@ -1937,8 +2029,14 @@ msgstr "Legutóbbi"
 msgid "Latest added"
 msgstr "Legújabb hozzáadott"
 
+msgid "Latest highlights"
+msgstr ""
+
 msgid "Latest update"
 msgstr "Legfrissebb frissítés"
+
+msgid "Latest videos from the channels you are subscribed to."
+msgstr ""
 
 msgid "Latino"
 msgstr "Latin-amerikai"
@@ -1951,6 +2049,10 @@ msgstr "Szint:"
 
 msgid "Lightgray"
 msgstr "Világosszürke"
+
+#, fuzzy
+msgid "Liked videos"
+msgstr "Videók böngészése"
 
 msgid "Line Spacing"
 msgstr "Vonal távolság"
@@ -2034,6 +2136,10 @@ msgstr "A területi azonosító nem egyezik! %s < > %s"
 msgid "Localization"
 msgstr "Lokalizáció"
 
+#, fuzzy
+msgid "Log"
+msgstr "Naplók"
+
 msgid "Login"
 msgstr "Belépés"
 
@@ -2095,12 +2201,12 @@ msgstr ""
 msgid "MENU=Options"
 msgstr "Videóbeállítások"
 
-msgid "MIPS Floating Point Architecture"
-msgstr "MIPS lebegőpontos architektúra"
-
 #, python-format
 msgid "MOVE: %s"
 msgstr "ÁTHELYEZÉS: %s"
+
+msgid "MOVING"
+msgstr ""
 
 msgid "Main"
 msgstr "Fő"
@@ -2118,6 +2224,10 @@ msgstr "Menedzser státusza:"
 msgid "Masrahyat"
 msgstr "Masrahyat"
 
+#, fuzzy
+msgid "Matching entries"
+msgstr "Captcha-megoldó szolgáltatás"
+
 #, python-format
 msgid "Max connections: %s"
 msgstr "Max. kapcsolatok: %s"
@@ -2127,6 +2237,10 @@ msgstr "Elemek maximális száma oldalonként"
 
 msgid "Max number of parallel downloads has been reached."
 msgstr "Elérte a párhuzamos letöltések maximális számát."
+
+#, fuzzy
+msgid "Maximum log file size"
+msgstr "Fájlméret megjelenítése"
 
 msgid "Medtryx Marketing"
 msgstr "Medtryx Marketing"
@@ -2142,6 +2256,9 @@ msgstr "Elmulasztott"
 
 msgid "Missed the show?"
 msgstr "Lemaradtál a műsorról?"
+
+msgid "Missing API key - set it in Settings, Web streams, Windy Webcams"
+msgstr ""
 
 msgid "More"
 msgstr "Több"
@@ -2227,6 +2344,10 @@ msgstr "My JDownloader reCAPTCHA v2 megoldás"
 
 msgid "My list"
 msgstr "A listám"
+
+#, fuzzy
+msgid "My subscriptions"
+msgstr "Leírás:"
 
 msgid "MyE2i Cloudflare solution"
 msgstr "MyE2i Cloudflare megoldás"
@@ -2356,6 +2477,9 @@ msgstr ""
 msgid "Nothing has been downloaded yet."
 msgstr "Még senki sem töltött le."
 
+msgid "Nothing to save - the debug log is not active."
+msgstr ""
+
 #, fuzzy
 msgid "Now"
 msgstr "Nem"
@@ -2369,6 +2493,10 @@ msgstr "Egyidejűleg letöltött fájlok száma"
 #, python-format
 msgid "Number of items in search history: %d"
 msgstr "A keresési előzményekben szereplő elemek száma: %d"
+
+#, fuzzy
+msgid "Number of rotated files to keep"
+msgstr "Egyidejűleg letöltött fájlok száma"
 
 msgid "Number of rows"
 msgstr "Sorok száma"
@@ -2433,9 +2561,6 @@ msgstr "Függőben"
 
 msgid "PLAY"
 msgstr ""
-
-msgid "PORT"
-msgstr "PORT"
 
 msgid "PREVIOUS/NEXT"
 msgstr ""
@@ -2593,16 +2718,10 @@ msgstr "PowerPoint bemutató"
 msgid "Practice Management"
 msgstr "Gyakorlatmenedzsment"
 
-msgid "Prefer hlsld for playlist with alt. media"
-msgstr "Hlsld előnyben részesítése alt. médiát tartalmazó lejátszási listákhoz"
-
 msgid "Prefered format"
 msgstr "Előnyben részesített formátum"
 
 msgid "Prefered quality"
-msgstr "Előnyben részesített minőség"
-
-msgid "Preferred quality"
 msgstr "Előnyben részesített minőség"
 
 msgid "Preferred streaming protocol"
@@ -2653,17 +2772,14 @@ msgstr "Programok"
 msgid "Promote item"
 msgstr "Elem promóciója"
 
-msgid "Protocol:"
-msgstr "Protokoll:"
-
 msgid "Published"
 msgstr "Közzétett"
 
+msgid "Python modules"
+msgstr ""
+
 msgid "Quality:"
 msgstr "Minőség:"
-
-msgid "RADIO"
-msgstr "RÁDIÓ"
 
 msgid "RAM buffer size [MB] for local files"
 msgstr "RAM puffer mérete [MB] a helyi fájlokhoz"
@@ -2723,6 +2839,9 @@ msgstr "Értékelés %s"
 
 msgid "Rating:"
 msgstr "Értékelés:"
+
+msgid "Reading binaries..."
+msgstr ""
 
 msgid "Recon"
 msgstr "Felderítés"
@@ -2796,8 +2915,12 @@ msgstr "Fájl átnevezése"
 msgid "Reset State"
 msgstr "Állapot visszaállítása"
 
-msgid "Reset group"
-msgstr "Csoport visszaállítása"
+msgid "Reset this list to its default layout?"
+msgstr ""
+
+#, fuzzy
+msgid "Reset to defaults"
+msgstr "Állapot visszaállítása"
 
 msgid "Reset to saved order"
 msgstr ""
@@ -2829,6 +2952,10 @@ msgstr ""
 msgid "Right"
 msgstr ""
 
+#, fuzzy
+msgid "Romance"
+msgstr "Relevancia"
+
 msgid "Russian"
 msgstr "Orosz"
 
@@ -2847,14 +2974,26 @@ msgstr "ELKEZDVE"
 msgid "STOPPED"
 msgstr "Az átalakítás leállt az eredményfeldolgozás során"
 
+msgid "Safe search (restricted mode):"
+msgstr ""
+
 msgid "Save"
 msgstr "Mentés"
 
 msgid "Save changes?"
 msgstr "Változtatások mentése?"
 
+#, python-format
+msgid ""
+"Saved to:\n"
+"%s"
+msgstr ""
+
 msgid "Schedule"
 msgstr "Időzítés"
+
+msgid "Sci-Fi & Fantasy"
+msgstr ""
 
 msgid "Science"
 msgstr "Tudomány"
@@ -2914,6 +3053,10 @@ msgid "Search only in TV Series"
 msgstr "Keresés csak a TV sorozatokban"
 
 msgid "Search results"
+msgstr "Keresési eredmények"
+
+#, fuzzy
+msgid "Search results region:"
 msgstr "Keresési eredmények"
 
 msgid "Search type"
@@ -3021,6 +3164,9 @@ msgstr "Kiválasztás"
 
 msgid "Send"
 msgstr "Küldés"
+
+msgid "Send data to enc-dec.app on every link resolve?"
+msgstr ""
 
 msgid "Series"
 msgstr "Sorozatok"
@@ -3153,6 +3299,15 @@ msgstr "Műsorok"
 msgid "Shows A-Z"
 msgstr "Műsorok"
 
+msgid "Sign-in was not completed."
+msgstr ""
+
+msgid "Signed in to YouTube."
+msgstr ""
+
+msgid "Signed out of YouTube."
+msgstr ""
+
 msgid "Simple list"
 msgstr "Egyszerű lista"
 
@@ -3176,9 +3331,6 @@ msgstr ""
 
 msgid "Software decoding as"
 msgstr "Szoftveres dekódolás"
-
-msgid "Software floating point"
-msgstr "Szoftveres lebegőpontos"
 
 msgid "Some changes will be applied only after movie player restart."
 msgstr "Néhány módosítás csak a filmlejátszó újraindítása után lép életbe."
@@ -3275,6 +3427,9 @@ msgstr "Lejátszás leállítása puffermentéssel"
 
 msgid "Stop playing?"
 msgstr "Abbahagyni a játékot?"
+
+msgid "Storage"
+msgstr ""
 
 msgid "Streamed"
 msgstr "Streamelve"
@@ -3443,9 +3598,6 @@ msgstr ""
 msgid "TMDb Rating:"
 msgstr "TMDb értékelés:"
 
-msgid "TV"
-msgstr "TV"
-
 msgid "TV Series"
 msgstr "TV-sorozatok"
 
@@ -3464,6 +3616,13 @@ msgstr "tévésorozatok"
 msgid "Techniques"
 msgstr "Technikák"
 
+msgid "Temp"
+msgstr ""
+
+#, fuzzy
+msgid "Testers:"
+msgstr "Írók:"
+
 #, fuzzy
 msgid "Text field alignment"
 msgstr "Fájlnév beállítása"
@@ -3474,6 +3633,14 @@ msgstr "A ytlist és urllist fájlok helye:"
 #, python-format
 msgid "The %s utility is necessary here but it was not detected."
 msgstr "A %s segédprogram szükséges itt, de a rendszer nem észlelte."
+
+msgid ""
+"The 7reels / cineb resolvers 'VidEasy', 'VidCore/VidFast', 'VidLink' and 'Peachify' cannot decrypt their links on the receiver.\n"
+"\n"
+"With this option ON, every time you open one of them E2iPlayer sends the site's encrypted stream token - which contains the TMDb id of the movie or episode you are opening - to the third-party web service enc-dec.app (operated by a private individual). That server then sees the id and your IP address on each play. Nothing else is transmitted, and it is only used for these four resolvers.\n"
+"\n"
+"Leave this OFF if you do not want that. The other resolvers (AdRock/vidrock, VidNest, ...) are not affected."
+msgstr ""
 
 msgid "The YouTube video ID is invalid."
 msgstr "A YouTube videóazonosító érvénytelen."
@@ -3490,6 +3657,24 @@ msgstr "A megtekintett elem színe"
 
 msgid "The color of the viewed item"
 msgstr "A megtekintett elem színe"
+
+msgid "The connection limit for your weeb.tv account has been reached."
+msgstr ""
+
+#, python-format
+msgid ""
+"The debug log file is empty:\n"
+"%s"
+msgstr ""
+
+msgid ""
+"The debug log is disabled or set to console output.\n"
+"\n"
+"Enable it in the E2iPlayer configuration (Debug -> log to file) and reproduce the problem, then come back here."
+msgstr ""
+
+msgid "The debug log is not active."
+msgstr ""
 
 msgid "The default aspect ratio for the external player"
 msgstr "A külső lejátszó alapértelmezett képaránya"
@@ -3560,10 +3745,32 @@ msgid "There is no hosts in this group."
 msgstr "Ebben a csoportban nincs host kiszolgáló."
 
 #, fuzzy
+msgid "This channel does not exist."
+msgstr "A(z) \"%s\" könyvtár nem létezik."
+
+#, fuzzy
+msgid "This channel is currently offline."
+msgstr "Ez a modell offline állapotban van."
+
+#, fuzzy
+msgid "This channel is not available in your country (geo-blocking)."
+msgstr "%s azt írta: Ez az oldal jelenleg nem érhető el az Ön régiójában"
+
+#, fuzzy
+msgid "This channel is temporarily unavailable. Please try again later."
+msgstr "Ez a műsor zártkörű. Próbáld újra később!"
+
+msgid "This channel requires a premium account, or the free connection limit has been reached. Enter your weeb.tv login data in the host configuration."
+msgstr ""
+
+#, fuzzy
 msgid "This content is not available in your region."
 msgstr "%s azt írta: Ez az oldal jelenleg nem érhető el az Ön régiójában"
 
 msgid "This content is only available in Switzerland."
+msgstr ""
+
+msgid "This feed is empty, or the YouTube sign-in has expired - sign out and in again."
 msgstr ""
 
 msgid "This host has been added already to this group."
@@ -3587,11 +3794,28 @@ msgstr "Ez a videó egy privát videó."
 msgid "This video is a private."
 msgstr "Ez a videó privát."
 
+msgid "This video requires you to sign in to a YouTube account."
+msgstr ""
+
 msgid "Tip! You can connect USB flash drive to fix this problem."
 msgstr "Tipp! A probléma megoldásához csatlakoztathat USB flash meghajtót."
 
 msgid "Title:"
 msgstr "Cím:"
+
+#, python-format
+msgid ""
+"To sign in to YouTube:\n"
+"\n"
+"1. On a phone or computer open:\n"
+"     %s\n"
+"\n"
+"2. Enter this code:\n"
+"\n"
+"     %s\n"
+"\n"
+"3. Approve the access, then select OK here."
+msgstr ""
 
 msgid ""
 "To watch videos from https://vk.com/ you need to login.\n"
@@ -3605,6 +3829,12 @@ msgstr "Ma"
 
 msgid "Top"
 msgstr "Felső"
+
+msgid "Top IMDb"
+msgstr ""
+
+msgid "Top in your country"
+msgstr ""
 
 msgid "Top rated"
 msgstr "Legjobbra értékelt"
@@ -3642,6 +3872,10 @@ msgstr "Trend"
 msgid "Trending"
 msgstr "Felkapott"
 
+#, fuzzy
+msgid "Trending this week"
+msgstr "Felkapott"
+
 msgid "Try to change extplayer or disable IFD in GSTplayer configuration"
 msgstr "Próbáld meg módosítani az extplayert, vagy letiltani az IFD-t a GSTplayer konfigurációjában"
 
@@ -3654,17 +3888,11 @@ msgstr "Török sorozat"
 msgid "Turkish TV series"
 msgstr "Török tévésorozat"
 
-msgid "Turn off buffering for http://prognoza.pogody.tv/"
-msgstr "Kapcsold ki a pufferelést a http://prognoza.pogody.tv/ oldalon"
-
 msgid "Tutorials"
 msgstr "Oktatóanyagok"
 
 msgid "Type:"
 msgstr "Típus:"
-
-msgid "Type: "
-msgstr "Típus: "
 
 #, python-format
 msgid "Type: %s"
@@ -3724,6 +3952,10 @@ msgstr "Megfigyeltként beállított beállítás törlése"
 msgid "Unzip error code[%s]."
 msgstr "Kicsomagoláskor hibakód: [%s]."
 
+#, fuzzy
+msgid "Updates"
+msgstr "Feltöltés dátuma"
+
 msgid "Upload date"
 msgstr "Feltöltés dátuma"
 
@@ -3732,9 +3964,6 @@ msgstr "Urllists lejátszó"
 
 msgid "Use HLS streams (adaptive):"
 msgstr ""
-
-msgid "Use Polish proxy for http://prognoza.pogody.tv/"
-msgstr "Lengyel proxy használata itt  http://prognoza.pogody.tv/"
 
 msgid "Use colors"
 msgstr "Használjon színeket"
@@ -3750,9 +3979,6 @@ msgstr "Használja a linkek gyorsítótárát"
 
 msgid "Use login"
 msgstr "Bejelentkezés használata"
-
-msgid "Use preferred quality"
-msgstr "Előnyben részesített minőség"
 
 msgid "Use proxy server:"
 msgstr "Proxy szerver használata:"
@@ -3825,9 +4051,6 @@ msgstr "Videó"
 msgid "Video buffer size [MB]"
 msgstr "Videópuffer mérete [MB]"
 
-msgid "Video format:"
-msgstr "Videó formátum:"
-
 msgid "Video mode"
 msgstr "Videó mód"
 
@@ -3853,6 +4076,12 @@ msgstr "Videók"
 #, python-format
 msgid "Videos count: %s"
 msgstr "Videók száma: %s"
+
+msgid "Videos you have liked."
+msgstr ""
+
+msgid "Videos you have recently watched."
+msgstr ""
 
 msgid "View count"
 msgstr "Megtekintések száma"
@@ -3885,6 +4114,14 @@ msgstr "Figyelés"
 msgid "Watch Videos Online"
 msgstr "Videók online megtekintése"
 
+#, fuzzy
+msgid "Watch history"
+msgstr "Keresési előzmények"
+
+#, fuzzy
+msgid "Watch later"
+msgstr "Figyelés"
+
 msgid "Web component has been reset and all threads are stopped. :)"
 msgstr "A webkomponens visszaállt és az összes szál leállt. :)"
 
@@ -3893,6 +4130,9 @@ msgstr "A webkomponens visszaállításra került, a következő szálak tovább
 
 msgid "Web interface version"
 msgstr "Webes felület verziója"
+
+msgid "When the maximum is reached"
+msgstr ""
 
 msgid "Whole file must be downloaded to start playback!"
 msgstr "A lejátszás megkezdéséhez a teljes fájlt le kell tölteni!"
@@ -3933,6 +4173,9 @@ msgstr "Hibás indexek."
 
 msgid "Wrong uri."
 msgstr "Hibás uri."
+
+msgid "Wrong weeb.tv username or password."
+msgstr ""
 
 msgid "Xtream Live Stream"
 msgstr "Xtream Élő közvetítés"
@@ -4005,6 +4248,9 @@ msgstr "Soha ne hajts végre blokk I/O műveleteket az __init__-ban."
 msgid "YouTube User Links Editor"
 msgstr "YouTube felhasználói hivatkozások szerkesztője"
 
+msgid "Your 'Watch later' playlist."
+msgstr ""
+
 msgid "Your search entry"
 msgstr "A keresési bejegyzésed"
 
@@ -4076,9 +4322,6 @@ msgstr "automatikus"
 msgid "available until %s"
 msgstr ""
 
-msgid "average"
-msgstr "átlagos"
-
 msgid "black"
 msgstr "fekete"
 
@@ -4104,6 +4347,9 @@ msgstr "Változtatások mentése?"
 msgid "cobalt"
 msgstr "kobalt"
 
+msgid "could not run the probe"
+msgstr ""
+
 msgid "default"
 msgstr "alapértelmezett"
 
@@ -4122,6 +4368,9 @@ msgstr "külső eplayer3"
 msgid "external gstplayer"
 msgstr "külső gstlejátszó"
 
+msgid "file"
+msgstr ""
+
 msgid "first check if host works properly in GUI and web <b>BEFORE</b> reporting error in it !!!"
 msgstr "először ellenőrizze, hogy a host megfelelően működik-e a GUI-ban és a web-en <b>MIELŐTT</b> jelenti a hibát!!!"
 
@@ -4130,6 +4379,9 @@ msgstr ""
 
 msgid "format"
 msgstr "formátum"
+
+msgid "free"
+msgstr ""
 
 msgid "from E2 settings"
 msgstr "az E2 beállításokból"
@@ -4173,11 +4425,21 @@ msgstr "https"
 msgid "https - validate SSL certificates"
 msgstr "https - SSL tanúsítványok érvényesítése"
 
+#, fuzzy
+msgid "import failed"
+msgstr "A szerkesztés sikertelen."
+
+msgid "installed"
+msgstr ""
+
 msgid "internal"
 msgstr "belső"
 
 msgid "jersey"
 msgstr "mez"
+
+msgid "kernel reports"
+msgstr ""
 
 msgid "large"
 msgstr "nagy"
@@ -4190,6 +4452,9 @@ msgstr "mész"
 
 msgid "line"
 msgstr "soronkénti"
+
+msgid "loaded (no version)"
+msgstr ""
 
 msgid "login"
 msgstr "bejelentkezés"
@@ -4212,11 +4477,31 @@ msgstr "közepes"
 msgid "navy"
 msgstr "haditengerészet"
 
+msgid "not found"
+msgstr ""
+
+msgid "not installed"
+msgstr ""
+
+msgid "off"
+msgstr ""
+
+#, fuzzy
+msgid "off / console"
+msgstr "Igen, vigasztalni"
+
 msgid "olive"
 msgstr "olajbogyó"
 
+#, fuzzy
+msgid "on"
+msgstr "Nincs"
+
 msgid "or"
 msgstr "vagy"
+
+msgid "other binaries"
+msgstr ""
 
 msgid "password"
 msgstr "jelszó"
@@ -4233,17 +4518,37 @@ msgstr "vörös"
 msgid "rootfs"
 msgstr "rootfs"
 
+msgid "rotate (keep the old one as iptv-<date>.dbg)"
+msgstr ""
+
 msgid "rtmp"
 msgstr "rtmp"
 
 msgid "saved"
 msgstr ""
 
+msgid "saved in the temporary data folder"
+msgstr ""
+
+#, fuzzy
+msgid "saved next to the downloaded video file"
+msgstr "Csatornanév hozzáadása a letöltött fájlhoz"
+
 msgid "second"
 msgstr "másodperc"
 
 msgid "seconds"
 msgstr "másodperc"
+
+#, fuzzy
+msgid "select to sign out"
+msgstr "Csoport kiválasztása"
+
+msgid "sign in (subscriptions, playlists, age-restricted videos)"
+msgstr ""
+
+msgid "signed in"
+msgstr ""
 
 msgid "silver"
 msgstr "ezüst"
@@ -4253,6 +4558,10 @@ msgstr "kicsi"
 
 msgid "standard"
 msgstr "alapértelmezett"
+
+#, fuzzy
+msgid "status"
+msgstr "Állapot:"
 
 msgid "teal"
 msgstr "böjti réce"
@@ -4269,12 +4578,22 @@ msgstr ""
 msgid "top"
 msgstr "felső"
 
+#, fuzzy
+msgid "truncate the file"
+msgstr "Válassz fájlt"
+
 msgid "unknown"
 msgstr "ismeretlen"
+
+msgid "unlimited"
+msgstr ""
 
 #, fuzzy
 msgid "unsorted"
 msgstr "MEGSZAKÍTVA"
+
+msgid "upzone.cc: free transfer limit reached - PREMIUM account required."
+msgstr ""
 
 msgid "version"
 msgstr "verzió"
@@ -4302,6 +4621,13 @@ msgstr "várjon %s másodpercet"
 #, python-format
 msgid "wait %s seconds"
 msgstr "várjon %s másodpercet"
+
+#, python-format
+msgid "weeb.tv did not return a valid stream (error %s)."
+msgstr ""
+
+msgid "weeb.tv did not return a valid stream for this channel."
+msgstr ""
 
 msgid "white"
 msgstr "fehér"

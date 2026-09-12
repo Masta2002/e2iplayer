@@ -44,7 +44,7 @@ config.plugins.iptvplayer.api_key_2captcha = ConfigText(default="", fixed_size=F
 config.plugins.iptvplayer.mrpiracy_linkcache = ConfigYesNo(default=True)
 config.plugins.iptvplayer.mrpiracy_bypassrecaptcha = ConfigSelection(default="None", choices=[("None", _("None")),
                                                                                                  ("9kw.eu", "https://9kw.eu/"),
-                                                                                                 ("2captcha.com", "http://2captcha.com/")])
+                                                                                                 ("2captcha.com", "https://2captcha.com/")])
 
 
 def GetConfigList():

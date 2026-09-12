@@ -23,7 +23,7 @@ class SuggestionsProvider:
         text = text.encode('ascii', 'ignore').decode('ascii').lower()
         if len(text) > 2:
             text = text.replace(' ', '_')
-            url = 'http://v2.sg.media-imdb.com/suggests/titles/%s/%s.json' % (text[0], text)
+            url = 'https://v2.sg.media-imdb.com/suggests/titles/%s/%s.json' % (text[0], text)
             sts, data = self.cm.getPage(url)
             if sts:
                 retList = []

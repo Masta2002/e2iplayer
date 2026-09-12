@@ -103,7 +103,7 @@ class StreamStat(CBaseHostClass):
         for i in id:
             try:
                icons.append({i: links[id.index(i)]})
-            except:
+            except Exception:
                pass
         for i in web:
             title = titles[web.index(i)]
@@ -111,12 +111,12 @@ class StreamStat(CBaseHostClass):
             url = 'https://streamstat.net' + i
             try:
                icon = icons[id.index(web.index(i))]
-            except:
+            except Exception:
                icon = None
             try:
                desc = descs[web.index(i)]
                desc = desc.replace("&nbsp;", " ")
-            except:
+            except Exception:
                desc = "No description available currently."
             printDBG(str(desc))
             if title == "":

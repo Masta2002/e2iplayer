@@ -119,6 +119,22 @@ class IPTVDMApi():
         if bRet:
             self.listChanged()
 
+    def moveQueueDQItem(self, downloadIdx, newQueueIdx):
+        """Reorder a still-waiting item (identified by downloadIdx) to
+        position newQueueIdx within queueDQ. Used by IPTVDMWidget's
+        reordering mode - the UI is responsible for only offering this
+        while the DM is inactive (nothing is popping items off the front
+        of queueDQ concurrently) and for keeping newQueueIdx within the
+        waiting segment of its own displayed list."""
+        printDBG("moveQueueDQItem downloadIdx[%d] -> newQueueIdx[%d]" % (downloadIdx, newQueueIdx))
+        curIdx = self.findIdxInQueueDQ(downloadIdx)
+        if -1 == curIdx or newQueueIdx < 0 or newQueueIdx >= len(self.queueDQ):
+            return False
+        item = self.queueDQ.pop(curIdx)
+        self.queueDQ.insert(newQueueIdx, item)
+        self.listChanged()
+        return True
+
     def deleteDownloadItem(self, downloadIdx):
         printDBG("deleteDownloadItem for downloadIdx[%d]" % downloadIdx)
         bRet = False
@@ -220,14 +236,38 @@ class IPTVDMApi():
             self.running = True
             self.mainTimer.start(self.sleepDelay * 1000)
 
+    @staticmethod
+    def _dedupKey(item):
+        """Identity key for addToDQueue()'s "already queued" check. Plain
+        .url works for a regular item, but merge:// sources (e.g. YouTube's
+        audio+video merge scheme) use a generic literal string like
+        "merge://audio_url|video_url" that's identical for every video of
+        that kind - the real per-video URLs only live in .meta. Resolve
+        those in so two different merge:// videos are correctly told
+        apart, while dedup still keys on the actual source (not the
+        destination filename) - two adds of the same title from two
+        different mirrors/sources are legitimately different downloads,
+        not a duplicate, and get to queue and race to makeUnikalFileName
+        at start like before."""
+        url = item.url
+        try:
+            if isinstance(url, str) and url.startswith('merge://'):
+                meta = getattr(url, 'meta', {})
+                keys = url.split('merge://', 1)[1].split('|')
+                return 'merge://' + '|'.join(str(meta.get(k, k)) for k in keys)
+        except Exception:
+            pass
+        return url
+
     def addToDQueue(self, newItem):
         bRet = False
 
-        # check if there is no Item with this
-        # same url already in queue
+        # check if there is no Item with this same source already in
+        # queue - see _dedupKey() for why this isn't a plain .url compare.
         exist = False
+        newKey = self._dedupKey(newItem)
         for item in self.queueDQ:
-            if item.url == newItem.url:
+            if self._dedupKey(item) == newKey:
                 exist = True
         if False is exist:
             self.downloadIdx += 1
@@ -258,6 +298,7 @@ class IPTVDMApi():
             self.downloadIdx += 1
             newItem.downloadIdx = self.downloadIdx
             newItem.downloader = downloader
+            newItem.downloaderName = downloader.getName()
             newItem.status = downloader.getStatus()
 
             self.updateItemSTS(newItem)
@@ -314,11 +355,12 @@ class IPTVDMApi():
         self.queueUD[listUDIdx].originalFileName = item.fileName
 
         url, downloaderParams = DMHelper.getDownloaderParamFromUrl(item.url)
-        self.queueUD[listUDIdx].downloader = DownloaderCreator(url)
+        self.queueUD[listUDIdx].downloader = DownloaderCreator(url, forDownload=True)
         # this is a real download (not buffered playback) -> the downloader may
         # rename the finished file to its true container extension
         try:
             self.queueUD[listUDIdx].downloader.allowFinalRename = True
+            self.queueUD[listUDIdx].downloaderName = self.queueUD[listUDIdx].downloader.getName()
         except Exception:
             printExc()
         self.queueUD[listUDIdx].callback = boundFunction(self.cmdFinished, item.downloadIdx)

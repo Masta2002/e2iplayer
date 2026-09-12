@@ -7,6 +7,8 @@ on:
     branches:
       - python3
 
+  workflow_dispatch:
+
 permissions:
   contents: write
 
@@ -15,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -65,12 +67,11 @@ jobs:
 
       - name: Create GitHub Release
         if: steps.check_tag.outputs.skip != 'true'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64  # v3.0.3
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           tag_name: v${{ steps.get_version.outputs.version }}
           name: Release v${{ steps.get_version.outputs.version }}
           body: |
             ## Changes in this release
             ${{ steps.changelog.outputs.changelog }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

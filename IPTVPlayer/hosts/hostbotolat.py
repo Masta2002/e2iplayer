@@ -432,7 +432,7 @@ class BtolatCom(CBaseHostClass):
                     try:
                         m, d, y = raw_date.split("/")
                         video_date = "%s-%s-%s" % (d.zfill(2), m.zfill(2), y)
-                    except:
+                    except Exception:
                         video_date = raw_date
                 # Description = league + date
                 if cat_name and video_date:
@@ -784,7 +784,7 @@ class BtolatCom(CBaseHostClass):
         try:
             if not os.path.exists(os.path.dirname(file_path)):
                 os.makedirs(os.path.dirname(file_path))
-        except:
+        except Exception:
             pass
         meta = {"host": "botolat", "title": title, "file_path": first_link}
         try:

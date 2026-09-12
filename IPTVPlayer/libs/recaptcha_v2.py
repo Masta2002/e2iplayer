@@ -31,7 +31,7 @@ class UnCaptchaReCaptcha:
         iteration = 0
         if referer is not None:
             self.HTTP_HEADER['Referer'] = referer
-        reCaptchaUrl = 'http://www.google.com/recaptcha/api/fallback?k=%s' % (key)
+        reCaptchaUrl = 'https://www.google.com/recaptcha/api/fallback?k=%s' % (key)
         while iteration < 20:
             # ,'cookiefile':self.COOKIE_FILE, 'use_cookie': True, 'load_cookie': True, 'save_cookie':True
             sts, data = self.cm.getPage(reCaptchaUrl, {'header': self.HTTP_HEADER, 'raw_post_data': True}, post_data=post_data)

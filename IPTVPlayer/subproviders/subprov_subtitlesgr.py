@@ -31,7 +31,7 @@ def GetConfigList():
 class SubtitlesGrProvider(CBaseSubProviderClass):
 
     def __init__(self, params={}):
-        self.MAIN_URL = 'http://gr.greek-subtitles.com/'
+        self.MAIN_URL = 'https://gr.greek-subtitles.com/'
         self.USER_AGENT = 'Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/37.0.2062.120 Chrome/37.0.2062.120 Safari/537.36'
         self.HTTP_HEADER = {'User-Agent': self.USER_AGENT, 'Referer': self.MAIN_URL, 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Accept-Encoding': 'gzip, deflate'}
 
@@ -52,7 +52,7 @@ class SubtitlesGrProvider(CBaseSubProviderClass):
         printDBG("SubtitlesGrProvider.listSubItems")
         page = cItem.get('page', 0)
         keywords = urllib_quote_plus(self.params['confirmed_title'])
-        baseUrl = "http://gr.greek-subtitles.com/search.php?page=%s&name=%s" % (page, keywords)
+        baseUrl = "https://gr.greek-subtitles.com/search.php?page=%s&name=%s" % (page, keywords)
 
         url = self.getFullUrl(baseUrl)
         sts, data = self.cm.getPage(url)

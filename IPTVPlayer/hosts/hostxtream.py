@@ -31,7 +31,7 @@ try:
     if not hasattr(config.plugins.iptvplayer, 'xtream_useragent'):
         config.plugins.iptvplayer.xtream_useragent = ConfigText(default="", fixed_size=False)
 except Exception as e:
-    print("Xtream config init error:", e)
+    printDBG("Xtream config init error: %s" % e)
 
 
 def GetConfigList():

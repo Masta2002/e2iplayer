@@ -406,7 +406,7 @@ class ArabSeed(CBaseHostClass):
                                 if padding != 4:
                                     encoded += "=" * padding
                                 video_url = base64.b64decode(encoded).decode("utf-8")
-                            except:
+                            except Exception:
                                 pass
                         if video_url and video_url.startswith("http"):
                             domain = re.search(r"https?://([^/]+)", video_url)
@@ -457,7 +457,7 @@ class ArabSeed(CBaseHostClass):
             data += "=" * padding
         try:
             return base64.b64decode(data).decode("utf-8", errors="ignore")
-        except:
+        except Exception:
             return None
 
     def exploreSeriesItems(self, cItem):
@@ -792,7 +792,7 @@ class ArabSeed(CBaseHostClass):
                 quality_txt = display.get("value", "")
                 try:
                     quality = int(quality_txt.replace("p", "").strip())
-                except:
+                except Exception:
                     continue
                 qualities.append({"q": quality, "name": "IMDb %dp" % quality, "url": url, "need_resolve": 0})
             qualities.sort(key=lambda x: x["q"], reverse=True)
@@ -843,7 +843,7 @@ class ArabSeed(CBaseHostClass):
             return
         try:
             result = json_loads(response)
-        except:
+        except Exception:
             return
         if result.get("type") != "success":
             return

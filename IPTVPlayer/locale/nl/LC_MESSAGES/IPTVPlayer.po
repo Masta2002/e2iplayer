@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-04 17:31+0200\n"
+"POT-Creation-Date: 2026-09-12 19:05+0000\n"
 "PO-Revision-Date: 2026-02-02 21:43+0100\n"
 "Last-Translator: Snoete\n"
 "Language-Team: \n"
@@ -128,10 +128,6 @@ msgid "%s returned %s: %s"
 msgstr "%s resultaat %s: %s"
 
 #, python-format
-msgid "%s said: This page is currently unavailable in your region"
-msgstr "%s said: Deze pagina is op dit moment niet beschikbaar in uw regio"
-
-#, python-format
 msgid "%s services configuration"
 msgstr "%s zender configuratie"
 
@@ -151,6 +147,13 @@ msgstr ""
 "%s gebruikt \"geo-blocking\" om het bekijken van buitenlandse zenders te voorkomen.\n"
 " Host land: %s, jouw land: %s"
 
+msgid "(nothing here yet)"
+msgstr ""
+
+#, fuzzy
+msgid "(reading...)"
+msgstr "Trending"
+
 msgid "++"
 msgstr "++"
 
@@ -168,6 +171,10 @@ msgstr "----- BUFFEREN -----"
 
 msgid "----- CAPTCHA CONFIGURATION -----"
 msgstr "----- CAPTCHA -----"
+
+#, fuzzy
+msgid "----- DEBUG CONFIGURATION -----"
+msgstr "----- BUFFEREN -----"
 
 msgid "----- DOWNLOADING CONFIGURATION -----"
 msgstr "----- DOWNLOADEN -----"
@@ -230,9 +237,6 @@ msgstr "----------Overig----------"
 
 msgid "----------------- External exteplayer3 options -----------------"
 msgstr "----------------- Externe exteplayer3 opties -----------------"
-
-msgid "----------Other----------"
-msgstr "----------Overig----------"
 
 msgid "--All Episodes--"
 msgstr "--Alle afleveringen--"
@@ -309,6 +313,9 @@ msgstr ""
 msgid "Aborted"
 msgstr ""
 
+msgid "About"
+msgstr ""
+
 msgid "Accept"
 msgstr "Accepteren"
 
@@ -321,6 +328,9 @@ msgstr "Toegang geweigerd. A.u.b. het wachtwoord controleren."
 #, fuzzy
 msgid "Accessible"
 msgstr "Verboden toegang"
+
+msgid "Action & Thriller"
+msgstr ""
 
 msgid "Active host"
 msgstr "Actieve host"
@@ -378,9 +388,6 @@ msgstr "Toegevoegd door: %s, map: %s"
 msgid "Age limit:"
 msgstr "Anime lijst"
 
-msgid "Age-gate bypass:"
-msgstr "Leeftijd-controle omzeilen:"
-
 msgid "All"
 msgstr "Alles"
 
@@ -413,6 +420,9 @@ msgstr "VP9 codec toestaan:"
 
 msgid "Allow dash format:"
 msgstr "Dash protocol toestaan:"
+
+msgid "Allow external link-decryption service (enc-dec.app)"
+msgstr ""
 
 #, fuzzy
 msgid "Allow host to override suggestions provider"
@@ -514,9 +524,6 @@ msgstr "Weet u zeker dat u de zoekgeschiedenis wilt verwijderen?"
 msgid "Are you sure you want to remove file \"%s\"?"
 msgstr "Weet u zeker dat u bestand \"%s\" wil verwijderen?"
 
-msgid "Are you sure you want to reset all hosts in this group to defaults?"
-msgstr "Weet u zeker dat u alle Hosts in deze groep naar de default waarde wilt resetten?"
-
 msgid "Are you sure you want to reset all settings to their default values?"
 msgstr "Weet u zeker dat u alle instellingen naar de default waarde wilt resetten?"
 
@@ -545,6 +552,10 @@ msgstr "Audiosporen"
 msgid "Auto"
 msgstr "Automatisch"
 
+#, python-format
+msgid "Auto refresh: %s"
+msgstr ""
+
 msgid "Auto selection based on the settings"
 msgstr "Auto selectie gebaseerd op de instellingen"
 
@@ -553,6 +564,10 @@ msgstr "Auto start methode"
 
 msgid "Auto-translate"
 msgstr "Automatische vertaling"
+
+#, fuzzy
+msgid "Automatic"
+msgstr "Automatisch"
 
 msgid "Automatically turn on external subtitles"
 msgstr "Schakel automatisch externe ondertitels in"
@@ -581,6 +596,9 @@ msgstr "Fundamentele wetenschap"
 msgid "Best"
 msgstr ""
 
+msgid "Binaries"
+msgstr ""
+
 #, fuzzy
 msgid "Bing Suggestions"
 msgstr "Google Suggesties"
@@ -601,9 +619,15 @@ msgstr "Blokkeer wmv bestanden"
 msgid "Board Review"
 msgstr "Forum beoordeling"
 
+msgid "Box"
+msgstr ""
+
 #, fuzzy
 msgid "Broadcast:"
 msgstr "Podcasts"
+
+msgid "Browse by genre"
+msgstr ""
 
 msgid "Browse videos"
 msgstr "Door video's bladeren"
@@ -705,6 +729,20 @@ msgstr "Bioscoop films"
 msgid "Clear"
 msgstr "Wissen"
 
+#, fuzzy
+msgid "Clear log"
+msgstr "Wissen"
+
+#, fuzzy, python-format
+msgid ""
+"Clear the debug log file?\n"
+"%s"
+msgstr "Log-file verwijderen"
+
+#, fuzzy
+msgid "Clear the log file at plugin start"
+msgstr "Live-TV signaal bij Plugin start uitschakelen"
+
 msgid "Click"
 msgstr "Klik"
 
@@ -726,11 +764,22 @@ msgstr "Collecties"
 msgid "Columbia"
 msgstr "Colombia"
 
+msgid "Comedy"
+msgstr ""
+
 msgid "Commits"
 msgstr "Commits"
 
+#, fuzzy
+msgid "Competitions"
+msgstr "Collecties"
+
 msgid "Concert"
 msgstr ""
+
+#, fuzzy
+msgid "Config"
+msgstr "Instellen %s"
 
 msgid "Configuration"
 msgstr "Configuratie"
@@ -762,6 +811,10 @@ msgid "Connection to server failed!"
 msgstr "Verbinden met de server mislukt!"
 
 #, fuzzy
+msgid "Connection to the weeb.tv server failed."
+msgstr "Verbinden met de server mislukt!"
+
+#, fuzzy
 msgid "Content not available"
 msgstr "Geen geldige links beschikbaar."
 
@@ -774,10 +827,21 @@ msgstr "Kopieër"
 msgid "Could not add the user link."
 msgstr ""
 
+msgid "Could not start the YouTube sign-in."
+msgstr ""
+
+#, fuzzy
+msgid "Could not write the file."
+msgstr "Schrijven van het bestand \"%s\" mislukt."
+
 msgid "Countries"
 msgstr "Landen"
 
 msgid "Country"
+msgstr "Land"
+
+#, fuzzy
+msgid "Country / store:"
 msgstr "Land"
 
 #, fuzzy
@@ -853,6 +917,10 @@ msgstr "Debug bestand bestaat niet - er is niets om te downloaden"
 
 msgid "Debug file has been deleted"
 msgstr "Debug bestand is verwijderd"
+
+#, fuzzy
+msgid "Debug log"
+msgstr "Debug log-bestanden"
 
 msgid "Debug logs"
 msgstr "Debug log-bestanden"
@@ -1107,6 +1175,9 @@ msgstr "Downloads"
 msgid "Downloads location"
 msgstr "Downloads locatie"
 
+msgid "Drama"
+msgstr ""
+
 #, fuzzy
 msgid "DuckDuckGo Suggestions"
 msgstr "Google Suggesties"
@@ -1265,7 +1336,6 @@ msgstr "Oude PIN invoeren"
 msgid "Enter page number"
 msgstr "Voer een waarde in"
 
-#, python-brace-format
 msgid "Enter page number (MAX PAGE: {})"
 msgstr ""
 
@@ -1485,6 +1555,9 @@ msgstr "Favoriet groepen"
 msgid "Favorites manager"
 msgstr "Favorieten manager"
 
+msgid "Featured"
+msgstr ""
+
 #, python-format
 msgid "File \"%s\" already exists"
 msgstr "Bestand \"%s\" bestaat al"
@@ -1496,9 +1569,17 @@ msgstr "Bestand \"%s\" bestaat al!"
 msgid "File Not Found."
 msgstr ""
 
+#, fuzzy, python-format
+msgid "File [%s] is already in the downloading queue."
+msgstr "Bestand [%s] is toegevoegd aan de download wachtrij."
+
 #, python-format
 msgid "File [%s] was added to downloading queue."
 msgstr "Bestand [%s] is toegevoegd aan de download wachtrij."
+
+#, fuzzy
+msgid "File can not be downloaded. Download manager is not available."
+msgstr "Bestand kan niet worden gedownload. Protocol [%s] wordt niet ondersteund"
 
 #, python-format
 msgid "File can not be downloaded. Protocol [%s] is unsupported"
@@ -1523,6 +1604,9 @@ msgstr "Film"
 
 msgid "Filmweb Suggestions"
 msgstr "Filmweb tips"
+
+msgid "Find item"
+msgstr ""
 
 #, fuzzy
 msgid "First Page"
@@ -1655,6 +1739,9 @@ msgstr "Ga naar de host configuratie beschikbaar onder de blauwe knop."
 msgid "Google Suggestions"
 msgstr "Google Suggesties"
 
+msgid "Google account"
+msgstr ""
+
 msgid "Graphic services selector"
 msgstr "Grafische services selectie"
 
@@ -1676,10 +1763,6 @@ msgstr "Links naar Groepen verdeeld in categorieën:"
 msgid "Group with id[%s] not found."
 msgstr "Groep met id[%s] niet gevonden."
 
-#, python-format
-msgid "Guest timeout: %s"
-msgstr "Gast timeout: %s"
-
 msgid "HLS/m3u8"
 msgstr "HLS/m3u8"
 
@@ -1689,9 +1772,6 @@ msgstr "HTTPS connectie fout \"%s\"\n"
 
 msgid "Hand"
 msgstr "Hand"
-
-msgid "Hardware floating point"
-msgstr "Hardware floating point"
 
 msgid "Health"
 msgstr ""
@@ -1724,6 +1804,9 @@ msgstr "Thuis"
 
 msgid "Home page"
 msgstr "Homepage"
+
+msgid "Horror"
+msgstr ""
 
 #, python-format
 msgid "Hosting \"%s\" not supported."
@@ -1772,6 +1855,9 @@ msgstr "kwaliteit"
 
 msgid "Icons size"
 msgstr "Icons grootte"
+
+msgid "Image"
+msgstr ""
 
 msgid "Indian Movies"
 msgstr "Indiase films"
@@ -1907,8 +1993,13 @@ msgstr ""
 msgid "Jump to a selected page"
 msgstr ""
 
-#, python-brace-format
 msgid "Jump to a selected page, max: {}"
+msgstr ""
+
+msgid "Keep FFmpeg command files (.iptv.cmd)"
+msgstr ""
+
+msgid "Keep temporary JS scripts"
 msgstr ""
 
 msgid "Knee & Sports"
@@ -1980,8 +2071,14 @@ msgstr "Laatste"
 msgid "Latest added"
 msgstr "Laatst toegevoegd"
 
+msgid "Latest highlights"
+msgstr ""
+
 msgid "Latest update"
 msgstr "Laatste update"
+
+msgid "Latest videos from the channels you are subscribed to."
+msgstr ""
 
 msgid "Latino"
 msgstr "Spaans"
@@ -1994,6 +2091,10 @@ msgstr "Niveau:"
 
 msgid "Lightgray"
 msgstr "Lichtgrijs"
+
+#, fuzzy
+msgid "Liked videos"
+msgstr "Door video's bladeren"
 
 msgid "Line Spacing"
 msgstr "Regelafstand"
@@ -2079,6 +2180,10 @@ msgstr "Locale ID komt niet overeen! %s <> %s"
 msgid "Localization"
 msgstr "Lokaliseren"
 
+#, fuzzy
+msgid "Log"
+msgstr "Log-bestanden"
+
 msgid "Login"
 msgstr "Inloggen"
 
@@ -2140,12 +2245,12 @@ msgstr ""
 msgid "MENU=Options"
 msgstr "Video opties"
 
-msgid "MIPS Floating Point Architecture"
-msgstr "MIPS Floating Point Architectuur"
-
 #, python-format
 msgid "MOVE: %s"
 msgstr "VERPLAATS: %s"
+
+msgid "MOVING"
+msgstr ""
 
 msgid "Main"
 msgstr "Hoofd"
@@ -2163,6 +2268,10 @@ msgstr "Manager status:"
 msgid "Masrahyat"
 msgstr "Masrahyat"
 
+#, fuzzy
+msgid "Matching entries"
+msgstr "Captcha oplosser service"
+
 #, python-format
 msgid "Max connections: %s"
 msgstr "Max aantal verbindingen: %s"
@@ -2172,6 +2281,10 @@ msgstr "Max items per pagina"
 
 msgid "Max number of parallel downloads has been reached."
 msgstr "Max aantal downloads op hetzelfde tijdstip is bereikt."
+
+#, fuzzy
+msgid "Maximum log file size"
+msgstr "Bestandsgrootte tonen"
 
 msgid "Medtryx Marketing"
 msgstr "Medtryx Marketing"
@@ -2187,6 +2300,9 @@ msgstr "Gemist"
 
 msgid "Missed the show?"
 msgstr "Uitzending gemist?"
+
+msgid "Missing API key - set it in Settings, Web streams, Windy Webcams"
+msgstr ""
 
 msgid "More"
 msgstr "Meer"
@@ -2277,6 +2393,10 @@ msgstr "My JDownloader reCAPTCHA v2 solution"
 
 msgid "My list"
 msgstr "Mijn overzicht"
+
+#, fuzzy
+msgid "My subscriptions"
+msgstr "Beschrijving:"
 
 msgid "MyE2i Cloudflare solution"
 msgstr "MyE2i Cloudflare solution"
@@ -2406,6 +2526,9 @@ msgstr ""
 msgid "Nothing has been downloaded yet."
 msgstr "Er is nog niets gedownload."
 
+msgid "Nothing to save - the debug log is not active."
+msgstr ""
+
 #, fuzzy
 msgid "Now"
 msgstr "Nee"
@@ -2419,6 +2542,10 @@ msgstr "Aantal gelijktijdig gedownloade bestanden"
 #, python-format
 msgid "Number of items in search history: %d"
 msgstr "Aantal items in de zoekgeschiedenis: %d"
+
+#, fuzzy
+msgid "Number of rotated files to keep"
+msgstr "Aantal gelijktijdig gedownloade bestanden"
 
 msgid "Number of rows"
 msgstr "Aantal rijen"
@@ -2483,9 +2610,6 @@ msgstr "IN BEHANDELING"
 
 msgid "PLAY"
 msgstr ""
-
-msgid "PORT"
-msgstr "PORT"
 
 msgid "PREVIOUS/NEXT"
 msgstr ""
@@ -2640,16 +2764,10 @@ msgstr "Powerpoint Presentatie"
 msgid "Practice Management"
 msgstr "Praktijk management"
 
-msgid "Prefer hlsld for playlist with alt. media"
-msgstr "Voorkeur hlsld voor afspeellijst met alt. media"
-
 msgid "Prefered format"
 msgstr "Voorkeur formaat"
 
 msgid "Prefered quality"
-msgstr "Voorkeur kwaliteit"
-
-msgid "Preferred quality"
 msgstr "Voorkeur kwaliteit"
 
 msgid "Preferred streaming protocol"
@@ -2700,18 +2818,15 @@ msgstr "Programma's"
 msgid "Promote item"
 msgstr "Promoot item"
 
-msgid "Protocol:"
-msgstr "Protocol:"
-
 #, fuzzy
 msgid "Published"
 msgstr "Pools"
 
+msgid "Python modules"
+msgstr ""
+
 msgid "Quality:"
 msgstr "Kwaliteit:"
-
-msgid "RADIO"
-msgstr "RADIO"
 
 msgid "RAM buffer size [MB] for local files"
 msgstr "RAM-buffergrootte [MB] voor lokale bestanden"
@@ -2771,6 +2886,9 @@ msgstr "Beoordeling %s"
 
 msgid "Rating:"
 msgstr "Beoordeling:"
+
+msgid "Reading binaries..."
+msgstr ""
 
 msgid "Recon"
 msgstr "Verken"
@@ -2846,8 +2964,12 @@ msgstr "Bestand hernoemen"
 msgid "Reset State"
 msgstr "Reset status"
 
-msgid "Reset group"
-msgstr "Groep resetten"
+msgid "Reset this list to its default layout?"
+msgstr ""
+
+#, fuzzy
+msgid "Reset to defaults"
+msgstr "Reset status"
 
 msgid "Reset to saved order"
 msgstr ""
@@ -2883,6 +3005,10 @@ msgstr ""
 msgid "Right"
 msgstr ""
 
+#, fuzzy
+msgid "Romance"
+msgstr "Relevantie"
+
 msgid "Russian"
 msgstr "Russisch"
 
@@ -2901,14 +3027,26 @@ msgstr "GESTART"
 msgid "STOPPED"
 msgstr "GESTOPT"
 
+msgid "Safe search (restricted mode):"
+msgstr ""
+
 msgid "Save"
 msgstr "Opslaan"
 
 msgid "Save changes?"
 msgstr "Wijzigingen opslaan?"
 
+#, python-format
+msgid ""
+"Saved to:\n"
+"%s"
+msgstr ""
+
 msgid "Schedule"
 msgstr "Schema"
+
+msgid "Sci-Fi & Fantasy"
+msgstr ""
 
 msgid "Science"
 msgstr "Wetenschap"
@@ -2968,6 +3106,10 @@ msgid "Search only in TV Series"
 msgstr "Alleen zoeken in TV-series"
 
 msgid "Search results"
+msgstr "Zoek resultaten"
+
+#, fuzzy
+msgid "Search results region:"
 msgstr "Zoek resultaten"
 
 msgid "Search type"
@@ -3077,6 +3219,9 @@ msgstr "Selecteer actie"
 
 msgid "Send"
 msgstr "Verstuur"
+
+msgid "Send data to enc-dec.app on every link resolve?"
+msgstr ""
 
 msgid "Series"
 msgstr "Series"
@@ -3209,6 +3354,15 @@ msgstr "Uitzendingen"
 msgid "Shows A-Z"
 msgstr "Uitzendingen"
 
+msgid "Sign-in was not completed."
+msgstr ""
+
+msgid "Signed in to YouTube."
+msgstr ""
+
+msgid "Signed out of YouTube."
+msgstr ""
+
 msgid "Simple list"
 msgstr "Eenvoudig overzicht"
 
@@ -3232,9 +3386,6 @@ msgstr ""
 
 msgid "Software decoding as"
 msgstr "Software decoding als"
-
-msgid "Software floating point"
-msgstr "Software floating point"
 
 msgid "Some changes will be applied only after movie player restart."
 msgstr "Sommige wijzigingen worden alleen actief na het herstarten van de movie player."
@@ -3334,6 +3485,9 @@ msgstr "Afspelen stoppen en buffer opslaan"
 
 msgid "Stop playing?"
 msgstr "Afspelen stoppen?"
+
+msgid "Storage"
+msgstr ""
 
 msgid "Streamed"
 msgstr ""
@@ -3493,9 +3647,6 @@ msgstr ""
 msgid "TMDb Rating:"
 msgstr "Beoordeling:"
 
-msgid "TV"
-msgstr "TV"
-
 msgid "TV Series"
 msgstr "TV Series"
 
@@ -3514,6 +3665,13 @@ msgstr "TV series"
 msgid "Techniques"
 msgstr "Technieken"
 
+msgid "Temp"
+msgstr ""
+
+#, fuzzy
+msgid "Testers:"
+msgstr "Filters"
+
 #, fuzzy
 msgid "Text field alignment"
 msgstr "Bestandsnaam opgeven"
@@ -3524,6 +3682,14 @@ msgstr "Tekstbestanden ytlist en urllist staan in:"
 #, python-format
 msgid "The %s utility is necessary here but it was not detected."
 msgstr "Het programma %s is hier noodzakelijk maar is niet geïnstalleerd."
+
+msgid ""
+"The 7reels / cineb resolvers 'VidEasy', 'VidCore/VidFast', 'VidLink' and 'Peachify' cannot decrypt their links on the receiver.\n"
+"\n"
+"With this option ON, every time you open one of them E2iPlayer sends the site's encrypted stream token - which contains the TMDb id of the movie or episode you are opening - to the third-party web service enc-dec.app (operated by a private individual). That server then sees the id and your IP address on each play. Nothing else is transmitted, and it is only used for these four resolvers.\n"
+"\n"
+"Leave this OFF if you do not want that. The other resolvers (AdRock/vidrock, VidNest, ...) are not affected."
+msgstr ""
 
 msgid "The YouTube video ID is invalid."
 msgstr "De YouTube video ID is ongeldig."
@@ -3541,6 +3707,24 @@ msgstr "De kleur van het bekeken item"
 
 msgid "The color of the viewed item"
 msgstr "De kleur van het bekeken item"
+
+msgid "The connection limit for your weeb.tv account has been reached."
+msgstr ""
+
+#, python-format
+msgid ""
+"The debug log file is empty:\n"
+"%s"
+msgstr ""
+
+msgid ""
+"The debug log is disabled or set to console output.\n"
+"\n"
+"Enable it in the E2iPlayer configuration (Debug -> log to file) and reproduce the problem, then come back here."
+msgstr ""
+
+msgid "The debug log is not active."
+msgstr ""
 
 msgid "The default aspect ratio for the external player"
 msgstr "De default beeldverhouding van de externe player"
@@ -3613,10 +3797,32 @@ msgid "There is no hosts in this group."
 msgstr "Er zijn geen hosts in deze groep."
 
 #, fuzzy
+msgid "This channel does not exist."
+msgstr "Map \"%s\" bestaat niet."
+
+#, fuzzy
+msgid "This channel is currently offline."
+msgstr "Dit model is offline."
+
+#, fuzzy
+msgid "This channel is not available in your country (geo-blocking)."
+msgstr "%s said: Deze pagina is op dit moment niet beschikbaar in uw regio"
+
+#, fuzzy
+msgid "This channel is temporarily unavailable. Please try again later."
+msgstr "Dit programma is privé. Later opnieuw proberen!"
+
+msgid "This channel requires a premium account, or the free connection limit has been reached. Enter your weeb.tv login data in the host configuration."
+msgstr ""
+
+#, fuzzy
 msgid "This content is not available in your region."
 msgstr "%s said: Deze pagina is op dit moment niet beschikbaar in uw regio"
 
 msgid "This content is only available in Switzerland."
+msgstr ""
+
+msgid "This feed is empty, or the YouTube sign-in has expired - sign out and in again."
 msgstr ""
 
 msgid "This host has been added already to this group."
@@ -3640,11 +3846,28 @@ msgstr "Dit is een privé video."
 msgid "This video is a private."
 msgstr "Deze video is privé."
 
+msgid "This video requires you to sign in to a YouTube account."
+msgstr ""
+
 msgid "Tip! You can connect USB flash drive to fix this problem."
 msgstr "Tip! U kunt een USB flash drive aansluiten om dit probleem op te lossen."
 
 msgid "Title:"
 msgstr "Titel:"
+
+#, python-format
+msgid ""
+"To sign in to YouTube:\n"
+"\n"
+"1. On a phone or computer open:\n"
+"     %s\n"
+"\n"
+"2. Enter this code:\n"
+"\n"
+"     %s\n"
+"\n"
+"3. Approve the access, then select OK here."
+msgstr ""
 
 msgid ""
 "To watch videos from https://vk.com/ you need to login.\n"
@@ -3658,6 +3881,12 @@ msgstr "Vandaag"
 
 msgid "Top"
 msgstr "Boven"
+
+msgid "Top IMDb"
+msgstr ""
+
+msgid "Top in your country"
+msgstr ""
 
 msgid "Top rated"
 msgstr "Top gewaardeerd"
@@ -3696,6 +3925,10 @@ msgstr "Trending"
 msgid "Trending"
 msgstr "Trending"
 
+#, fuzzy
+msgid "Trending this week"
+msgstr "Trending"
+
 msgid "Try to change extplayer or disable IFD in GSTplayer configuration"
 msgstr "Probeer de extplayer te wijzigen of schakel IFD uit in de GSTplayer configuratie"
 
@@ -3708,17 +3941,11 @@ msgstr "Turkse series"
 msgid "Turkish TV series"
 msgstr "Turkse TV series"
 
-msgid "Turn off buffering for http://prognoza.pogody.tv/"
-msgstr "Bufferen uitschakelen voor http://prognoza.pogody.tv/"
-
 msgid "Tutorials"
 msgstr "Handleidingen"
 
 #, fuzzy
 msgid "Type:"
-msgstr "Type: "
-
-msgid "Type: "
 msgstr "Type: "
 
 #, python-format
@@ -3779,6 +4006,10 @@ msgstr "Bekeken markering verwijderen"
 msgid "Unzip error code[%s]."
 msgstr "Unzip fout code[%s]."
 
+#, fuzzy
+msgid "Updates"
+msgstr "Upload datum"
+
 msgid "Upload date"
 msgstr "Upload datum"
 
@@ -3787,9 +4018,6 @@ msgstr "Url overzicht player"
 
 msgid "Use HLS streams (adaptive):"
 msgstr ""
-
-msgid "Use Polish proxy for http://prognoza.pogody.tv/"
-msgstr "Gebruik Poolse proxy voor http://prognoza.pogody.tv/"
 
 msgid "Use colors"
 msgstr "Gebruik kleuren"
@@ -3806,9 +4034,6 @@ msgstr "Gebruik cache voor links"
 #, fuzzy
 msgid "Use login"
 msgstr "aanmelden"
-
-msgid "Use preferred quality"
-msgstr "Gebruik gewenste kwaliteit"
 
 msgid "Use proxy server:"
 msgstr "Gebruik proxy server:"
@@ -3885,9 +4110,6 @@ msgstr "Video"
 msgid "Video buffer size [MB]"
 msgstr "Video buffer grootte [MB]"
 
-msgid "Video format:"
-msgstr "Video formaat:"
-
 msgid "Video mode"
 msgstr "Video modus"
 
@@ -3913,6 +4135,12 @@ msgstr "Video's"
 #, python-format
 msgid "Videos count: %s"
 msgstr "Aantal video's: %s"
+
+msgid "Videos you have liked."
+msgstr ""
+
+msgid "Videos you have recently watched."
+msgstr ""
 
 msgid "View count"
 msgstr "Aantal keren bekeken"
@@ -3945,6 +4173,14 @@ msgstr "Kijken"
 msgid "Watch Videos Online"
 msgstr "Video's Online bekijken"
 
+#, fuzzy
+msgid "Watch history"
+msgstr "Zoek geschiedenis"
+
+#, fuzzy
+msgid "Watch later"
+msgstr "Kijken"
+
 msgid "Web component has been reset and all threads are stopped. :)"
 msgstr "Web component is gereset en alle threads zijn gestopt. :)"
 
@@ -3953,6 +4189,9 @@ msgstr "Web component is gereset, de volgende threads werken nog steeds:"
 
 msgid "Web interface version"
 msgstr "Web interface versie"
+
+msgid "When the maximum is reached"
+msgstr ""
 
 msgid "Whole file must be downloaded to start playback!"
 msgstr "Het hele bestand moet gedownload worden om deze af te spelen!"
@@ -3993,6 +4232,9 @@ msgstr "Verkeerde indexering."
 
 msgid "Wrong uri."
 msgstr "Verkeerde uri."
+
+msgid "Wrong weeb.tv username or password."
+msgstr ""
 
 msgid "Xtream Live Stream"
 msgstr "Xtream Live Stream"
@@ -4067,6 +4309,9 @@ msgstr "A.u.b. geen \"block I/O\" bewerkingen uitvoeren in de __init__."
 msgid "YouTube User Links Editor"
 msgstr ""
 
+msgid "Your 'Watch later' playlist."
+msgstr ""
+
 msgid "Your search entry"
 msgstr "Uw zoekopdracht"
 
@@ -4138,9 +4383,6 @@ msgstr "automatisch"
 msgid "available until %s"
 msgstr ""
 
-msgid "average"
-msgstr "gemiddeld"
-
 msgid "black"
 msgstr "zwart"
 
@@ -4166,6 +4408,9 @@ msgstr "Wijzigingen opslaan?"
 msgid "cobalt"
 msgstr "kobalt"
 
+msgid "could not run the probe"
+msgstr ""
+
 msgid "default"
 msgstr "standaard"
 
@@ -4184,6 +4429,9 @@ msgstr "externe eplayer3"
 msgid "external gstplayer"
 msgstr "externe gstplayer"
 
+msgid "file"
+msgstr ""
+
 msgid "first check if host works properly in GUI and web <b>BEFORE</b> reporting error in it !!!"
 msgstr "eerst controleren of de host goed functioneert in de GUI en het web <b>VOORDAT</b> u de fout bij ons meld !!!"
 
@@ -4192,6 +4440,9 @@ msgstr ""
 
 msgid "format"
 msgstr "formaat"
+
+msgid "free"
+msgstr ""
 
 msgid "from E2 settings"
 msgstr "van E2 instellingen"
@@ -4235,11 +4486,21 @@ msgstr "https"
 msgid "https - validate SSL certificates"
 msgstr "https - SSL certificaten controleren"
 
+#, fuzzy
+msgid "import failed"
+msgstr "Aanmelden mislukt."
+
+msgid "installed"
+msgstr ""
+
 msgid "internal"
 msgstr "intern"
 
 msgid "jersey"
 msgstr "tricot"
+
+msgid "kernel reports"
+msgstr ""
 
 msgid "large"
 msgstr "groot"
@@ -4252,6 +4513,9 @@ msgstr "limoen"
 
 msgid "line"
 msgstr "regel"
+
+msgid "loaded (no version)"
+msgstr ""
 
 msgid "login"
 msgstr "aanmelden"
@@ -4274,11 +4538,31 @@ msgstr "medium"
 msgid "navy"
 msgstr "marineblauw"
 
+msgid "not found"
+msgstr ""
+
+msgid "not installed"
+msgstr ""
+
+msgid "off"
+msgstr ""
+
+#, fuzzy
+msgid "off / console"
+msgstr "Ja, naar console"
+
 msgid "olive"
 msgstr "olijf"
 
+#, fuzzy
+msgid "on"
+msgstr "Geen"
+
 msgid "or"
 msgstr "of"
+
+msgid "other binaries"
+msgstr ""
 
 msgid "password"
 msgstr "wachtwoord"
@@ -4295,17 +4579,37 @@ msgstr "rood"
 msgid "rootfs"
 msgstr "rootfs"
 
+msgid "rotate (keep the old one as iptv-<date>.dbg)"
+msgstr ""
+
 msgid "rtmp"
 msgstr "rtmp"
 
 msgid "saved"
 msgstr ""
 
+msgid "saved in the temporary data folder"
+msgstr ""
+
+#, fuzzy
+msgid "saved next to the downloaded video file"
+msgstr "Aan downloader toevoegen"
+
 msgid "second"
 msgstr "seconde"
 
 msgid "seconds"
 msgstr "seconden"
+
+#, fuzzy
+msgid "select to sign out"
+msgstr "Kies een groep"
+
+msgid "sign in (subscriptions, playlists, age-restricted videos)"
+msgstr ""
+
+msgid "signed in"
+msgstr ""
 
 msgid "silver"
 msgstr "zilver"
@@ -4315,6 +4619,10 @@ msgstr "klein"
 
 msgid "standard"
 msgstr "standaard"
+
+#, fuzzy
+msgid "status"
+msgstr "Status: %s"
 
 msgid "teal"
 msgstr "groenblauw"
@@ -4331,10 +4639,20 @@ msgstr ""
 msgid "top"
 msgstr "boven"
 
+#, fuzzy
+msgid "truncate the file"
+msgstr "Kies het bestand"
+
 msgid "unknown"
 msgstr "onbekend"
 
+msgid "unlimited"
+msgstr ""
+
 msgid "unsorted"
+msgstr ""
+
+msgid "upzone.cc: free transfer limit reached - PREMIUM account required."
 msgstr ""
 
 msgid "version"
@@ -4363,6 +4681,13 @@ msgstr "wacht %s seconde"
 #, python-format
 msgid "wait %s seconds"
 msgstr "wacht %s seconden"
+
+#, python-format
+msgid "weeb.tv did not return a valid stream (error %s)."
+msgstr ""
+
+msgid "weeb.tv did not return a valid stream for this channel."
+msgstr ""
 
 msgid "white"
 msgstr "wit"

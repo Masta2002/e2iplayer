@@ -75,7 +75,7 @@ class UstvnowApi:
         if 0 < len(url) and not url.startswith('http'):
             url = self.MAIN_URL + url
         if not self.MAIN_URL.startswith('https://'):
-            url = url.replace('https://', 'http://')
+            url = url.replace('https://', 'http://')  # NOSONAR - deliberate scheme match to a non-https MAIN_URL
         return url
 
     def cleanHtmlStr(self, str):

@@ -196,7 +196,7 @@ class E2iPlayerWidget(Screen):
                 <widget name="headertext" position="320,70" zPosition="1" size="940,40" font="Regular; 20" transparent="1" halign="left" valign="center" backgroundColor="black" foregroundColor="#178ef5" borderWidth="1" borderColor="black" shadowColor="black" shadowOffset="-2,-2" />
                 <widget name="statustext" position="410,230" zPosition="1" size="685,90" font="Regular;30" halign="left" valign="top" transparent="1" backgroundColor="black" foregroundColor="white" />
                 <widget name="list" position="320,110" zPosition="2" size="940,384" itemHeight="32" font="Regular;20" scrollbarMode="showOnDemand" scrollbarSliderBorderWidth="1" scrollbarForegroundColor="#1b5a91" scrollbarBorderColor="#00b6b6b6" enableWrapAround="1" transparent="1" foregroundColor="white" backgroundColor="black" foregroundColorSelected="white" backgroundColorSelected="#1b5a91" borderWidth="1" borderColor="black" />
-                <widget name="console" position="20,500" zPosition="1" size="1240,154" font="Regular;20" transparent="1" foregroundColor="white" backgroundColor="black" borderWidth="1" borderColor="black" shadowColor="black" shadowOffset="-2,-2" halign="left" valign="center" />
+                <widget name="console" position="20,500" zPosition="1" size="1240,154" font="Regular;20" transparent="1" foregroundColor="white" backgroundColor="black" borderWidth="1" borderColor="black" halign="left" valign="center" />
                 <widget name="sequencer" position="0,0" zPosition="6" size="1280,%d" font="Regular;160" halign="center" valign="center" transparent="1" backgroundColor="#00000000" />
                 <widget name="cover" position="20,70" size="288,420" zPosition="3" alphatest="blend" />
                 <widget name="spinner"   zPosition="2" position="463,200" size="16,16" transparent="1" alphatest="blend" />
@@ -2149,18 +2149,22 @@ class E2iPlayerWidget(Screen):
         # save groups order if user change it at player selection
         if self.newDisplayGroupsList != self.displayGroupsList:
             # filters by key rather than assuming "everything except the
-            # last N items are real groups" (positional) - "all"/"config"
-            # can end up anywhere but the very end of the list (e.g.
+            # last N items are real groups" (positional) - the reserved
+            # keys can end up anywhere but the very end of the list (e.g.
             # after "Sort by name" in PlayerSelectorWidget's own BLUE
-            # menu, which has no guard keeping these two reserved keys
-            # pinned in place), and a positional cut would then persist
-            # them into iptvplayerhostsgroups.json as if they were real
-            # group names. "all"/"config" are always reserved (same
-            # filter list getNumOfSpecialItems() itself uses) and never
-            # belong in the saved group list. IPTVHostsGroups.getGroupsList()
-            # also filters these two out on load, to self-heal any
-            # install whose file already has this corruption.
-            groupList = [item[1] for item in self.newDisplayGroupsList if item[1] not in ('config', 'all')]
+            # menu, which has no guard keeping them pinned in place), and
+            # a positional cut would then persist them into
+            # iptvplayerhostsgroups.json as if they were real group names.
+            #
+            # Which keys are reserved depends on GRIDSUPPORT, matching
+            # exactly what selectGroup() appended and what
+            # getGroupsList()/getNumOfSpecialItems() treat as special:
+            # Legacy appends BOTH "all" and "config"; GRIDSUPPORT appends
+            # neither and "all" is one of its real PREDEFINED_GROUPS.
+            # Filtering "all" out here on GRIDSUPPORT made setGroupList()
+            # mark the "All" group disabled on every group-list reorder.
+            reservedKeys = ('config',) if GRIDSUPPORT else ('config', 'all')
+            groupList = [item[1] for item in self.newDisplayGroupsList if item[1] not in reservedKeys]
             self.groupObj.setGroupList(groupList)
 
         self.selectItemCallback(ret, 'selectgroup')
@@ -2750,6 +2754,8 @@ class E2iPlayerWidget(Screen):
                     if IsUrlDownloadable(url):
                         fullFilePath = downloadingPath + '/' + titleOfMovie + fileExtension
                         ret = gDownloadManager.addToDQueue(DMItem(url, fullFilePath))
+                        if not ret:
+                            self.session.open(MessageBox, _("File [%s] is already in the downloading queue.") % titleOfMovie, type=MessageBox.TYPE_INFO, timeout=10)
                     else:
                         ret = False
                         self.session.open(MessageBox, _("File can not be downloaded. Protocol [%s] is unsupported") % url.meta.get('iptv_proto', ''), type=MessageBox.TYPE_INFO, timeout=10)
@@ -2763,6 +2769,7 @@ class E2iPlayerWidget(Screen):
                         self.stopAutoPlaySequencer()
                 else:
                     self.stopAutoPlaySequencer()
+                    self.session.open(MessageBox, _("File can not be downloaded. Download manager is not available."), type=MessageBox.TYPE_ERROR, timeout=10)
             else:
                 # genuinely about to stream (not download) and every earlier check
                 # (blocked url, missing directory, low disk space) already passed -

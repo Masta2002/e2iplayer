@@ -442,7 +442,7 @@ class WgetDownloader(BaseDownloader, SidecarMixin):
             return
 
         if self.WGET_STS.DOWNLOADING == self.wgetStatus:
-            print(self.outData)
+            printDBG(self.outData)
             dataLen = len(self.outData)
 
             for idx in range(dataLen):

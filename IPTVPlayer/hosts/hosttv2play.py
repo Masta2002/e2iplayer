@@ -163,7 +163,7 @@ class TV2Play(CBaseHostClass):
                         plot = plot[3:]
                     if plot.endswith("</p>"):
                         plot = plot[:-4]
-                except:
+                except Exception:
                    pass
                 if 'EPISODE' in card['cardType']:
                     dirType = 'episodes'
@@ -244,7 +244,7 @@ class TV2Play(CBaseHostClass):
                     elif i['contentType'] != 'ARTICLE':
                         params = {'category': 'list_items', 'title': urllib_unquote(i['title']), 'url': "https://tv2play.hu/api/search/" + i['url'], 'icon': icon, 'desc': urllib_unquote(i['lead'])}
                         self.addDir(params)
-            except:
+            except Exception:
                pass
         if cItem['page'] != length:
             params = {'title': "Következő oldal", 'icon': None, 'page': cItem['page'], 'category': 'list_filters'}

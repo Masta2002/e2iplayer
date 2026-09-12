@@ -364,7 +364,7 @@ class m4sport(CBaseHostClass):
                     vl = 'https:' + vl
                 if not self.cm.isValidUrl(vl):
                     return ''
-                if len(vl) != '':
+                if vl:
                     bu = vl
         except Exception:
             return ''
@@ -427,7 +427,7 @@ class m4sport(CBaseHostClass):
                 if len(tt) == 2:
                     bv = tt[1].strip()[:-6].capitalize()
             return bv
-        except:
+        except Exception:
             return '-'
 
     def listSearchResult(self, cItem, searchPattern, searchType):

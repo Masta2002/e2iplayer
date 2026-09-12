@@ -94,59 +94,59 @@ class Raiplay(CBaseHostClass):
         else:
             url = self.getFullUrl(pathId)
             url = url.replace("[RESOLUTION]", "256x-")
-        print(">>> getThumbnailUrl - fullUrl:", url)
+        printDBG(">>> getThumbnailUrl - fullUrl: %s" % url)
         return url
 
     def getThumbnailUrl2(self, item):
-        print(">>> getThumbnailUrl2 - item keys:", item.keys())
+        printDBG(">>> getThumbnailUrl2 - item keys: %s" % list(item.keys()))
 
         # Check for 'transparent-icon' first
         if "transparent-icon" in item:
             icon_url = item["transparent-icon"]
             if "[an error occurred" not in icon_url:  # filtro anti-errore
-                print(">>> Using transparent-icon:", icon_url)
+                printDBG(">>> Using transparent-icon: %s" % icon_url)
                 return self.getThumbnailUrl(icon_url)
             else:
-                print(">>> Skipping invalid transparent-icon:", icon_url)
+                printDBG(">>> Skipping invalid transparent-icon: %s" % icon_url)
 
         if "audio" in item:
             ch_image_url = item["poster"]
-            print(">>> Using poster:", ch_image_url)
+            printDBG(">>> Using poster: %s" % ch_image_url)
             return self.getThumbnailUrl(ch_image_url)
 
         if "chImage" in item:
             ch_image_url = item["chImage"]
-            print(">>> Using chImage:", ch_image_url)
+            printDBG(">>> Using chImage: %s" % ch_image_url)
             return self.getThumbnailUrl(ch_image_url)
 
         # Fallback: check standard images
         if "images" in item and isinstance(item["images"], dict):
             images = item["images"]
-            print(">>> Available image keys:", images.keys())
+            printDBG(">>> Available image keys: %s" % list(images.keys()))
 
             if "landscape" in images:
-                print(">>> Using landscape:", images["landscape"])
+                printDBG(">>> Using landscape: %s" % images["landscape"])
                 return self.getThumbnailUrl(images["landscape"])
             elif "landscape43" in images:
-                print(">>> Using landscape43:", images["landscape43"])
+                printDBG(">>> Using landscape43: %s" % images["landscape43"])
                 return self.getThumbnailUrl(images["landscape43"])
             elif "portrait" in images:
-                print(">>> Using portrait:", images["portrait"])
+                printDBG(">>> Using portrait: %s" % images["portrait"])
                 return self.getThumbnailUrl(images["portrait"])
             elif "portrait43" in images:
-                print(">>> Using portrait43:", images["portrait43"])
+                printDBG(">>> Using portrait43: %s" % images["portrait43"])
                 return self.getThumbnailUrl(images["portrait43"])
             elif "portrait_logo" in images:
-                print(">>> Using portrait_logo:", images["portrait_logo"])
+                printDBG(">>> Using portrait_logo: %s" % images["portrait_logo"])
                 return self.getThumbnailUrl(images["portrait_logo"])
             elif "square" in images:
-                print(">>> Using square:", images["square"])
+                printDBG(">>> Using square: %s" % images["square"])
                 return self.getThumbnailUrl(images["square"])
             elif "default" in images:
-                print(">>> Using default:", images["default"])
+                printDBG(">>> Using default: %s" % images["default"])
                 return self.getThumbnailUrl(images["default"])
 
-        print(">>> No valid thumbnail found, using DEFAULT_ICON_URL")
+        printDBG(">>> No valid thumbnail found, using DEFAULT_ICON_URL")
         return self.DEFAULT_ICON_URL
 
     def getFullUrl(self, url):
@@ -254,7 +254,7 @@ class Raiplay(CBaseHostClass):
 
                                     return {'url': url[0], 'ct': ct[0], 'key': key}
 
-                                except:
+                                except Exception:
                                     return {'url': url[0], 'ct': ct[0], 'key': ''}
                         else:
                             return {'url': url[0], 'ct': ct[0], 'key': ''}
@@ -274,7 +274,7 @@ class Raiplay(CBaseHostClass):
             #    printExc()
             # return mediaUrl
 
-        except:
+        except Exception:
             return {'url': '', 'type': '', 'key': ''}
 
     def getLinksForVideo(self, cItem):
@@ -339,7 +339,7 @@ class Raiplay(CBaseHostClass):
         try:
             response = json_loads(data)
             tv_stations = response["dirette"]
-        except:
+        except Exception:
             printExc()
             return
 
@@ -467,8 +467,8 @@ class Raiplay(CBaseHostClass):
         str1 = cItem['name']
         epgDate = str1[:10]
         channelName = str1[11:]
-        print(">>> listEPG called with cItem name:", cItem['name'])
-        print(">>> epgDate:", epgDate, "channelName:", channelName)
+        printDBG(">>> listEPG called with cItem name: %s" % cItem['name'])
+        printDBG(">>> epgDate: %s channelName: %s" % (epgDate, channelName))
         channel_id = channelName.replace(" ", "-").lower()
         url = self.EPG_URL
         url = url.replace("[idCanale]", channel_id)
@@ -476,7 +476,7 @@ class Raiplay(CBaseHostClass):
 
         sts, data = self.getPage(url)
         if not sts:
-            print(">>> Failed to get page data")
+            printDBG(">>> Failed to get page data")
             return
 
         items = self.cm.ph.getAllItemsBeetwenMarkers(data, ('<li', '>', 'eventSpan'), '</li>')
@@ -484,16 +484,16 @@ class Raiplay(CBaseHostClass):
         for idx, i in enumerate(items):
             videoUrl = self.cm.ph.getSearchGroups(i, '''data-href=['"]([^'^"]+?)['"]''')[0]
             videoUrl = self.getFullUrl(videoUrl)
-            print(">>> item #", idx, "videoUrl:", videoUrl)
+            printDBG(">>> item #%s videoUrl: %s" % (idx, videoUrl))
 
             icon = self.cm.ph.getSearchGroups(i, '''data-img=['"]([^'^"]+?)['"]''')[0]
-            print(">>> item #", idx, "raw icon data-img:", icon)
+            printDBG(">>> item #%s raw icon data-img: %s" % (idx, icon))
             if icon:
                 icon = self.getFullUrl(icon)
-                print(">>> item #", idx, "full icon URL:", icon)
+                printDBG(">>> item #%s full icon URL: %s" % (idx, icon))
             else:
                 icon = self.DEFAULT_ICON_URL
-                print(">>> item #", idx, "no icon found")
+                printDBG(">>> item #%s no icon found" % idx)
             title = re.findall("<p class=\"info\">([^<]+?)</p>", i)
             title = title[0] if title else ''
             startTime = re.findall("<p class=\"time\">([^<]+?)</p>", i)
@@ -790,7 +790,7 @@ class Raiplay(CBaseHostClass):
             if not sts:
                 return
             response = json_loads(data)
-        except:
+        except Exception:
             return
 
         dominio = "RaiNews|Category-6dd7493b-f116-45de-af11-7d28a3f33dd2"
@@ -894,7 +894,7 @@ class Raiplay(CBaseHostClass):
 
         try:
             j = json_loads(data)
-        except:
+        except Exception:
             return
 
         videos = j.get("hits", [])

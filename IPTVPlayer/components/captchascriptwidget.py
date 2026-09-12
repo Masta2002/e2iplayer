@@ -40,26 +40,34 @@ class CaptchaScriptWidgetBase(Screen):
     # so kept as-is instead of guessing one is more "correct").
     ACTION_CONTEXTS = ["ColorActions", "OkCancelActions"]
 
-    def __prepareSkin(self):
+    # `extraWidth`/`extraBody`: opt-in hook for a subclass that needs its own
+    # widget(s) next to the shared console box (e.g. UnCaptchaReCaptchaMyE2iWidget's
+    # QR code) - it calls this itself (before `Screen.__init__`, see `__init__`
+    # below) with a wider screen and its own skin snippet, instead of the base
+    # forcing the plain 500px-wide chrome on every subclass.
+    def _prepareSkin(self, extraWidth=0, extraBody=""):
         iconBase = skinchrome.getIconBase()
         HEIGHT = 320
         return """
-        <screen position="center,center" title="%s" size="500,%d" resolution="1280,720" backgroundColor="#34111112" flags="wfNoBorder">
+        <screen position="center,center" title="%s" size="%d,%d" resolution="1280,720" backgroundColor="#34111112" flags="wfNoBorder">
             %s
             <widget name="console" position="10,68" zPosition="2" size="480,%d" font="Regular;24" transparent="1" foregroundColor="white" backgroundColor="black" borderWidth="1" borderColor="black" />
+            %s
             %s
         </screen>
     """ % (
             self.__class__.__name__,
-            HEIGHT,
+            500 + extraWidth, HEIGHT,
             skinchrome.build_header_auto(iconBase=iconBase),
             HEIGHT - 142,
+            extraBody,
             skinchrome.build_footer_auto(HEIGHT, iconBase=iconBase, keys=('red',), showNav=False, showNum=False, showOk=False, showExit=True),
         )
 
     def __init__(self, session, title, sitekey, referer, captchaType=None):
         self.session = session
-        self.skin = self.__prepareSkin()
+        if not getattr(self, "skin", None):
+            self.skin = self._prepareSkin()
         Screen.__init__(self, session)
         self.sitekey = sitekey
         self.referer = referer

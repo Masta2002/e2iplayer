@@ -2,7 +2,7 @@
 #
 from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT as _, GetIPTVNotify
 from Plugins.Extensions.IPTVPlayer.components.asynccall import iptv_execute
-from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, CreateTmpFile, rm, getDebugMode, GetJSCacheDir, \
+from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, CreateTmpFile, rm, KeepDebugArtifact, GetJSCacheDir, \
                                                           ReadTextFile, WriteTextFile
 
 ########################################################
@@ -48,7 +48,7 @@ def js_execute(jscode, params={}):
         ret = duktape_execute('-t %s ' % params.get('timeout_sec', 20) + ' ' + tmpPath)
 
     # leave last script for debug purpose
-    if getDebugMode() == '':
+    if not KeepDebugArtifact('debug_keep_js_scripts'):
         rm(tmpPath)
 
     printDBG('js_execute cmd ret[%s]' % ret)
@@ -130,7 +130,7 @@ def js_execute_ext(items, params={}):
         printExc()
 
     # leave last script for debug purpose
-    if getDebugMode() == '':
+    if not KeepDebugArtifact('debug_keep_js_scripts'):
         for file in tmpFiles:
             rm(file)
     return ret

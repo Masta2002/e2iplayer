@@ -461,11 +461,10 @@ def getDirectM3U8Playlist(M3U8Url, checkExt=True, variantCheck=True, cookieParam
                         codecs.append(c.split('.')[0].strip())
                         item['codecs'] = ','.join(codecs)
                 except Exception:
-                    item['codecs'] = None
-                item['name'] = "bitrate: %s res: %dx%d %s" % (item['bitrate'],
-                                                              item['width'],
-                                                              item['height'],
-                                                              item['codecs'])
+                    item['codecs'] = ''
+                item['name'] = "bitrate: %s res: %dx%d" % (item['bitrate'], item['width'], item['height'])
+                if item['codecs']:
+                    item['name'] += ' ' + item['codecs']
                 try:
                     videoRange = playlist.stream_info.video_range
                     if videoRange and videoRange.upper() not in ('SDR', ''):
@@ -480,7 +479,7 @@ def getDirectM3U8Playlist(M3U8Url, checkExt=True, variantCheck=True, cookieParam
                         altItem = dict(item)
                         altItem['name'] = '[%s] %s' % (_hlsAudioLabel(audio_stream), altItem['name'])
                         metaItem = dict(item['url'].meta)
-                        metaItem.update({'audio_url': audioUrl, 'video_url': altItem['url'], 'ff_out_container': 'mpegts', 'prefered_merger': 'hlsdl'})
+                        metaItem.update({'audio_url': audioUrl, 'video_url': altItem['url'], 'ff_out_container': 'mpegts'})
                         altItem['url'] = decorateUrl("merge://audio_url|video_url", metaItem)
                         retPlaylists.append(altItem)
                 else:
@@ -515,7 +514,7 @@ def getF4MLinksWithMeta(manifestUrl, checkExt=True, cookieParams={}, sortWithMax
     sts, data = cm.getPage(manifestUrl, headerParams, postData)
     if sts:
         liveStreamDetected = False
-        if 'live' == CParsingHelper.getDataBeetwenMarkers('<streamType>', '</streamType>', False):
+        if 'live' == CParsingHelper.getDataBeetwenMarkers(data, '<streamType>', '</streamType>', False)[1].strip():
             liveStreamDetected = True
         tmp = cm.ph.getDataBeetwenMarkers(data, '<manifest', '</manifest>')[1]
         baseUrl = cm.ph.getDataBeetwenReMarkers(tmp, re.compile('<baseURL[^>]*?>'), re.compile('</baseURL>'), False)[1].strip()

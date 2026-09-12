@@ -84,7 +84,7 @@ class IPTVArticleView(Screen):
             <widget name="spinner_3" zPosition="1" position="160,64" size="16,16" transparent="1" alphatest="blend" />
             <widget name="spinner_4" zPosition="1" position="176,64" size="16,16" transparent="1" alphatest="blend" />
             <widget name="cover" position="20,80" size="296,470" zPosition="3" alphatest="blend" />
-            <widget name="text" position="340,80" size="840,470" font="Regular;20" splitPosition="330" transparent="1" backgroundColor="black" foregroundColor="white" borderWidth="1" borderColor="black" shadowColor="black" shadowOffset="-2,-2"/>
+            <widget name="text" position="340,80" size="840,470" font="Regular;20" splitPosition="330" transparent="1" backgroundColor="black" foregroundColor="white"/>
             %s
         </screen>
         """ % (skinchrome.build_header_auto(iconBase=iconBase, logoWidgetName="playerlogo"), skinchrome.build_footer_auto(620, iconBase=iconBase, showOk=False))
@@ -251,7 +251,7 @@ class IPTVArticleView(Screen):
                             img = Image.open(file_path)
                             img.save(file_path, format="jpeg", quality=80)
                             img.close()
-                        except:
+                        except Exception:
                             printExc()
                     elif not webPEnabled:
                         return

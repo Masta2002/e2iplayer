@@ -445,7 +445,7 @@ class E2iPlayerBufferingWidget(Screen):
             self['rec_button'].hide()
 
     def updateOKButton(self):
-        if self.canRunMoviePlayer and False is self.checkMOOVAtom and (self.isMOOVAtomAtTheBeginning is None or self.moovAtomStatus == self.MOOV_STS.DOWNLOADED):
+        if self.canRunMoviePlayer and self.checkMOOVAtom is False and (self.isMOOVAtomAtTheBeginning is None or self.moovAtomStatus == self.MOOV_STS.DOWNLOADED):
             self['ok_button'].show()
         else:
             self['rec_button'].hide()

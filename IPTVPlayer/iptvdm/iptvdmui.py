@@ -9,7 +9,7 @@
 ###################################################
 # LOCAL import
 ###################################################
-from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, eConnectCallback, GetIconDir, GetNice, formatBytes, E2PrioFix
+from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, eConnectCallback, GetIconDir, GetNice, formatBytes, E2PrioFix, findT9JumpIndex
 from Plugins.Extensions.IPTVPlayer.components.iptvplayer import IPTVStandardMoviePlayer, IPTVMiniMoviePlayer
 from Plugins.Extensions.IPTVPlayer.components.iptvextmovieplayer import IPTVExtMoviePlayer
 from Plugins.Extensions.IPTVPlayer.components.iptvconfigmenu import GetMoviePlayer
@@ -20,7 +20,7 @@ from Plugins.Extensions.IPTVPlayer.components.e2ivkselector import GetVirtualKey
 from Plugins.Extensions.IPTVPlayer.iptvdm.iptvdh import DMHelper, DMItemBase
 from Plugins.Extensions.IPTVPlayer.components import skinchrome
 from Plugins.Extensions.IPTVPlayer.components.iptvchoicebox import IPTVChoiceBoxWidget, IPTVChoiceBoxItem, openChoiceBox
-from Plugins.Extensions.IPTVPlayer.components.iptvlist import IPTVDMActionChoiceBoxList
+from Plugins.Extensions.IPTVPlayer.components.iptvlist import IPTVDMActionChoiceBoxList, IPTVPlayerSelectOptionChoiceBoxList
 ###################################################
 from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import ensure_str
 ###################################################
@@ -28,6 +28,7 @@ from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import ensure_str
 ###################################################
 from Screens.Screen import Screen
 from enigma import eTimer, eConsoleAppContainer
+from Tools.NumericalTextInput import NumericalTextInput
 from Components.config import config
 from Components.ActionMap import ActionMap
 from Components.Label import Label
@@ -39,7 +40,7 @@ from Tools.LoadPixmap import LoadPixmap
 from datetime import timedelta
 from Screens.MessageBox import MessageBox
 from os import path as os_path, remove as os_remove, rename as os_rename
-from glob import glob
+from glob import escape as glob_escape, glob
 from re import match as re_match
 ###################################################
 
@@ -81,7 +82,7 @@ class IPTVDMWidget(Screen):
             <widget name="titel" position="851,10" size="175,40" foregroundColor="white" backgroundColor="black" borderWidth="1" borderColor="black" transparent="1" zPosition="2" font="Regular;20" halign="left" valign="center" />
             <widget name="titelStateIcon" position="1036,17" size="26,26" scale="1" alphatest="blend" transparent="1" zPosition="3" />
             <widget name="titelState" position="1070,10" size="90,40" foregroundColor="white" backgroundColor="black" borderWidth="1" borderColor="black" transparent="1" zPosition="2" font="Regular;20" halign="left" valign="center" />
-            <widget source="downloadlist" render="Listbox" position="10,66" zPosition="2" size="1160,560" scrollbarMode="showOnDemand" scrollbarSliderBorderWidth="1" scrollbarForegroundColor="#1b5a91" scrollbarBorderColor="#00b6b6b6" transparent="1" foregroundColor="white" backgroundColor="black" foregroundColorSelected="white" backgroundColorSelected="#1b5a91" shadowColor="black" shadowOffset="-2,-2" enableWrapAround="1">
+            <widget source="downloadlist" render="Listbox" position="10,66" zPosition="2" size="1160,560" scrollbarMode="showOnDemand" scrollbarSliderBorderWidth="1" scrollbarForegroundColor="#1b5a91" scrollbarBorderColor="#00b6b6b6" transparent="1" foregroundColor="white" backgroundColor="black" foregroundColorSelected="white" backgroundColorSelected="#1b5a91" enableWrapAround="1">
                 <convert type="TemplatedMultiContent">
                 {"template": [
                     MultiContentEntryPixmapAlphaBlend(pos = (10, 10), size = (42, 42), flags = BT_SCALE, png = 0),  # Flag.
@@ -99,11 +100,14 @@ class IPTVDMWidget(Screen):
             _("%s download manager") % "E2iPlayer",
             skinchrome.build_header_auto(iconBase=iconBase),
             genIconDir,
-            # RED (Stop) + GREEN (Start) merged into one alternating
-            # GREEN toggle, YELLOW (Archive) + BLUE (Downloads) merged
-            # into one alternating YELLOW toggle - see
-            # green_pressed()/yellow_pressed() below. RED/BLUE are free.
-            skinchrome.build_footer_auto(696, iconBase=iconBase, keys=('green', 'yellow'), showNav=False),
+            # GREEN (Stop/Start) and YELLOW (Archive/Downloads) are each
+            # one alternating toggle - see green_pressed()/yellow_pressed()
+            # below. RED toggles reordering mode for the waiting queue
+            # (see red_pressed()), BLUE opens the free-text "Find item"
+            # jump for the Archive list (see blue_pressed()) - both
+            # blanked out via their own key_red/key_blue
+            # ConditionalShowHide whenever they don't apply.
+            skinchrome.build_footer_auto(696, iconBase=iconBase, keys=('red', 'green', 'yellow', 'blue'), showNav=False),
         )
 
     def __init__(self, session, downloadmanager):
@@ -121,18 +125,46 @@ class IPTVDMWidget(Screen):
         # own condition, see green_pressed()/yellow_pressed() for the toggle.
         self["key_green"] = StaticText(_("Start"))
         self["key_yellow"] = StaticText(_("Archive"))
+        # key_red text is set by _updateRedLabel() - blank until the skin
+        # decides (ConditionalShowHide) whether to show the slot at all.
+        # localMode/reorderingMode/duringMoving have to exist before the
+        # first setManagerStatus() call a few lines down (it calls
+        # _updateRedLabel(), which reads them) - moved up from their old
+        # spot further below in __init__ for that reason.
+        self["key_red"] = StaticText("")
+        # key_blue text is set by _updateBlueLabel() - "Find item" jump
+        # over whichever list is on screen (downloads or Archive), same
+        # ConditionalShowHide-blanks-itself convention as key_red.
+        self["key_blue"] = StaticText("")
+        self.localMode = False
+        self.IDS_ENABLE_REORDERING = _("Enable reordering")
+        self.IDS_DISABLE_REORDERING = _("Disable reordering")
+        self.reorderingMode = False
+        self.duringMoving = False
+        self.movingDownloadIdx = None
 
         self["downloadlist"] = List()
         # self["list"] = IPTVDownloadManagerList()
         # self["list"].connectSelChanged(self.onSelectionChanged)
-        self["actions"] = ActionMap(["WizardActions", "DirectionActions", "ColorActions"],
-        {
+        # T9 letter-jump over whichever list is on screen - same
+        # config.plugins.iptvplayer.enableT9MainList global switch and
+        # findT9JumpIndex() helper the host content lists/favourites/
+        # search history already use, see keyNumberJump().
+        self.t9Input = NumericalTextInput(handleTimeout=False)
+        actionsDict = {
             "ok": self.ok_pressed,
             "back": self.back_pressed,
             "green": self.green_pressed,
             "yellow": self.yellow_pressed,
-
-        }, -1)
+            "red": self.red_pressed,
+            "blue": self.blue_pressed,
+            "up": self.up_pressed,
+            "down": self.down_pressed,
+        }
+        for digit in '123456789':
+            actionsDict[digit] = self.makeNumberJump(digit)
+        self["actions"] = ActionMap(["WizardActions", "DirectionActions", "ColorActions", "NumberActions"],
+        actionsDict, -1)
 
         self["titel"] = Label()
         self["titelState"] = Label()
@@ -175,7 +207,6 @@ class IPTVDMWidget(Screen):
         # every 500ms Proxy Queue will be checked
         self.mainTimer.start(500)
 
-        self.localMode = False
         self.localFiles = []
         self.console = eConsoleAppContainer()
         self.console_appClosed_conn = eConnectCallback(self.console.appClosed, self.refreshFinished)
@@ -336,6 +367,20 @@ class IPTVDMWidget(Screen):
             candidate = baseName + ext
             if candidate not in candidates:
                 candidates.append(candidate)
+
+        # FFMPEGDownloader's kept-for-debug ".iptv.cmd" file (see
+        # KeepDebugArtifact()) is named "<the path ffmpeg was originally
+        # asked to write>.iptv.cmd" - not baseName + a fixed extension like
+        # the sidecars above, and the download may since have been renamed
+        # to its real container extension (_fixFileExtension()), so the
+        # exact original name isn't recoverable from fileName alone. Glob
+        # for it instead - baseName is stable across that rename. Escaped
+        # since movie titles routinely contain [, ], ? etc., which glob
+        # would otherwise interpret as pattern metacharacters.
+        for candidate in glob(glob_escape(baseName) + '.*.iptv.cmd'):
+            if candidate not in candidates:
+                candidates.append(candidate)
+
         for candidate in candidates:
             try:
                 if os_path.exists(candidate):
@@ -420,6 +465,198 @@ class IPTVDMWidget(Screen):
                 self["titelStateIcon"].instance.setPixmap(pix)
         except Exception:
             printExc()
+        self._updateRedLabel()
+
+    def _updateRedLabel(self):
+        # reordering the waiting queue only makes sense while the DM is
+        # inactive (running -> processDQ() is constantly popping items off
+        # the front of the same queue, out from under any reorder in
+        # progress) and while looking at the real download list (not the
+        # Archive - status there is never WAITING, nothing to reorder).
+        if self.localMode or self.DM.isRunning():
+            self["key_red"].setText("")
+        else:
+            self["key_red"].setText(self.IDS_DISABLE_REORDERING if self.reorderingMode else self.IDS_ENABLE_REORDERING)
+
+    def _activeList(self):
+        # same list getSelItem()/_moveOrNavigate() pick between: the
+        # Archive's self.localFiles, or the live self.currList otherwise.
+        return self.localFiles if self.localMode else self.currList
+
+    @staticmethod
+    def _displayName(item):
+        # the same "just the file's own name" text buildEntry() shows as
+        # the row title - what Find item/T9 jump match/sort against.
+        try:
+            return item.fileName.split('/')[-1]
+        except Exception:
+            return ''
+
+    def _updateBlueLabel(self):
+        # free-text jump, same idea as E2iPlayerWidget's own "Find item"
+        # (host content lists) - works over whichever list is on screen,
+        # live downloads or the Archive.
+        if len(self._activeList()) > 1:
+            self["key_blue"].setText(_("Find item"))
+        else:
+            self["key_blue"].setText("")
+
+    def blue_pressed(self):
+        if self.iptvclosing or len(self._activeList()) <= 1:
+            return
+        caps = {}
+        virtualKeyboard = GetVirtualKeyboard(caps)
+        if caps.get('has_additional_params'):
+            self.session.openWithCallback(self._findEntryCallback, virtualKeyboard, title=_("Find item"), text='', additionalParams={})
+        else:
+            self.session.openWithCallback(self._findEntryCallback, virtualKeyboard, title=_("Find item"), text='')
+
+    def _findEntryCallback(self, text=None):
+        if not text:
+            return
+        query = text.strip().lower()
+        if not query:
+            return
+        matches = []
+        for idx, item in enumerate(self._activeList()):
+            name = self._displayName(item)
+            if query in name.lower():
+                matches.append((name, idx))
+        if not matches:
+            self.session.open(MessageBox, _("No matching entries found."), type=MessageBox.TYPE_INFO, timeout=5)
+            return
+        if len(matches) == 1:
+            self["downloadlist"].setCurrentIndex(matches[0][1])
+            return
+        choiceItems = [IPTVChoiceBoxItem(name=name, privateData=idx) for name, idx in matches]
+        height = self._getActionListHeight(len(choiceItems))
+        openChoiceBox(self.session, {'width': 600, 'height': height, 'current_idx': 0, 'title': _("Matching entries"), 'options': choiceItems, 'list_class': IPTVPlayerSelectOptionChoiceBoxList, 'chrome': True}, self._findEntryResultCallback)
+
+    def _findEntryResultCallback(self, ret):
+        if ret is None:
+            return
+        try:
+            idx = ret.privateData
+            if isinstance(idx, int) and 0 <= idx < len(self._activeList()):
+                self["downloadlist"].setCurrentIndex(idx)
+        except Exception:
+            printExc()
+
+    def makeNumberJump(self, digit):
+        return lambda: self.keyNumberJump(digit)
+
+    def keyNumberJump(self, digit):
+        # same config.plugins.iptvplayer.enableT9MainList global switch +
+        # findT9JumpIndex() helper as every other list in this app (host
+        # content lists, favourites, search history) - see
+        # searchhistoryeditor.py's own keyNumberJump() for the closest
+        # precedent (a plain list with no other use for digit keys,
+        # same as here). Skipped while carrying a reorder pickup, same
+        # reasoning as that screen's manualReorderMode guard - jumping
+        # the selection out from under a picked-up item would be
+        # confusing at best.
+        if self.iptvclosing or self.duringMoving or not config.plugins.iptvplayer.enableT9MainList.value:
+            return
+        activeList = self._activeList()
+        if not activeList:
+            return
+        letter = self.t9Input.getKey(int(digit))
+        if not letter:
+            return
+        try:
+            currentIdx = self.getSelIndex()
+            idx = findT9JumpIndex(len(activeList), currentIdx, letter, lambda i: self._displayName(activeList[i]))
+            if idx >= 0:
+                self["downloadlist"].setCurrentIndex(idx)
+        except Exception:
+            printExc()
+
+    def _exitReorderingMode(self):
+        self.duringMoving = False
+        self.movingDownloadIdx = None
+        self.reorderingMode = False
+        self._updateRedLabel()
+
+    def red_pressed(self):
+        if self.iptvclosing or self.localMode or self.DM.isRunning():
+            return
+        if self.reorderingMode:
+            self._exitReorderingMode()
+        else:
+            self.reorderingMode = True
+            self._updateRedLabel()
+
+    def _reorderingStillValid(self):
+        # red_pressed()/yellow_pressed()/green_pressed() only catch the DM
+        # starting or the view switching to Archive when *this screen*
+        # triggers it. IPTVDMApi.addBufferItem() (a buffered playback
+        # being kept) calls runWorkThread() on its own, completely
+        # independent of this screen and its green button - so a reorder
+        # left mid-carry has to be re-validated right before it actually
+        # touches queueDQ, not just when it started.
+        if self.localMode or self.DM.isRunning():
+            self._exitReorderingMode()
+            return False
+        return True
+
+    def _toggleReorderPickup(self, item):
+        if not self._reorderingStillValid():
+            return
+        if self.duringMoving:
+            self.duringMoving = False
+            self.movingDownloadIdx = None
+            self.reloadList(True)
+        elif item.status == DMHelper.STS.WAITING:
+            self.duringMoving = True
+            self.movingDownloadIdx = item.downloadIdx
+            self.reloadList(True)
+
+    def up_pressed(self):
+        self._moveOrNavigate(True)
+
+    def down_pressed(self):
+        self._moveOrNavigate(False)
+
+    def _moveOrNavigate(self, moveUp):
+        # Components.Sources.List (self["downloadlist"]'s actual class -
+        # not a custom widget like the favourites/PlayerSelector lists,
+        # which is what made an eListbox instance.moveSelection() call
+        # look safe here, but it isn't: this source has no .instance at
+        # all) only exposes index-based navigation, so both plain
+        # browsing and carrying are done as index arithmetic instead of
+        # touching eListbox directly. Uses the same list getSelItem()
+        # does (self.localFiles in the Archive view, self.currList
+        # otherwise) - duringMoving can only ever be True outside the
+        # Archive (see red_pressed()/yellow_pressed()/
+        # _reorderingStillValid()), so the carry branch below only ever
+        # runs against self.currList regardless of which one this holds.
+        activeList = self.localFiles if self.localMode else self.currList
+        count = len(activeList)
+        if count <= 0:
+            return
+        curIndex = self.getSelIndex()
+        if curIndex < 0:
+            curIndex = 0
+        if not self.duringMoving:
+            # plain browsing - same wraparound the skin's own
+            # enableWrapAround would give a native listbox
+            newIndex = (curIndex - 1) % count if moveUp else (curIndex + 1) % count
+            self["downloadlist"].setCurrentIndex(newIndex)
+            return
+        if not self._reorderingStillValid():
+            return
+        newIndex = curIndex - 1 if moveUp else curIndex + 1
+        # no wraparound while carrying, and the target must still be a
+        # WAITING item - the waiting (queueDQ) items are always the front
+        # of the list while the DM is inactive, so stepping past either
+        # end of that segment (or the whole list) means there's nowhere
+        # valid to carry the item to.
+        if newIndex < 0 or newIndex >= count or activeList[newIndex].status != DMHelper.STS.WAITING:
+            return
+        downloadIdx = activeList[curIndex].downloadIdx
+        if self.DM.moveQueueDQItem(downloadIdx, newIndex):
+            self.reloadList(True)
+            self["downloadlist"].setCurrentIndex(newIndex)
 
     def onListChanged(self):
         global gIPTVDM_listChanged
@@ -458,11 +695,12 @@ class IPTVDMWidget(Screen):
             printExc()
 
     def green_pressed(self):
-        # RED (Stop) + GREEN (Start) merged into one alternating toggle
-        # on GREEN, RED freed up entirely.
         if self.DM.isRunning():
             self.DM.stopWorkThread()
         else:
+            # about to start downloading - reordering the waiting queue
+            # while it's actively being drained no longer makes sense
+            self._exitReorderingMode()
             self.DM.runWorkThread()
         self.setManagerStatus()
         return
@@ -473,9 +711,10 @@ class IPTVDMWidget(Screen):
     def yellow_pressed(self):
         # YELLOW (Archive, switch into local/archive browsing) + BLUE
         # (Downloads, switch back) merged into one alternating toggle on
-        # YELLOW, BLUE freed up entirely. Label shows exactly the target
-        # view's name, picked at runtime instead of being two separate
-        # fixed labels.
+        # YELLOW. Label shows exactly the target view's name, picked at
+        # runtime instead of being two separate fixed labels. RED
+        # (reordering) only applies outside the Archive, BLUE (Find item)
+        # only inside it - see _updateRedLabel()/_updateBlueLabel().
         if self.iptvclosing:
             return
         if not self.localMode:
@@ -491,8 +730,11 @@ class IPTVDMWidget(Screen):
                 else:
                     self.console.execute(E2PrioFix(cmd))
             self.localMode = True
+            # Archive has nothing WAITING to reorder
+            self._exitReorderingMode()
         else:
             self.localMode = False
+            self._updateRedLabel()
         self._updateYellowLabel()
         self.reloadList(True)
         return
@@ -508,6 +750,12 @@ class IPTVDMWidget(Screen):
 
     def ok_pressed(self):
         if self.iptvclosing:
+            return
+
+        if self.reorderingMode:
+            item = self.getSelItem()
+            if item is not None:
+                self._toggleReorderPickup(item)
             return
 
         # wszystkie dostepne opcje
@@ -792,6 +1040,18 @@ class IPTVDMWidget(Screen):
         elif DMHelper.STS.ERROR == item.status:
             status += _("DOWNLOAD ERROR")
 
+        if item.downloaderName:
+            info = ("%s [%s]" % (info, item.downloaderName)) if info else "[%s]" % item.downloaderName
+
+        # reordering-mode "picked up" marker. self["downloadlist"] is a
+        # plain Components.Sources.List (no .instance, unlike the custom
+        # list widgets favourites/PlayerSelector use for their own
+        # reordering), so there's no per-row selected-color override
+        # available here - mark the row's own text content instead.
+        if self.duringMoving and item.downloadIdx == self.movingDownloadIdx:
+            fileName = ">> %s <<" % fileName
+            status = _("MOVING")
+
 #        res.append((eListboxPythonMultiContent.TYPE_TEXT, width - 240, self.fonts[0][2] + self.fonts[1][2], 240, self.fonts[2][2], 2, RT_HALIGN_RIGHT | RT_VALIGN_CENTER, status))
 #        res.append((eListboxPythonMultiContent.TYPE_TEXT, 45, self.fonts[0][2] + self.fonts[1][2], width - 45 - 240, self.fonts[2][2], 2, RT_HALIGN_LEFT | RT_VALIGN_CENTER, info))
 #        res.append((eListboxPythonMultiContent.TYPE_PIXMAP_ALPHABLEND, 3, 1, 64, 64, self.dictPIX.get(item.status, None)))
@@ -814,11 +1074,13 @@ class IPTVDMWidget(Screen):
                 # get current List from api
                 self.currList = self.DM.getList()
                 self["downloadlist"].setList(self.buildEnties(self.currList))
+                self._updateBlueLabel()
                 # self["list"].setList([(x,) for x in self.currList])
                 # self["list"].show()
         elif force:
             printDBG("IPTV_DM_UI reload archive list")
             self["downloadlist"].setList(self.buildEnties(self.localFiles))
+            self._updateBlueLabel()
             # self["list"].hide()
             # self["list"].setList([(x,) for x in self.localFiles])
             # self["list"].show()

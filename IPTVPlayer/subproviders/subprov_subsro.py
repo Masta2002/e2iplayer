@@ -46,7 +46,7 @@ class SubsRoProvider(CBaseSubProviderClass):
         self.dInfo = params['discover_info']
 
     def getMainUrl(self):
-        return 'http://subs.ro/'
+        return 'https://subs.ro/'
 
     def getMaxFileSize(self):
         return 1024 * 1024 * 10  # 10MB, max size of sub file to be download

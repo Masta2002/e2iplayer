@@ -335,7 +335,7 @@ class RadioECtWs(CBaseHostClass):
                     try:
                         size_mb = float(fsize) / (1024 * 1024)
                         desc_parts.append("%.1f MB" % size_mb)
-                    except:
+                    except Exception:
                         pass
                 desc = " | ".join(desc_parts) if desc_parts else "ملف أرشيفي"
                 episode_data = {"title": title, "url": download_url, "icon": cItem.get("icon"), "desc": Y + desc + W, "format": fformat, "size": fsize, "source": fsource, "base_name": base_name, "episode_num": episode_num}
@@ -357,7 +357,7 @@ class RadioECtWs(CBaseHostClass):
                 is_original = ep.get("source") == "original"
                 try:
                     size = float(ep["size"])
-                except:
+                except Exception:
                     size = 999999999
                 return (ep_num, not is_mp3, not is_original, size)
 

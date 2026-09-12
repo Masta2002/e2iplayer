@@ -425,7 +425,7 @@ class IPTVExtMoviePlayer(Screen):
                 return json.loads(response)
 
             return {}
-        except:
+        except Exception:
             printExc()
             return {}
 

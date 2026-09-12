@@ -57,7 +57,6 @@ class MusicBox(CBaseHostClass):
     def __init__(self):
         CBaseHostClass.__init__(self)
         self.youtube_api_key = ""
-        self.ytformats = config.plugins.iptvplayer.ytformat.value
         self.ytp = YouTubeParser()
         self.lastfm_username = config.plugins.iptvplayer.MusicBox_login.value
         self.usePremiumAccount = config.plugins.iptvplayer.MusicBox_premium.value
@@ -303,11 +302,11 @@ class MusicBox(CBaseHostClass):
         printDBG("MusicBox - list abum tracks")
 
         if url != 0:
-            sts, data = self.cm.getPage('http://ws.audioscrobbler.com/2.0/?method=album.getInfo&mbid=' + url + '&api_key=' + audioscrobbler_api_key + '&format=json', {'header': HEADER})
+            sts, data = self.cm.getPage('https://ws.audioscrobbler.com/2.0/?method=album.getInfo&mbid=' + url + '&api_key=' + audioscrobbler_api_key + '&format=json', {'header': HEADER})
             if not sts:
                 return
         else:
-            sts, data = self.cm.getPage('http://ws.audioscrobbler.com/2.0/?method=album.getInfo&artist=' + urllib_quote(artist) + '&album=' + urllib_quote(album) + '&api_key=' + audioscrobbler_api_key + '&format=json', {'header': HEADER})
+            sts, data = self.cm.getPage('https://ws.audioscrobbler.com/2.0/?method=album.getInfo&artist=' + urllib_quote(artist) + '&album=' + urllib_quote(album) + '&api_key=' + audioscrobbler_api_key + '&format=json', {'header': HEADER})
             if not sts:
                 return
         try:
@@ -338,7 +337,7 @@ class MusicBox(CBaseHostClass):
         if False is self.usePremiumAccount:
             self.sessionEx.waitForFinishOpen(MessageBox, 'Wpisz login do last.fm.', type=MessageBox.TYPE_INFO, timeout=10)
         else:
-            url = 'http://ws.audioscrobbler.com/2.0/?method=user.getPlaylists&user=' + self.lastfm_username + '&api_key=' + audioscrobbler_api_key + '&format=json'
+            url = 'https://ws.audioscrobbler.com/2.0/?method=user.getPlaylists&user=' + self.lastfm_username + '&api_key=' + audioscrobbler_api_key + '&format=json'
             sts, data = self.cm.getPage(url, {'header': HEADER})
             if not sts:
                 return
@@ -357,14 +356,14 @@ class MusicBox(CBaseHostClass):
         printDBG("MusicBox - last.fm list track")
 
         playlist_id = "lastfm://playlist/" + artist
-        url = 'http://ws.audioscrobbler.com/2.0/?method=playlist.fetch&playlistURL=' + playlist_id + '&api_key=' + audioscrobbler_api_key + '&format=json'
-        print(url)
+        url = 'https://ws.audioscrobbler.com/2.0/?method=playlist.fetch&playlistURL=' + playlist_id + '&api_key=' + audioscrobbler_api_key + '&format=json'
+        printDBG(url)
         sts, data = self.cm.getPage(url, {'header': HEADER})
         if not sts:
             return
         try:
             data = json_loads(data)['playlist']['trackList']['track']
-            print(data)
+            printDBG(str(data))
             for x in range(len(data)):
                 item = data[x]
                 artist = item['creator']

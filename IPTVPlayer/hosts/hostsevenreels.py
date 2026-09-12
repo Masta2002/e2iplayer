@@ -42,13 +42,9 @@ class SevenReels(GenericFolderWatchedScraperMixin, CBaseHostClass):
     # how to resolve show up as playable links. "tv" appends /<season>/<episode>.
     EMBEDS = (
         ('AdRock', 'https://vidrock.net/%(kind)s/%(id)s%(se)s'),
-        ('Strigil', 'https://strigil.cc/embed/%(kind)s/%(id)s%(se)s?embedKey=key_c90081fa77254eb5&autoPlay=true'),
-        ('VidSrc', 'https://vidsrc.mov/embed/%(kind)s/%(id)s%(se)s'),
         ('VidEasy', 'https://player.videasy.to/%(kind)s/%(id)s%(se)s?title=%(title)s&year=%(year)s'),
-        ('VidLink', 'https://vidlink.pro/%(kind)s/%(id)s%(se)s'),
         ('VidCore', 'https://vidcore.net/%(kind)s/%(id)s%(se)s'),
         ('VidNest', 'https://vidnest.fun/%(kind)s/%(id)s%(se)s'),
-        ('Vidzee', 'https://player.vidzee.wtf/embed/%(kind)s/%(id)s%(se)s'),
         ('VidUp', 'https://vidup.to/%(kind)s/%(id)s%(se)s'),
     )
 
@@ -141,10 +137,19 @@ class SevenReels(GenericFolderWatchedScraperMixin, CBaseHostClass):
             printExc()
             return
 
+        items = self._extractItems(parsed)
+        ids = [item.get('id') for item in items if item.get('id')]
+        if page > 1 and ids and ids == cItem.get('_prev_ids'):
+            # some 7reels endpoints never report total_pages and just keep
+            # re-serving the last real page once you page past the end of the
+            # list, instead of an empty one - stop here instead of showing
+            # (and re-offering "Next page" on) the same titles forever.
+            return
+
         defType = 'tv' if 'discover/tv' in cItem['url'] else 'movie'
         normalize = IsMediaNamingNormalized()
         count = 0
-        for item in self._extractItems(parsed):
+        for item in items:
             mediaId = item.get('id')
             title = self.cleanHtmlStr(item.get('title') or item.get('name') or '')
             if not mediaId or not title:
@@ -157,6 +162,7 @@ class SevenReels(GenericFolderWatchedScraperMixin, CBaseHostClass):
             dispTitle = ('%s (%s)' % (title, year)) if (year and (normalize or mediaType == 'movie')) else title
             params = dict(cItem)
             params.pop('page', None)
+            params.pop('_prev_ids', None)
             params.update({
                 'good_for_fav': True,
                 'category': 'video',
@@ -176,11 +182,12 @@ class SevenReels(GenericFolderWatchedScraperMixin, CBaseHostClass):
             count += 1
 
         totalPages = parsed.get('total_pages') or parsed.get('totalPages') or 0
-        if count and totalPages and page < totalPages:
+        hasMore = (page < totalPages) if totalPages else bool(count)
+        if count and hasMore:
             params = dict(cItem)
             params.pop('isWatched', None)
             params.pop('isStarted', None)
-            params.update({'good_for_fav': False, 'title': _('Next page'), 'page': page + 1, 'category': 'list_items'})
+            params.update({'good_for_fav': False, 'title': _('Next page'), 'page': page + 1, 'category': 'list_items', '_prev_ids': ids})
             self.addDir(params)
 
     def listSearchResult(self, cItem, searchPattern, searchType):

@@ -205,6 +205,8 @@ config.plugins.iptvplayer.debug_on_limit = ConfigSelection(default="truncate", c
     ("rotate", _("rotate (keep the old one as iptv-<date>.dbg)"))])
 config.plugins.iptvplayer.debug_rotate_keep = ConfigSelection(default="3", choices=[
     ("1", "1"), ("2", "2"), ("3", "3"), ("5", "5"), ("10", "10")])
+config.plugins.iptvplayer.debug_keep_ffmpeg_cmd = ConfigYesNo(default=True)
+config.plugins.iptvplayer.debug_keep_js_scripts = ConfigYesNo(default=True)
 
 # icons
 config.plugins.iptvplayer.IconsSize = ConfigSelection(default="100", choices=[("100", "100x100"), ("120", "120x120"), ("135", "135x135")])
@@ -232,13 +234,14 @@ config.plugins.iptvplayer.pluginProtectedByPin = ConfigYesNo(default=False)
 
 config.plugins.iptvplayer.httpssslcertvalidation = ConfigYesNo(default=False)
 
-# PROXY
-config.plugins.iptvplayer.proxyurl = ConfigText(default="http://user:pass@ip:port", fixed_size=False)
-config.plugins.iptvplayer.german_proxyurl = ConfigText(default="http://user:pass@ip:port", fixed_size=False)
-config.plugins.iptvplayer.russian_proxyurl = ConfigText(default="http://user:pass@ip:port", fixed_size=False)
-config.plugins.iptvplayer.ukrainian_proxyurl = ConfigText(default="http://user:pass@ip:port", fixed_size=False)
-config.plugins.iptvplayer.alternative_proxy1 = ConfigText(default="http://user:pass@ip:port", fixed_size=False)
-config.plugins.iptvplayer.alternative_proxy2 = ConfigText(default="http://user:pass@ip:port", fixed_size=False)
+# PROXY - the default is a placeholder example the user overwrites; a proxy
+# URL is legitimately http as often as https, so S5332 does not apply here
+config.plugins.iptvplayer.proxyurl = ConfigText(default="http://user:pass@ip:port", fixed_size=False)  # NOSONAR
+config.plugins.iptvplayer.german_proxyurl = ConfigText(default="http://user:pass@ip:port", fixed_size=False)  # NOSONAR
+config.plugins.iptvplayer.russian_proxyurl = ConfigText(default="http://user:pass@ip:port", fixed_size=False)  # NOSONAR
+config.plugins.iptvplayer.ukrainian_proxyurl = ConfigText(default="http://user:pass@ip:port", fixed_size=False)  # NOSONAR
+config.plugins.iptvplayer.alternative_proxy1 = ConfigText(default="http://user:pass@ip:port", fixed_size=False)  # NOSONAR
+config.plugins.iptvplayer.alternative_proxy2 = ConfigText(default="http://user:pass@ip:port", fixed_size=False)  # NOSONAR
 
 # config.plugins.iptvplayer.captcha_bypass_order = ConfigSelection(default="", choices=[("", _("Internal, then external")), ("free", _("Only free")), ("free_pay", _("External free, then paid")), ("pay", _("External paid"))])
 # config.plugins.iptvplayer.captcha_bypass_free = ConfigSelection(default="", choices=[("", _("None")), ("myjd", "MyJDownloader")])
@@ -601,7 +604,7 @@ class ConfigMenu(ConfigBaseWidget):
         list.append(getConfigListEntry(_("%s e-mail") % ('My JDownloader'), config.plugins.iptvplayer.myjd_login))
         list.append(getConfigListEntry(_("%s password") % ('My JDownloader'), config.plugins.iptvplayer.myjd_password))
         list.append(getConfigListEntry(_("%s device name") % ('My JDownloader'), config.plugins.iptvplayer.myjd_jdname))
-        list.append(getConfigListEntry(_("%s API KEY") % 'http://youtube.com/', config.plugins.iptvplayer.api_key_youtube))
+        list.append(getConfigListEntry(_("%s API KEY") % 'https://youtube.com/', config.plugins.iptvplayer.api_key_youtube))
 
         list.append(getConfigListEntry(_("----- CAPTCHA CONFIGURATION -----"), ))
         list.append(getConfigListEntry(_("Default captcha bypass"), config.plugins.iptvplayer.captcha_bypass))
@@ -611,19 +614,19 @@ class ConfigMenu(ConfigBaseWidget):
         # if config.plugins.iptvplayer.captcha_bypass_pay.value == "9kw.eu":
         list.append(getConfigListEntry(_("%s API KEY") % 'https://9kw.eu/', config.plugins.iptvplayer.api_key_9kweu))
         # if config.plugins.iptvplayer.captcha_bypass_pay.value == "2captcha.com":
-        list.append(getConfigListEntry(_("%s API KEY") % 'http://2captcha.com/', config.plugins.iptvplayer.api_key_2captcha))
+        list.append(getConfigListEntry(_("%s API KEY") % 'https://2captcha.com/', config.plugins.iptvplayer.api_key_2captcha))
 
         list.append(getConfigListEntry(_("----- SUBTITLES CONFIGURATION -----"), ))
         list.append(getConfigListEntry(_("Use subtitles parser extension if available"), config.plugins.iptvplayer.useSubtitlesParserExtension))
         list.append(getConfigListEntry("https://subsource.net/ " + _("API_KEY"), config.plugins.iptvplayer.subsourceapi))
         list.append(getConfigListEntry("https://subdl.com/ " + _("API Key"), config.plugins.iptvplayer.subdlapi))
-        list.append(getConfigListEntry("http://opensubtitles.org/ " + _("login"), config.plugins.iptvplayer.opensuborg_login))
-        list.append(getConfigListEntry("http://opensubtitles.org/ " + _("password"), config.plugins.iptvplayer.opensuborg_password))
-        list.append(getConfigListEntry("http://napisy24.pl/ " + _("login"), config.plugins.iptvplayer.napisy24pl_login))
-        list.append(getConfigListEntry("http://napisy24.pl/ " + _("password"), config.plugins.iptvplayer.napisy24pl_password))
-        list.append(getConfigListEntry("http://vk.com/ " + _("login"), config.plugins.iptvplayer.vkcom_login))
-        list.append(getConfigListEntry("http://vk.com/ " + _("password"), config.plugins.iptvplayer.vkcom_password))
-        list.append(getConfigListEntry("http://1fichier.com/ " + _("e-mail"), config.plugins.iptvplayer.fichiercom_login))
+        list.append(getConfigListEntry("https://opensubtitles.org/ " + _("login"), config.plugins.iptvplayer.opensuborg_login))
+        list.append(getConfigListEntry("https://opensubtitles.org/ " + _("password"), config.plugins.iptvplayer.opensuborg_password))
+        list.append(getConfigListEntry("https://napisy24.pl/ " + _("login"), config.plugins.iptvplayer.napisy24pl_login))
+        list.append(getConfigListEntry("https://napisy24.pl/ " + _("password"), config.plugins.iptvplayer.napisy24pl_password))
+        list.append(getConfigListEntry("https://vk.com/ " + _("login"), config.plugins.iptvplayer.vkcom_login))
+        list.append(getConfigListEntry("https://vk.com/ " + _("password"), config.plugins.iptvplayer.vkcom_password))
+        list.append(getConfigListEntry("https://1fichier.com/ " + _("e-mail"), config.plugins.iptvplayer.fichiercom_login))
         list.append(getConfigListEntry("http://1fichier.com/ " + _("password"), config.plugins.iptvplayer.fichiercom_password))
 
         list.append(getConfigListEntry(_("----- PLAYERS & PLAYBACK CONFIGURATION -----"), ))
@@ -652,6 +655,11 @@ class ConfigMenu(ConfigBaseWidget):
 
         list.append(getConfigListEntry(_("----- DEBUG CONFIGURATION -----"), ))
         list.append(getConfigListEntry(_("Debug logs"), config.plugins.iptvplayer.debugprint))
+        if config.plugins.iptvplayer.debugprint.value != "":
+            list.append(getConfigListEntry("    " + _("Keep FFmpeg command files (.iptv.cmd)"), config.plugins.iptvplayer.debug_keep_ffmpeg_cmd))
+            list.append(getConfigListEntry("        " + _("saved next to the downloaded video file"), ))
+            list.append(getConfigListEntry("    " + _("Keep temporary JS scripts"), config.plugins.iptvplayer.debug_keep_js_scripts))
+            list.append(getConfigListEntry("        " + _("saved in the temporary data folder"), ))
         if config.plugins.iptvplayer.debugprint.value not in ("", "console"):
             list.append(getConfigListEntry("    " + _("Clear the log file at plugin start"), config.plugins.iptvplayer.debug_clear_on_start))
             list.append(getConfigListEntry("    " + _("Maximum log file size"), config.plugins.iptvplayer.debug_max_size))

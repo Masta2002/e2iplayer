@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-04 17:31+0200\n"
+"POT-Creation-Date: 2026-09-12 19:05+0000\n"
 "PO-Revision-Date: 2026-07-27 16:39+0200\n"
 "Last-Translator: Warder <ciksa@seznam.cz>\n"
 "Language-Team: \n"
@@ -128,10 +128,6 @@ msgid "%s returned %s: %s"
 msgstr "%s vrátil %s: %s"
 
 #, python-format
-msgid "%s said: This page is currently unavailable in your region"
-msgstr "%s řekl: Tato stránka je momentálně ve vaší oblasti nedostupná"
-
-#, python-format
 msgid "%s services configuration"
 msgstr "Konfigurace %s služeb"
 
@@ -151,6 +147,13 @@ msgstr ""
 "%s používá opatření \"zeměpisného blokování\", aby vám zabránila v přístupu ke službám ze zahraničí.\n"
 " Hostitelská země: %s, vaše země: %s"
 
+msgid "(nothing here yet)"
+msgstr ""
+
+#, fuzzy
+msgid "(reading...)"
+msgstr "Populární"
+
 msgid "++"
 msgstr "++"
 
@@ -168,6 +171,10 @@ msgstr "----- KONFIGURACE UKLÁDÁNÍ DO VYPADACÍ PAMĚTI -----"
 
 msgid "----- CAPTCHA CONFIGURATION -----"
 msgstr "----- KONFIGURACE CAPTCHA -----"
+
+#, fuzzy
+msgid "----- DEBUG CONFIGURATION -----"
+msgstr "----- KONFIGURACE UKLÁDÁNÍ DO VYPADACÍ PAMĚTI -----"
 
 msgid "----- DOWNLOADING CONFIGURATION -----"
 msgstr "----- STAŽOVÁNÍ KONFIGURACE -----"
@@ -226,9 +233,6 @@ msgstr "----------  Hledat \"%s\"  ----------"
 
 msgid "----------------- External exteplayer3 options -----------------"
 msgstr "----------------- Možnosti externího exteplayeru3 -----------------"
-
-msgid "----------Other----------"
-msgstr "----- DALŠÍ NASTAVENÍ -----"
 
 msgid "--All Episodes--"
 msgstr "--Všechny epizody--"
@@ -305,6 +309,9 @@ msgstr "POZOR!"
 msgid "Aborted"
 msgstr "Přerušena"
 
+msgid "About"
+msgstr ""
+
 msgid "Accept"
 msgstr "Přijmout"
 
@@ -317,6 +324,9 @@ msgstr "Přístup byl odepřen. Zkontrolujte prosím heslo."
 #, fuzzy
 msgid "Accessible"
 msgstr "Přístup zamítnut"
+
+msgid "Action & Thriller"
+msgstr ""
 
 msgid "Active host"
 msgstr "Aktivní hostitel"
@@ -370,9 +380,6 @@ msgstr "Přidal: %s, adresář: %s"
 msgid "Age limit:"
 msgstr "Věkové omezení:"
 
-msgid "Age-gate bypass:"
-msgstr "Obchvat věkové brány:"
-
 msgid "All"
 msgstr "Vše"
 
@@ -405,6 +412,9 @@ msgstr "Povolit kodek VP9:"
 
 msgid "Allow dash format:"
 msgstr "Povolit formát pomlčky:"
+
+msgid "Allow external link-decryption service (enc-dec.app)"
+msgstr ""
 
 #, fuzzy
 msgid "Allow host to override suggestions provider"
@@ -505,9 +515,6 @@ msgstr "Opravdu chcete smazat historii vyhledávání?"
 msgid "Are you sure you want to remove file \"%s\"?"
 msgstr "Opravdu chcete odebrat soubor \"%s\"?"
 
-msgid "Are you sure you want to reset all hosts in this group to defaults?"
-msgstr "Opravdu chcete obnovit výchozí nastavení všech hostitelů v této skupině?"
-
 msgid "Are you sure you want to reset all settings to their default values?"
 msgstr "Opravdu chcete obnovit všechna nastavení na výchozí hodnoty?"
 
@@ -536,6 +543,10 @@ msgstr "Zvukové stopy"
 msgid "Auto"
 msgstr "Automaticky"
 
+#, python-format
+msgid "Auto refresh: %s"
+msgstr ""
+
 msgid "Auto selection based on the settings"
 msgstr "Automatický výběr na základě nastavení"
 
@@ -544,6 +555,10 @@ msgstr "Metoda automatického spuštění"
 
 msgid "Auto-translate"
 msgstr "Automatický překlad"
+
+#, fuzzy
+msgid "Automatic"
+msgstr "Automaticky"
 
 msgid "Automatically turn on external subtitles"
 msgstr "Automatické zapnutí externích titulků"
@@ -572,6 +587,9 @@ msgstr "Základní věda"
 msgid "Best"
 msgstr "Nejlepší"
 
+msgid "Binaries"
+msgstr ""
+
 #, fuzzy
 msgid "Bing Suggestions"
 msgstr "Návrhy Google"
@@ -592,8 +610,14 @@ msgstr "Blokovat soubory wmv"
 msgid "Board Review"
 msgstr "Hodnocení představenstva"
 
+msgid "Box"
+msgstr ""
+
 msgid "Broadcast:"
 msgstr "Vysílání:"
+
+msgid "Browse by genre"
+msgstr ""
 
 msgid "Browse videos"
 msgstr "Procházet videa"
@@ -693,6 +717,20 @@ msgstr "Filmy v kině"
 msgid "Clear"
 msgstr "Jasno"
 
+#, fuzzy
+msgid "Clear log"
+msgstr "Jasno"
+
+#, fuzzy, python-format
+msgid ""
+"Clear the debug log file?\n"
+"%s"
+msgstr "Smazat soubor protokolu"
+
+#, fuzzy
+msgid "Clear the log file at plugin start"
+msgstr "Zakázat živé vysílání při spuštění pluginu"
+
 msgid "Click"
 msgstr "Klikněte"
 
@@ -714,11 +752,22 @@ msgstr "Kolekce"
 msgid "Columbia"
 msgstr "Kolumbie"
 
+msgid "Comedy"
+msgstr ""
+
 msgid "Commits"
 msgstr "Potvrzení"
 
+#, fuzzy
+msgid "Competitions"
+msgstr "Kolekce"
+
 msgid "Concert"
 msgstr ""
+
+#, fuzzy
+msgid "Config"
+msgstr "Konfigurovat %s"
 
 msgid "Configuration"
 msgstr "Nastavení"
@@ -750,6 +799,10 @@ msgid "Connection to server failed!"
 msgstr "Připojení k serveru selhalo!"
 
 #, fuzzy
+msgid "Connection to the weeb.tv server failed."
+msgstr "Připojení k serveru selhalo!"
+
+#, fuzzy
 msgid "Content not available"
 msgstr "Úplný popis není k dispozici"
 
@@ -762,11 +815,23 @@ msgstr "Kopírovat"
 msgid "Could not add the user link."
 msgstr "Nepodařilo se přidat odkaz na uživatele."
 
+#, fuzzy
+msgid "Could not start the YouTube sign-in."
+msgstr "Nepodařilo se přidat odkaz na uživatele."
+
+#, fuzzy
+msgid "Could not write the file."
+msgstr "Nepodařilo se zapsat soubor „%s“."
+
 msgid "Countries"
 msgstr "Země"
 
 msgid "Country"
 msgstr "Země"
+
+#, fuzzy
+msgid "Country / store:"
+msgstr "Země:"
 
 msgid "Country:"
 msgstr "Země:"
@@ -839,6 +904,10 @@ msgstr "Ladicí soubor neexistuje - nic ke stažení"
 
 msgid "Debug file has been deleted"
 msgstr "Ladicí soubor byl smazán"
+
+#, fuzzy
+msgid "Debug log"
+msgstr "Ladicí protokoly"
 
 msgid "Debug logs"
 msgstr "Ladicí protokoly"
@@ -1088,6 +1157,9 @@ msgstr "Stahování"
 msgid "Downloads location"
 msgstr "Umístění ke stažení"
 
+msgid "Drama"
+msgstr ""
+
 #, fuzzy
 msgid "DuckDuckGo Suggestions"
 msgstr "Návrhy Google"
@@ -1240,7 +1312,6 @@ msgstr "Zadejte starý PIN"
 msgid "Enter page number"
 msgstr "Zadejte číslo stránky"
 
-#, python-brace-format
 msgid "Enter page number (MAX PAGE: {})"
 msgstr "Zadejte číslo stránky (MAX. STRANA: {})"
 
@@ -1459,6 +1530,9 @@ msgstr "Skupiny oblíbených"
 msgid "Favorites manager"
 msgstr "Správce oblíbených"
 
+msgid "Featured"
+msgstr ""
+
 #, python-format
 msgid "File \"%s\" already exists"
 msgstr "Soubor „%s“ již existuje"
@@ -1470,9 +1544,17 @@ msgstr "Soubor „%s“ již existuje!"
 msgid "File Not Found."
 msgstr "Soubor playlistu nebyl nalezen."
 
+#, fuzzy, python-format
+msgid "File [%s] is already in the downloading queue."
+msgstr "Soubor [%s] byl přidán do fronty stahování."
+
 #, python-format
 msgid "File [%s] was added to downloading queue."
 msgstr "Soubor [%s] byl přidán do fronty stahování."
+
+#, fuzzy
+msgid "File can not be downloaded. Download manager is not available."
+msgstr "Soubor nelze stáhnout. Protokol [%s] není podporován"
 
 #, python-format
 msgid "File can not be downloaded. Protocol [%s] is unsupported"
@@ -1497,6 +1579,9 @@ msgstr "Filmová tvorba"
 
 msgid "Filmweb Suggestions"
 msgstr "Návrhy Filmwebu"
+
+msgid "Find item"
+msgstr ""
 
 msgid "First Page"
 msgstr "První strana"
@@ -1620,6 +1705,9 @@ msgstr "Přejděte do konfigurace hostitele dostupné pod modrým tlačítkem."
 msgid "Google Suggestions"
 msgstr "Návrhy Google"
 
+msgid "Google account"
+msgstr ""
+
 msgid "Graphic services selector"
 msgstr "Výběr grafických služeb"
 
@@ -1641,10 +1729,6 @@ msgstr "Seskupte odkazy do kategorií:"
 msgid "Group with id[%s] not found."
 msgstr "Skupina s ID[%s] nebyla nalezena."
 
-#, python-format
-msgid "Guest timeout: %s"
-msgstr "Časový limit hosta: %s"
-
 msgid "HLS/m3u8"
 msgstr "HLS/m3u8"
 
@@ -1654,9 +1738,6 @@ msgstr "Chyba připojení HTTPS „%s“\n"
 
 msgid "Hand"
 msgstr "Straně"
-
-msgid "Hardware floating point"
-msgstr "Hardwarová plovoucí desetinná čárka"
 
 msgid "Health"
 msgstr ""
@@ -1689,6 +1770,9 @@ msgstr "Domů"
 
 msgid "Home page"
 msgstr "Domácí stránka"
+
+msgid "Horror"
+msgstr ""
 
 #, python-format
 msgid "Hosting \"%s\" not supported."
@@ -1736,6 +1820,9 @@ msgstr "kvalita"
 
 msgid "Icons size"
 msgstr "Velikost ikon"
+
+msgid "Image"
+msgstr ""
 
 msgid "Indian Movies"
 msgstr "Indické filmy"
@@ -1871,9 +1958,14 @@ msgstr ""
 msgid "Jump to a selected page"
 msgstr "Přejít na vybranou stránku"
 
-#, python-brace-format
 msgid "Jump to a selected page, max: {}"
 msgstr "Přejít na vybranou stránku, max: {}"
+
+msgid "Keep FFmpeg command files (.iptv.cmd)"
+msgstr ""
+
+msgid "Keep temporary JS scripts"
+msgstr ""
 
 msgid "Knee & Sports"
 msgstr "Kolena a sport"
@@ -1942,8 +2034,14 @@ msgstr "Již používáte nejnovější verzi: %s"
 msgid "Latest added"
 msgstr "Naposledy přidané"
 
+msgid "Latest highlights"
+msgstr ""
+
 msgid "Latest update"
 msgstr "Nejnovější aktualizace"
+
+msgid "Latest videos from the channels you are subscribed to."
+msgstr ""
 
 msgid "Latino"
 msgstr "Latinoameričan"
@@ -1956,6 +2054,10 @@ msgstr "Předplatné:"
 
 msgid "Lightgray"
 msgstr "Světle šedá"
+
+#, fuzzy
+msgid "Liked videos"
+msgstr "Procházet videa"
 
 msgid "Line Spacing"
 msgstr "Řádkování"
@@ -2039,6 +2141,10 @@ msgstr "ID lokality se neshoduje! %s <> %s"
 msgid "Localization"
 msgstr "Lokalizace"
 
+#, fuzzy
+msgid "Log"
+msgstr "Logy"
+
 msgid "Login"
 msgstr "Přihlášení"
 
@@ -2100,12 +2206,12 @@ msgstr ""
 msgid "MENU=Options"
 msgstr "Možnosti videa"
 
-msgid "MIPS Floating Point Architecture"
-msgstr "Architektura MIPS s plovoucí desetinnou čárkou"
-
 #, python-format
 msgid "MOVE: %s"
 msgstr "PŘESUNOUT: %s"
+
+msgid "MOVING"
+msgstr ""
 
 msgid "Main"
 msgstr "Hlavní"
@@ -2123,6 +2229,10 @@ msgstr "Stav manažera:"
 msgid "Masrahyat"
 msgstr "Masrahjat"
 
+#, fuzzy
+msgid "Matching entries"
+msgstr "Služba řešení Captcha"
+
 #, python-format
 msgid "Max connections: %s"
 msgstr "Maximální počet připojení: %s"
@@ -2132,6 +2242,10 @@ msgstr "Maximální počet položek na stránku"
 
 msgid "Max number of parallel downloads has been reached."
 msgstr "Byl dosažen maximální počet paralelních stahování."
+
+#, fuzzy
+msgid "Maximum log file size"
+msgstr "Zobrazit velikost souboru"
 
 msgid "Medtryx Marketing"
 msgstr "Medtryx Marketing"
@@ -2147,6 +2261,9 @@ msgstr "Zmeškané"
 
 msgid "Missed the show?"
 msgstr "Zmeškali jste představení?"
+
+msgid "Missing API key - set it in Settings, Web streams, Windy Webcams"
+msgstr ""
 
 msgid "More"
 msgstr "Více"
@@ -2232,6 +2349,10 @@ msgstr "Moje řešení JDownloader reCAPTCHA v2"
 
 msgid "My list"
 msgstr "Můj list"
+
+#, fuzzy
+msgid "My subscriptions"
+msgstr "Popis:"
 
 msgid "MyE2i Cloudflare solution"
 msgstr "Řešení MyE2i Cloudflare"
@@ -2359,6 +2480,9 @@ msgstr ""
 msgid "Nothing has been downloaded yet."
 msgstr "Zatím nic nebylo staženo."
 
+msgid "Nothing to save - the debug log is not active."
+msgstr ""
+
 #, fuzzy
 msgid "Now"
 msgstr "Ne"
@@ -2372,6 +2496,10 @@ msgstr "Počet současně stažených souborů"
 #, python-format
 msgid "Number of items in search history: %d"
 msgstr "Počet položek v historii vyhledávání: %d"
+
+#, fuzzy
+msgid "Number of rotated files to keep"
+msgstr "Počet současně stažených souborů"
 
 msgid "Number of rows"
 msgstr "Počet řádků"
@@ -2436,9 +2564,6 @@ msgstr "ĆEKAJÍCÍ"
 
 msgid "PLAY"
 msgstr ""
-
-msgid "PORT"
-msgstr "PŘÍSTAV"
 
 msgid "PREVIOUS/NEXT"
 msgstr ""
@@ -2595,16 +2720,10 @@ msgstr "PowerPointová prezentace"
 msgid "Practice Management"
 msgstr "Řízení praxe"
 
-msgid "Prefer hlsld for playlist with alt. media"
-msgstr "Preferovat hlsld pro playlisty s alternativními médii"
-
 msgid "Prefered format"
 msgstr "Preferovaný formát"
 
 msgid "Prefered quality"
-msgstr "Preferovaná kvalita"
-
-msgid "Preferred quality"
 msgstr "Preferovaná kvalita"
 
 msgid "Preferred streaming protocol"
@@ -2655,17 +2774,14 @@ msgstr "Programy"
 msgid "Promote item"
 msgstr "Propagovat položku"
 
-msgid "Protocol:"
-msgstr "Protokol:"
-
 msgid "Published"
 msgstr "Zveřejněné"
 
+msgid "Python modules"
+msgstr ""
+
 msgid "Quality:"
 msgstr "Kvalita:"
-
-msgid "RADIO"
-msgstr "RADIO"
 
 msgid "RAM buffer size [MB] for local files"
 msgstr "Velikost vyrovnávací paměti RAM [MB] pro lokální soubory"
@@ -2725,6 +2841,9 @@ msgstr "Hodnocení %s"
 
 msgid "Rating:"
 msgstr "Hodnocení:"
+
+msgid "Reading binaries..."
+msgstr ""
 
 msgid "Recon"
 msgstr "Průzkum"
@@ -2798,8 +2917,12 @@ msgstr "Přejmenovat soubor"
 msgid "Reset State"
 msgstr "Obnovit stav"
 
-msgid "Reset group"
-msgstr "Resetovat skupinu"
+msgid "Reset this list to its default layout?"
+msgstr ""
+
+#, fuzzy
+msgid "Reset to defaults"
+msgstr "Obnovit stav"
 
 msgid "Reset to saved order"
 msgstr ""
@@ -2835,6 +2958,10 @@ msgstr ""
 msgid "Right"
 msgstr ""
 
+#, fuzzy
+msgid "Romance"
+msgstr "Relevantnost"
+
 msgid "Russian"
 msgstr "Ruština"
 
@@ -2853,14 +2980,26 @@ msgstr "ZAHÁJENO"
 msgid "STOPPED"
 msgstr "ZASTAVENO"
 
+msgid "Safe search (restricted mode):"
+msgstr ""
+
 msgid "Save"
 msgstr "Uložit"
 
 msgid "Save changes?"
 msgstr "Uložit změny?"
 
+#, python-format
+msgid ""
+"Saved to:\n"
+"%s"
+msgstr ""
+
 msgid "Schedule"
 msgstr "Plán"
+
+msgid "Sci-Fi & Fantasy"
+msgstr ""
 
 msgid "Science"
 msgstr "Věda"
@@ -2920,6 +3059,10 @@ msgid "Search only in TV Series"
 msgstr "Hledat pouze v televizních seriálech"
 
 msgid "Search results"
+msgstr "Výsledky vyhledávání"
+
+#, fuzzy
+msgid "Search results region:"
 msgstr "Výsledky vyhledávání"
 
 msgid "Search type"
@@ -3027,6 +3170,9 @@ msgstr "Výběr"
 
 msgid "Send"
 msgstr "Odeslat"
+
+msgid "Send data to enc-dec.app on every link resolve?"
+msgstr ""
 
 msgid "Series"
 msgstr "Série"
@@ -3159,6 +3305,15 @@ msgstr "Pořady"
 msgid "Shows A-Z"
 msgstr "Pořady"
 
+msgid "Sign-in was not completed."
+msgstr ""
+
+msgid "Signed in to YouTube."
+msgstr ""
+
+msgid "Signed out of YouTube."
+msgstr ""
+
 msgid "Simple list"
 msgstr "Jednoduchý seznam"
 
@@ -3182,9 +3337,6 @@ msgstr ""
 
 msgid "Software decoding as"
 msgstr "Softwarové dekódování jako"
-
-msgid "Software floating point"
-msgstr "Softwarový plovoucí desetinný bod"
 
 msgid "Some changes will be applied only after movie player restart."
 msgstr "Některé změny se projeví až po restartu přehrávače videa."
@@ -3281,6 +3433,9 @@ msgstr "Zastavení přehrávání s uložením do vyrovnávací paměti"
 
 msgid "Stop playing?"
 msgstr "Přestat hrát?"
+
+msgid "Storage"
+msgstr ""
 
 msgid "Streamed"
 msgstr "Streamované"
@@ -3448,9 +3603,6 @@ msgstr ""
 msgid "TMDb Rating:"
 msgstr "Hodnocení TMDb:"
 
-msgid "TV"
-msgstr "TV"
-
 msgid "TV Series"
 msgstr "Televizní seriál"
 
@@ -3469,6 +3621,13 @@ msgstr "Televizní seriál"
 msgid "Techniques"
 msgstr "Techniky"
 
+msgid "Temp"
+msgstr ""
+
+#, fuzzy
+msgid "Testers:"
+msgstr "Scénáristé:"
+
 #, fuzzy
 msgid "Text field alignment"
 msgstr "Nastavit název souboru"
@@ -3479,6 +3638,14 @@ msgstr "Textové soubory ytlist a urllist se nacházejí v:"
 #, python-format
 msgid "The %s utility is necessary here but it was not detected."
 msgstr "Nástroj %s je zde nezbytný, ale nebyl detekován."
+
+msgid ""
+"The 7reels / cineb resolvers 'VidEasy', 'VidCore/VidFast', 'VidLink' and 'Peachify' cannot decrypt their links on the receiver.\n"
+"\n"
+"With this option ON, every time you open one of them E2iPlayer sends the site's encrypted stream token - which contains the TMDb id of the movie or episode you are opening - to the third-party web service enc-dec.app (operated by a private individual). That server then sees the id and your IP address on each play. Nothing else is transmitted, and it is only used for these four resolvers.\n"
+"\n"
+"Leave this OFF if you do not want that. The other resolvers (AdRock/vidrock, VidNest, ...) are not affected."
+msgstr ""
 
 msgid "The YouTube video ID is invalid."
 msgstr "ID videa YouTube je neplatné."
@@ -3495,6 +3662,24 @@ msgstr "Barva zobrazené položky"
 
 msgid "The color of the viewed item"
 msgstr "Barva zobrazené položky"
+
+msgid "The connection limit for your weeb.tv account has been reached."
+msgstr ""
+
+#, python-format
+msgid ""
+"The debug log file is empty:\n"
+"%s"
+msgstr ""
+
+msgid ""
+"The debug log is disabled or set to console output.\n"
+"\n"
+"Enable it in the E2iPlayer configuration (Debug -> log to file) and reproduce the problem, then come back here."
+msgstr ""
+
+msgid "The debug log is not active."
+msgstr ""
 
 msgid "The default aspect ratio for the external player"
 msgstr "Výchozí poměr stran pro externí přehrávač"
@@ -3563,10 +3748,32 @@ msgid "There is no hosts in this group."
 msgstr "V této skupině nejsou žádní hostitelé."
 
 #, fuzzy
+msgid "This channel does not exist."
+msgstr "Adresář „%s“ neexistuje."
+
+#, fuzzy
+msgid "This channel is currently offline."
+msgstr "Tento model je offline."
+
+#, fuzzy
+msgid "This channel is not available in your country (geo-blocking)."
+msgstr "%s řekl: Tato stránka je momentálně ve vaší oblasti nedostupná"
+
+#, fuzzy
+msgid "This channel is temporarily unavailable. Please try again later."
+msgstr "Tato show je soukromá. Zkuste to znovu později!"
+
+msgid "This channel requires a premium account, or the free connection limit has been reached. Enter your weeb.tv login data in the host configuration."
+msgstr ""
+
+#, fuzzy
 msgid "This content is not available in your region."
 msgstr "%s řekl: Tato stránka je momentálně ve vaší oblasti nedostupná"
 
 msgid "This content is only available in Switzerland."
+msgstr ""
+
+msgid "This feed is empty, or the YouTube sign-in has expired - sign out and in again."
 msgstr ""
 
 msgid "This host has been added already to this group."
@@ -3590,11 +3797,28 @@ msgstr "Toto video je soukromé video."
 msgid "This video is a private."
 msgstr "Toto video je soukromé."
 
+msgid "This video requires you to sign in to a YouTube account."
+msgstr ""
+
 msgid "Tip! You can connect USB flash drive to fix this problem."
 msgstr "Tip! Tento problém můžete vyřešit připojením USB flash disku."
 
 msgid "Title:"
 msgstr "Název:"
+
+#, python-format
+msgid ""
+"To sign in to YouTube:\n"
+"\n"
+"1. On a phone or computer open:\n"
+"     %s\n"
+"\n"
+"2. Enter this code:\n"
+"\n"
+"     %s\n"
+"\n"
+"3. Approve the access, then select OK here."
+msgstr ""
 
 msgid ""
 "To watch videos from https://vk.com/ you need to login.\n"
@@ -3608,6 +3832,12 @@ msgstr "Dnes"
 
 msgid "Top"
 msgstr "Nahoře"
+
+msgid "Top IMDb"
+msgstr ""
+
+msgid "Top in your country"
+msgstr ""
 
 msgid "Top rated"
 msgstr "Nejlépe hodnocené"
@@ -3645,6 +3875,10 @@ msgstr "Trend"
 msgid "Trending"
 msgstr "Populární"
 
+#, fuzzy
+msgid "Trending this week"
+msgstr "Populární"
+
 msgid "Try to change extplayer or disable IFD in GSTplayer configuration"
 msgstr "Zkuste změnit extplayer nebo zakázat IFD v konfiguraci GSTplayeru"
 
@@ -3657,17 +3891,11 @@ msgstr "Turecký seriál"
 msgid "Turkish TV series"
 msgstr "Turecké televizní seriály"
 
-msgid "Turn off buffering for http://prognoza.pogody.tv/"
-msgstr "Vypnout ukládání do vyrovnávací paměti pro http://prognoza.pogody.tv/"
-
 msgid "Tutorials"
 msgstr "Návody"
 
 msgid "Type:"
 msgstr "Typ:"
-
-msgid "Type: "
-msgstr "Typ: "
 
 #, python-format
 msgid "Type: %s"
@@ -3727,6 +3955,10 @@ msgstr "Nenastaveno sledované"
 msgid "Unzip error code[%s]."
 msgstr "Kód chyby rozbalení [%s]."
 
+#, fuzzy
+msgid "Updates"
+msgstr "Datum nahrání"
+
 msgid "Upload date"
 msgstr "Datum nahrání"
 
@@ -3735,9 +3967,6 @@ msgstr "Přehrávač URL adres"
 
 msgid "Use HLS streams (adaptive):"
 msgstr ""
-
-msgid "Use Polish proxy for http://prognoza.pogody.tv/"
-msgstr "Použijte polský proxy pro http://prognoza.pogody.tv/"
 
 msgid "Use colors"
 msgstr "Používejte barvy"
@@ -3753,9 +3982,6 @@ msgstr "Použít mezipaměť odkazů"
 
 msgid "Use login"
 msgstr "Použít přihlášení"
-
-msgid "Use preferred quality"
-msgstr "Použijte preferovanou kvalitu"
 
 msgid "Use proxy server:"
 msgstr "Použít proxy server:"
@@ -3828,9 +4054,6 @@ msgstr "Video"
 msgid "Video buffer size [MB]"
 msgstr "Velikost vyrovnávací paměti videa [MB]"
 
-msgid "Video format:"
-msgstr "Formát videa:"
-
 msgid "Video mode"
 msgstr "Režim videa"
 
@@ -3856,6 +4079,12 @@ msgstr "Videa"
 #, python-format
 msgid "Videos count: %s"
 msgstr "Počet videí: %s"
+
+msgid "Videos you have liked."
+msgstr ""
+
+msgid "Videos you have recently watched."
+msgstr ""
 
 msgid "View count"
 msgstr "Počet shlédnutí"
@@ -3888,6 +4117,14 @@ msgstr "Sledovat"
 msgid "Watch Videos Online"
 msgstr "Sledujte videa online"
 
+#, fuzzy
+msgid "Watch history"
+msgstr "Historie vyhledávání"
+
+#, fuzzy
+msgid "Watch later"
+msgstr "Sledovat"
+
 msgid "Web component has been reset and all threads are stopped. :)"
 msgstr "Webová komponenta byla resetována a všechna vlákna jsou zastavena. :)"
 
@@ -3896,6 +4133,9 @@ msgstr "Webová komponenta byla resetována, následující vlákna stále fungu
 
 msgid "Web interface version"
 msgstr "Verze webového rozhraní"
+
+msgid "When the maximum is reached"
+msgstr ""
 
 msgid "Whole file must be downloaded to start playback!"
 msgstr "Pro spuštění přehrávání je nutné stáhnout celý soubor!"
@@ -3935,6 +4175,9 @@ msgstr "Špatné indexy."
 
 msgid "Wrong uri."
 msgstr "Špatný URI."
+
+msgid "Wrong weeb.tv username or password."
+msgstr ""
 
 msgid "Xtream Live Stream"
 msgstr "Živý přenos Xtream"
@@ -4007,6 +4250,9 @@ msgstr "V __init__ byste nikdy neměli provádět blokové I/O operace."
 msgid "YouTube User Links Editor"
 msgstr "Editor odkazů uživatelů YouTube"
 
+msgid "Your 'Watch later' playlist."
+msgstr ""
+
 msgid "Your search entry"
 msgstr "Váš vyhledávací záznam"
 
@@ -4078,9 +4324,6 @@ msgstr "automaticky"
 msgid "available until %s"
 msgstr ""
 
-msgid "average"
-msgstr "průměrná"
-
 msgid "black"
 msgstr "černá"
 
@@ -4106,6 +4349,9 @@ msgstr "Uložit změny?"
 msgid "cobalt"
 msgstr "kobalt"
 
+msgid "could not run the probe"
+msgstr ""
+
 msgid "default"
 msgstr "výchozí"
 
@@ -4124,6 +4370,9 @@ msgstr "externí eplayer3"
 msgid "external gstplayer"
 msgstr "externí přehrávač GST"
 
+msgid "file"
+msgstr ""
+
 msgid "first check if host works properly in GUI and web <b>BEFORE</b> reporting error in it !!!"
 msgstr "nejdříve zkontrolujte, zda hosting funguje správně v GUI a na webu, <b>NEŽ</b> nahlásíte chybu!!!"
 
@@ -4132,6 +4381,9 @@ msgstr ""
 
 msgid "format"
 msgstr "formát"
+
+msgid "free"
+msgstr ""
 
 msgid "from E2 settings"
 msgstr "z nastavení E2"
@@ -4175,11 +4427,21 @@ msgstr "https"
 msgid "https - validate SSL certificates"
 msgstr "https - ověření SSL certifikátů"
 
+#, fuzzy
+msgid "import failed"
+msgstr "Úprava se nezdařila."
+
+msgid "installed"
+msgstr ""
+
 msgid "internal"
 msgstr "vnitřní"
 
 msgid "jersey"
 msgstr "trikot"
+
+msgid "kernel reports"
+msgstr ""
 
 msgid "large"
 msgstr "velká"
@@ -4192,6 +4454,9 @@ msgstr "vápno"
 
 msgid "line"
 msgstr "křivka"
+
+msgid "loaded (no version)"
+msgstr ""
 
 msgid "login"
 msgstr "přihlásit"
@@ -4214,11 +4479,31 @@ msgstr "střední"
 msgid "navy"
 msgstr "námořnictvo"
 
+msgid "not found"
+msgstr ""
+
+msgid "not installed"
+msgstr ""
+
+msgid "off"
+msgstr ""
+
+#, fuzzy
+msgid "off / console"
+msgstr "Ano, k útěše"
+
 msgid "olive"
 msgstr "olivová"
 
+#, fuzzy
+msgid "on"
+msgstr "Žádný"
+
 msgid "or"
 msgstr "nebo"
+
+msgid "other binaries"
+msgstr ""
 
 msgid "password"
 msgstr "heslo"
@@ -4235,17 +4520,37 @@ msgstr "červená"
 msgid "rootfs"
 msgstr "kořenové soubory"
 
+msgid "rotate (keep the old one as iptv-<date>.dbg)"
+msgstr ""
+
 msgid "rtmp"
 msgstr "rtmp"
 
 msgid "saved"
 msgstr ""
 
+msgid "saved in the temporary data folder"
+msgstr ""
+
+#, fuzzy
+msgid "saved next to the downloaded video file"
+msgstr "Přidat název kanálu do staženého souboru"
+
 msgid "second"
 msgstr "sekunda"
 
 msgid "seconds"
 msgstr "sekund"
+
+#, fuzzy
+msgid "select to sign out"
+msgstr "Vybrat skupinu"
+
+msgid "sign in (subscriptions, playlists, age-restricted videos)"
+msgstr ""
+
+msgid "signed in"
+msgstr ""
 
 msgid "silver"
 msgstr "stříbrná"
@@ -4255,6 +4560,10 @@ msgstr "malá"
 
 msgid "standard"
 msgstr "standartní"
+
+#, fuzzy
+msgid "status"
+msgstr "Stav:"
 
 msgid "teal"
 msgstr "tyrkysová"
@@ -4271,12 +4580,22 @@ msgstr ""
 msgid "top"
 msgstr "nahoře"
 
+#, fuzzy
+msgid "truncate the file"
+msgstr "Vyberte soubor playlistu"
+
 msgid "unknown"
 msgstr "neznámý"
+
+msgid "unlimited"
+msgstr ""
 
 #, fuzzy
 msgid "unsorted"
 msgstr "Přerušena"
+
+msgid "upzone.cc: free transfer limit reached - PREMIUM account required."
+msgstr ""
 
 msgid "version"
 msgstr "verze"
@@ -4304,6 +4623,13 @@ msgstr "počkejte %s sekundu"
 #, python-format
 msgid "wait %s seconds"
 msgstr "počkejte %s sekund"
+
+#, python-format
+msgid "weeb.tv did not return a valid stream (error %s)."
+msgstr ""
+
+msgid "weeb.tv did not return a valid stream for this channel."
+msgstr ""
 
 msgid "white"
 msgstr "bílá"

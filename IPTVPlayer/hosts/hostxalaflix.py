@@ -147,8 +147,6 @@ class XalaFlix(CBaseHostClass):
 
     def handleService(self, index, refresh=0, searchPattern="", searchType=""):
         CBaseHostClass.handleService(self, index, refresh, searchPattern, searchType)
-        if self.MAIN_URL is None:
-            self.menu()
         name = self.currItem.get("name", "")
         category = self.currItem.get("category", "")
         printDBG("handleService start\nhandleService: name[%s], category[%s] " % (name, category))
