@@ -36,9 +36,12 @@ def gettytul():
 
 def parseFilemoonVideoLink(data):
     printDBG('*** parseFilemoonVideoLink called ***')
-    with open('/media/hdd/filemoon_dump.txt', 'w') as f:
-       f.write(data)
-    import re
+    # was an unconditional debug dump to a hardcoded /media/hdd path on
+    # every call - on a box with no real storage there (exactly what
+    # storage-overhaul protects the plugin's own cache/config folders
+    # from) the open() would raise unhandled and break Filemoon resolving
+    # entirely, and even when it "worked" it wrote unbounded page data to
+    # disk for no functional reason
     match = re.search(r'<iframe[^>]+src=["\']([^"\']+)["\']', data)
     if match:
        return match.group(1)

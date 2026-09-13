@@ -10,7 +10,7 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtools import mkdirs, \
                       FreeSpace as iptvtools_FreeSpace, \
                       printDBG, printExc, RemoveOldDirsIcons, RemoveAllFilesIconsFromPath, \
                       RemoveAllDirsIconsFromPath, GetIconsFilesFromDir, GetNewIconsDirName, \
-                      GetIconsDirs, RemoveIconsDirByPath, MergeDicts
+                      GetIconsDirs, RemoveIconsDirByPath, MergeDicts, GetCookieDir
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.libs import ph
 from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import ensure_binary
@@ -255,7 +255,11 @@ class IconMenager:
             params_cfad = {'with_metadata': True, 'use_cookie': True, 'load_cookie': True, 'save_cookie': True}
             domain = urlparser.getDomain(img_url, onlyDomain=True)
 
-            params_cfad['cookiefile'] = '/hdd/IPTVCache//cookies/{0}.cookie'.format(domain)
+            # was hardcoded to /hdd/IPTVCache/cookies, ignoring CacheDir
+            # entirely (and the storage-missing reroute it gets) - route
+            # through the same cookie jar every other cookie use in the
+            # plugin already shares
+            params_cfad['cookiefile'] = GetCookieDir('{0}.cookie'.format(domain))
 
         else:
             params_cfad = {}
