@@ -1,6 +1,6 @@
-# Changelog – Storage Overhaul (`rename-config-paths`)
+# Changelog – Storage Overhaul (`storage-overhaul`)
 
-Changes on the `rename-config-paths` branch relative to `python3`.
+Changes on the `storage-overhaul` branch relative to `python3`.
 
 ## Deutsch
 
@@ -32,6 +32,10 @@ Changes on the `rename-config-paths` branch relative to `python3`.
 **Zwei Hosts aufgeräumt**
 - `hostipla` und `hostlodynet` nutzten bisher eigene, vom Cache-Ordner unabhängige Speicherorte für ihre Cookie-/Cache-Dateien (bei `hostlodynet` sogar ein fest einprogrammierter Pfad, der die eigentliche Einstellung ignorierte) – beide nutzen jetzt denselben zentralen Mechanismus wie alle anderen Hosts
 
+**Absicherungen aus dem Code-Review**
+- Die einmalige Migration (Cache-Ordner → Config-Ordner, `/etc/enigma2/` → Host-Reihenfolge-Unterordner) kopiert jetzt zuerst in eine temporäre Datei/einen temporären Ordner und benennt erst danach atomar um, bevor die Quelle gelöscht wird – bricht der Kopiervorgang mittendrin ab (z. B. bei unterschiedlichen Dateisystemen), bleiben die Originaldaten unversehrt für den nächsten Versuch, statt dass eine unvollständige Zieldatei den erneuten Versuch blockiert
+- Neue Sicherheitsprüfung `IsPathSafeToWipe()`: die "jetzt alles löschen"-Optionen verweigern jetzt einen fehlkonfigurierten Cache-/Config-Ordner, der auf `/`, einen Mountpoint oder ein System-/Home-Verzeichnis zeigt, statt ihn hinter nur einem Ja/Nein-Dialog zu leeren
+
 ## English
 
 **Config attribute names switched to English**
@@ -61,3 +65,7 @@ Changes on the `rename-config-paths` branch relative to `python3`.
 
 **Two hosts cleaned up**
 - `hostipla` and `hostlodynet` previously used their own storage locations independent of the cache folder (`hostlodynet` even had a hardcoded path that ignored the actual setting) – both now use the same central mechanism as every other host
+
+**Hardening from code review**
+- The one-time migration (cache folder → config folder, `/etc/enigma2/` → host-order subfolder) now copies to a temporary file/folder and renames it into place atomically before removing the source – a copy that dies half-way (e.g. across filesystems) leaves the original data intact for the next attempt, instead of a partial destination blocking the retry
+- New `IsPathSafeToWipe()` safety check: the "delete everything now" options now refuse a misconfigured cache/config folder pointing at "/", a mount point, or a system/home directory, instead of emptying it behind a single Yes/No dialog
