@@ -32,6 +32,7 @@ import shutil
 import stat
 import codecs
 import datetime
+import threading
 from functools import cmp_to_key
 import socket
 
@@ -492,33 +493,54 @@ def GetCacheSubDir(dirName, fileName=''):
     return os.path.join(path, fileName)
 
 
+# Guards the one-time CacheDir->ConfigDir (GetConfigSubDir) and
+# /etc/enigma2->ConfigDir/hostorder (GetMigratedHostOrderFile) migrations
+# below. Both only ever do real work the first time a given subfolder/file
+# is touched after upgrading onto this branch - a single coarse lock across
+# every dirName/fileName is deliberately simple rather than a per-key lock
+# table, since contention here is a non-event (one short file/dir op, once
+# per install) not a hot path. Without it, two threads racing the very
+# first access to the same subfolder could both pass the "doesn't exist
+# yet" check, collide on the same temp path, and in the worst interleaving
+# leave the old data stranded with an empty destination created in its
+# place - each critical section below re-checks under the lock so only one
+# thread actually migrates.
+_storageMigrationLock = threading.Lock()
+
+
 def GetConfigSubDir(dirName, fileName=''):
     path = os.path.join(config.plugins.iptvplayer.ConfigDir.value, dirName)
     if not os.path.isdir(path):
-        # search history/favourites/watched status/movie player preferences
-        # used to live under CacheDir (real user data mixed in with
-        # disposable cache) - move the whole subfolder over once, so
-        # existing data isn't lost or wiped by "Delete all cache files now"
-        oldPath = os.path.join(config.plugins.iptvplayer.CacheDir.value, dirName)
-        if os.path.isdir(oldPath) and os.path.realpath(oldPath) != os.path.realpath(path):
-            # copy into a temp sibling first, then rename into place (an
-            # atomic op since both are under ConfigDir), and only then
-            # drop the source - so a cross-filesystem copy that dies
-            # half-way leaves the source untouched to retry next call,
-            # instead of a partial destination that blocks the retry
-            tmpPath = path + '.migrating'
-            try:
-                rmtree(tmpPath, ignore_errors=True)
-                mkdirs(config.plugins.iptvplayer.ConfigDir.value)
-                shutil.copytree(oldPath, tmpPath)
-                os.rename(tmpPath, path)
-                rmtree(oldPath, ignore_errors=True)
-            except Exception:
-                printExc()
-                rmtree(tmpPath, ignore_errors=True)
-    if not os.path.isdir(path):
-        mkdirs(path)
-        _warnIfConfigDirNotWritable(path)
+        with _storageMigrationLock:
+            # re-check now that we hold the lock - another thread may have
+            # already migrated/created it while we were waiting
+            if not os.path.isdir(path):
+                # search history/favourites/watched status/movie player
+                # preferences used to live under CacheDir (real user data
+                # mixed in with disposable cache) - move the whole
+                # subfolder over once, so existing data isn't lost or
+                # wiped by "Delete all cache files now"
+                oldPath = os.path.join(config.plugins.iptvplayer.CacheDir.value, dirName)
+                if os.path.isdir(oldPath) and os.path.realpath(oldPath) != os.path.realpath(path):
+                    # copy into a temp sibling first, then rename into place
+                    # (an atomic op since both are under ConfigDir), and
+                    # only then drop the source - so a cross-filesystem
+                    # copy that dies half-way leaves the source untouched
+                    # to retry next call, instead of a partial destination
+                    # that blocks the retry
+                    tmpPath = path + '.migrating'
+                    try:
+                        rmtree(tmpPath, ignore_errors=True)
+                        mkdirs(config.plugins.iptvplayer.ConfigDir.value)
+                        shutil.copytree(oldPath, tmpPath)
+                        os.rename(tmpPath, path)
+                        rmtree(oldPath, ignore_errors=True)
+                    except Exception:
+                        printExc()
+                        rmtree(tmpPath, ignore_errors=True)
+                if not os.path.isdir(path):
+                    mkdirs(path)
+                    _warnIfConfigDirNotWritable(path)
     return os.path.join(path, fileName)
 
 
@@ -555,24 +577,30 @@ def GetMigratedHostOrderFile(fileName):
     # sibling and rename into place (atomic, same folder) before removing
     # the source, so a write that dies half-way can't leave a truncated
     # file at newPath that the next call would trust and never re-migrate
+    # GetHostOrderDir() below acquires/releases _storageMigrationLock itself
+    # (via GetConfigSubDir's own dir-level migration) before this returns,
+    # so taking the same lock again further down for the file-level
+    # migration is a fresh acquire, not a reentrant one
     newPath = GetHostOrderDir(fileName)
     if not os.path.exists(newPath):
-        oldPath = GetConfigDir(fileName)
-        if os.path.exists(oldPath) and os.path.realpath(oldPath) != os.path.realpath(newPath):
-            tmpPath = newPath + '.tmp'
-            try:
-                with open(oldPath, 'rb') as src:
-                    data = src.read()
-                with open(tmpPath, 'wb') as dst:
-                    dst.write(data)
-                os.rename(tmpPath, newPath)
-                os.remove(oldPath)
-            except Exception:
-                printExc()
-                try:
-                    os.remove(tmpPath)
-                except Exception:
-                    pass
+        with _storageMigrationLock:
+            if not os.path.exists(newPath):
+                oldPath = GetConfigDir(fileName)
+                if os.path.exists(oldPath) and os.path.realpath(oldPath) != os.path.realpath(newPath):
+                    tmpPath = newPath + '.tmp'
+                    try:
+                        with open(oldPath, 'rb') as src:
+                            data = src.read()
+                        with open(tmpPath, 'wb') as dst:
+                            dst.write(data)
+                        os.rename(tmpPath, newPath)
+                        os.remove(oldPath)
+                    except Exception:
+                        printExc()
+                        try:
+                            os.remove(tmpPath)
+                        except Exception:
+                            pass
     return newPath
 
 
