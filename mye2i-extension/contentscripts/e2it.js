@@ -37,6 +37,20 @@ chrome.runtime.onMessage.addListener(
                 return;
             }
 
+            if (request.action === "DEBUG_DUMP") {
+                // Debug snapshot section (rendered DOM, network log, ...) from
+                // the probe tab: too big for a GET query string, so it goes to
+                // mye2iserver.py as a POST body (/debugdump).
+                var dumpXhr = new XMLHttpRequest();
+                var dumpUrl = window.location;
+                dumpXhr.open("POST", dumpUrl.protocol + "//" + dumpUrl.host + "/debugdump?name=" + encodeURIComponent('' + request.name));
+                dumpXhr.setRequestHeader("Content-Type", "text/plain;charset=UTF-8");
+                dumpXhr.onload = function () { sendResponse('OK'); };
+                dumpXhr.onerror = function () { sendResponse('ERR'); };
+                dumpXhr.send('' + request.data);
+                return true;
+            }
+
             if (request.action === "SEND_RESPONSE" && request.data && request.data.token && request.data.captchaId) {
                 var xhr = new XMLHttpRequest();
                 var getUrl = window.location;

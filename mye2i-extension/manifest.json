@@ -1,6 +1,6 @@
 {
   "name": "MyE2iV3",
-  "version": "1.17.5",
+  "version": "1.18.0",
   "description": "E2iPlayer helper extension for solving captchas (Cloudflare managed-challenge detection fixes, see README.md)",
   "manifest_version": 3,
   "permissions": [
@@ -27,6 +27,14 @@
         "all_frames": false,
         "matches": ["<all_urls>"],
         "include_globs": ["*#e2it*"]
+    },
+    {
+      "js": ["contentscripts/dbgHook.js"],
+      "run_at": "document_start",
+      "world": "MAIN",
+      "all_frames": false,
+      "matches": ["<all_urls>"],
+      "include_globs": ["*#e2itdbg*"]
     },
     {
       "js": ["contentscripts/e2it.js"],

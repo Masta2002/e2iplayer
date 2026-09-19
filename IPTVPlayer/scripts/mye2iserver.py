@@ -1,11 +1,15 @@
 # -*- encoding: utf-8 -*-
 
 import base64
+from html import escape as html_escape
 from http.server import SimpleHTTPRequestHandler
 import json
+import re
 import socketserver
 import sys
 import os
+import tempfile
+import time
 import traceback
 import signal
 from urllib.parse import urlsplit, parse_qs
@@ -42,6 +46,63 @@ def _parse_version_tuple(version):
     return tuple(parts)
 
 
+# Debug snapshot ("probe") support: the extension (v1.18+) can load any page in
+# the real browser, wait until it is fully rendered and POST the result back
+# here. Bodies are far too big for a GET query string, hence do_POST below.
+DEBUG_DUMP_MAX_BYTES = 30 * 1024 * 1024
+DEBUG_DUMP_LOG_MAX_CHARS = 500000
+DEBUG_DUMP_LOG_LINE_CHARS = 4000
+DEBUG_DUMP_DIR = os.path.join(tempfile.gettempdir(), 'mye2i_debug')
+
+
+def _save_and_log_dump(name, text):
+    safe_name = re.sub(r'[^A-Za-z0-9_.-]', '_', name)[:40] or 'dump'
+    path = ''
+    try:
+        os.makedirs(DEBUG_DUMP_DIR, exist_ok=True)
+        path = os.path.join(DEBUG_DUMP_DIR, '%d_%s.txt' % (int(time.time()), safe_name))
+        with open(path, 'w', encoding='utf-8') as f:
+            f.write(text)
+    except Exception:
+        path = '(could not save: %s)' % traceback.format_exc().strip().splitlines()[-1]
+    print('[MyE2i-DUMP] ===== BEGIN %s (%d chars, file: %s) =====' % (safe_name, len(text), path))
+    emitted = 0
+    for line in text.splitlines() or ['']:
+        while True:
+            chunk, line = line[:DEBUG_DUMP_LOG_LINE_CHARS], line[DEBUG_DUMP_LOG_LINE_CHARS:]
+            print('[MyE2i-DUMP %s] %s' % (safe_name, chunk))
+            emitted += len(chunk)
+            if not line:
+                break
+        if emitted >= DEBUG_DUMP_LOG_MAX_CHARS:
+            print('[MyE2i-DUMP %s] ... log output truncated at %d chars, full dump is in the file above' % (safe_name, DEBUG_DUMP_LOG_MAX_CHARS))
+            break
+    print('[MyE2i-DUMP] ===== END %s =====' % safe_name)
+    sys.stdout.flush()
+
+
+def _build_debug_block(url):
+    base = html_escape(url.split('#')[0], quote=True)
+    return '''
+        <hr style="margin:40px 10%%">
+        <center>
+            <div style="font-family:sans-serif;max-width:640px">
+                <b>Debug snapshot (for site development)</b><br>
+                <small>Needs extension v1.18+. Opens the page in this browser, waits until it is fully rendered (Cloudflare challenge included, solve it if it shows up) and sends the rendered HTML, the fetch/XHR calls and the cookie names to the box debug log.</small><br>
+                <input id="dbgurl" type="text" value="%s" style="width:90%%;margin:10px 0;padding:6px">
+                <br>
+                <button type="button" onclick="startDebug()" style="color: white; font-weight: bold; font-size: large; padding: 2ex; border-radius: 14px; background-color:#3a6ea5">Debug snapshot</button>
+            </div>
+        </center>
+        <script>
+            function startDebug() {
+                var u = document.getElementById('dbgurl').value.split('#')[0];
+                if (u) { window.open(u + '#e2itdbg_sep_c=' + Date.now(), '_blank'); }
+            }
+        </script>
+''' % base
+
+
 def redirect_handler_factory(url):
 
     if 'e2itcf' in url:
@@ -62,9 +123,10 @@ def redirect_handler_factory(url):
         <center>
             <a href="%s" target="_blank"><button type="Button" style="color: white; font-weight: bold; font-size: x-large; text-align: center; padding: 4ex; border-radius: 20px; background-color:#448844">Get %s job</button></a>
         </center>
+        %s
     </body>
 </html>
-''' % (min_version_str, min_version_str, UPDATE_URL, url, job_type)
+''' % (min_version_str, min_version_str, UPDATE_URL, url, job_type, _build_debug_block(url))
 
     with open(os.path.join(os.path.dirname(__file__), "htdocs/e2it.html"), 'w') as html:
         html.write(to_write)
@@ -138,6 +200,34 @@ def redirect_handler_factory(url):
                 sys.stdout.flush()
                 return
             SimpleHTTPRequestHandler.do_GET(self)
+
+        def do_POST(self):
+            # Only /debugdump is handled: the extension's debug snapshot
+            # (rendered DOM, network log, ...) arrives here as the request
+            # body, is saved to DEBUG_DUMP_DIR and mirrored into stdout so
+            # it lands in the box debug log. The route is matched on the
+            # exact path, same as do_GET.
+            route = urlsplit(self.path).path
+            if route != '/debugdump':
+                self.send_error(404)
+                return
+            try:
+                length = int(self.headers.get('Content-Length', '-1'))
+            except ValueError:
+                length = -1
+            if length < 0:
+                self.send_error(411)
+                return
+            if length > DEBUG_DUMP_MAX_BYTES:
+                self.send_error(413)
+                return
+            body = self.rfile.read(length)
+            name = parse_qs(urlsplit(self.path).query).get('name', ['dump'])[0]
+            self.send_response(200)
+            self.send_header('content-type', 'text/plain')
+            self.end_headers()
+            self.wfile.write(b'OK')
+            _save_and_log_dump(name, body.decode('utf-8', errors='replace'))
     return RedirectHandler
 
 

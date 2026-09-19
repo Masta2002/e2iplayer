@@ -344,6 +344,13 @@ if (document.location.hash.startsWith("#e2itco")) {
     //E2iSetupEventListener();
     main_e2itcf();
 
+} else if (document.location.hash.startsWith("#e2itdbg")) {
+    // Debug snapshot: only tell the background script to watch this tab -
+    // it injects the probe (contentscripts/dbgProbe.js) after every finished
+    // page load, so a Cloudflare redirect that drops this fragment does not
+    // end the probe.
+    E2iSendMsgToBackground({action: 'DBG_REGISTER', origin: document.location.origin}, function () {});
+
 } else if (document.location.hash.startsWith("#e2i")) {
     E2iClearDocument();
 

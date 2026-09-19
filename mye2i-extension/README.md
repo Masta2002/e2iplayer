@@ -1,4 +1,4 @@
-# MyE2iV3 - gepatchte Browser-Erweiterung (v1.17.5)
+# MyE2iV3 - gepatchte Browser-Erweiterung (v1.18.0)
 
 Dies ist der komplette, gepatchte Quellcode der "MyE2iV3"-Browser-Erweiterung
 (Original: http://www.e2iplayer.gitlab.io/mye2iv3_1.17.zip), die zusammen mit
@@ -43,6 +43,45 @@ Endpunkte werden von ihr einfach nie angefragt).
 5. Debug-Logging (`e2ilog`) generell aktiviert (war zuvor `//console.log`
    auskommentiert) - sichtbar in der Browser-Konsole UND (Punkt 3) im
    Box-Log.
+
+## Neu in v1.18.0: Debug-Snapshot ("Debug snapshot"-Button)
+
+Zum Entwickeln neuer Hosts: statt aus curl-Ausgaben zu raten, was eine Seite
+wirklich ausliefert (JS-gerenderte Inhalte, per AJAX nachgeladene Daten),
+lädt der echte Browser die Seite und schickt das Ergebnis ins Box-Debug-Log.
+
+**Ablauf:** wie beim normalen Cloudflare-Lösen die Box-Seite (`e2it.html`,
+QR-Code / `http://<box>:9001`) im Browser öffnen und **offen lassen**. Dort
+gibt es unter dem grünen Button jetzt ein URL-Feld (vorbelegt mit der Seite,
+die die Box angefragt hat - beliebig änderbar, z.B. auf eine Video-Seite)
+und den Button **"Debug snapshot"**. Der öffnet die URL in einem neuen Tab
+mit dem Fragment `#e2itdbg_sep_c=...`. Zeigt Cloudflare dort eine Challenge,
+einfach im Tab lösen - der Snapshot startet automatisch danach.
+
+**Was ins Log kommt** (jeweils als `[MyE2i-DUMP <abschnitt>]`-Zeilen, max.
+~500 KB pro Abschnitt im Log; die vollständige Datei liegt zusätzlich unter
+`<tmp>/mye2i_debug/<zeit>_<abschnitt>.txt` auf der Box):
+
+| Abschnitt   | Inhalt |
+|-------------|--------|
+| `meta`      | URL, Titel, User-Agent, Wartezeit |
+| `dom`       | das fertig gerenderte HTML (`documentElement.outerHTML`) |
+| `resources` | alle geladenen URLs inkl. fetch/XHR (Performance-API) |
+| `netlog`    | jeder `fetch()`/`XMLHttpRequest`-Aufruf: Methode, URL, Request-Body, Status und die ersten 3000 Zeichen der Antwort - genau das, was man braucht, um eine Seiten-API nachzubauen |
+| `cookies`   | Cookie-Namen, Domain, Flags (Werte auf 40 Zeichen gekürzt) |
+
+Hinweis: die Cookie-Namen/-Werte gehören zur aufgerufenen Domain im
+Browser des Testers - Log vor dem Weitergeben ansehen.
+
+**Technik:** ein `POST /debugdump?name=<abschnitt>`-Endpunkt in
+`mye2iserver.py` (die bisherigen Endpunkte sind GET und damit für ein ganzes
+HTML-Dokument zu klein); `contentscripts/dbgProbe.js` (wird vom
+`background.js` nach jedem fertigen Seitenladen des Debug-Tabs injiziert -
+ein Cloudflare-Redirect verliert das URL-Fragment) und
+`contentscripts/dbgHook.js` (läuft in der Seitenwelt und protokolliert
+fetch/XHR, auch nach einem Redirect innerhalb der Sitzung). Getestet in
+einem echten Edge 153 gegen eine lokale Testseite (JS-gerendertes DOM,
+fetch-POST, XHR, Cookie) - ohne echte Cloudflare-Challenge.
 
 Alle zugehörigen Server-seitigen Ergänzungen (`/debug`, `/version`-Endpunkte,
 Routing-Fix, Versions-Konstante `MIN_EXTENSION_VERSION`) liegen in

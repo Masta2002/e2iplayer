@@ -28,6 +28,78 @@ const lastStatus = new Map();
 chrome.tabs.onRemoved.addListener((tabId) => {
   readyTabs.delete(tabId);
   lastStatus.delete(tabId);
+  dbgRemoveTab(tabId);
+});
+
+// ---- Debug snapshot support -------------------------------------------
+// A tab opened with "#e2itdbg" registers itself here (DBG_REGISTER). The
+// probe script is injected after every finished load of such a tab, because
+// a Cloudflare challenge can reload the page and drop the fragment. The tab
+// list lives in chrome.storage.session: a MV3 service worker is suspended
+// after ~30 s idle and would otherwise forget the tab while the user is
+// still solving the challenge.
+const DBG_HOOK_ID = 'e2i-dbg-hook';
+
+async function dbgGetTabs() {
+    const stored = await chrome.storage.session.get('dbgTabs');
+    return stored.dbgTabs || [];
+}
+
+async function dbgAddTab(tabId) {
+    const tabs = await dbgGetTabs();
+    if (!tabs.includes(tabId)) {
+        tabs.push(tabId);
+        await chrome.storage.session.set({dbgTabs: tabs});
+    }
+    // fetch()/XHR recorder, also for pages reached after a redirect (the
+    // static manifest entry only covers URLs that still carry the fragment)
+    try { await chrome.scripting.unregisterContentScripts({ids: [DBG_HOOK_ID]}); } catch (e) {}
+    try {
+        await chrome.scripting.registerContentScripts([{
+            id: DBG_HOOK_ID,
+            js: ['contentscripts/dbgHook.js'],
+            matches: ['<all_urls>'],
+            runAt: 'document_start',
+            world: 'MAIN',
+            allFrames: false,
+            persistAcrossSessions: false
+        }]);
+    } catch (e) {
+        e2ilog('debug hook registration failed: ' + e);
+    }
+}
+
+async function dbgRemoveTab(tabId) {
+    try {
+        const tabs = await dbgGetTabs();
+        if (!tabs.includes(tabId)) {
+            return;
+        }
+        const left = tabs.filter((id) => id !== tabId);
+        await chrome.storage.session.set({dbgTabs: left});
+        if (left.length === 0) {
+            try { await chrome.scripting.unregisterContentScripts({ids: [DBG_HOOK_ID]}); } catch (e) {}
+        }
+    } catch (e) {
+        e2ilog('debug tab cleanup failed: ' + e);
+    }
+}
+
+function dbgInjectProbe(tabId) {
+    chrome.scripting.executeScript({
+        target: {tabId},
+        files: ['contentscripts/dbgProbe.js']
+    }).catch((e) => e2ilog('probe injection failed: ' + e));
+}
+
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo) => {
+    if (changeInfo.status !== 'complete') {
+        return;
+    }
+    const tabs = await dbgGetTabs();
+    if (tabs.includes(tabId)) {
+        dbgInjectProbe(tabId);
+    }
 });
 
 /*
@@ -67,7 +139,8 @@ chrome.webRequest.onCompleted.addListener(
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
-    e2ilog('MESSAGE IN BACGROUND chrome.runtime.onMessag(): ' + JSON.stringify(msg));
+    // debug snapshot sections can be megabytes - only log the start
+    e2ilog('MESSAGE IN BACGROUND chrome.runtime.onMessag(): ' + JSON.stringify(msg).slice(0, 500));
 
     const tabId = sender.tab.id;
 
@@ -158,6 +231,48 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
                 }
             }
             sendResponse('DONE');
+        });
+        return true;
+    }
+
+    if (msg.action === "DBG_REGISTER") {
+        dbgAddTab(tabId).then(() => {
+            sendResponse('OK');
+            // a small page can already be "complete" before the tab was
+            // stored above (the onUpdated listener then found nothing to
+            // do) - inject right away in that case. The probe guards itself
+            // against running twice.
+            chrome.tabs.get(tabId, (tab) => {
+                if (tab && tab.status === 'complete') {
+                    dbgInjectProbe(tabId);
+                }
+            });
+        });
+        return true;
+    }
+
+    if (msg.action === "DBG_DONE") {
+        dbgRemoveTab(tabId).then(() => sendResponse('OK'));
+        return true;
+    }
+
+    if (msg.action === "DEBUG_DUMP") {
+        // one section of the debug snapshot: hand it to the still-open local
+        // e2it.html tab, which POSTs it to mye2iserver.py (/debugdump).
+        chrome.tabs.query({
+            url: ["http://*/e2it.html"]
+        }, function (tabs) {
+            if (tabs === undefined || tabs.length === 0) {
+                sendResponse('NO_E2IT_TAB');
+                return;
+            }
+            chrome.tabs.sendMessage(tabs[0].id, {
+                action: "DEBUG_DUMP",
+                name: msg.name,
+                data: msg.data
+            }, function (resp) {
+                sendResponse(resp || 'DONE');
+            });
         });
         return true;
     }
