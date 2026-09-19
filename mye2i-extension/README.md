@@ -87,26 +87,49 @@ Alle zugehörigen Server-seitigen Ergänzungen (`/debug`, `/version`-Endpunkte,
 Routing-Fix, Versions-Konstante `MIN_EXTENSION_VERSION`) liegen in
 `IPTVPlayer/scripts/mye2iserver.py` in diesem Branch.
 
-## Bekannte offene Punkte (siehe Memory / nächste Schritte)
+## Installation / Updates
 
-- **Kein echtes `.crx` vorhanden.** Für ein signiertes `.crx` bräuchte man
-  den privaten Signierschlüssel des Original-Entwicklers, den wir nicht
-  haben. Ein selbst erzeugtes `.crx` würde eine andere Extension-ID
-  bekommen und lässt sich in modernen Chrome-Versionen ohnehin nicht mehr
-  einfach per Drag&Drop installieren (nur über Entwicklermodus). Für
-  produktiven Einsatz müsste eine Chrome-Web-Store-Veröffentlichung (oder
-  ein alternativer Vertriebsweg) geklärt werden.
-- **Hartcodierte Original-URLs** in `mye2iserver.py`
-  (`UPDATE_URL = 'http://www.e2iplayer.gitlab.io/mye2iv3_1.17.zip'`) und
-  potenziell an weiteren Stellen im Plugin, die auf die MyE2i-Erweiterung
-  hinweisen, zeigen noch auf die Original-Download-Adresse des
-  Drittanbieters, nicht auf eine eigene GitHub/GitLab-Adresse dieses
-  Projekts. Muss noch umgestellt werden, sobald der gepatchte Code irgendwo
-  eigenständig gehostet wird.
+Download (immer die aktuelle Version, fester Link - derselbe steht als
+`UPDATE_URL` in `IPTVPlayer/scripts/mye2iserver.py` und wird im Browser-
+Banner bzw. auf dem Box-Bildschirm angezeigt, wenn die installierte
+Erweiterung zu alt ist):
+
+    https://github.com/Masta2002/e2iplayer/releases/download/mye2i-extension/mye2iv3-latest.zip
+
+1. `.zip` entpacken (Ordner `mye2iv3`).
+2. `chrome://extensions` (Edge: `edge://extensions`) → Entwicklermodus →
+   "Entpackte Erweiterung laden" → den Ordner `mye2iv3` wählen.
+3. Update später: neue `.zip` laden, den Ordner überschreiben, in
+   `chrome://extensions` auf "Neu laden" drücken.
+
+**Extension-ID:** im Manifest steht ein `key`, dadurch hat die entpackte
+Erweiterung auf jedem Rechner dieselbe ID (`cdommeolkoiklmmlnmcommlfbljbelac`).
+Sie ist NICHT die ID der Original-Erweiterung - eine bereits installierte
+Original-Version wird nicht ersetzt, sondern sollte entfernt werden.
+
+**`.crx`:** liegt zusätzlich im selben Release (`mye2iv3-latest.crx`, mit
+demselben Schlüssel signiert). Chrome/Edge installieren sie außerhalb von
+Policies/Entwicklermodus nicht per Klick - gedacht für Policy-basierte
+Installationen. Ein Auto-Update über `update_url` gibt es nicht.
+
+## Neues Release bauen
+
+    python mye2i-extension/build_release.py --pem <pfad>/mye2i-extension.pem --out <ordner>
+
+erzeugt `mye2iv3-latest.zip` und (mit `--pem` und installiertem Chrome/Edge)
+`mye2iv3-latest.crx`. Beide Dateien im GitHub-Release mit dem Tag
+`mye2i-extension` ersetzen (Release NICHT als "Latest" markieren, sonst
+verdrängt es die Plugin-Releases). Vorher `version` in `manifest.json`
+erhöhen.
+
+Der **private Schlüssel** (`mye2i-extension.pem`) gehört NICHT ins Repo -
+wer ihn verliert, kann keine `.crx` mehr mit derselben ID signieren (die
+ID der entpackten Erweiterung bleibt durch das `key`-Feld im Manifest
+trotzdem stabil).
 
 ## Wie man die Original-Erweiterung findet, die ersetzt werden soll
 
 Referenziert u.a. in `IPTVPlayer/components/captchascriptwidget.py` /
 `recaptcha_mye2i_widget.py` (Anzeige "Please Open site: http://IP:PORT..."
 für den Nutzer) sowie in `IPTVPlayer/scripts/mye2iserver.py` selbst
-(`UPDATE_URL`-Konstante für den Versions-Hinweis).
+(`UPDATE_URL`-Konstante für den Versions-Hinweis, zeigt jetzt auf das Release oben).
