@@ -135,8 +135,6 @@ class XXXParser:
 			return 'https://www.porntrex.com'
 		if url.startswith(('https://relax-sex.com', 'https://relaxporn.net', 'https://handjobhub.com', 'https://www.xnxxhamster.net')):
 			return 'https://relax-sex.com'
-		if url.startswith('https://www.tropictube.com'):
-			return 'https://www.tropictube.com'
 		if url.startswith('https://porcore.com'):
 			return 'https://porcore.com'
 		if url.startswith('https://www.al4a.com'):
@@ -157,8 +155,6 @@ class XXXParser:
 			return 'https://pornxp.org'
 		if url.startswith('https://pornoflix.com'):
 			return 'https://pornoflix.com'
-		if url.startswith('https://www.freepornhq.xxx'):
-			return 'https://www.freepornhq.xxx'
 		if url.startswith('https://en.pornoreino.com'):
 			return 'https://en.pornoreino.com'
 		if url.startswith('https://www.whoreshub.com'):
@@ -169,8 +165,6 @@ class XXXParser:
 			return 'https://babes34.me'
 		if url.startswith('https://streamwish.'):
 			return 'https://streamwish.to'
-		if url.startswith('https://www.amateurporn.'):
-			return 'https://www.amateurporn.me'
 		if url.startswith(('https://emturbovid.com', 'https://www.turbovid.com')):
 			return 'https://emturbovid.com'
 		if url.startswith('https://sex3.com'):
@@ -352,8 +346,6 @@ class XXXParser:
 			return 'https://hellporno.com/'
 		if url.startswith('https://sextubefun.com/'):
 			return 'https://sextubefun.com/'
-		if url.startswith('https://www.pornburst.xxx/'):
-			return 'https://www.pornburst.xxx/'
 		if url.startswith('https://www.xxxbule.com/'):
 			return 'https://www.xxxbule.com/'
 		if url.startswith('https://www.porndig.com'):
@@ -566,8 +558,6 @@ class XXXParser:
 			return 'https://www.porngem.com'
 		if url.startswith('https://lustysextube.com'):
 			return 'https://lustysextube.com'
-		if url.startswith('https://porndreamz.com'):
-			return 'https://porndreamz.com'
 		if url.startswith('https://www.sexsq.com'):
 			return 'https://www.sexsq.com'
 		if url.startswith('https://bigboobsxxx.com'):
@@ -634,8 +624,6 @@ class XXXParser:
 			return 'https://hqfap.com'
 		if url.startswith('https://naijapornsite.com'):
 			return 'https://naijapornsite.com'
-		if url.startswith('https://www.nuvid.com'):
-			return 'https://www.nuvid.com'
 		if url.startswith('https://juicyvid.com'):
 			return 'https://juicyvid.com'
 		if url.startswith('https://www.lapippa.com'):
@@ -942,7 +930,6 @@ class XXXParser:
 			sts, data = self.getPage(url, 'porntrex.cookie', 'porntrex.com', self.defaultParams)
 			if not sts:
 				return ''
-			printDBG('PORNTREX PARSERDATA: ' + str(data))
 			if 'video is a private' in data:
 				SetIPTVPlayerLastHostError(_('This video is a private.'))
 				return []
@@ -1024,7 +1011,6 @@ class XXXParser:
 			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
 			self.defaultParams = {'header': self.HTTP_HEADER, 'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE}
 			sts, data = self._getPage(url, self.defaultParams)
-			printDBG('data: ' + data)
 			if not sts:
 				return ''
 			videoUrl = self.cm.ph.getSearchGroups(data, '''sources.+?['"]([^"^']+?)['"].+?,''')[0]
@@ -1092,7 +1078,6 @@ class XXXParser:
 			if parse:
 				printDBG('Host Url: ' + url)
 				printDBG('Host rtmp: ' + parse.group(1))
-				rtmp = parse.group(1)
 			startChildBug = re.search(r"startChildBug\(user\.uid, '', '([\s\S]+?)'", data, re.I)
 			if startChildBug:
 				import websocket
@@ -1139,13 +1124,13 @@ class XXXParser:
 				if playpath:
 					Checksum = playpath.group(1)
 					if len(Checksum) < 30:
-						for x in range(1, 10):
+						for _x in range(1, 10):
 							ws.send(zapytanie)
 							result = ws.recv()
 							czas = re.search(r'(\d+)\[:\](\d+)\[', result)
 							if czas:
-								printDBG('Host czas.group(1): ' + czas.group(1))
-								printDBG('Host czas.group(2): ' + czas.group(2))
+								printDBG('Host time group(1): ' + czas.group(1))
+								printDBG('Host time group(2): ' + czas.group(2))
 								czas = int(czas.group(1)) - int(czas.group(2))
 								printDBG('Host a: ' + str(czas))
 								a = str(czas)
@@ -1328,20 +1313,6 @@ class XXXParser:
 			printDBG('Final videolink: ' + videoUrl)
 			return videoUrl
 
-		if parser == 'https://www.tropictube.com':
-			COOKIEFILE = join(GetCookieDir(), 'tropictube.cookie')
-			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
-			if '?' in url:
-				url = url.rpartition('?')[0]
-			self.HTTP_HEADER['Referer'] = url
-			self.defaultParams = {'header': self.HTTP_HEADER, 'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE}
-			sts, data = self.get_Page(url, self.defaultParams)
-			if not sts:
-				return ''
-			videoUrl = self.cm.ph.getSearchGroups(data, '''video_src.{2,6}=['"](.+?)['"]''', 1, True)[0]
-			printDBG('Final videolink: ' + videoUrl)
-			return videoUrl
-
 		if parser == 'https://porcore.com':
 			COOKIEFILE = join(GetCookieDir(), 'porcore.cookie')
 			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
@@ -1462,19 +1433,6 @@ class XXXParser:
 			printDBG('MAIN URL: ' + str(videoUrl))
 			return urlparser.decorateUrl(videoUrl, {'Referer': url})
 
-		if parser == 'https://www.freepornhq.xxx':
-			COOKIEFILE = join(GetCookieDir(), 'freepornhq.cookie')
-			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
-			printDBG('FREEPORNHQ PARSER URL: ' + url)
-			self.HTTP_HEADER['Referer'] = url
-			self.defaultParams = {'header': self.HTTP_HEADER, 'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE}
-			sts, data = self.get_Page(url, self.defaultParams)
-			if not sts:
-				return ''
-			videoUrl = re.search('source.src=["]([^$]+?)["].*mp4', data).group(1)
-			printDBG('MAIN URL: ' + str(videoUrl))
-			return videoUrl
-
 		if parser == 'https://www.camhub.cc':
 			printDBG('START PARSING: ' + url)
 			COOKIEFILE = join(GetCookieDir(), 'camhub.cookie')
@@ -1513,7 +1471,6 @@ class XXXParser:
 			sts, data = self.get_Page(url, self.defaultParams)
 			if not sts:
 				return ''
-			printDBG('Video page: ' + data)
 			videoUrl = self.cm.ph.getSearchGroups(data, '''source.src=['"](.+?)['"].{5,15}mp4''', 1, True)[0]
 			printDBG('Final videolink: ' + videoUrl)
 			return videoUrl
@@ -1527,7 +1484,6 @@ class XXXParser:
 			sts, data = self.get_Page(url, self.defaultParams)
 			if not sts:
 				return ''
-			printDBG('PORNBOLT Video page: ' + data)
 			videoUrl = self.cm.ph.getSearchGroups(data, '''source.src=['"](.+?)['"].{10,16}mp4''', 1, True)[0]
 			printDBG('Final videolink: ' + videoUrl)
 			return videoUrl
@@ -1540,14 +1496,12 @@ class XXXParser:
 			sts, data = self.get_Page(url, self.defaultParams)
 			if not sts:
 				return ''
-			printDBG('WETSINS and PORNENIX Video page: ' + data)
 			videoUrl = self.cm.ph.getSearchGroups(data, '''Quality.*src=['"](.+?)['"].{10,16}mp4''', 1, True)[0]
 			if not videoUrl:
 				EmbedUrl = self.cm.ph.getSearchGroups(data, '''iframe.{1,20}src=['"](.+?)['"]''', 1, True)[0]
 				sts, data2 = self.get_Page(EmbedUrl)
 				if not sts:
 					return ''
-				printDBG('Final DATA: ' + data2)
 				videoUrl = self.cm.ph.getSearchGroups(data2, '''source.src=['"](.+?)['"]''', 1, True)[0]
 			printDBG('Final videolink: ' + videoUrl)
 			return videoUrl
@@ -1560,14 +1514,12 @@ class XXXParser:
 			sts, data = self.get_Page(url, self.defaultParams)
 			if not sts:
 				return ''
-			printDBG('PORNOHAMMER Video page: ' + data)
 			videoUrl = self.cm.ph.getSearchGroups(data, '''source.src=['"](.+?)['"].{10,16}mp4''', 1, True)[0]
 			if not videoUrl:
 				EmbedUrl = self.cm.ph.getSearchGroups(data, '''iframe.src=&quot[;](.+?)[&]quot''', 1, True)[0]
 				sts, data2 = self.get_Page(EmbedUrl)
 				if not sts:
 					return ''
-				printDBG('Final DATA: ' + data2)
 				videoUrl = self.cm.ph.getSearchGroups(data2, '''source.src=['"](.+?)['"]''', 1, True)[-1]
 			printDBG('Final videolink: ' + videoUrl)
 			return videoUrl
@@ -1580,7 +1532,6 @@ class XXXParser:
 			sts, data = self.get_Page(url, self.defaultParams)
 			if not sts:
 				return ''
-			printDBG('XGROOVY Video page: ' + data)
 			videoUrl = self.cm.ph.getSearchGroups(data, '''src=['"](.+?)['"].{10,16}mp4''', 1, True)[0]
 			printDBG('Final videolink: ' + videoUrl)
 			return videoUrl
@@ -1593,7 +1544,6 @@ class XXXParser:
 			sts, data = self.get_Page(url, self.defaultParams)
 			if not sts:
 				return ''
-			printDBG('video page: ' + data)
 			match = re.findall('src=["]([^"]+?)["].type', data, re.S)
 			if match:
 				return match[0]
@@ -1618,7 +1568,6 @@ class XXXParser:
 			sts, data = self.get_Page(config)
 			if not sts:
 				return ''
-			printDBG('Host listsItems data1: ' + data)
 			parse = re.search('"sessionHash":"(.*?)"', data, re.S)
 			if not parse:
 				return ''
@@ -1632,7 +1581,6 @@ class XXXParser:
 			sts, data = self.get_Page(models)
 			if not sts:
 				return ''
-			printDBG('Host listsItems data2: ' + data)
 			result = json.loads(data)
 			try:
 				for item in result["models"]:
@@ -1662,7 +1610,6 @@ class XXXParser:
 				sts, data = self.getPageWithCFBypass(hlsUrl)
 				if not sts:
 					return ''
-				printDBG('HLS DATA: ' + data)
 				streams = re.findall('videoUrl":["]([^"]+?)["]', data)
 				printDBG("STREAMS: " + str(streams))
 				videoUrl = streams[-1].replace(r"\/", "/")
@@ -1684,7 +1631,6 @@ class XXXParser:
 			sts, data = self.get_Page(headUrl)
 			if not sts:
 				return ''
-			printDBG('Links for the video: ' + data)
 			videoUrl = self.cm.ph.getSearchGroups(data, '''videoUrl.+?['"]([^"^']+?)['"]''')[0].replace('%3D', '=').replace(r"\/", "/")
 			printDBG('Ready link: ' + videoUrl)
 			return videoUrl
@@ -1716,7 +1662,7 @@ class XXXParser:
 							# The binary redirect payload continues after the real URL with
 							# control bytes (metadata). Strip those bytes before handing the
 							# target to another parser; otherwise urllib raises InvalidURL.
-							target = re.split(r'[\x00-\x1f]', target, 1)[0]
+							target = re.split(r'[\x00-\x1f]', target, maxsplit=1)[0]
 							target = target.rstrip('\\').replace(r'\/', '/')
 							if not target:
 								continue
@@ -1860,7 +1806,7 @@ class XXXParser:
 			COOKIEFILE = join(GetCookieDir(), 'streamvid.cookie')
 			self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE}
 			url = url.replace('https://streamvid.net/', 'https://streamvid.net/embed-')
-			printDBG('Streamvid cim: ' + url)
+			printDBG('Streamvid url: ' + url)
 			sts, data = self.get_Page(url, self.defaultParams)
 			if not sts:
 				return ''
@@ -1878,7 +1824,7 @@ class XXXParser:
 			server = self.cm.ph.getSearchGroups(data, '''[|]([^|^']+?)[|]vvplay''', 1, True)[0]
 			if not server:
 				server = self.cm.ph.getSearchGroups(data, '''[|]([^|^']+?)[|]https''', 1, True)[0]
-			printDBG('Szerver: ' + server)
+			printDBG('Server: ' + server)
 			id = self.cm.ph.getSearchGroups(data, '''master.urlset[|]([^"^']+?)[|]hls|sources''', 1, True)[0]
 			printDBG('Identifier: ' + id)
 			if server == 'streamvid':
@@ -1906,7 +1852,7 @@ class XXXParser:
 		if parser == 'https://www.amdahost.com':
 			COOKIEFILE = join(GetCookieDir(), 'amdahost.cookie')
 			self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE}
-			printDBG('AMDAHOST cim: ' + url)
+			printDBG('AMDAHOST url: ' + url)
 			sts, data = self.get_Page(url, self.defaultParams)
 			if not sts:
 				return ''
@@ -1983,7 +1929,7 @@ class XXXParser:
 
 		if parser == 'https://www.tubewolf.com':
 			COOKIEFILE = join(GetCookieDir(), 'tubewolf.cookie')
-			for x in range(1, 10):
+			for _x in range(1, 10):
 				self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
 				self.defaultParams = {'header': self.HTTP_HEADER, 'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE}
 				sts, data = self.get_Page(url)
@@ -2040,35 +1986,6 @@ class XXXParser:
 				return []
 			return ''
 
-		if parser == 'https://www.ashemaletube.com':
-			COOKIEFILE = join(GetCookieDir(), 'ASHEMALETUBE.cookie')
-			self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE, 'return_data': True}
-			sts, data = self.getPage(url, 'ASHEMALETUBE.cookie', 'ashemaletube.com', self.defaultParams)
-			if not sts:
-				return ''
-			if 'sources: ' in data:
-				try:
-					sources = self.cm.ph.getDataBeetwenMarkers(data, 'sources: ', ']', False)[1]
-					result = byteify(json.loads(sources + ']'))
-					for item in result:
-						if str(item["desc"]) == '720p' and str(item["active"]) == 'true':
-							return str(item["src"])
-						if str(item["desc"]) == '480p' and str(item["active"]) == 'true':
-							return str(item["src"])
-						if str(item["desc"]) == '360p' and str(item["active"]) == 'true':
-							return str(item["src"])
-				except Exception:
-					printExc()
-			videoUrl = self.cm.ph.getSearchGroups(data, '''source src=['"]([^"^']+?)['"]''')[0].replace('&amp;', '&')
-			if videoUrl:
-				videoUrl = checkhttp(videoUrl)
-				return videoUrl
-
-			if 'To watch this video please' in data:
-				SetIPTVPlayerLastHostError(_('Login Protected.'))
-				return []
-			return ''
-
 		if parser == 'https://www.pornhub.com':
 			COOKIEFILE = join(GetCookieDir(), 'pornhub.cookie')
 			self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE}
@@ -2119,23 +2036,12 @@ class XXXParser:
 				return urlparser.decorateUrl(videoUrl, {'Referer': url, 'Origin': 'https://chaturbate.com', 'iptv_proto': 'm3u8'})
 			return ''
 
-		if parser == 'https://www.pornburst.xxx/':
-			COOKIEFILE = join(GetCookieDir(), 'pornburst.cookie')
-			self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE}
-			sts, data = self._getPage(url, self.defaultParams)
-			if not sts:
-				return
-			printDBG('Host listItems data: ' + str(data))
-			videoUrl = self.cm.ph.getSearchGroups(data, r'''src=['"]([^"^']+?)['"].type="video\/mp4''')[0]
-			return videoUrl if videoUrl else ''
-
 		if parser == 'https://www.xxxbule.com/':
 			COOKIEFILE = join(GetCookieDir(), 'xxxbule.cookie')
 			self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE}
 			sts, data = self._getPage(url, self.defaultParams)
 			if not sts:
 				return
-			printDBG('Host listItems data: ' + str(data))
 			videoUrl = self.cm.ph.getSearchGroups(data, '''video_src".href=['"]([^"^']+?)['"]./>''')[0]
 			if not videoUrl:
 				videoUrl = self.cm.ph.getSearchGroups(data, '''contentUrl":.['"]([^"^']+?)['"]''')[0]
@@ -2146,7 +2052,6 @@ class XXXParser:
 			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
 			self.defaultParams = {'header': self.HTTP_HEADER, 'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE}
 			sts, data = self.get_Page(url)
-			printDBG('FILMYPORNO PARSERDATA: ' + data)
 			if not sts:
 				return ''
 			match = re.findall('source src="(.*?)"', data, re.S)
@@ -2168,7 +2073,7 @@ class XXXParser:
 			videoLinks = self.cm.ph.getAllItemsBeetwenMarkers(videoLinks, 'href="', '" class', False)
 			printDBG('Links: ' + str(videoLinks))
 			videoUrl = videoLinks[-2]
-			printDBG('Kesz link: ' + str(videoUrl))
+			printDBG('Final link: ' + str(videoUrl))
 			return videoUrl if videoUrl else ''
 
 		if parser == 'https://www.tnaflix.com':
@@ -2221,20 +2126,10 @@ class XXXParser:
 				sts, data = self.get_Page(videoUrl, self.defaultParams)
 				if not sts:
 					return
-				printDBG('Host listsItems data2: ' + str(data))
 				url = re.findall('<videoLink>.*?//(.*?)(?:]]>|</videoLink>)', data, re.S)
 				if url:
 					return "https://" + url[-1].replace('&amp;', '&')
 			return ''
-
-		if parser == 'https://www.pinflix.com':
-			COOKIEFILE = join(GetCookieDir(), 'pinflix.cookie')
-			self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE, 'return_data': True}
-			sts, data = self.getPage(url, 'pinflix.cookie', 'pinflix.com', self.defaultParams)
-			if not sts:
-				return ''
-			videoUrl = self.cm.ph.getSearchGroups(data, '''preload".href=['"]([^"^']+?)['"].as="fetch" crossorigin>''')[0]
-			return urlparser.decorateUrl(videoUrl, {'Referer': url, 'User-Agent': USER_AGENT})
 
 		if parser == 'https://www.pornhd.com':
 			COOKIEFILE = join(GetCookieDir(), 'pornhd.cookie')
@@ -2257,77 +2152,6 @@ class XXXParser:
 			sts, data = self.getPage(videoUrl, 'pornhd.cookie', 'pornhd.com', self.defaultParams)
 			return '' if not sts else data.meta['url']
 
-		if parser == 'https://www.adulttvlive.net':
-			COOKIEFILE = join(GetCookieDir(), 'adulttv.cookie')
-			self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE}
-			sts, data = self.getPage(url, 'adulttv.cookie', 'adulttv.net', self.defaultParams)
-			if not sts:
-				return ''
-
-			videoUrl = self.cm.ph.getSearchGroups(data, '''src=['"](https://adult-channels.com/channels/[^"^']+?)['"]''')[0]
-			if not videoUrl:
-				videoUrl = self.cm.ph.getSearchGroups(data, '''src=['"](https://www.adulttvlive.net[^"^']+?embed/)['"]''')[0]
-
-			sts, data = self.getPage(videoUrl, 'adulttv.cookie', 'adulttv.net', self.defaultParams)
-			if not sts:
-				return ''
-			if 'porndig' in data:
-				videoUrl = self.cm.ph.getSearchGroups(data, '''src=['"]([^"^']+?)['"]''')[0]
-				return self.getResolvedURL(videoUrl)
-
-			if 'unescape' in data:
-				data = self.cm.ph.getAllItemsBeetwenMarkers(data, 'eval(', ');', False)
-				try:
-					ddata = ''
-					for idx in range(len(data)):
-						tmp = data[idx].split('+')
-						for item in tmp:
-							item = item.strip()
-							if item.startswith("'") or item.startswith('"'):
-								ddata += self.cm.ph.getSearchGroups(item, '''['"]([^'^"]+?)['"]''')[0]
-							else:
-								tmp2 = self.RE_UNESCAPE.findall(item)
-								for item2 in tmp2:
-									ddata += unquote(item2)
-					printDBG('Host listsItems ddata2: ' + ddata)
-					sp = self.cm.ph.getSearchGroups(ddata, r'''split\(\s*['"]([^'^"]+?)['"]''')[0]
-					modStr = self.cm.ph.getSearchGroups(ddata, r'''\+\s*['"]([^'^"]+?)['"]''')[0]
-					modInt = int(self.cm.ph.getSearchGroups(ddata, r'''\+\s*(-?[0-9]+?)[^0-9]''')[0])
-					ddata = self.cm.ph.getSearchGroups(ddata, r'''document\.write[^'^"]+?['"]([^'^"]+?)['"]''')[0]
-					data = ''
-					tmp = ddata.split(sp)
-					ddata = unquote(tmp[0])
-					k = unquote(tmp[1] + modStr)
-					for idx in range(len(ddata)):
-						data += chr((int(k[idx % len(k)]) ^ ord(ddata[idx])) + modInt)
-					if 'rtmp://' in data:
-						rtmpUrl = self.cm.ph.getDataBeetwenMarkers(data, '&source=', '&', False)[1]
-						if rtmpUrl == '':
-							rtmpUrl = self.cm.ph.getSearchGroups(data, r'''['"](rtmp[^"^']+?)['"]''')[0]
-						return rtmpUrl
-					elif '.m3u8' in data:
-						file = self.cm.ph.getSearchGroups(data, r'''['"](http[^"^']+?\.m3u8[^"^']*?)['"]''')[0]
-						if file == '':
-							file = self.cm.ph.getDataBeetwenMarkers(data, 'src=', '&amp;', False)[1]
-						return file
-				except Exception:
-					printExc()
-			videoUrl = self.cm.ph.getSearchGroups(data, '''<iframe[^>]+?src=['"]([^"^']+?)['"]''')[0]
-			if not videoUrl:
-				link = self.cm.ph.getSearchGroups(data, '''streamer":['"]([^"^']+?)['"]''')[0].replace(r"\/", r"/")
-				return 'https://www.filmon.com' + link
-			if not videoUrl:
-				return ''
-			sts, data = self.getPage(videoUrl, 'adulttv.cookie', 'adulttv.net', self.defaultParams)
-			if not sts:
-				return ''
-			videoUrl = self.cm.ph.getSearchGroups(data, r'''sources:\[\{file:['"]([^"^']+?)['"]''', 1, True)[0]
-			if not videoUrl:
-				videoUrl = self.cm.ph.getSearchGroups(data, '''source:['"]([^"^']+?)['"]''', 1, True)[0]
-			if not videoUrl:
-				videoUrl = self.cm.ph.getSearchGroups(data, '''file:['"]([^"^']+?)['"]''', 1, True)[0]
-			return videoUrl
-
 		if parser == 'https://www.balkanjizz.com':
 			COOKIEFILE = join(GetCookieDir(), 'balkanjizz.cookie')
 			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
@@ -2342,7 +2166,7 @@ class XXXParser:
 
 		if parser == 'https://pornorussia.mobi':
 			COOKIEFILE = join(GetCookieDir(), 'pornorussia.cookie')
-			for x in range(1, 10):
+			for _x in range(1, 10):
 				sts, data = self.getPage(url, 'pornorussia.cookie', 'pornorussia.mobi', self.defaultParams)
 				if not sts:
 					return ''
@@ -2351,51 +2175,6 @@ class XXXParser:
 				if videoUrl:
 					return urlparser.decorateUrl(videoUrl, {'Referer': url, 'User-Agent': USER_AGENT})
 			return ''
-
-		if parser == 'https://www.gotporn.com':
-			COOKIEFILE = join(GetCookieDir(), 'gotporn.cookie')
-			self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE, 'return_data': True}
-			sts, data = self.cm.getPage(url)
-			baseUrl = self.cm.meta['url']
-			printDBG('Shared: ' + baseUrl)
-			license_code = self.cm.ph.getSearchGroups(data, '''license_code:.['"]([^"^']+?)['"],''')[0].strip()
-			if 'eporner' in baseUrl:
-				videoID = self.cm.ph.getSearchGroups(data, '''720p.HD:<a href=['"]([^"^']+?)['"]''')[0]
-				videoUrl = "https://www.eporner.com" + videoID
-			if 'txxx' in baseUrl:
-				videoUrl = re.search('video_url":"([^"]+)', data).group(1)
-				replacemap = {'M': '\\u041c', 'A': '\\u0410', 'B': '\\u0412', 'C': '\\u0421', 'E': '\\u0415', '=': '~', '+': '.', '/': ','}
-				for key in replacemap:
-					videoUrl = videoUrl.replace(replacemap[key], key)
-				videoUrl = base64.b64decode(videoUrl)
-				videoUrl = checkhttps(videoUrl)
-				if videoUrl.startswith('/'):
-					videoUrl = 'https://txxx.com' + videoUrl
-				return urlparser.decorateUrl(videoUrl, {'Referer': url})
-			if 'sunporno' in baseUrl:
-				videoUrl = self.cm.ph.getSearchGroups(data, '''video.src=['"]([^"^']+?)['"]''')[0]
-			if not videoUrl:
-				videoUrl = self.cm.ph.getSearchGroups(data, '''href=['"]([^"^']+?)['"].class="video-download.+''')[0]
-			if not videoUrl:
-				videoUrl = self.cm.ph.getSearchGroups(data, '''source src=['"]([^"^']+?)['"]''')[0].replace(r'\/', '/').replace('&amp;', '&')
-			if not videoUrl:
-				videoUrl = self.cm.ph.getSearchGroups(data, '''.src=['"]([^"^']+?)['"].?type="video.+''')[0]
-
-			if not videoUrl:
-				videoUrl = self.cm.ph.getSearchGroups(data, '''video_url:.['"]([^"^']+?)['"]''')[0].replace(r'\/', '/').replace('&amp;', '&').strip()
-			if 'function/0/' in videoUrl:
-				videoUrl = decryptHash(videoUrl, license_code, '16')
-			if not videoUrl:
-				videoUrl = self.cm.ph.getSearchGroups(data, '''url":['"]([^"^']+?)['"]}}}''')[0].replace('&amp;', '&').replace(r"\/", r"/")
-			if '.m3u8' in videoUrl:
-				if self.cm.isValidUrl(videoUrl):
-					tmp = getDirectM3U8Playlist(videoUrl)
-					for item in tmp:
-						printDBG('Host listsItems valtab: ' + str(item))
-					return item['url']
-			printDBG('Videolink: ' + videoUrl)
-			videoUrl = checkhttps(videoUrl)
-			return videoUrl
 
 		if parser == 'https://www.3movs.com':
 			COOKIEFILE = join(GetCookieDir(), '3movs.cookie')
@@ -3123,7 +2902,6 @@ class XXXParser:
 		if parser == 'https://amateur.red':
 			printDBG('STARTED AMATEUR.RED PARSER')
 			sts, data = self.get_Page(url)
-			printDBG('Fetched: ' + data)
 			videoUrl = self.cm.ph.getSearchGroups(data, '''source.src=['"]([^"^']+?)['"]''')[0]
 			printDBG('VideoLink: ' + videoUrl)
 			if videoUrl:
@@ -3131,7 +2909,6 @@ class XXXParser:
 
 		if parser == 'https://www.terk.nl':
 			sts, data = self.get_Page(url)
-			printDBG('Fetched: ' + data)
 			videoUrl = self.cm.ph.getSearchGroups(data, '''source.src=['"]([^"^']+?)['"]''')[0]
 			printDBG('VideoLink: ' + videoUrl)
 			if videoUrl:
@@ -3183,7 +2960,6 @@ class XXXParser:
 			sts, data = self.get_Page(url)
 			embedUrl = self.cm.ph.getSearchGroups(data, '''iframe.+src=['"]([^"^']+?)['"]''')[0]
 			sts, data2 = self.get_Page(embedUrl)
-			printDBG('EMBED DATA: ' + data2)
 			videoUrl = self.cm.ph.getSearchGroups(data2, '''source.src=['"]([^"^']+?)['"]''')[0]
 			printDBG('VideoLink: ' + videoUrl)
 			if videoUrl:
@@ -3347,7 +3123,6 @@ class XXXParser:
 			sts, data = self.getPage(EmbedUrl, 'amateurcougar.cookie', EmbedUrl, self.defaultParams)
 			if not sts:
 				return ''
-			printDBG('Final DATA: ' + data)
 			videoUrl = self.cm.ph.getSearchGroups(data, 'source.src=["]([^"]+?)["].type="video/mp4')[0]
 			printDBG('Videolink: ' + videoUrl)
 			if videoUrl:
@@ -3363,7 +3138,6 @@ class XXXParser:
 			sts, data = self.getPage(EmbedUrl, 'momssexvideos.cookie', EmbedUrl, self.defaultParams)
 			if not sts:
 				return ''
-			printDBG('Final DATA: ' + data)
 			videoUrl = self.cm.ph.getSearchGroups(data, 'source.src=["]([^"]+?)["].type="video/mp4')[0]
 			printDBG('Videolink: ' + videoUrl)
 			if videoUrl:
@@ -3453,7 +3227,6 @@ class XXXParser:
 			time.sleep(5)
 			sts, data = self.getPage(url, 'indianporntube.cookie', 'indianporntube.net', self.defaultParams)
 			data = self.cm.ph.getDataBeetwenMarkers(data, 'VIDEO CONTENT', '#thisPlayer', False)[1]
-			printDBG('LIMITED DATA: ' + data)
 			videoUrl = self.cm.ph.getSearchGroups(data, '''source src=["]([^"]+?)["]''')[0]
 			if videoUrl:
 				printDBG('READY LINK: ' + str(videoUrl))
@@ -3518,7 +3291,6 @@ class XXXParser:
 			COOKIEFILE = join(GetCookieDir(), 'sexetag.cookie')
 			self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE, 'return_data': True}
 			sts, data = self.getPage(url, 'sexetag.cookie', 'sexetag.com', self.defaultParams)
-			printDBG('Final DATA: ' + data)
 			videoUrl = re.findall(r'''source[^>]*?src=["']([^"']+?)["'][^>]*?type=["']video/mp4''', data, re.S)
 			printDBG('Videolink: ' + str(videoUrl))
 			if videoUrl:
@@ -3623,7 +3395,6 @@ class XXXParser:
 					SetIPTVPlayerLastHostError(_('THIS VIDEO IS UNAVAILABLE.\nTRY AGAIN LATER!'))
 					return []
 				data2 = data2 + '#'
-				printDBG('EMBED ADATOK: ' + str(data2))
 				videoUrls = data2.split('X-STREAM-INF')
 				printDBG('Video links: ' + str(videoUrls))
 				lastUrl = videoUrls[-1]
@@ -3668,7 +3439,6 @@ class XXXParser:
 			if not sts or data2 is None or 'code":"2200' in data2:
 				SetIPTVPlayerLastHostError(_('THIS VIDEO IS UNAVAILABLE.\nTRY AGAIN LATER!'))
 				return ''
-			printDBG('EMBED DATA: ' + str(data2))
 			videoUrl = self.cm.ph.getSearchGroups(data2, r'source\ssrc=["]([^"]+?)["]', 1, True)[0]
 			if not videoUrl:
 				videoUrl = self.cm.ph.getSearchGroups(data2, r"video_url:\s[']([^']+?)[']", 1, True)[0]
@@ -3821,48 +3591,24 @@ class XXXParser:
 			COOKIEFILE = join(GetCookieDir(), 'bigbuttholes.cookie')
 			self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE, 'return_data': True}
 			sts, data = self.getPage(url, 'bigbuttholes.cookie', 'bigbuttholes.com', self.defaultParams)
-			printDBG('videoOldal: ' + data)
-			embedUrl = self.cm.ph.getSearchGroups(data, r'<source\ssrc="(.*?)"\stype="video/mp4')[0]
-			printDBG('EMBEDURL: ' + embedUrl)
-			HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
-			HTTP_HEADER['Referer'] = embedUrl
-			params = {'header': HTTP_HEADER, 'return_data': False}
-			sts, response = self.cm.getPage(embedUrl, params)
-			if not sts or response is None:
-				return []
-			real_url = response.geturl()
-			printDBG('REALURL: ' + str(real_url))
-			response.close()
-			videoUrl = str(real_url)
-			printDBG('Videolink: ' + str(videoUrl))
-			if videoUrl:
-				return urlparser.decorateUrl(videoUrl, {'Referer': url})
-
-		if parser == 'https://bigbuttholes.com':
-			printDBG('BIGBUTTHOLES PARSER')
-			COOKIEFILE = join(GetCookieDir(), 'bigbuttholes.cookie')
-			self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE, 'return_data': True}
-			sts, data = self.getPage(url, 'bigbuttholes.cookie', 'bigbuttholes.com', self.defaultParams)
-			printDBG('video page: ' + data)
-			stream_url = self.cm.ph.getSearchGroups(data, r'contentUrl":\s["]([^"]+?)["]')[0]
-			printDBG('Embed URL: ' + stream_url)
+			if not sts:
+				return ''
+			# <source> of the player, else the schema.org contentUrl; both redirect to the real file
+			streamUrl = self.cm.ph.getSearchGroups(data, r'<source\ssrc="(.*?)"\stype="video/mp4')[0] or self.cm.ph.getSearchGroups(data, r'contentUrl":\s["]([^"]+?)["]')[0]
+			if not streamUrl:
+				return ''
 			HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
 			HTTP_HEADER['Referer'] = url
-			params = {'header': HTTP_HEADER, 'return_data': False}
-			sts, response = self.cm.getPage(stream_url, params)
+			sts, response = self.cm.getPage(streamUrl, {'header': HTTP_HEADER, 'return_data': False})
 			if not sts or response is None:
-				printDBG("BIGBUTTHOLES: failed to retrieve the stream URL")
-				return []
-			real_url = response.geturl()
-			printDBG('REALURL: ' + str(real_url))
+				printDBG('BIGBUTTHOLES: failed to retrieve the stream URL')
+				return ''
+			videoUrl = str(response.geturl())
 			response.close()
-			if not real_url.startswith('http'):
-				printDBG("BIGBUTTHOLES: incorrect redirect URL")
-				return []
-			videoUrl = str(real_url)
-			printDBG('Videolink second: ' + str(videoUrl))
-			if videoUrl:
-				return urlparser.decorateUrl(videoUrl, {'Referer': url})
+			printDBG('BIGBUTTHOLES videolink: ' + videoUrl)
+			if not videoUrl.startswith('http'):
+				return ''
+			return urlparser.decorateUrl(videoUrl, {'Referer': url})
 
 		if parser == 'https://www.vikiporn.com':
 			printDBG('VIKIPORN PARSER')
@@ -4012,7 +3758,6 @@ class XXXParser:
 				embedUrl = re.search('getEmbed.+\n.+\n.+src=["]([a-z:/0-9.]+?)["]', data).group(1)
 				printDBG('EMBEDURL: ' + embedUrl)
 				sts, data2 = self.get_Page(embedUrl)
-				printDBG('EMBED DATA: ' + data2)
 				videoUrl = re.findall("video.{1,6}url.{2,4}['](f[^@]+?)['],", data2, re.S)[-1]
 				printDBG('EMBED VIDEOURL: ' + videoUrl)
 			if 'function/0/' in videoUrl:
@@ -4035,7 +3780,6 @@ class XXXParser:
 				embedUrl = re.search('getEmbed.+\n.+\n.+src=["]([a-z:/0-9.]+?)["]', data).group(1)
 				printDBG('EMBEDURL: ' + embedUrl)
 				sts, data2 = self.get_Page(embedUrl)
-				printDBG('EMBED DATA: ' + data2)
 				videoUrl = re.findall("video.{1,6}url.{2,4}['](f[^@]+?)['],", data2, re.S)[-1]
 				printDBG('EMBED VIDEOURL: ' + videoUrl)
 			if 'function/0/' in videoUrl:
@@ -4149,24 +3893,6 @@ class XXXParser:
 					return item['url']
 			return videoUrl
 
-		if parser == 'https://porndreamz.com':
-			printDBG('PORNDREAMZ PARSER')
-			COOKIEFILE = join(GetCookieDir(), 'porndreamz.cookie')
-			self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE, 'return_data': True}
-			sts, data = self.getPage(url, 'porndreamz.cookie', 'porndreamz.com', self.defaultParams)
-			embedUrl = self.cm.ph.getSearchGroups(data, r'embedUrl":\s["]([a-z:/0-9.?_=]+?)["]')[0]
-			if not embedUrl:
-				embedUrl = re.search(r'og:video"\scontent=["]([a-z:/0-9.?_=]+?)["]', data).group(1)
-			printDBG('PORNDREAMZ EMBEDURL: ' + embedUrl)
-			sts, data2 = self.get_Page(embedUrl)
-
-			videoUrl = self.cm.ph.getSearchGroups(data2, r'source\ssrc=["]([^"]+?)["]')[0]
-			printDBG('Videolink third: ' + videoUrl)
-			try:
-				return urlparser.decorateUrl(videoUrl, {'Referer': url})
-			except Exception:
-				return videoUrl
-
 		if parser == 'https://www.sexsq.com':
 			printDBG('SEXSQ PARSER')
 			COOKIEFILE = join(GetCookieDir(), 'sexsq.cookie')
@@ -4213,7 +3939,6 @@ class XXXParser:
 			sts, data = self.get_Page(EmbedUrl)
 			if not sts:
 				return ''
-			printDBG('Final DATA: ' + data)
 			license_code = self.cm.ph.getSearchGroups(data, r"license_code:\s[']([^']+?)[']")[0].strip()
 			videoUrl = re.findall("video.{1,6}url.{2,4}[']([^@']+?e)[']", data, re.S)[0]
 			printDBG('Videolink first: ' + videoUrl)
@@ -4301,7 +4026,6 @@ class XXXParser:
 			sts, data2 = self.get_Page(embedUrl)
 			if not sts:
 				return ''
-			printDBG('EMBED DATA: ' + data2)
 			videoUrl = self.cm.ph.getSearchGroups(data2, r'source\ssrc=["]([^"]+?mp4)["]')[0]
 			printDBG('videoURL: ' + videoUrl)
 			return urlparser.decorateUrl(videoUrl, {'Referer': url})
@@ -4515,7 +4239,6 @@ class XXXParser:
 			sts, data = self.get_Page(EmbedUrl)
 			if not sts:
 				return ''
-			printDBG('Final DATA: ' + data)
 			data = self.cm.ph.getDataBeetwenMarkers(data, 'video id="video-page', '</video>', False)[1]
 			videoUrl = re.findall('source\n.+src=["]([^"]+?)["]', data, re.S)
 			if videoUrl:
@@ -4546,7 +4269,6 @@ class XXXParser:
 			self.HTTP_HEADER['Referer'] = url
 			self.defaultParams = {'header': self.HTTP_HEADER, 'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE}
 			sts, data = self.getPage(url, 'xdporner.cookie', 'xdporner.com', self.defaultParams)
-			printDBG('XDPORNER ADATOK: ' + data)
 			videoUrl = self.cm.ph.getSearchGroups(data, 'src=["]([^"]+?mp4)["]')[0]
 			if videoUrl.startswith('/'):
 				videoUrl = 'https://xdporner.com' + videoUrl
@@ -5145,7 +4867,6 @@ class XXXParser:
 			COOKIEFILE = join(GetCookieDir(), 'whoreshub.cookie')
 			self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE, 'return_data': True}
 			sts, data = self.getPage(url, 'whoreshub.cookie', 'whoreshub.com', self.defaultParams)
-			printDBG('WHORESHUB PARSERDATA: ' + str(data))
 			rnd = re.search("rnd:.[']([0-9]+)[']", data).group(1)
 			refID = self.cm.ph.getSearchGroups(data, '''og:image".content=["]([^@]+?)[/]contents''')[0]
 			printDBG('REFID: ' + str(refID))
@@ -5207,7 +4928,6 @@ class XXXParser:
 			COOKIEFILE = join(GetCookieDir(), 'pornxp.cookie')
 			self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE, 'return_data': True}
 			sts, data = self.getPage(url, 'pornxp.cookie', 'pornxp.org', self.defaultParams)
-			printDBG('PORNXP PARSERDATA: ' + str(data))
 			videoUrl = re.findall('source.src=["]([^"]+?)["].title', data, re.S)
 			printDBG('Links: ' + str(videoUrl))
 			videoUrl = "https:" + videoUrl[-1]
@@ -5333,16 +5053,6 @@ class XXXParser:
 			printDBG('Videolink: ' + videoUrl)
 			return videoUrl
 
-		if parser == 'https://ad69.com':
-			COOKIEFILE = join(GetCookieDir(), 'ad69.cookie')
-			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
-			self.HTTP_HEADER['Referer'] = url
-			self.defaultParams = {'header': self.HTTP_HEADER, 'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE}
-			sts, data = self.get_Page(url, self.defaultParams)
-			videoUrls = re.findall('''source.{0,20}src=['"](.*?)['"]''', data, re.S)
-			printDBG('Videolink: ' + str(videoUrls))
-			return videoUrls[-1] if videoUrls else ''
-
 		if parser == 'https://sex3.com':
 			COOKIEFILE = join(GetCookieDir(), 'sex3.cookie')
 			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
@@ -5402,11 +5112,9 @@ class XXXParser:
 			if not sts:
 				return ''
 			embedUrl = self.cm.ph.getSearchGroups(data, '''embedUrl":['"]([^"^']+?)['"]''', 1, True)[0].replace(r"\/", "/")
-			printDBG('Lekerve: ' + data)
 			sts, data = self.get_Page(embedUrl)
 			if not sts:
 				return ''
-			printDBG('Final page: ' + data)
 			videoUrl = self.cm.ph.getSearchGroups(data, '''mp4.+:['"]([^"^']+?)['"]''', 1, True)[0]
 			if videoUrl.startswith('/'):
 				videoUrl = self.MAIN_URL + videoUrl
@@ -5506,40 +5214,6 @@ class XXXParser:
 			printDBG('Link: ' + videoUrl)
 			return urlparser.decorateUrl(videoUrl, {'Referer': url, 'User-Agent': USER_AGENT})
 
-		if parser == 'https://porn720.net':
-			COOKIEFILE = join(GetCookieDir(), 'porn720.cookie')
-			self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE, 'return_data': True}
-			sts, data = self.getPage(url, 'porn720.cookie', 'porn720.org', self.defaultParams)
-			if not sts:
-				return ''
-			videoUrl = self.cm.ph.getSearchGroups(data, '''<iframe[^>]+?src=['"]([^"^']+?)['"]''')[0]
-			if videoUrl:
-				return self.getResolvedURL(self.FullUrl(videoUrl))
-			videoUrl = self.RE_SOURCE_SRC.findall(data)
-			if videoUrl:
-				videoUrl = urlparser.decorateUrl(videoUrl[-1], {'User-Agent': USER_AGENT, 'Referer': url})
-				self.defaultParams['max_data_size'] = 0
-				sts, data = self.getPage(videoUrl, 'porn720.cookie', 'porn720.org', self.defaultParams)
-				return '' if not sts else data.meta['url']
-
-			videoUrl = self.cm.ph.getSearchGroups(data, '''720p['"]:['"]([^"^']+?)['"]''')[0]
-			if videoUrl:
-				return urlparser.decorateUrl(videoUrl, {'User-Agent': USER_AGENT, 'Referer': url})
-			videoUrl = self.cm.ph.getSearchGroups(data, '''480p['"]:['"]([^"^']+?)['"]''')[0]
-			return urlparser.decorateUrl(videoUrl, {'User-Agent': USER_AGENT, 'Referer': url}) if videoUrl else ''
-
-		if parser == 'https://fapset.com':
-			COOKIEFILE = join(GetCookieDir(), 'fapset.cookie')
-			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
-			self.defaultParams = {'header': self.HTTP_HEADER, 'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE}
-			sts, data = self.get_Page(url)
-			if not sts:
-				return ''
-			videoUrl = self.cm.ph.getSearchGroups(data, '''screen.src=['"]([^"^']+?)['"]''')[0]
-			videoUrl = checkhttp(videoUrl)
-			videoUrl = urlparser.decorateUrl(videoUrl, {'User-Agent': USER_AGENT, 'Referer': url})
-			return self.getResolvedURL(videoUrl)
-
 		if parser == 'https://www.porndroids.com':
 			COOKIEFILE = join(GetCookieDir(), 'porndroids.cookie')
 			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
@@ -5616,7 +5290,7 @@ class XXXParser:
 				printDBG('Xhamster Multi: ' + videoUrl)
 				if not videoUrl:
 					videoUrl = self.cm.ph.getSearchGroups(data, '''true[a-z":,]+videoUrl":['"]([^"^']+?)['"]''')[0].replace(r'\/', '/')
-					printDBG('Lekert link: ' + videoUrl)
+					printDBG('Fetched link: ' + videoUrl)
 			printDBG('Host license_code: %s' % license_code)
 			printDBG('Host video_url: %s' % videoUrl)
 			if 'function/0/' in videoUrl:
@@ -5730,35 +5404,6 @@ class XXXParser:
 				return videoUrl
 			return ''
 
-		if parser == 'https://www.naked.com':
-			COOKIEFILE = join(GetCookieDir(), 'naked.cookie')
-			self.defaultParams = {'use_cookie': True, 'load_cookie': False, 'save_cookie': False, 'cookiefile': COOKIEFILE}
-			sts, data = self.getPage(url, 'naked.cookie', 'naked.com', self.defaultParams)
-			if not sts:
-				return ''
-			modelname = self.cm.meta['url'].split('=')[-1]
-			id = ''
-			host = ''
-			data = data.replace('\\', '')
-			data = data.split('<div class="live clearfix')
-			if len(data):
-				del data[0]
-			for item in data:
-				id = self.cm.ph.getSearchGroups(item, '''data-model-id=['"]([^"^']+?)['"]''')[0]
-				host = self.cm.ph.getSearchGroups(item, '''data-video-host=['"]([^"^']+?)['"]''')[0]
-				if modelname == self.cm.ph.getSearchGroups(item, '''data-model-seo-name=['"]([^"^']+?)['"]''', 1, True)[0]:
-					if 'multi-user-private' in item:
-						SetIPTVPlayerLastHostError(_('Private Show.'))
-						return []
-					break
-			videoUrl = 'https://manifest.vscdns.com/manifest.m3u8?key=nil&provider=highwinds&host=' + host + '&model_id=' + id + '&secure=true&prefix=amlst&youbora-debug=1'
-			PHPSESSID = self.cm.getCookieItem(COOKIEFILE, 'PHPSESSID')
-			videoUrl = urlparser.decorateUrl(videoUrl, {'Referer': self.cm.meta['url'], 'Cookie': 'PHPSESSID=%s' % PHPSESSID, 'User-Agent': USER_AGENT, 'iptv_livestream': True, 'Origin': 'https://www.naked.com'})
-			tmp = getDirectM3U8Playlist(videoUrl, checkContent=True, sortWithMaxBitrate=999999999)
-			for item in tmp:
-				return item['url']
-			return ''
-
 		if parser == 'https://www.pornrewind.com':
 			COOKIEFILE = join(GetCookieDir(), 'pornrewind.cookie')
 			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
@@ -5852,23 +5497,6 @@ class XXXParser:
 			if videoUrl:
 				videoUrl = checkhttp(videoUrl)
 				return urlparser.decorateUrl(videoUrl, {'Referer': 'https://sexu.com/'})
-
-		if parser == 'https://www.amateurporn.me':
-			COOKIEFILE = join(GetCookieDir(), 'amateurporn.cookie')
-			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
-			self.defaultParams = {'header': self.HTTP_HEADER, 'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE}
-			sts, data = self.get_Page(url, self.defaultParams)
-			if not sts:
-				return ''
-			license_code = self.cm.ph.getSearchGroups(data, r'''license_code\s*?:\s*?['"]([^"^']+?)['"]''')[0]
-			videoUrl = self.cm.ph.getSearchGroups(data, r'''video_url\s*?:\s*?['"]([^"^']+?)['"]''')[0]
-			if not videoUrl:
-				videoUrl = self.cm.ph.getSearchGroups(data, '''source.src=['"]([^"^']+?)["].*\n<''')[0]
-			if not videoUrl:
-				videoUrl = self.cm.ph.getSearchGroups(data, '''src=["]([^j]+?)["].*\n.*s''')[0]
-			printDBG('Host license_code: %s' % license_code)
-			printDBG('Host video_url: %s' % videoUrl)
-			return urlparser.decorateUrl(videoUrl, {'Referer': url}) if videoUrl else ''
 
 		if parser == 'https://www.hdporn.net':
 			COOKIEFILE = join(GetCookieDir(), 'hdporn.cookie')
@@ -6094,7 +5722,6 @@ class XXXParser:
 			sts, data = self.get_Page(url)
 			if not sts:
 				return ''
-			printDBG('VideoPage Data: ' + data)
 			videoUrl = self.cm.ph.getDataBeetwenMarkers(data, "video_url: '", "/',", False)[1]
 			printDBG('VideoLink: ' + videoUrl)
 			return videoUrl
@@ -6123,23 +5750,6 @@ class XXXParser:
 				videoUrl = self.cm.ph.getSearchGroups(data, '''src=['"]([^"^']+?)['"].{10,20}mp4''', 1, True)[0]
 			printDBG('BRAVOPORN / BRAVOTEENS Videolink: ' + videoUrl)
 			return strwithmeta(videoUrl, {'Referer': url})
-
-		if parser == 'https://www.bigtitslust.com/':
-			COOKIEFILE = join(GetCookieDir(), 'bigtitslust.cookie')
-			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
-			self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE}
-			sts, data = self.getPage(url, 'bigtitslust.cookie', 'bigtitslust.com', self.defaultParams)
-			if not sts:
-				return ''
-			license_code = self.cm.ph.getSearchGroups(data, r'''license_code\s*?:\s*?['"]([^"^']+?)['"]''')[0]
-			videoUrl = self.cm.ph.getSearchGroups(data, r'''video_url\s*?:\s*?['"]([^"^']+?)['"],''')[0]
-			printDBG('Host license_code: %s' % license_code)
-			printDBG('Host video_url: %s' % videoUrl)
-			if 'function/0/' in videoUrl:
-				videoUrl = decryptHash(videoUrl, license_code, '16')
-			videoUrl = self.cm.ph.getSearchGroups(videoUrl, r'''([^"^']+?)[/]\?br''')[0].strip()
-			printDBG('Ready link: ' + videoUrl)
-			return unquote(videoUrl) if videoUrl else ''
 
 		if parser == 'https://anysex.com/':
 			COOKIEFILE = join(GetCookieDir(), 'anysex.cookie')
@@ -6939,31 +6549,6 @@ class XXXParser:
 			printDBG('Host getResolvedURL query error')
 			return videoUrl
 
-		if parser == 'file: ':
-			return self.cm.ph.getSearchGroups(data, '''file: ['"]([^"^']+?)['"]''')[0]
-
-		if parser == "0p'  : '":
-			videoPage = re.findall("0p'  : '(http.*?)'", data, re.S)
-			return videoPage[-1] if videoPage else ''
-
-		if parser == 'source src="':
-			videoPage = re.findall('source src="(http.*?)"', data, re.S)
-			return videoPage[-1] if videoPage else ''
-
-		if parser == "video_url: '":
-			videoPage = re.findall("video_url: '(.*?).'", data, re.S)
-			if videoPage:
-				printDBG('Host videoPage:' + videoPage[0])
-				return videoPage[0]
-			return ''
-
-		if parser == 'videoFile="':
-			videoPage = re.findall('videoFile="(.*?)"', data, re.S)
-			if videoPage:
-				printDBG('Host videoPage:' + videoPage[0])
-				return videoPage[0]
-			return ''
-
 		if parser == 'https://www.ah-me.com':
 			license_code = self.cm.ph.getSearchGroups(data, '''license_code:.['"]([^"^']+?)['"],''')[0]
 			videoUrl = self.cm.ph.getSearchGroups(data, '''video_url:.['"]([^"^']+?)['"]''')[0]
@@ -6971,10 +6556,6 @@ class XXXParser:
 			if 'function/0/' in videoUrl:
 				videoUrl = decryptHash(videoUrl, license_code, '16')
 			printDBG('Videolink second: ' + videoUrl)
-			return videoUrl
-
-		if parser == 'https://www.yuvutu.com':
-			videoUrl = self.cm.ph.getSearchGroups(data, r'''\s*?{\s*?file:.['"]([^"^']+?)['"],''')[0]
 			return videoUrl
 
 		if parser == 'https://www.homemoviestube.com':
@@ -7000,7 +6581,6 @@ class XXXParser:
 
 		if parser == 'https://motherlesss.net':
 			sts, data = self.get_Page(url)
-			printDBG('Fetched: ' + data)
 			videoUrl = self.cm.ph.getSearchGroups(data, '''<source src=["]([^"^']+?)["]''', 1, True)[0]
 			printDBG('VideoLink: ' + videoUrl)
 			if videoUrl:
@@ -7010,7 +6590,6 @@ class XXXParser:
 
 		if parser == 'https://mustjav.com':
 			sts, data = self.get_Page(url)
-			printDBG('Fetched: ' + data)
 			data2 = self.cm.ph.getDataBeetwenMarkers(data, 'target="#video-share', '#videoEmbedHtml', False)[1]
 			printDBG('Video data: ' + videoUrl)
 			videoUrl = self.cm.ph.getSearchGroups(data2, '''iframe.+?[;]([^"^']+?)[&]#''')[0].replace('&amp;', '&')
@@ -7022,7 +6601,6 @@ class XXXParser:
 
 		if parser == 'https://fullxcinema.com':
 			sts, data = self.get_Page(url)
-			printDBG('Fetched: ' + data)
 			videoUrl = self.cm.ph.getSearchGroups(data, '''contentURL.+?=['"]([^"^']+?)['"]''')[0]
 			if not videoUrl:
 				videoUrl = self.cm.ph.getSearchGroups(data, '''iframe.src=['"]([^"^']+?)['"]''')[0]
@@ -7048,7 +6626,6 @@ class XXXParser:
 
 		if parser == 'https://warddogs.com':
 			sts, data = self.get_Page(url)
-			printDBG('Fetched: ' + data)
 			videoUrl = self.cm.ph.getSearchGroups(data, '''<video[^>]*?src=['"]([^"^']+?)['"]''')[0]
 			if not videoUrl:
 				videoUrl = self.cm.ph.getSearchGroups(data, '''source.src=['"]([^"^']+?)['"].type''')[0]
@@ -7358,7 +6935,6 @@ class XXXParser:
 			self.HTTP_HEADER['Referer'] = url
 			self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE, 'return_data': True}
 			sts, data = self.get_Page(videoUrl, self.defaultParams)
-			printDBG('VideoPage data: ' + data)
 			linkUrl = self.cm.ph.getSearchGroups(data, '''rel="canonical" href=["]([^"^']+?)["]''')[0]
 			printDBG('Original title: ' + linkUrl)
 			sts, data = self.get_Page(linkUrl, self.defaultParams)
@@ -7390,7 +6966,6 @@ class XXXParser:
 			headUrl = self.cm.ph.getSearchGroups(data, '''iframe.{20,35}src=['"]([^"^']+?)['"]''')[0]
 			printDBG('Fetched Link: ' + headUrl)
 			sts, data = self.get_Page(headUrl)
-			printDBG('Chaturbate data: ' + data)
 			videoUrl = self.cm.ph.getSearchGroups(data, '''hls_source.{8,15}[2]([^"^']+?)[,]''')[0].replace('\\u002D', '-').replace('\\u0022', '')
 			printDBG('ANACAMS linklista: ' + videoUrl)
 			if not videoUrl:
@@ -7420,7 +6995,6 @@ class XXXParser:
 			sts, data = self.get_Page(url)
 			if not sts:
 				return ''
-			printDBG('Fetched: ' + data)
 			printDBG('#--- Parser for Chaturbate Cams ---#')
 			headUrl = self.cm.ph.getSearchGroups(data, '''chaturbate.+src=['"]([^"^']+?)['"]''')[0]
 			if not headUrl:
@@ -7428,7 +7002,6 @@ class XXXParser:
 			sts, data = self.get_Page(headUrl)
 			if not sts:
 				return ''
-			printDBG('video page data: ' + data)
 			try:
 				mainUrl = self.cm.ph.getSearchGroups(data, '''hls_source.{13}[2]([^"^']+?)[u]0022''')[0]
 			except Exception:
@@ -7508,7 +7081,6 @@ class XXXParser:
 
 		if parser == 'https://rusporn.tv':
 			sts, data = self.getPage(url, 'rusporn.cookie', 'rusporn.tv', self.defaultParams)
-			printDBG('Parser data: ' + data)
 			videoUrl = self.cm.ph.getSearchGroups(data, '''href=['"]([^"^']+?)['"].data-attach''')[0]
 			printDBG('New parser: ' + videoUrl)
 			if videoUrl:
@@ -7617,7 +7189,6 @@ class XXXParser:
 			sts, data2 = self.get_Page(videoUrl)
 			if not sts:
 				return ''
-			printDBG('Fetched new URL:\n' + data2)
 			match = re.findall('[\n]([^"]+?)[\n]', data2, re.S)
 			if match:
 				videoUrl = match[-1]
@@ -7645,7 +7216,6 @@ class XXXParser:
 					except Exception:
 						printDBG('Host listsItems query error')
 						printDBG('Host listsItems query error url: ' + url)
-					printDBG('Host listsItems parserdata: ' + data)
 					url = re.findall(r'video_file>.*?(http.*?)\]\]><\/video_file>', data, re.S)
 					if url:
 						url = str(url[0])
@@ -7653,43 +7223,6 @@ class XXXParser:
 						printDBG('Host listsItems url: ' + url)
 						return url
 			return ''
-
-		if parser == 'https://www.el-ladies.com':
-			videoUrl = self.cm.ph.getSearchGroups(data, '''<source[^>]+?src=['"]([^"^']+?)['"]''')[0].replace('&amp;', '&')
-			if videoUrl:
-				return self.FullUrl(videoUrl)
-			videoPage = re.findall(',file:\'(.*?)\'', data, re.S)
-			return videoPage[0] if videoPage else ''
-
-		if parser == 'https://sexylies.com':
-			videoPage = re.search(r'source\stype="video/mp4"\ssrc="(.*?)"', data, re.S)
-			return videoPage.group(1) if videoPage else ''
-
-		if parser == 'https://www.eskimotube.com':
-			videoPage = re.search('color=black.*?href=(.*?)>', data, re.S)
-			return videoPage.group(1) if videoPage else ''
-
-		if parser == 'https://www.porn5.com':
-			videoPage = re.findall('p",url:"(.*?)"', data, re.S)
-			return videoPage[-1] if videoPage else ''
-
-		if parser == 'https://www.pornyeah.com':
-			videoPage = re.findall('settings=(.*?)"', data, re.S)
-			if not videoPage:
-				return ''
-			xml = videoPage[0]
-			printDBG('Host getResolvedURL xml: ' + xml)
-			try:
-				data = self.cm.getURLRequestData({'url': xml, 'use_host': False, 'use_cookie': False, 'use_post': False, 'return_data': True})
-			except Exception:
-				printDBG('Host getResolvedURL query error xml')
-				return videoUrl
-			videoPage = re.findall('defaultVideo:(.*?);', data, re.S)
-			return videoPage[0] if videoPage else ''
-
-		if parser == 'https://www.pornpillow.com':
-			videoPage = re.findall("'file': '(.*?)'", data, re.S)
-			return videoPage[0] if videoPage else ''
 
 		if parser == 'https://vidlox.tv':
 			parse = re.search('sources.*?"(http.*?)"', data, re.S)
@@ -7703,44 +7236,10 @@ class XXXParser:
 			parse = re.search('fileUrl="([^"]+?)"', data, re.S)
 			return checkhttps(parse.group(1).replace(r'\/', '/')) if parse else ''
 
-		if parser == 'https://www.yeptube.com':
-			videoUrl = re.search('video_id = "(.*?)"', data, re.S)
-			if videoUrl:
-				xml = 'https://www.yeptube.com/player_config_json/?vid=%s&aid=0&domain_id=0&embed=0&ref=&check_speed=0' % videoUrl.group(1)
-				try:
-					data = self.cm.getURLRequestData({'url': xml, 'use_host': False, 'use_cookie': False, 'use_post': False, 'return_data': True})
-				except Exception:
-					printDBG('Host getResolvedURL query error xml')
-					return ''
-				videoPage = re.search('"hq":"(http.*?)"', data, re.S)
-				if videoPage:
-					return videoPage.group(1).replace(r'\/', '/')
-				videoPage = re.search('"lq":"(http.*?)"', data, re.S)
-				if videoPage:
-					return videoPage.group(1).replace(r'\/', '/')
-			return ''
-
 		if parser == 'https://vivatube.com':
 			videoUrl = re.search('video_id = "(.*?)"', data, re.S)
 			if videoUrl:
 				xml = 'https://vivatube.com/player_config_json/?vid=%s&aid=0&domain_id=0&embed=0&ref=&check_speed=0' % videoUrl.group(1)
-				try:
-					data = self.cm.getURLRequestData({'url': xml, 'use_host': False, 'use_cookie': False, 'use_post': False, 'return_data': True})
-				except Exception:
-					printDBG('Host getResolvedURL query error xml')
-					return ''
-				videoPage = re.search('"hq":"(http.*?)"', data, re.S)
-				if videoPage:
-					return videoPage.group(1).replace(r'\/', '/')
-				videoPage = re.search('"lq":"(http.*?)"', data, re.S)
-				if videoPage:
-					return videoPage.group(1).replace(r'\/', '/')
-			return ''
-
-		if parser == 'https://www.tubeon.com':
-			videoUrl = re.search('video_id = "(.*?)"', data, re.S)
-			if videoUrl:
-				xml = 'https://www.tubeon.com/player_config_json/?vid=%s&aid=0&domain_id=0&embed=0&ref=&check_speed=0' % videoUrl.group(1)
 				try:
 					data = self.cm.getURLRequestData({'url': xml, 'use_host': False, 'use_cookie': False, 'use_post': False, 'return_data': True})
 				except Exception:
