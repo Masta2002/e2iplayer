@@ -371,7 +371,24 @@ SITEDATA = {
 'VIDEOSECTION': ('https://videosection.com/', '', ''),
 '4TUBE': ('https://www.4tube.com/', '', ''),
 'SPANKBANG': ('https://spankbang.com', '', ''),
+'UPORNIA': ('https://upornia.com', '', ''),
+'HDZOG': ('https://hdzog.com', '', ''),
+'VXXX': ('https://vxxx.com', '', ''),
+'XHAMSTER': ('https://xhamster.com', '', ''),
+'THUMBZILLA': ('https://www.thumbzilla.com', '', ''),
+'NOODLEMAGAZINE': ('https://noodlemagazine.com', '', ''),
+'MISSAV': ('https://missav123.com', '', ''),
+'SXYPRN': ('https://sxyprn.com', '', ''),
+'FULLPORNER': ('https://fullporner.com', '', ''),
+'EROME': ('https://www.erome.com', '', ''),
 
+}
+
+# sites of the txxx network, they all share the same JSON API
+TXXX_NETWORK = {
+	'UPORNIA': 'https://upornia.com',
+	'HDZOG': 'https://hdzog.com',
+	'VXXX': 'https://vxxx.com',
 }
 
 SITEDATA_CAMS = {
@@ -401,6 +418,9 @@ SITEDATA_HENTAI = {
 'HENTAICITY': ('https://www.hentaicity.com', '', ''),
 'HENTAIGASM': ('https://hentaigasm.com', 'hentaigasm', ''),
 'HENTAIMOON': ('https://hentai-moon.com', '', ''),
+'HENTAIOCEAN': ('https://hentaiocean.com', '', ''),
+'HENTAIDUDE': ('https://hentaidude.xxx', '', ''),
+'HSTREAM': ('https://hstream.moe', '', ''),
 
 }
 
@@ -587,6 +607,24 @@ def hostImage():
 def menuHeader(text):
 	# site menu entry title, e.g. menuHeader(_('Top rated')) -> '--- Top rated ---'
 	return '--- %s ---' % text
+
+
+def isBlockedContent(text):
+	# never list categories or videos with (drawn) minors, animals or secretly filmed people
+	text = (text or '').lower()
+	return any(term in text for term in ('loli', 'shota', 'shouta', 'underage', 'school girl', 'schoolgirl', 'bestiality', 'beastiality', 'zoophil',
+										'voyeur', 'upskirt', 'hidden cam', 'spycam', 'spy cam', 'sneak shot'))
+
+
+def formatDuration(seconds):
+	try:
+		seconds = int(float(seconds))
+	except (TypeError, ValueError):
+		return ''
+	if seconds <= 0:
+		return ''
+	h, rest = divmod(seconds, 3600)
+	return '%d:%02d:%02d' % (h, rest // 60, rest % 60) if h else '%d:%02d' % (rest // 60, rest % 60)
 
 
 class IPTVHost(IHost):
@@ -3056,6 +3094,180 @@ class Host(CBaseHostClass, XXXParser):
 					continue
 				seen.add(catUrl)
 				valTab.append(CDisplayListItem(catTitle, catTitle, CDisplayListItem.TYPE_CATEGORY, [catUrl], 'HENTAI2W', siteLogo, None))
+			return valTab
+
+		if 'HENTAIOCEAN' == name:
+			self.MAIN_URL = 'https://hentaiocean.com'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(self.MAIN_URL + '/genre', self.defaultParams)
+			if sts:
+				seen = set()
+				for m in re.finditer(r'href="(https://hentaiocean\.com/genre/([^"]+))"', data):
+					catTitle = decodeHtml(unquote(m.group(2))).strip()
+					if not catTitle or catTitle.lower() in seen or isBlockedContent(catTitle):
+						continue
+					seen.add(catTitle.lower())
+					valTab.append(CDisplayListItem(catTitle, catTitle, CDisplayListItem.TYPE_CATEGORY, [m.group(1)], 'HENTAIOCEAN-clips', siteLogo, None))
+			valTab.sort(key=lambda poz: poz.name)
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/rss.xml?page=1'], 'HENTAIOCEAN-clips', siteLogo, None))
+			return searchItems(valTab, True)
+
+		if 'HENTAIOCEAN-search' == name:
+			# the site search ignores the query, the RSS feed (all episodes) is searched instead
+			return self.listsItems(-1, 'https://hentaiocean.com/rss.xml?page=1&q=' + URL_QUOTE(url), 'HENTAIOCEAN-clips')
+
+		if 'HENTAIOCEAN-clips' == name:
+			self.MAIN_URL = 'https://hentaiocean.com'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(url, self.defaultParams)
+			if not sts:
+				return valTab
+			items = []
+			if '/rss.xml' in url:
+				query = unquote(self.cm.ph.getSearchGroups(url, r'[?&]q=([^&]+)', 1, True)[0]).lower()
+				for m in re.finditer(r'(?s)<item>.*?<title>(.*?)</title>.*?<link>(.*?)</link>', data):
+					phTitle = decodeHtml(re.sub(r'^<!\[CDATA\[|\]\]>$', '', m.group(1).strip()))
+					if query and query not in phTitle.lower():
+						continue
+					slug = m.group(2).strip().rstrip('/').split('/')[-1]
+					items.append((phTitle, self.MAIN_URL + '/watch/' + slug, self.MAIN_URL + '/thumbnail/' + slug + '.webp'))
+			else:
+				for m in re.finditer(r'(?s)<a href="(https://hentaiocean\.com/watch/[^"]+)" class="cell card">.*?<img src="([^"]+)" alt="([^"]+)"', data):
+					items.append((decodeHtml(m.group(3)), m.group(1), m.group(2)))
+			seen = set()
+			for phTitle, phUrl, phImage in items:
+				if phUrl in seen or isBlockedContent(phTitle):
+					continue
+				seen.add(phUrl)
+				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', phUrl, 1)], 0, phImage, None))
+			if '/rss.xml' in url:
+				# the feed has no pages, it is cut into pages of 30 here
+				page = int(self.cm.ph.getSearchGroups(url, r'[?&]page=([0-9]+)', 1, True)[0] or 1)
+				if len(valTab) > page * 30:
+					nextUrl = re.sub(r'([?&]page=)[0-9]+', r'\g<1>%d' % (page + 1), url)
+					valTab = valTab[(page - 1) * 30:page * 30]
+					valTab.append(self.getNextItem(str(page + 1), nextUrl, name))
+				else:
+					valTab = valTab[(page - 1) * 30:]
+			return valTab
+
+		if 'HENTAIDUDE' == name:
+			self.MAIN_URL = 'https://hentaidude.xxx'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(self.MAIN_URL + '/', self.defaultParams)
+			if sts:
+				seen = set()
+				for m in re.finditer(r'href="(https://hentaidude\.xxx/genre/([^"/]+)/?)"', data):
+					catTitle = m.group(2).replace('-hentai', '').replace('-', ' ').title()
+					if m.group(2) in seen or isBlockedContent(catTitle):
+						continue
+					seen.add(m.group(2))
+					valTab.append(CDisplayListItem(catTitle, catTitle, CDisplayListItem.TYPE_CATEGORY, [m.group(1)], 'HENTAIDUDE-clips', siteLogo, None))
+			valTab.sort(key=lambda poz: poz.name)
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/'], 'HENTAIDUDE-clips', siteLogo, None))
+			return searchItems(valTab, True)
+
+		if 'HENTAIDUDE-search' == name:
+			return self.listsItems(-1, 'https://hentaidude.xxx/?s=' + URL_QUOTE(url), 'HENTAIDUDE-clips')
+
+		if 'HENTAIDUDE-clips' == name:
+			# lists series, a series opens its episodes
+			self.MAIN_URL = 'https://hentaidude.xxx'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(url, self.defaultParams)
+			if not sts:
+				return valTab
+			seen = set()
+			for m in re.finditer(r'(?s)<a href="(https://hentaidude\.xxx/watch/[^/"]+/)" title="([^"]+)"[^>]*>\s*<img[^>]+?(?:data-src|src)="(https://[^"]+)"', data):
+				phTitle = decodeHtml(m.group(2)).strip()
+				if m.group(1) in seen or isBlockedContent(phTitle):
+					continue
+				seen.add(m.group(1))
+				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [m.group(1)], 'HENTAIDUDE-series', m.group(3), None))
+			for m in re.finditer(r'<a\s+([^>]+)>', data):
+				if re.search(r'class="[^"]*(?:nextpostslink|next page-numbers)[^"]*"|rel="next"', m.group(1)):
+					nextUrl = decodeHtml(self.cm.ph.getSearchGroups(m.group(1), r'''href=["']([^"']+)["']''', 1, True)[0])
+					if nextUrl:
+						valTab.append(self.getNextItem(self.cm.ph.getSearchGroups(nextUrl, r'/page/([0-9]+)', 1, True)[0], nextUrl, name))
+					break
+			return valTab
+
+		if 'HENTAIDUDE-series' == name:
+			self.MAIN_URL = 'https://hentaidude.xxx'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(url, self.defaultParams)
+			if not sts:
+				return valTab
+			seriesTitle = decodeHtml(self.cm.ph.getSearchGroups(data, r'<meta[^>]+property="og:title"[^>]+content="([^"]+)"', 1, True)[0]).split(' - ')[0].strip()
+			phImage = self.cm.ph.getSearchGroups(data, r'<meta[^>]+property="og:image"[^>]+content="([^"]+)"', 1, True)[0]
+			seen = set()
+			for m in re.finditer(r'href="(%s(episode|bonus|collection)[^"]*)"' % re.escape(url.rstrip('/') + '/'), data):
+				if m.group(1) in seen:
+					continue
+				seen.add(m.group(1))
+				phTitle = '%s - %s' % (seriesTitle, m.group(1).rstrip('/').split('/')[-1].replace('-', ' ').title())
+				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', m.group(1), 1)], 0, phImage, None))
+			valTab.sort(key=lambda poz: poz.name)
+			return valTab
+
+		if 'HSTREAM' == name:
+			self.MAIN_URL = 'https://hstream.moe'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(self.MAIN_URL + '/search?order=recently-uploaded', self.defaultParams)
+			if sts:
+				seen = set()
+				for tag in re.findall(r'''name=["']tags\[\]["'][^>]+value=["']([^"']+)["']''', data):
+					catTitle = tag.replace('-', ' ').title()
+					if tag in seen or isBlockedContent(catTitle):
+						continue
+					seen.add(tag)
+					valTab.append(CDisplayListItem(catTitle, catTitle, CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/search?order=recently-uploaded&tags%5B0%5D=' + URL_QUOTE(tag)], 'HSTREAM-clips', siteLogo, None))
+			valTab.sort(key=lambda poz: poz.name)
+			for title, order in ((_('Most viewed'), 'view-count'), (_('New'), 'recently-released'), (_('Latest'), 'recently-uploaded')):
+				valTab.insert(0, CDisplayListItem(menuHeader(title), title, CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/search?order=' + order], 'HSTREAM-clips', siteLogo, None))
+			return searchItems(valTab, True)
+
+		if 'HSTREAM-search' == name:
+			return self.listsItems(-1, 'https://hstream.moe/search?search=' + URL_QUOTE(url) + '&order=recently-uploaded', 'HSTREAM-clips')
+
+		if 'HSTREAM-clips' == name:
+			self.MAIN_URL = 'https://hstream.moe'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(url, self.defaultParams)
+			if not sts:
+				return valTab
+			seen = set()
+			for m in re.finditer(r'''(?s)<a\s+href=["'](https://hstream\.moe/hentai/[^"']+)["'][^>]*>(.*?)</a>''', data):
+				phUrl = decodeHtml(m.group(1))
+				if phUrl in seen:
+					continue
+				seen.add(phUrl)
+				phTitle = decodeHtml(self.cm.ph.getSearchGroups(m.group(2), r'''<img[^>]+alt=["']([^"']+)''', 1, True)[0]).strip() or phUrl.rstrip('/').split('/')[-1].replace('-', ' ').title()
+				if isBlockedContent(phTitle):
+					continue
+				phImage = urljoin(self.MAIN_URL + '/', decodeHtml(self.cm.ph.getSearchGroups(m.group(2), r'''<img[^>]+(?:data-src|src)=["']([^"']+)''', 1, True)[0]))
+				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', phUrl, 1)], 0, phImage, None))
+			page = int(self.cm.ph.getSearchGroups(url, r'[?&]page=([0-9]+)', 1, True)[0] or 1)
+			if len(seen) >= 25:
+				if 'page=' in url:
+					nextUrl = re.sub(r'([?&]page=)[0-9]+', r'\g<1>%d' % (page + 1), url)
+				else:
+					nextUrl = url + '&page=%d' % (page + 1)
+				valTab.append(self.getNextItem(str(page + 1), nextUrl, name))
 			return valTab
 
 		if 'HENTAI2W-search' == name:
@@ -19802,6 +20014,404 @@ class Host(CBaseHostClass, XXXParser):
 			if next:
 				next = urljoin(self.MAIN_URL + '/', decodeHtml(next).replace('&amp;', '&'))
 				valTab.append(self.getNextItem('', next, name, catUrl))
+			return valTab
+
+		if name in TXXX_NETWORK:
+			self.MAIN_URL = TXXX_NETWORK[name]
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(self.MAIN_URL + '/api/json/categories/14400/str.all.json', self.defaultParams)
+			if sts:
+				try:
+					for item in byteify(json.loads(data)).get('categories', []):
+						catTitle = decodeHtml(str(item.get('title', '')))
+						catUrl = self.MAIN_URL + '/api/json/videos2/86400/str/latest-updates/60/categories.%s.1.all...json' % item.get('dir', '')
+						valTab.append(CDisplayListItem(catTitle, catTitle, CDisplayListItem.TYPE_CATEGORY, [catUrl], name + '-clips', siteLogo, None))
+				except Exception:
+					printExc()
+			valTab.sort(key=lambda poz: poz.name)
+			for title, sort in ((_('Most commented'), 'most-commented'), (_('Longest'), 'longest'), (_('Most viewed'), 'most-viewed'), (_('Top rated'), 'top-rated'), (_('Most popular'), 'most-popular'), (_('Latest'), 'latest-updates')):
+				valTab.insert(0, CDisplayListItem(menuHeader(title), title, CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/api/json/videos2/86400/str/%s/60/..1.all...json' % sort], name + '-clips', siteLogo, None))
+			return searchItems(valTab, True)
+
+		if name.endswith('-search') and name[:-7] in TXXX_NETWORK:
+			return self.listsItems(-1, TXXX_NETWORK[name[:-7]] + '/api/videos2.php?params=259200/str/relevance/60/search..1.all..&s=' + URL_QUOTE(url), name[:-7] + '-clips')
+
+		if name.endswith('-clips') and name[:-6] in TXXX_NETWORK:
+			self.MAIN_URL = TXXX_NETWORK[name[:-6]]
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(url, self.defaultParams)
+			if not sts:
+				return valTab
+			try:
+				result = byteify(json.loads(data))
+			except Exception:
+				printExc()
+				return valTab
+			videos = result.get('videos', [])
+			for item in videos:
+				phUrl = '%s/video/%s/%s/' % (self.MAIN_URL, item.get('video_id', ''), item.get('dir', ''))
+				phTitle = decodeHtml(str(item.get('title', '')))
+				phTime = str(item.get('duration', ''))
+				valTab.append(CDisplayListItem(phTitle, '[' + phTime + '] ' + phTitle, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', phUrl, 1)], 0, str(item.get('scr', '')), None))
+			m = re.search(r'\.([0-9]+)\.all', url)
+			if m and videos:
+				page = int(m.group(1))
+				pages = int(result.get('pages') or 0)
+				if page < pages or (not pages and len(videos) >= 60):
+					valTab.append(self.getNextItem(str(page + 1), url[:m.start()] + '.%d.all' % (page + 1) + url[m.end():], name))
+			return valTab
+
+		if 'XHAMSTER' == name:
+			self.MAIN_URL = 'https://xhamster.com'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(self.MAIN_URL + '/categories', self.defaultParams)
+			initials = self.cm.ph.getSearchGroups(data, r'window\.initials\s*=\s*(\{.*?\});</script>', 1, True)[0] if sts else ''
+			seen = set()
+			try:
+				popular = byteify(json.loads(initials)).get('layoutPage', {}).get('store', {}).get('popular', {}) if initials else {}
+				for group in [popular.get('trending', {})] + list(popular.get('assignable', [])):
+					for item in group.get('items', []):
+						catUrl = str(item.get('url', ''))
+						if '/categories/' not in catUrl or catUrl in seen:
+							continue
+						seen.add(catUrl)
+						catTitle = decodeHtml(str(item.get('name', '')))
+						valTab.append(CDisplayListItem(catTitle, catTitle, CDisplayListItem.TYPE_CATEGORY, [catUrl], 'XHAMSTER-clips', siteLogo, None))
+			except Exception:
+				printExc()
+			valTab.sort(key=lambda poz: poz.name)
+			for title, path in (('4K', '/4k'), (_('Most viewed'), '/most-viewed'), (_('Best'), '/best'), (_('Latest'), '/newest')):
+				valTab.insert(0, CDisplayListItem(menuHeader(title), title, CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + path], 'XHAMSTER-clips', siteLogo, None))
+			return searchItems(valTab, True)
+
+		if 'XHAMSTER-search' == name:
+			return self.listsItems(-1, 'https://xhamster.com/search/' + URL_QUOTE(url), 'XHAMSTER-clips')
+
+		if 'XHAMSTER-clips' == name:
+			self.MAIN_URL = 'https://xhamster.com'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(url, self.defaultParams)
+			if not sts:
+				return valTab
+			initials = self.cm.ph.getSearchGroups(data, r'window\.initials\s*=\s*(\{.*?\});</script>', 1, True)[0]
+			videos = []
+			try:
+				result = byteify(json.loads(initials))
+				for videoList in (result.get('layoutPage', {}).get('videoListProps', {}), result.get('searchResult', {}), result.get('pagesCategoryComponent', {}).get('trendingVideoListProps', {}), result.get('layoutPage', {}).get('trendingVideoListProps', {})):
+					videos = videoList.get('videoThumbProps', [])
+					if videos:
+						break
+			except Exception:
+				printExc()
+			for item in videos:
+				if item.get('isBlockedByGeo'):
+					continue
+				phTitle = decodeHtml(str(item.get('title', '')))
+				phTime = formatDuration(item.get('duration'))
+				valTab.append(CDisplayListItem(phTitle, ('[' + phTime + '] ' if phTime else '') + phTitle, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', str(item.get('pageURL', '')), 1)], 0, str(item.get('thumbURL', '')), None))
+			if len(videos) >= 40:
+				m = re.search(r'([?&]page=|/)([0-9]+)$', url)
+				if m and not url[:m.start()].endswith('/categories'):
+					page = int(m.group(2)) + 1
+					nextUrl = url[:m.start(2)] + str(page)
+				else:
+					page = 2
+					nextUrl = url + ('&page=2' if '?' in url else '?page=2' if '/search/' in url else '/2')
+				valTab.append(self.getNextItem(str(page), nextUrl, name))
+			return valTab
+
+		if 'THUMBZILLA' == name:
+			self.MAIN_URL = 'https://www.thumbzilla.com'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(self.MAIN_URL + '/categories/', self.defaultParams)
+			if sts:
+				seen = set()
+				for m in re.finditer(r'<a[^>]+class="menu_elem_text"[^>]+href="(/category/[^"]+/)"[^>]*>\s*<span>([^<]+)</span>', data):
+					if m.group(1) in seen:
+						continue
+					seen.add(m.group(1))
+					catTitle = decodeHtml(m.group(2)).strip()
+					valTab.append(CDisplayListItem(catTitle, catTitle, CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + m.group(1)], 'THUMBZILLA-clips', siteLogo, None))
+			valTab.sort(key=lambda poz: poz.name)
+			for title, path in ((_('Most viewed'), '/most_viewed/'), (_('Top rated'), '/top_rated/'), (_('Latest'), '/')):
+				valTab.insert(0, CDisplayListItem(menuHeader(title), title, CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + path], 'THUMBZILLA-clips', siteLogo, None))
+			return searchItems(valTab, True)
+
+		if 'THUMBZILLA-search' == name:
+			return self.listsItems(-1, 'https://www.thumbzilla.com/search/?query=' + URL_QUOTE(url), 'THUMBZILLA-clips')
+
+		if 'THUMBZILLA-clips' == name:
+			self.MAIN_URL = 'https://www.thumbzilla.com'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(url, self.defaultParams)
+			if not sts:
+				return valTab
+			seen = set()
+			for item in re.findall(r'(?s)<article[^>]+class="[^"]*video-box[^"]*".*?</article>', data):
+				phUrl = self.cm.ph.getSearchGroups(item, r'<a href="(/watch/[0-9]+/)"', 1, True)[0]
+				if not phUrl or phUrl in seen:
+					continue
+				seen.add(phUrl)
+				phTitle = re.search(r'(?s)class="video-title-text[^"]*"[^>]*>\s*<span>([^<]+)</span>', item)
+				phTitle = decodeHtml(phTitle.group(1)).strip() if phTitle else decodeHtml(self.cm.ph.getSearchGroups(item, r'alt="([^"]+)"', 1, True)[0])
+				phImage = self.cm.ph.getSearchGroups(item, r'data-poster="([^"]+)"', 1, True)[0] or self.cm.ph.getSearchGroups(item, r'data-src="([^"]+)"', 1, True)[0]
+				phTime = re.search(r'(?s)<div class="video-duration[^"]*">\s*<span>\s*([^<]+?)\s*</span>', item)
+				phTime = phTime.group(1) if phTime else ''
+				valTab.append(CDisplayListItem(phTitle, ('[' + phTime + '] ' if phTime else '') + phTitle, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', self.MAIN_URL + phUrl, 1)], 0, checkhttps(decodeHtml(phImage)), None))
+			nextUrl = self.cm.ph.getSearchGroups(data, r'rel="next"\s+href="([^"]+)"', 1, True)[0]
+			if nextUrl:
+				nextPage = self.cm.ph.getSearchGroups(nextUrl, r'page=([0-9]+)', 1, True)[0]
+				valTab.append(self.getNextItem(nextPage, urljoin(self.MAIN_URL + '/', decodeHtml(nextUrl)), name))
+			return valTab
+
+		if 'NOODLEMAGAZINE' == name:
+			# no categories on the site, it is browsed by search; /now is left out,
+			# it is a feed of any VK video (not only adult content)
+			self.MAIN_URL = 'https://noodlemagazine.com'
+			for title, path in ((_('Popular'),'/popular/recent?sort_by=views&sort_order=desc'), (_('Most viewed'), '/popular/week?sort_by=views&sort_order=desc'), (_('Top'), '/popular/month?sort_by=views&sort_order=desc')):
+				valTab.append(CDisplayListItem(menuHeader(title), title, CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + path], 'NOODLEMAGAZINE-clips', siteLogo, None))
+			return searchItems(valTab, True)
+
+		if 'NOODLEMAGAZINE-search' == name:
+			return self.listsItems(-1, 'https://noodlemagazine.com/video/' + URL_QUOTE(url), 'NOODLEMAGAZINE-clips')
+
+		if 'NOODLEMAGAZINE-clips' == name:
+			self.MAIN_URL = 'https://noodlemagazine.com'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(url, self.defaultParams)
+			if not sts:
+				return valTab
+			for m in re.finditer(r'(?s)<div class="item">\s*<a href="(/watch/[^"]+)"[^>]*>(.*?)</a>\s*</div>', data):
+				item = m.group(2)
+				phTitle = decodeHtml(self.cm.ph.getSearchGroups(item, r'<div class="title">([^<]+)</div>', 1, True)[0]).strip() or 'Video'
+				phImage = self.cm.ph.getSearchGroups(item, r'data-src="([^"]+)"', 1, True)[0]
+				phTime = self.cm.ph.getSearchGroups(item, r'(?s)<div class="m_time">.*?([0-9]+:[0-9]+(?::[0-9]+)?)', 1, True)[0]
+				valTab.append(CDisplayListItem(phTitle, ('[' + phTime + '] ' if phTime else '') + phTitle, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', self.MAIN_URL + m.group(1), 1)], 0, phImage, None))
+			if len(valTab) >= 24:
+				# page 0 has no parameter, the following pages are loaded with p=1, p=2, ...
+				page = self.cm.ph.getSearchGroups(url, r'[?&]p=([0-9]+)', 1, True)[0]
+				nextPage = int(page) + 1 if page else 1
+				if page:
+					nextUrl = re.sub(r'([?&]p=)[0-9]+', r'\g<1>%d' % nextPage, url)
+				else:
+					nextUrl = url + ('&' if '?' in url else '?') + 'p=1'
+				valTab.append(self.getNextItem(str(nextPage + 1), nextUrl, name))
+			return valTab
+
+		if 'MISSAV' == name:
+			self.MAIN_URL = 'https://missav123.com'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(self.MAIN_URL + '/en/genres', self.defaultParams)
+			if sts:
+				seen = set()
+				for m in re.finditer(r'<a href="(https://missav123\.com/(?:dm[0-9]+/)?en/genres/[^"]+)"[^>]*>\s*([^<]+?)\s*<', data):
+					catTitle = decodeHtml(m.group(2))
+					# every genre is linked twice, the second link text is its video count
+					if m.group(1) in seen or isBlockedContent(catTitle) or re.match(r'^[0-9,.]+ videos?$', catTitle):
+						continue
+					seen.add(m.group(1))
+					valTab.append(CDisplayListItem(catTitle, catTitle, CDisplayListItem.TYPE_CATEGORY, [m.group(1)], 'MISSAV-clips', siteLogo, None))
+			valTab.sort(key=lambda poz: poz.name)
+			for title, path in ((_('Top'), '/en/monthly-hot'), (_('Most viewed'), '/en/weekly-hot'), (_('Popular'), '/en/today-hot'), (_('Latest updates'), '/en/new'), (_('New'), '/en/release')):
+				valTab.insert(0, CDisplayListItem(menuHeader(title), title, CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + path], 'MISSAV-clips', siteLogo, None))
+			return searchItems(valTab, True)
+
+		if 'MISSAV-search' == name:
+			return self.listsItems(-1, 'https://missav123.com/en/search/' + URL_QUOTE(url), 'MISSAV-clips')
+
+		if 'MISSAV-clips' == name:
+			self.MAIN_URL = 'https://missav123.com'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(url, self.defaultParams)
+			if not sts:
+				return valTab
+			for item in data.split('class="thumbnail group"')[1:]:
+				phUrl = self.cm.ph.getSearchGroups(item, r'<a href="(https?://[^"]+)"', 1, True)[0]
+				if not phUrl:
+					continue
+				phTitle = decodeHtml(self.cm.ph.getSearchGroups(item, r'<img[^>]+?alt="([^"]+)"', 1, True)[0]) or phUrl.rstrip('/').split('/')[-1].upper()
+				phImage = self.cm.ph.getSearchGroups(item, r'data-src="([^"]+\.jpg)"', 1, True)[0]
+				phTime = self.cm.ph.getSearchGroups(item, r'<span class="absolute bottom-1[^"]*">\s*([0-9:]+)\s*</span>', 1, True)[0]
+				code = phUrl.rstrip('/').split('/')[-1].upper()
+				valTab.append(CDisplayListItem(code + ' - ' + phTitle, ('[' + phTime + '] ' if phTime else '') + phTitle, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', phUrl, 1)], 0, phImage, None))
+			nextUrl = self.cm.ph.getSearchGroups(data, r'<a href="([^"]+)" rel="next"', 1, True)[0]
+			if nextUrl:
+				nextPage = self.cm.ph.getSearchGroups(nextUrl, r'page=([0-9]+)', 1, True)[0]
+				valTab.append(self.getNextItem(nextPage, decodeHtml(nextUrl), name))
+			return valTab
+
+		if 'SXYPRN' == name:
+			self.MAIN_URL = 'https://sxyprn.com'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(self.MAIN_URL + '/searches/', self.defaultParams)
+			if sts:
+				seen = set()
+				for m in re.finditer(r"href='(/([A-Za-z0-9-]+)\.html\?sm=trending[^']*)'", data):
+					catTitle = m.group(2).replace('-', ' ')
+					if catTitle.lower() in seen:
+						continue
+					seen.add(catTitle.lower())
+					valTab.append(CDisplayListItem(catTitle, catTitle, CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + decodeHtml(m.group(1))], 'SXYPRN-clips', siteLogo, None))
+			valTab.sort(key=lambda poz: poz.name)
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/'], 'SXYPRN-clips', siteLogo, None))
+			return searchItems(valTab, True)
+
+		if 'SXYPRN-search' == name:
+			return self.listsItems(-1, 'https://sxyprn.com/' + URL_QUOTE(re.sub(r'\s+', '-', url.strip())) + '.html', 'SXYPRN-clips')
+
+		if 'SXYPRN-clips' == name:
+			self.MAIN_URL = 'https://sxyprn.com'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(url, self.defaultParams)
+			if not sts:
+				return valTab
+			seen = set()
+			for item in re.split(r"<div class='post_el_small[^>]*'>", data)[1:]:
+				m = re.search(r"<a class='tdn post_time' href='(/post/[^']+)'[^>]*title='([^']+)'", item)
+				if not m or m.group(1) in seen:
+					continue
+				seen.add(m.group(1))
+				phTitle = decodeHtml(m.group(2)).strip()
+				phImage = checkhttps(self.cm.ph.getSearchGroups(item, r"data-src='([^']+)'", 1, True)[0])
+				phTime = self.cm.ph.getSearchGroups(item, r"duration_small'[^<]*?>\s*([0-9]+:[0-9:]+)\s*<", 1, True)[0]
+				valTab.append(CDisplayListItem(phTitle, ('[' + phTime + '] ' if phTime else '') + phTitle, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', self.MAIN_URL + m.group(1), 1)], 0, phImage, None))
+			nextUrl = self.cm.ph.getSearchGroups(data, r"<a href='([^']*page=[0-9]+[^']*)' class='tdn'><div class='next_page", 1, True)[0]
+			if nextUrl:
+				offset = self.cm.ph.getSearchGroups(nextUrl, r'page=([0-9]+)', 1, True)[0]
+				nextPage = str(int(offset) // 30 + 1) if offset else ''
+				valTab.append(self.getNextItem(nextPage, self.MAIN_URL + decodeHtml(nextUrl), name))
+			return valTab
+
+		if 'FULLPORNER' == name:
+			self.MAIN_URL = 'https://fullporner.com'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(self.MAIN_URL + '/', self.defaultParams)
+			if sts:
+				seen = set()
+				for m in re.finditer(r'''href=["'](?:https://fullporner\.com)?(/category/[^"'/]+)/?["'][^>]*>\s*([^<]+?)\s*<''', data):
+					if m.group(1) in seen:
+						continue
+					seen.add(m.group(1))
+					catTitle = decodeHtml(m.group(2)).title()
+					valTab.append(CDisplayListItem(catTitle, catTitle, CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + m.group(1)], 'FULLPORNER-clips', siteLogo, None))
+			valTab.sort(key=lambda poz: poz.name)
+			for title, path in ((_('Top rated'), '/home/rating'), (_('Most viewed'), '/home/views'), (_('Latest'), '/')):
+				valTab.insert(0, CDisplayListItem(menuHeader(title), title, CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + path], 'FULLPORNER-clips', siteLogo, None))
+			return searchItems(valTab, True)
+
+		if 'FULLPORNER-search' == name:
+			return self.listsItems(-1, 'https://fullporner.com/search/' + URL_QUOTE(re.sub(r'\s+', '-', url.strip())) + '/', 'FULLPORNER-clips')
+
+		if 'FULLPORNER-clips' == name:
+			self.MAIN_URL = 'https://fullporner.com'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(url, self.defaultParams)
+			if not sts:
+				return valTab
+			for item in re.split(r'''<div[^>]*class=["']video-card-image["'][^>]*>''', data)[1:]:
+				item = item.split('video-view')[0]
+				phUrl = self.cm.ph.getSearchGroups(item, r'''href=["'](/watch/[^"']+)["']''', 1, True)[0]
+				if not phUrl:
+					continue
+				phTitle = self.cm.ph.getSearchGroups(item, r'''(?s)<div class=["']video-title["'][^>]*>\s*<a[^>]*>(.*?)</a>''', 1, True)[0] or self.cm.ph.getSearchGroups(item, r'''alt=["']([^"']+)["']''', 1, True)[0]
+				phTitle = decodeHtml(self._cleanHtmlStr(phTitle)).strip()
+				phImage = checkhttps(self.cm.ph.getSearchGroups(item, r'''data-src=["']([^"']+)["']''', 1, True)[0])
+				phTime = self.cm.ph.getSearchGroups(item, r'([0-9]+:[0-9]{2}(?::[0-9]{2})?)', 1, True)[0]
+				valTab.append(CDisplayListItem(phTitle, ('[' + phTime + '] ' if phTime else '') + phTitle, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', self.MAIN_URL + phUrl, 1)], 0, phImage, None))
+			# the sorted /home/<sort> lists have only one page
+			if len(valTab) >= 24 and not re.search(r'/home/(?:recent|views|rating)', url):
+				base, _sep, query = url.partition('?')
+				m = re.search(r'/([0-9]+)/?$', base)
+				if m:
+					page = int(m.group(1)) + 1
+					base = base[:m.start()]
+				else:
+					page = 2
+					base = base.rstrip('/') if base.rstrip('/') != self.MAIN_URL else self.MAIN_URL + '/home'
+				nextUrl = '%s/%d%s' % (base, page, '/' if '/search/' in base else '') + ('?' + query if query else '')
+				valTab.append(self.getNextItem(str(page), nextUrl, name))
+			return valTab
+
+		if 'EROME' == name:
+			self.MAIN_URL = 'https://www.erome.com'
+			for title, path in ((_('New'), '/explore/new'), (_('Hot'), '/explore')):
+				valTab.insert(0, CDisplayListItem(menuHeader(title), title, CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + path], 'EROME-clips', siteLogo, None))
+			return searchItems(valTab, True)
+
+		if 'EROME-search' == name:
+			return self.listsItems(-1, 'https://www.erome.com/search?q=' + URL_QUOTE(url), 'EROME-clips')
+
+		if 'EROME-clips' == name:
+			# erome lists albums, only albums with videos are shown
+			self.MAIN_URL = 'https://www.erome.com'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.HTTP_HEADER['Cookie'] = 'disclaimer=1'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(url, self.defaultParams)
+			if not sts:
+				return valTab
+			seen = set()
+			for item in data.split('class="album-thumbnail-container"')[1:]:
+				albumUrl = self.cm.ph.getSearchGroups(item, r'class="album-link" href="([^"]+)"', 1, True)[0]
+				videos = self.cm.ph.getSearchGroups(item, r'(?s)class="album-videos"[^>]*>.*?([0-9]+)\s*</span>', 1, True)[0]
+				if not albumUrl or albumUrl in seen or not videos:
+					continue
+				seen.add(albumUrl)
+				phTitle = re.sub(r'\s*#\w+$', '', decodeHtml(self.cm.ph.getSearchGroups(item, r'<img[^>]+alt="([^"]*)"', 1, True)[0])).strip() or albumUrl.split('/')[-1]
+				phImage = self.cm.ph.getSearchGroups(item, r'<img[^>]+src="([^"]+)"', 1, True)[0]
+				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + _('Videos') + ': ' + videos, CDisplayListItem.TYPE_CATEGORY, [albumUrl], 'EROME-album', phImage, None))
+			nextUrl = self.cm.ph.getSearchGroups(data, r'<a[^>]*href="([^"]+)"[^>]*rel="next"', 1, True)[0]
+			if nextUrl:
+				nextUrl = decodeHtml(nextUrl)
+				nextUrl = urljoin(url, nextUrl) if not nextUrl.startswith('?') else url.split('?')[0] + nextUrl
+				valTab.append(self.getNextItem(self.cm.ph.getSearchGroups(nextUrl, r'page=([0-9]+)', 1, True)[0], nextUrl, name))
+			return valTab
+
+		if 'EROME-album' == name:
+			self.MAIN_URL = 'https://www.erome.com'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.HTTP_HEADER['Cookie'] = 'disclaimer=1'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(url, self.defaultParams)
+			if not sts:
+				return valTab
+			albumTitle = decodeHtml(self.cm.ph.getSearchGroups(data, r'<meta[^>]*property="og:title"[^>]*content="([^"]+)"', 1, True)[0]) or url.split('/')[-1]
+			seen = []
+			for m in re.finditer(r'(?s)<video([^>]*)>\s*<source[^>]*src="([^"]+)"', data):
+				if m.group(2) in seen:
+					continue
+				seen.append(m.group(2))
+				phTitle = albumTitle if len(seen) == 1 else '%s (%d)' % (albumTitle, len(seen))
+				phImage = self.cm.ph.getSearchGroups(m.group(1), r'poster="([^"]+)"', 1, True)[0]
+				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', m.group(2), 1)], 0, phImage, None))
 			return valTab
 
 		if 'SEXSQ' == name:
