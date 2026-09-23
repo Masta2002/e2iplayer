@@ -380,6 +380,15 @@ SITEDATA = {
 'SXYPRN': ('https://sxyprn.com', '', ''),
 'FULLPORNER': ('https://fullporner.com', '', ''),
 'EROME': ('https://www.erome.com', '', ''),
+'FRESHPORNO': ('https://freshporno.org', '', None),
+'FREEPORNVIDEOS': ('https://www.freepornvideos.xxx', '', ''),
+'FPO.XXX': ('https://www.fpo.xxx', 'FPOXXX', ''),
+'HEROERO': ('https://heroero.com', '', ''),
+'PORNDD': ('https://porndd.com', '', ''),
+'LUXURETV': ('https://en.luxuretv.com', '', ''),
+'XFREEHD': ('https://beta.xfreehd.com', '', ''),
+'PORNMZ': ('https://pornmz.com', '', ''),
+'HITPRN': ('https://www.hitprn.net', '', ''),
 
 }
 
@@ -388,6 +397,23 @@ TXXX_NETWORK = {
 	'UPORNIA': 'https://upornia.com',
 	'HDZOG': 'https://hdzog.com',
 	'VXXX': 'https://vxxx.com',
+}
+
+# plain KVS (Kernel Video Sharing) sites: list pages /<path>/<page>/, categories /categories/<slug>/,
+# the resolver is the shared KVS one in xxxparser.py (KVS_SITES)
+KVS_NETWORK = {
+	'FRESHPORNO': {'url': 'https://freshporno.org', 'sorts': (('Latest', '/latest-updates/'), ('Most popular', '/most-popular/'), ('Top rated', '/top-rated/')), 'search': None},
+	'FREEPORNVIDEOS': {'url': 'https://www.freepornvideos.xxx', 'sorts': (('Latest', '/latest-updates/'), ('Most popular', '/most-popular/'), ('Top rated', '/top-rated/')), 'search': '/search/%s/'},
+	'FPOXXX': {'url': 'https://www.fpo.xxx', 'sorts': (('Latest', '/new-1/'), ('Popular', '/popular-1/')), 'search': '/search/%s/?from_videos=1'},
+	'HEROERO': {'url': 'https://heroero.com', 'sorts': (('Latest', '/latest-updates/'), ('Most popular', '/most-popular/'), ('Top rated', '/top-rated/')), 'search': '/search/%s/'},
+	'PORNDD': {'url': 'https://porndd.com', 'sorts': (('Latest', '/latest-updates/'), ('Most popular', '/most-popular/'), ('Top rated', '/top-rated/')), 'search': '/search/%s/'},
+}
+
+# WordPress tube theme sites (<article data-video-id>, ?filter= sort, /page/<n>/ paging),
+# the resolver is the shared one in xxxparser.py (WPTUBE_SITES)
+WPTUBE_NETWORK = {
+	'PORNMZ': {'url': 'https://pornmz.com', 'categories': '/categories/'},
+	'HITPRN': {'url': 'https://www.hitprn.net', 'categories': None},
 }
 
 SITEDATA_CAMS = {
@@ -619,10 +645,10 @@ def menuHeader(text):
 
 
 def isBlockedContent(text):
-	# never list categories or videos with (drawn) minors, animals or secretly filmed people
+	# never list categories or videos with (drawn) minors, animals, secretly filmed people or leaked private content
 	text = (text or '').lower()
 	return any(term in text for term in ('loli', 'shota', 'shouta', 'underage', 'school girl', 'schoolgirl', 'bestiality', 'beastiality', 'zoophil',
-										'voyeur', 'upskirt', 'hidden cam', 'spycam', 'spy cam', 'sneak shot'))
+										'voyeur', 'upskirt', 'hidden cam', 'spycam', 'spy cam', 'sneak shot', 'leaked'))
 
 
 def formatDuration(seconds):
@@ -20072,6 +20098,191 @@ class Host(CBaseHostClass, XXXParser):
 				pages = int(result.get('pages') or 0)
 				if page < pages or (not pages and len(videos) >= 60):
 					valTab.append(self.getNextItem(str(page + 1), url[:m.start()] + '.%d.all' % (page + 1) + url[m.end():], name))
+			return valTab
+
+		if name in KVS_NETWORK:
+			site = KVS_NETWORK[name]
+			self.MAIN_URL = site['url']
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(self.MAIN_URL + '/categories/', self.defaultParams)
+			if sts:
+				seen = set()
+				for m in re.finditer(r'href="((?:https?://[^"/]+)?/categories/([^"/?#]+)/)"', data):
+					slug = m.group(2)
+					catTitle = unquote(slug).replace('-', ' ').title()
+					if slug in seen or isBlockedContent(catTitle):
+						continue
+					seen.add(slug)
+					valTab.append(CDisplayListItem(catTitle, catTitle, CDisplayListItem.TYPE_CATEGORY, [urljoin(self.MAIN_URL + '/', m.group(1))], name + '-clips', siteLogo, None))
+			valTab.sort(key=lambda poz: poz.name)
+			for title, path in reversed(site['sorts']):
+				valTab.insert(0, CDisplayListItem(menuHeader(_(title)), _(title), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + path], name + '-clips', siteLogo, None))
+			return searchItems(valTab, True) if site['search'] else valTab
+
+		if name.endswith('-search') and name[:-7] in KVS_NETWORK and KVS_NETWORK[name[:-7]]['search']:
+			site = KVS_NETWORK[name[:-7]]
+			return self.listsItems(-1, site['url'] + site['search'] % URL_QUOTE(re.sub(r'\s+', '-', url.strip())), name[:-7] + '-clips')
+
+		if name.endswith('-clips') and name[:-6] in KVS_NETWORK:
+			self.MAIN_URL = KVS_NETWORK[name[:-6]]['url']
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(url, self.defaultParams)
+			if not sts:
+				return valTab
+			seen = set()
+			for m in re.finditer(r'(?s)<a[^>]+href="((?:https?://[^"/]+)?/videos?/[^"]+)"([^>]*)>(.{0,3000}?)</a>', data):
+				phUrl = urljoin(self.MAIN_URL + '/', m.group(1))
+				item = m.group(3)
+				phImage = self.cm.ph.getSearchGroups(item, r'''<img[^>]+?(?:data-original|data-src|src)="([^"]+\.(?:jpg|jpeg|webp|png)[^"]*)"''', 1, True)[0]
+				if phUrl in seen or not phImage:
+					continue
+				phTitle = decodeHtml(self.cm.ph.getSearchGroups(m.group(2), r'title="([^"]+)"', 1, True)[0] or self.cm.ph.getSearchGroups(item, r'<img[^>]+alt="([^"]+)"', 1, True)[0]).strip()
+				if not phTitle or isBlockedContent(phTitle):
+					continue
+				seen.add(phUrl)
+				phTime = self.cm.ph.getSearchGroups(item, r'(?s)class="[^"]*(?:duration|time)[^"]*"[^>]*>\s*(?:<[^>]+>\s*)*([0-9]+:[0-9:]+)', 1, True)[0]
+				valTab.append(CDisplayListItem(phTitle, ('[' + phTime + '] ' if phTime else '') + phTitle, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', phUrl, 1)], 0, checkhttps(phImage), None))
+			if len(valTab) >= 12:
+				m = re.search(r'([?&]from_videos=)([0-9]+)', url)
+				if m:
+					page = int(m.group(2)) + 1
+					nextUrl = url[:m.start(2)] + str(page) + url[m.end(2):]
+				else:
+					base, _sep, query = url.partition('?')
+					m = re.search(r'/([0-9]+)/$', base)
+					page = int(m.group(1)) + 1 if m and not base[:m.start()].endswith(('/categories', '/search')) else 2
+					base = base[:m.start()] + '/' if page > 2 else base.rstrip('/') + '/'
+					nextUrl = base + '%d/' % page + ('?' + query if query else '')
+				valTab.append(self.getNextItem(str(page), nextUrl, name))
+			return valTab
+
+		if name in WPTUBE_NETWORK:
+			site = WPTUBE_NETWORK[name]
+			self.MAIN_URL = site['url']
+			if site['categories']:
+				self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+				self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+				self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+				sts, data = self.cm.getPage(self.MAIN_URL + site['categories'], self.defaultParams)
+				if sts:
+					for m in re.finditer(r'(?s)<article[^<]+<a\s+href="([^"]+)"\s+title="([^"]+)"', data):
+						catTitle = decodeHtml(m.group(2)).strip()
+						if not isBlockedContent(catTitle):
+							valTab.append(CDisplayListItem(catTitle, catTitle, CDisplayListItem.TYPE_CATEGORY, [m.group(1).rstrip('/') + '/page/1/?filter=latest'], name + '-clips', siteLogo, None))
+				valTab.sort(key=lambda poz: poz.name)
+			for title, sort in reversed(((_('Latest'), 'latest'), (_('Popular'), 'popular'), (_('Most viewed'), 'most-viewed'), (_('Longest'), 'longest'))):
+				valTab.insert(0, CDisplayListItem(menuHeader(title), title, CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/page/1/?filter=' + sort], name + '-clips', siteLogo, None))
+			return searchItems(valTab, True)
+
+		if name.endswith('-search') and name[:-7] in WPTUBE_NETWORK:
+			return self.listsItems(-1, WPTUBE_NETWORK[name[:-7]]['url'] + '/page/1/?s=' + URL_QUOTE(url), name[:-7] + '-clips')
+
+		if name.endswith('-clips') and name[:-6] in WPTUBE_NETWORK:
+			self.MAIN_URL = WPTUBE_NETWORK[name[:-6]]['url']
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(url, self.defaultParams)
+			if not sts:
+				return valTab
+			for item in re.split(r'<article[^>]*data-video-id', data)[1:]:
+				item = item.split('</article>')[0]
+				phUrl = self.cm.ph.getSearchGroups(item, r'<a[^>]+href="([^"]+)"', 1, True)[0]
+				phTitle = decodeHtml(self.cm.ph.getSearchGroups(item, r'title="([^"]+)"', 1, True)[0]).strip()
+				if not phUrl or not phTitle or isBlockedContent(phTitle):
+					continue
+				phImage = self.cm.ph.getSearchGroups(item, r'(?:data-main-thumb|data-src|poster|src)="(https?://[^"]+\.(?:jpg|jpeg|webp|png)[^"]*)"', 1, True)[0]
+				phTime = self.cm.ph.getSearchGroups(item, r'(?s)(?:duration|fa-clock-o)[^>]*>(?:\s*</i>)?\s*([0-9]+:[0-9:]+)', 1, True)[0]
+				valTab.append(CDisplayListItem(phTitle, ('[' + phTime + '] ' if phTime else '') + phTitle, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', phUrl, 1)], 0, phImage, None))
+			m = re.search(r'/page/([0-9]+)/?', url)
+			if valTab and m:
+				page = int(m.group(1)) + 1
+				if '/page/%d' % page in data:
+					valTab.append(self.getNextItem(str(page), url[:m.start()] + '/page/%d/' % page + url[m.end():], name))
+			return valTab
+
+		if 'LUXURETV' == name:
+			self.MAIN_URL = 'https://en.luxuretv.com'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(self.MAIN_URL + '/channels/', self.defaultParams)
+			if sts:
+				for m in re.finditer(r'''(?s)content-channel">.+?src="([^"]+).+?href='([^']+)'>([^<]+)''', data):
+					catTitle = decodeHtml(m.group(3)).strip()
+					if not isBlockedContent(catTitle):
+						valTab.append(CDisplayListItem(catTitle, catTitle, CDisplayListItem.TYPE_CATEGORY, [m.group(2)], 'LUXURETV-clips', m.group(1), None))
+			valTab.sort(key=lambda poz: poz.name)
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/'], 'LUXURETV-clips', siteLogo, None))
+			return searchItems(valTab, True)
+
+		if 'LUXURETV-search' == name:
+			return self.listsItems(-1, 'https://en.luxuretv.com/searchgate/videos/' + URL_QUOTE(re.sub(r'\s+', '-', url.strip())) + '/', 'LUXURETV-clips')
+
+		if 'LUXURETV-clips' == name:
+			self.MAIN_URL = 'https://en.luxuretv.com'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(url, self.defaultParams)
+			if not sts:
+				return valTab
+			for m in re.finditer(r'''(?s)content">.+?href="([^"]+).+?title="([^"]+).+?src="([^"]+).+?time">(?:<b>)?([^<]+)''', data):
+				phTitle = decodeHtml(m.group(2)).strip()
+				if isBlockedContent(phTitle):
+					continue
+				valTab.append(CDisplayListItem(phTitle, '[' + m.group(4).strip() + '] ' + phTitle, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', m.group(1), 1)], 0, m.group(3).replace(' ', '%20'), None))
+			nextUrl = self.cm.ph.getSearchGroups(data, r'''(?s)pagination["']>.+?href=['"]([^'"]+)["']>(?:Suivante|Next|Siguiente)''', 1, True)[0]
+			if nextUrl:
+				# the next link is relative to the list (page2.html)
+				nextUrl = urljoin(re.sub(r'page[0-9]+\.html$', '', url.split('?')[0]), nextUrl)
+				valTab.append(self.getNextItem(self.cm.ph.getSearchGroups(nextUrl, r'page([0-9]+)', 1, True)[0], nextUrl, name))
+			return valTab
+
+		if 'XFREEHD' == name:
+			self.MAIN_URL = 'https://beta.xfreehd.com'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(self.MAIN_URL + '/categories', self.defaultParams)
+			if sts:
+				for m in re.finditer(r'''(?s)class="col-xs-6\s*col-sm-4\scol.+?href="([^"]+).+?data-src="([^"]+)"\s*title="([^"]+)''', data):
+					catTitle = decodeHtml(m.group(3)).strip()
+					if not isBlockedContent(catTitle):
+						valTab.append(CDisplayListItem(catTitle, catTitle, CDisplayListItem.TYPE_CATEGORY, [urljoin(self.MAIN_URL + '/', m.group(1))], 'XFREEHD-clips', urljoin(self.MAIN_URL + '/', m.group(2)), None))
+			valTab.sort(key=lambda poz: poz.name)
+			for title, order in reversed(((_('Latest'), 'mr'), (_('Being watched'), 'bw'), (_('Most viewed'), 'mv'), (_('Top rated'), 'tr'), (_('Most commented'), 'md'), (_('Longest'), 'lg'))):
+				valTab.insert(0, CDisplayListItem(menuHeader(title), title, CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?o=' + order], 'XFREEHD-clips', siteLogo, None))
+			return searchItems(valTab, True)
+
+		if 'XFREEHD-search' == name:
+			return self.listsItems(-1, 'https://beta.xfreehd.com/search?search_query=' + URL_QUOTE(url) + '&search_type=videos', 'XFREEHD-clips')
+
+		if 'XFREEHD-clips' == name:
+			self.MAIN_URL = 'https://beta.xfreehd.com'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(url, self.defaultParams)
+			if not sts:
+				return valTab
+			for m in re.finditer(r'''(?s)class="well\s*well-sm.+?href="([^"]+).+?src="(.+?).\s*title[^>]+>(.+?)duration-new">\s*([^\s<]+).+?title-new.+?>([^<]+)''', data):
+				# private videos need an account
+				if '>PRIVATE<' in m.group(3):
+					continue
+				phTitle = decodeHtml(m.group(5)).strip()
+				if isBlockedContent(phTitle):
+					continue
+				phImage = m.group(2).split('data-src="')[1] if 'data-src="' in m.group(2) else urljoin(self.MAIN_URL + '/', m.group(2))
+				valTab.append(CDisplayListItem(phTitle, '[' + m.group(4) + '] ' + phTitle, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', urljoin(self.MAIN_URL + '/', m.group(1)), 1)], 0, phImage, None))
+			nextUrl = self.cm.ph.getSearchGroups(data, r'''<li><a\s*href="([^"]+)"\s*class="prevnext"''', 1, True)[0]
+			if nextUrl:
+				nextUrl = decodeHtml(nextUrl)
+				valTab.append(self.getNextItem(self.cm.ph.getSearchGroups(nextUrl, r'page=([0-9]+)', 1, True)[0], nextUrl, name))
 			return valTab
 
 		if 'XHAMSTER' == name:

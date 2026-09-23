@@ -59,6 +59,12 @@ def checkhttps(url):
 # sites of the txxx network (hostxxx.py TXXX_NETWORK), same videofile API
 TXXX_NETWORK_SITES = ('https://upornia.com', 'https://hdzog.com', 'https://vxxx.com')
 
+# plain KVS sites (hostxxx.py KVS_NETWORK), resolved by the shared KVS branch
+KVS_SITES = ('https://freshporno.org', 'https://www.freepornvideos.xxx', 'https://www.fpo.xxx', 'https://heroero.com', 'https://porndd.com')
+
+# WordPress tube theme sites (hostxxx.py WPTUBE_NETWORK): own player page or a file hoster iframe
+WPTUBE_SITES = ('https://pornmz.com', 'https://www.hitprn.net')
+
 # live cam sites (hostxxx.py SITEDATA_CAMS), the stream is looked up when it is played
 LIVECAM_SITES = ('https://www.cam4.com', 'https://www.camsoda.com', 'https://www.myfreecams.com', 'https://streamate.com', 'https://www.xlovecam.com', 'https://api.sinparty.com', 'https://stripchat.com')
 
@@ -778,7 +784,7 @@ class XXXParser:
 				return site
 		if re.match(r'https://v[0-9]+\.erome\.com/', url):
 			return 'https://www.erome.com'
-		for site in LIVECAM_SITES:
+		for site in LIVECAM_SITES + KVS_SITES + WPTUBE_SITES + ('https://en.luxuretv.com', 'https://beta.xfreehd.com'):
 			if url.startswith(site + '/'):
 				return site
 		return self.MAIN_URL
@@ -6614,6 +6620,85 @@ class XXXParser:
 				printExc()
 				return ''
 			return urlparser.decorateUrl(videoUrl, {'Referer': url, 'User-Agent': self.HTTP_HEADER.get('User-Agent', '')})
+
+		if parser in KVS_SITES:
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = parser + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(url, self.defaultParams)
+			if not sts:
+				return ''
+			# (quality, url): flashvars video_url / video_alt_urlN (+ _text), else <source label="...">
+			texts = dict(re.findall(r"(video_url|video_alt_url[0-9]*)_text\s*:\s*'([^']*)'", data))
+			sources = [(texts.get(key, ''), value) for key, value in re.findall(r"(video_url|video_alt_url[0-9]*)\s*:\s*'([^']+)'", data)]
+			if not sources:
+				sources = [(label, src) for src, label in re.findall(r'''<source[^>]+src=["']([^"']+)["'][^>]*?label=["']([^"']*)["']''', data)]
+			licenseCode = self.cm.ph.getSearchGroups(data, r"license_code\s*:\s*'([^']+)'", 1, True)[0]
+			candidates = []
+			for order, (label, videoUrl) in enumerate(sources):
+				if videoUrl.startswith('function/0/') and licenseCode:
+					videoUrl = decryptHash(videoUrl, licenseCode, '16')
+				if not videoUrl.startswith('http'):
+					continue
+				height = int(self.cm.ph.getSearchGroups(label + ' ' + videoUrl, r'([0-9]{3,4})[pm]', 1, True)[0] or 0)
+				candidates.append((height or order, videoUrl))
+			if not candidates:
+				return ''
+			candidates.sort(reverse=True)
+			if not getattr(self, 'format4k', True):
+				candidates = [c for c in candidates if c[0] <= 1080] or candidates[-1:]
+			return urlparser.decorateUrl(candidates[0][1], {'Referer': url, 'User-Agent': self.HTTP_HEADER.get('User-Agent', '')})
+
+		if parser in ('https://en.luxuretv.com', 'https://beta.xfreehd.com'):
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = parser + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(url, self.defaultParams)
+			if not sts:
+				return ''
+			if parser == 'https://beta.xfreehd.com':
+				# <source src="..." title="SD|HD">, HD first
+				sources = sorted(re.findall(r'''src="([^"]+)"\s*title="(SD|HD)"''', data), key=lambda s: s[1] == 'HD', reverse=True)
+				videoUrl = decodeHtml(sources[0][0]) if sources else ''
+			else:
+				videoUrl = self.cm.ph.getSearchGroups(data, r'''<source\s*src="([^"]+)"''', 1, True)[0]
+			if not videoUrl:
+				return ''
+			return urlparser.decorateUrl(videoUrl, {'Referer': url, 'User-Agent': self.HTTP_HEADER.get('User-Agent', '')})
+
+		if parser in WPTUBE_SITES:
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = parser + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(url, self.defaultParams)
+			if not sts:
+				return ''
+			frames = [decodeHtml(f) for f in re.findall(r'''<iframe[^>]+?(?:data-lazy-src|data-src|src)=["']([^"']+)["']''', data, re.I)]
+			frames = [urljoin(url, f) for f in frames if not re.search(r'ads|adtng|banner|chaturbate|stripchat|bongacams', f)]
+			for frame in frames:
+				if frame.startswith(parser + '/'):
+					# the site's own player page lists the stream directly
+					self.HTTP_HEADER['Referer'] = url
+					sts, player = self.cm.getPage(frame, self.defaultParams)
+					videoUrl = self.cm.ph.getSearchGroups(player, r'''<source[^>]+src=["']([^"']+)["']''', 1, True)[0] if sts else ''
+					if videoUrl:
+						meta = {'User-Agent': self.HTTP_HEADER.get('User-Agent', '')}
+						# video.twimg.com refuses foreign referers (403)
+						if 'twimg.com' not in videoUrl:
+							meta['Referer'] = frame
+						return urlparser.decorateUrl(decodeHtml(videoUrl), meta)
+					continue
+				# file hoster embed; lulust.com is the same service as luluvdo.com, which urlparser knows
+				frame = re.sub(r'^https?://(?:www\.)?lulust\.com/', 'https://luluvdo.com/', frame)
+				if 1 != self.up.checkHostSupport(frame):
+					continue
+				try:
+					for item in self.up.getVideoLinkExt(frame) or []:
+						if isinstance(item, dict) and item.get('url'):
+							return item['url']
+				except Exception:
+					printExc()
+			return ''
 
 		if parser in LIVECAM_SITES:
 			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
