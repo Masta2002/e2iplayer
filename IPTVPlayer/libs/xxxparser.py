@@ -784,7 +784,7 @@ class XXXParser:
 				return site
 		if re.match(r'https://v[0-9]+\.erome\.com/', url):
 			return 'https://www.erome.com'
-		for site in LIVECAM_SITES + KVS_SITES + WPTUBE_SITES + ('https://en.luxuretv.com', 'https://beta.xfreehd.com'):
+		for site in LIVECAM_SITES + KVS_SITES + WPTUBE_SITES + ('https://en.luxuretv.com', 'https://beta.xfreehd.com', 'https://321tube.com'):
 			if url.startswith(site + '/'):
 				return site
 		return self.MAIN_URL
@@ -6648,6 +6648,28 @@ class XXXParser:
 			if not getattr(self, 'format4k', True):
 				candidates = [c for c in candidates if c[0] <= 1080] or candidates[-1:]
 			return urlparser.decorateUrl(candidates[0][1], {'Referer': url, 'User-Agent': self.HTTP_HEADER.get('User-Agent', '')})
+
+		if parser == 'https://321tube.com':
+			# EXPERIMENTAL: turbovidhls player; its HLS segments are TS behind a PNG header on Google's image CDN
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = 'https://321tube.com/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(url, self.defaultParams)
+			if not sts:
+				return ''
+			embedUrl = self.cm.ph.getSearchGroups(data, r'''<iframe\b[^>]+src=["']([^"']+)["']''', 1, True)[0] or self.cm.ph.getSearchGroups(data, r'''["'](https?://(?:www\.)?turbovidhls\.com/[^"']+)["']''', 1, True)[0]
+			if not embedUrl:
+				return ''
+			embedUrl = urljoin(url, decodeHtml(embedUrl))
+			self.HTTP_HEADER['Referer'] = url
+			sts, data = self.cm.getPage(embedUrl, self.defaultParams)
+			if not sts:
+				return ''
+			# HLS, or a plain MP4 in urlPlay/file on newer uploads
+			videoUrl = self.cm.ph.getSearchGroups(data, r'''(https?://[^"'<>\s]+\.m3u8[^"'<>\s]*)''', 1, True)[0] or self.cm.ph.getSearchGroups(data, r'''(?:urlPlay|file)\s*[:=]\s*["'](https?://[^"']+\.mp4[^"']*)["']''', 1, True)[0]
+			if not videoUrl:
+				return ''
+			return urlparser.decorateUrl(videoUrl.replace('\\/', '/'), {'Referer': embedUrl, 'User-Agent': self.HTTP_HEADER.get('User-Agent', '')})
 
 		if parser in ('https://en.luxuretv.com', 'https://beta.xfreehd.com'):
 			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')

@@ -390,6 +390,7 @@ SITEDATA = {
 'PORNMZ': ('https://pornmz.com', '', ''),
 'HITPRN': ('https://www.hitprn.net', '', ''),
 'PORNOBAE': ('https://pornobae.com', '', ''),
+'321TUBE': ('https://321tube.com', 'TUBE321', ''),
 
 }
 
@@ -20205,6 +20206,56 @@ class Host(CBaseHostClass, XXXParser):
 				page = int(m.group(1)) + 1
 				if '/page/%d' % page in data:
 					valTab.append(self.getNextItem(str(page), url[:m.start()] + '/page/%d/' % page + url[m.end():], name))
+			return valTab
+
+		if 'TUBE321' == name:
+			# EXPERIMENTAL: the HLS segments are TS files behind a PNG header on lh3.googleusercontent.com
+			self.MAIN_URL = 'https://321tube.com'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(self.MAIN_URL + '/tags', self.defaultParams)
+			if sts:
+				seen = set()
+				for tag in re.findall(r'''href=["']/?tag/([^"'/?#]+)["']''', data):
+					catTitle = unquote(tag.replace('+', ' '))
+					if tag in seen or isBlockedContent(catTitle):
+						continue
+					seen.add(tag)
+					valTab.append(CDisplayListItem(catTitle, catTitle, CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/tag/' + tag], 'TUBE321-clips', siteLogo, None))
+			valTab.sort(key=lambda poz: poz.name)
+			for title, path in ((_('Popular'), '/popullar'), (_('Latest'), '/newest')):
+				valTab.insert(0, CDisplayListItem(menuHeader(title), title, CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + path], 'TUBE321-clips', siteLogo, None))
+			return searchItems(valTab, True)
+
+		if 'TUBE321-search' == name:
+			return self.listsItems(-1, 'https://321tube.com/search/?s=' + URL_QUOTE(url), 'TUBE321-clips')
+
+		if 'TUBE321-clips' == name:
+			self.MAIN_URL = 'https://321tube.com'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(url, self.defaultParams)
+			if not sts:
+				return valTab
+			seen = set()
+			# the video links are relative (video/<slug>)
+			for m in re.finditer(r'''(?is)<a\b[^>]+href=["']/?(video/[^"']+)["'][^>]*>(.{0,700}?)</a>''', data):
+				phUrl = self.MAIN_URL + '/' + m.group(1)
+				image = self.cm.ph.getSearchGroups(m.group(2), r'(<img\b[^>]*>)', 1, True)[0]
+				phTitle = decodeHtml(self.cm.ph.getSearchGroups(image, r'''\b(?:alt|title)=["']([^"']+)["']''', 1, True)[0]).strip()
+				phImage = self.cm.ph.getSearchGroups(image, r'''\b(?:data-src|src)=["']([^"']+)["']''', 1, True)[0]
+				if phUrl in seen or not phTitle or not phImage or isBlockedContent(phTitle):
+					continue
+				seen.add(phUrl)
+				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', phUrl, 1)], 0, urljoin(phUrl, phImage), None))
+			base, _sep, query = url.partition('?')
+			m = re.search(r'/page([0-9]+)/?$', base)
+			page = int(m.group(1)) + 1 if m else 2
+			if valTab and 'page%d' % page in data:
+				base = base[:m.start()] if m else base.rstrip('/')
+				valTab.append(self.getNextItem(str(page), '%s/page%d/%s' % (base, page, '?' + query if query else ''), name))
 			return valTab
 
 		if 'LUXURETV' == name:
