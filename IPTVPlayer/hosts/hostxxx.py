@@ -49,7 +49,6 @@ yellow, cyan, magenta = r'\c00????00', r'\c0000????', r'\c00??00??'
 ###################################################
 # Config options for HOST
 ###################################################
-config.plugins.iptvplayer.cam4 = ConfigSelection(default="0", choices=[("0", _("https")), ("1", _("rtmp"))])
 config.plugins.iptvplayer.xxx4k = ConfigYesNo(default=True)
 config.plugins.iptvplayer.xxxwymagajpin = ConfigYesNo(default=True)
 config.plugins.iptvplayer.xxxownpin = ConfigYesNo(default=False)
@@ -410,8 +409,18 @@ SITEDATA_CAMS = {
 'EVERYCAMGIRL': ('https://everycamgirl.com/', '', ''),
 # 'SHOWUP   - live cams': ('https://showup.tv', 'showup', None),
 'YOURLIVE.WEBCAM': ('https://yourlive.webcam', 'YOURLIVE', None),
+'CAM4': ('https://www.cam4.com', '', None),
+'CAMSODA': ('https://www.camsoda.com', '', None),
+'MYFREECAMS': ('https://www.myfreecams.com', '', None),
+'STREAMATE': ('https://streamate.com', '', None),
+'XLOVECAM': ('https://www.xlovecam.com', '', None),
+'SINPARTY': ('https://sinparty.com', '', None),
+'STRIPCHAT': ('https://stripchat.com', '', None),
 
 }
+
+# naiadsystems search API (Streamate, also used by SinParty)
+NAIAD_HEADER = {'platform': 'SCP', 'smtid': 'ffffffff-ffff-ffff-ffff-ffffffffffffG0000000000000', 'smeid': 'ffffffff-ffff-ffff-ffff-ffffffffffffG0000000000000', 'smvid': 'ffffffff-ffff-ffff-ffff-ffffffffffffG0000000000000'}
 
 SITEDATA_HENTAI = {
 'HENTAI2W': ('https://hentai2w.com', '', ''),
@@ -23420,6 +23429,229 @@ class Host(CBaseHostClass, XXXParser):
 			full_ret = "%s%d" % (root_url, page)
 			printDBG('FULL RET: ' + full_ret)
 			valTab = self.listsItems(-1, full_ret, 'BIGBOOBS-clips')
+			return valTab
+
+		if 'CAM4' == name:
+			self.MAIN_URL = 'https://www.cam4.com'
+			for title, query in (('Transsexual', '&gender=shemale'), (_('Couples'), '&broadcastType=male_group&broadcastType=female_group&broadcastType=male_female_group'),
+								('Male', '&gender=male&broadcastType=male_group&broadcastType=solo&broadcastType=male_female_group'), ('Female', '&gender=female&broadcastType=female_group&broadcastType=solo&broadcastType=male_female_group')):
+				valTab.insert(0, CDisplayListItem(menuHeader(title), title, CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/api/directoryCams?directoryJson=true&online=true&url=true&orderBy=MOST_VIEWERS&resultsPerPage=60&page=1' + query], 'CAM4-clips', siteLogo, None))
+			return valTab
+
+		if 'CAM4-clips' == name:
+			self.MAIN_URL = 'https://www.cam4.com'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(url, self.defaultParams)
+			if not sts:
+				return valTab
+			try:
+				users = byteify(json.loads(data)).get('users', [])
+			except Exception:
+				printExc()
+				return valTab
+			for item in users:
+				if item.get('privateRoom'):
+					continue
+				phTitle = str(item.get('username', ''))
+				desc = '[%s] %s: %s' % (str(item.get('countryCode', '')).upper(), 'Viewers', item.get('viewers', 0))
+				if item.get('statusMessage'):
+					desc += '\n' + decodeHtml(str(item['statusMessage']))
+				valTab.append(CDisplayListItem(phTitle, desc, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', self.MAIN_URL + '/' + phTitle, 1)], 0, str(item.get('snapshotImageLink', '')), None))
+			if len(users) >= 60:
+				page = int(self.cm.ph.getSearchGroups(url, r'[?&]page=([0-9]+)', 1, True)[0] or 1)
+				valTab.append(self.getNextItem(str(page + 1), re.sub(r'([?&]page=)[0-9]+', r'\g<1>%d' % (page + 1), url), name))
+			return valTab
+
+		if 'CAMSODA' == name:
+			self.MAIN_URL = 'https://www.camsoda.com'
+			for title, hide in (('Transsexual', 'c,f,m'), ('Male', 'c,t,f'), (_('Couples'), 'f,t,m'), ('Female', 'c,t,m')):
+				valTab.insert(0, CDisplayListItem(menuHeader(title), title, CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/api/v1/browse/react?gender-hide=%s&p=1' % hide], 'CAMSODA-clips', siteLogo, None))
+			return valTab
+
+		if 'CAMSODA-clips' == name:
+			self.MAIN_URL = 'https://www.camsoda.com'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(url, self.defaultParams)
+			if not sts:
+				return valTab
+			try:
+				result = byteify(json.loads(data))
+			except Exception:
+				printExc()
+				return valTab
+			for item in result.get('userList', []):
+				username = str(item.get('username', ''))
+				if not username or item.get('status') == 'private':
+					continue
+				phTitle = decodeHtml(str(item.get('displayName') or username))
+				desc = '%s: %s' % ('Viewers', item.get('connectionCount', 0))
+				if item.get('subjectText'):
+					desc += '\n' + decodeHtml(str(item['subjectText']))
+				valTab.append(CDisplayListItem(phTitle, desc, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', self.MAIN_URL + '/' + username, 1)], 0, str(item.get('thumbUrl', '')), None))
+			page = int(self.cm.ph.getSearchGroups(url, r'[?&]p=([0-9]+)', 1, True)[0] or 1)
+			if int(result.get('perPageCount') or 0) * page < int(result.get('totalCount') or 0):
+				valTab.append(self.getNextItem(str(page + 1), re.sub(r'([?&]p=)[0-9]+', r'\g<1>%d' % (page + 1), url), name))
+			return valTab
+
+		if 'MYFREECAMS' == name:
+			self.MAIN_URL = 'https://www.myfreecams.com'
+			url = self.MAIN_URL + '/php/model_explorer.php?get_contents=1&sort=cam_score&selection=public&page=1'
+			name = 'MYFREECAMS-clips'
+
+		if 'MYFREECAMS-clips' == name:
+			self.MAIN_URL = 'https://www.myfreecams.com'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(url, self.defaultParams)
+			if not sts:
+				return valTab
+			found = 0
+			for m in re.finditer(r"(?s)broadcaster_id:([0-9]+).+?avatar_border.+?src=([^\s]+).+?:19px;'>([^<]+).+?<X>(.+?)<X>", data):
+				found += 1
+				phTitle = decodeHtml(m.group(3)).strip()
+				valTab.append(CDisplayListItem(phTitle, decodeHtml(self._cleanHtmlStr(m.group(4))).strip(), CDisplayListItem.TYPE_VIDEO, [CUrlItem('', self.MAIN_URL + '/#' + phTitle, 1)], 0, m.group(2).replace('100x100', '300x300'), None))
+			if config.plugins.iptvplayer.xxxsortmfc.value:
+				valTab.sort(key=lambda poz: poz.name.lower())
+			if found >= 50:
+				page = int(self.cm.ph.getSearchGroups(url, r'[?&]page=([0-9]+)', 1, True)[0] or 1)
+				valTab.append(self.getNextItem(str(page + 1), re.sub(r'([?&]page=)[0-9]+', r'\g<1>%d' % (page + 1), url), name))
+			return valTab
+
+		if 'STREAMATE' == name:
+			self.MAIN_URL = 'https://streamate.com'
+			for title, genders, setting in (('Transsexual', 'tm2f,tf2m,t', 'f'), ('Male', 'm,mm', 'm'), ('Female', 'f,ff', 'f')):
+				valTab.insert(0, CDisplayListItem(menuHeader(title), title, CDisplayListItem.TYPE_CATEGORY, ['https://member.naiadsystems.com/search/v3/performers?domain=streamate.com&from=0&size=100&filters=gender:%s%%3Bonline:true&genderSetting=%s' % (genders, setting)], 'STREAMATE-clips', siteLogo, None))
+			return valTab
+
+		if 'STREAMATE-clips' == name:
+			self.MAIN_URL = 'https://streamate.com'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER.update(NAIAD_HEADER)
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(url, self.defaultParams)
+			if not sts:
+				return valTab
+			try:
+				result = byteify(json.loads(data))
+			except Exception:
+				printExc()
+				return valTab
+			for item in result.get('performers', []):
+				phTitle = str(item.get('nickname', ''))
+				desc = '[%s] %s: %s' % (item.get('country', ''), 'Age', item.get('age', ''))
+				if item.get('headlineMessage'):
+					desc += '\n' + decodeHtml(str(item['headlineMessage']))
+				valTab.append(CDisplayListItem(phTitle, desc, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', 'https://streamate.com/cam/' + phTitle, 1)], 0, 'https://m1.nsimg.net/media/snap/%s.jpg' % item.get('id', ''), None))
+			start = int(self.cm.ph.getSearchGroups(url, r'[?&]from=([0-9]+)', 1, True)[0] or 0)
+			if start + 100 < int(result.get('totalResultCount') or 0):
+				valTab.append(self.getNextItem(str(start // 100 + 2), re.sub(r'([?&]from=)[0-9]+', r'\g<1>%d' % (start + 100), url), name))
+			return valTab
+
+		if 'XLOVECAM' == name:
+			self.MAIN_URL = 'https://www.xlovecam.com'
+			url = self.MAIN_URL + '/en/performerAction/onlineList/?from=0&time=0'
+			name = 'XLOVECAM-clips'
+
+		if 'XLOVECAM-clips' == name:
+			# the list is a POST, the paging state (from/time) is kept in the url
+			self.MAIN_URL = 'https://www.xlovecam.com'
+			start = self.cm.ph.getSearchGroups(url, r'[?&]from=([0-9]+)', 1, True)[0] or '0'
+			stamp = self.cm.ph.getSearchGroups(url, r'[?&]time=([0-9]+)', 1, True)[0]
+			if not stamp or stamp == '0':
+				stamp = str(int(time_time()))
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER.update({'Referer': self.MAIN_URL + '/en/', 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json'})
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			postData = {'config[nickname]': '', 'config[favorite]': '0', 'config[recent]': '0', 'config[vip]': '0', 'config[sort][id]': '35', 'offset[from]': start, 'offset[length]': '35',
+						'origin': 'fetch-stat-on-load', 'stat': '1', 'data[from]': start, 'data[time]': stamp, 'data[off]': ''}
+			sts, data = self.cm.getPage(self.MAIN_URL + '/en/performerAction/onlineList/', self.defaultParams, postData)
+			if not sts:
+				return valTab
+			try:
+				content = byteify(json.loads(data)).get('content', {})
+			except Exception:
+				printExc()
+				return valTab
+			for item in content.get('performerList', []):
+				phTitle = str(item.get('nickname', ''))
+				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', self.MAIN_URL + '/en/chat/' + phTitle, 1)], 0, str(item.get('profileImg', '')), None))
+			nextQuery = content.get('nextQuery') or {}
+			if content.get('moreItemAvailable') and nextQuery.get('from'):
+				nextUrl = self.MAIN_URL + '/en/performerAction/onlineList/?from=%s&time=%s' % (nextQuery.get('from'), nextQuery.get('time') or stamp)
+				valTab.append(self.getNextItem(str(int(nextQuery['from']) // 35 + 1), nextUrl, name))
+			return valTab
+
+		if 'SINPARTY' == name:
+			self.MAIN_URL = 'https://sinparty.com'
+			for title, path in (('Transsexual', 'trans?'), (_('Couples'), 'couples?'), ('Female', 'girls?gender%5B%5D=f&')):
+				valTab.insert(0, CDisplayListItem(menuHeader(title), title, CDisplayListItem.TYPE_CATEGORY, ['https://api.sinparty.com/v2/web/live-cams/web-rtc/%sper_page=100&page=1' % path], 'SINPARTY-clips', siteLogo, None))
+			return valTab
+
+		if 'SINPARTY-clips' == name:
+			# the list mixes SinParty's own creators and Streamate (naiadsystems) performers
+			self.MAIN_URL = 'https://sinparty.com'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER.update({'Referer': self.MAIN_URL + '/', 'Origin': self.MAIN_URL})
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(url, self.defaultParams)
+			if not sts:
+				return valTab
+			try:
+				result = byteify(json.loads(data)).get('data', {})
+			except Exception:
+				printExc()
+				return valTab
+			for item in result.get('items', []):
+				if item.get('title'):
+					phTitle = str(item['title'])
+					phUrl = 'https://api.sinparty.com/v2/web/live-cams/web-rtc/' + str(item.get('creator_user_hash', ''))
+					phImage = str(item.get('thumbnail_url', ''))
+					desc = '[%s] %s' % (item.get('country', ''), decodeHtml(str(item.get('topic') or '')))
+				else:
+					phTitle = str(item.get('Nickname', ''))
+					phUrl = 'https://streamate.com/cam/' + phTitle
+					phImage = str(item.get('Snapshot', ''))
+					desc = '[%s] %s' % (item.get('Country', ''), decodeHtml(str(item.get('Headline') or '')))
+				if phTitle:
+					valTab.append(CDisplayListItem(phTitle, desc.strip(), CDisplayListItem.TYPE_VIDEO, [CUrlItem('', phUrl, 1)], 0, phImage, None))
+			page = int(self.cm.ph.getSearchGroups(url, r'[?&]page=([0-9]+)', 1, True)[0] or 1)
+			if page * 100 < int(result.get('total') or 0):
+				valTab.append(self.getNextItem(str(page + 1), re.sub(r'([?&]page=)[0-9]+', r'\g<1>%d' % (page + 1), url), name))
+			return valTab
+
+		if 'STRIPCHAT' == name:
+			self.MAIN_URL = 'https://stripchat.com'
+			for title, tag in (('Transsexual', 'trans'), ('Male', 'men'), (_('Couples'), 'couples'), ('Female', 'girls')):
+				valTab.insert(0, CDisplayListItem(menuHeader(title), title, CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/api/front/models?limit=60&offset=0&sortBy=stripRanking&primaryTag=' + tag], 'STRIPCHAT-clips', siteLogo, None))
+			return valTab
+
+		if 'STRIPCHAT-clips' == name:
+			self.MAIN_URL = 'https://stripchat.com'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER.update({'Referer': self.MAIN_URL + '/', 'Accept': 'application/json'})
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(url, self.defaultParams)
+			if not sts:
+				return valTab
+			try:
+				models = byteify(json.loads(data)).get('models', [])
+			except Exception:
+				printExc()
+				return valTab
+			for item in models:
+				if item.get('status') != 'public':
+					continue
+				phTitle = str(item.get('username', ''))
+				desc = '%s: %s' % ('Viewers', item.get('viewersCount', 0))
+				valTab.append(CDisplayListItem(phTitle, desc, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', self.MAIN_URL + '/' + phTitle, 1)], 0, str(item.get('previewUrlThumbSmall', '')), None))
+			if len(models) >= 60:
+				start = int(self.cm.ph.getSearchGroups(url, r'[?&]offset=([0-9]+)', 1, True)[0] or 0)
+				valTab.append(self.getNextItem(str(start // 60 + 2), re.sub(r'([?&]offset=)[0-9]+', r'\g<1>%d' % (start + 60), url), name))
 			return valTab
 
 		if 'BONGACAMS' == name:

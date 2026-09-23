@@ -59,6 +59,9 @@ def checkhttps(url):
 # sites of the txxx network (hostxxx.py TXXX_NETWORK), same videofile API
 TXXX_NETWORK_SITES = ('https://upornia.com', 'https://hdzog.com', 'https://vxxx.com')
 
+# live cam sites (hostxxx.py SITEDATA_CAMS), the stream is looked up when it is played
+LIVECAM_SITES = ('https://www.cam4.com', 'https://www.camsoda.com', 'https://www.myfreecams.com', 'https://streamate.com', 'https://www.xlovecam.com', 'https://api.sinparty.com', 'https://stripchat.com')
+
 # the txxx network hides its base64 video path behind look-alike cyrillic letters
 TXXX_CHARMAP = {
 	u'А': 'A', u'В': 'B', u'С': 'C', u'Е': 'E', u'Н': 'H', u'К': 'K',
@@ -286,8 +289,6 @@ class XXXParser:
 			return 'https://videobin.co'
 		if url.startswith(('https://dato.porn', 'https://datoporn.co', 'https://www.datoporn.com')):
 			return 'https://dato.porn'
-		if url.startswith('https://sinparty.com'):
-			return 'https://sinparty.com'
 		if url.startswith('https://vidlox.tv'):
 			return 'https://vidlox.tv'
 		if url.startswith('http://pornvideos4k.com/en'):  # NOSONAR - site deactivated, kept for possible future reactivation
@@ -777,6 +778,9 @@ class XXXParser:
 				return site
 		if re.match(r'https://v[0-9]+\.erome\.com/', url):
 			return 'https://www.erome.com'
+		for site in LIVECAM_SITES:
+			if url.startswith(site + '/'):
+				return site
 		return self.MAIN_URL
 
 	def _parse_base64_m3u8(self, url, cookie_name):
@@ -1590,47 +1594,6 @@ class XXXParser:
 			else:
 				printDBG('Found nothing.')
 
-		if parser == 'https://www.camsoda.com/':
-			if 'rtmp' in url:
-				rtmp = 1
-			else:
-				rtmp = 0
-			url = url.replace('rtmp', '')
-			query_data = {'url': url, 'use_host': False, 'use_cookie': False, 'use_post': False, 'return_data': True}
-			try:
-				data = self.cm.getURLRequestData(query_data)
-			except Exception:
-				printDBG('Host getResolvedURL query error url: ' + url)
-				return ''
-			dane = '[' + data + ']'
-			result = json.loads(dane)
-			if result:
-				try:
-					for item in result:
-						token = str(item["token"])
-						app = str(item["app"])
-						serwer = str(item["edge_servers"][0])
-						stream_name = str(item["stream_name"])
-						name = re.sub('-enc.+', '', stream_name)
-						if rtmp == 0:
-							Url = 'https://%s/%s/mp4:%s_aac/playlist.m3u8?token=%s' % (serwer, app, stream_name, token)
-							Url = urlparser.decorateUrl(Url, {'User-Agent': USER_AGENT})
-							if self.cm.isValidUrl(Url):
-								tmp = getDirectM3U8Playlist(Url)
-								for item in tmp:
-									if str(item["with"]) == '0':
-										SetIPTVPlayerLastHostError(' OFFLINE')
-										return []
-									return item['url']
-							SetIPTVPlayerLastHostError(' OFFLINE')
-							return []
-						else:
-							Url = 'rtmp://%s:1935/%s?token=%s/ playpath=?mp4:%s swfUrl=https://www.camsoda.com/lib/video-js/video-js.swf live=1 pageUrl=https://www.camsoda.com/%s' % (serwer, app, token, stream_name, name)
-							return Url
-				except Exception:
-					printExc()
-			return ''
-
 		if parser == 'xxxlist.txt':
 			videoUrls = self.getLinksForVideo(url)
 			if videoUrls:
@@ -2024,39 +1987,6 @@ class XXXParser:
 				videoUrl = re.findall(r'<source\ssrc="(.*?)"', data, re.S)
 				if videoUrl:
 					return videoUrl[-1]
-
-		if parser == 'https://streamate.com':
-			COOKIEFILE = join(GetCookieDir(), 'streamate.cookie')
-			url = 'https://streamate.com/blacklabel/hybrid/?name={}&lang=en&manifestUrlRoot=https://sea1c-ls.naiadsystems.com/sea1c-edge-ls/80/live/s:'.format(url)
-			query_data = {'url': url, 'use_host': False, 'use_cookie': True, 'save_cookie': False, 'load_cookie': True, 'cookiefile': COOKIEFILE, 'use_post': False, 'return_data': True}
-			try:
-				data = self.cm.getURLRequestData(query_data)
-			except Exception:
-				printExc()
-				printDBG('Host listsItems query error url:' + url)
-				return ''
-			url = self.cm.ph.getSearchGroups(data, '''data-manifesturl=['"]([^"^']+?)['"]''')[0]
-			header = {'Referer': 'https://streamate.com', 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'}
-			query_data = {'url': url, 'header': header, 'use_host': False, 'use_cookie': True, 'save_cookie': False, 'load_cookie': True, 'cookiefile': COOKIEFILE, 'use_post': False, 'return_data': True}
-			try:
-				data = self.cm.getURLRequestData(query_data)
-			except Exception:
-				printExc()
-				printDBG('Host listsItems query error url:' + url)
-				return ''
-			printDBG('Host listsItems data2: ' + data)
-			try:
-				videoinfo = json.loads(data)
-				videoUrl = videoinfo['formats']['mp4-hls']['manifest']
-				videoUrl = urlparser.decorateUrl(videoUrl, {'Referer': 'https://streamate.com', 'iptv_livestream': True})
-				if '.m3u8' in videoUrl and self.cm.isValidUrl(videoUrl):
-					for item in getDirectM3U8Playlist(videoUrl):
-						printDBG('Host listsItems valtab: ' + str(item))
-						return item['url']
-				return videoUrl
-			except Exception:
-				printExc()
-			return ''
 
 		if parser == 'https://www.youjizz.com':
 			COOKIEFILE = join(GetCookieDir(), 'youjizz.cookie')
@@ -5570,16 +5500,6 @@ class XXXParser:
 			printDBG('Link: ' + videoUrl)
 			return urlparser.decorateUrl(videoUrl, {'Referer': url, 'User-Agent': USER_AGENT})
 
-		if parser == 'https://sinparty.com':
-			COOKIEFILE = join(GetCookieDir(), 'sinparty.cookie')
-			self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE, 'return_data': True}
-			sts, data = self.getPage(url, 'sinparty.cookie', 'sinparty.com,', self.defaultParams)
-			if not sts:
-				return ''
-			videoUrl = self.cm.ph.getSearchGroups(data, '''file_url.+?[:]&quot[;]([^"^]+?)[&]quot''')[0].replace(r'\/', '/')
-			printDBG('Link: ' + videoUrl)
-			return urlparser.decorateUrl(videoUrl, {'Referer': url, 'User-Agent': USER_AGENT})
-
 		if parser == 'https://porn720.net':
 			COOKIEFILE = join(GetCookieDir(), 'porn720.cookie')
 			self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE, 'return_data': True}
@@ -6694,6 +6614,59 @@ class XXXParser:
 				printExc()
 				return ''
 			return urlparser.decorateUrl(videoUrl, {'Referer': url, 'User-Agent': self.HTTP_HEADER.get('User-Agent', '')})
+
+		if parser in LIVECAM_SITES:
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = parser + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			model = url.rstrip('/').split('/')[-1].lstrip('#')
+			videoUrl = ''
+			try:
+				if parser == 'https://www.cam4.com':
+					sts, data = self.cm.getPage('https://www.cam4.com/rest/v1.0/profile/%s/streamInfo' % model, self.defaultParams)
+					videoUrl = json.loads(data).get('cdnURL', '') if sts else ''
+				elif parser == 'https://www.camsoda.com':
+					sts, data = self.cm.getPage('https://www.camsoda.com/api/v1/chat/react/%s?username=guest_%d' % (model, random.randrange(100, 55555)), self.defaultParams)
+					stream = json.loads(data).get('stream', {}) if sts else {}
+					if stream.get('edge_servers'):
+						videoUrl = 'https://%s/%s_v1/index.ll.m3u8?token=%s' % (random.choice(stream['edge_servers']), stream['stream_name'], stream['token'])
+				elif parser == 'https://www.myfreecams.com':
+					sts, data = self.cm.getPage('https://api-edge.myfreecams.com/usernameLookup/' + model, self.defaultParams)
+					user = json.loads(data).get('result', {}).get('user', {}) if sts else {}
+					session = (user.get('sessions') or [{}])[0]
+					# vstate 0 = public show, the channel id is the user id + 100000000
+					if session.get('vstate') == 0 and session.get('server_name'):
+						videoUrl = 'https://%s.myfreecams.com/NxServer/ngrp:mfc_%s%d.f4v_mobile/playlist.m3u8' % (session['server_name'], session.get('phase') or '', int(user['id']) + 100000000)
+				elif parser == 'https://streamate.com':
+					sts, data = self.cm.getPage('https://manifest-server.naiadsystems.com/live/s:%s.json?last=load&format=mp4-hls' % model, self.defaultParams)
+					videoUrl = json.loads(data).get('formats', {}).get('mp4-hls', {}).get('manifest', '') if sts else ''
+				elif parser == 'https://www.xlovecam.com':
+					# the list POST filtered by nickname returns a fresh playlist token
+					self.HTTP_HEADER.update({'Referer': 'https://www.xlovecam.com/en/', 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json'})
+					postData = {'config[nickname]': model, 'config[favorite]': '0', 'config[recent]': '0', 'config[vip]': '0', 'config[sort][id]': '35', 'offset[from]': '0', 'offset[length]': '35',
+								'origin': 'fetch-stat-on-load', 'stat': '1', 'data[from]': '0', 'data[time]': str(int(time.time())), 'data[off]': ''}
+					sts, data = self.cm.getPage('https://www.xlovecam.com/en/performerAction/onlineList/', self.defaultParams, postData)
+					for item in (json.loads(data).get('content', {}).get('performerList', []) if sts else []):
+						if item.get('nickname', '').lower() == model.lower():
+							videoUrl = item.get('hlsPlaylist', '')
+							break
+				elif parser == 'https://api.sinparty.com':
+					self.HTTP_HEADER.update({'Referer': 'https://sinparty.com/', 'Origin': 'https://sinparty.com'})
+					sts, data = self.cm.getPage(url, self.defaultParams)
+					data = json.loads(data).get('data', {}) if sts else {}
+					if data.get('isLive') is not False and data.get('type') != 'private':
+						videoUrl = data.get('playback_url') or ''
+				elif parser == 'https://stripchat.com':
+					sts, data = self.cm.getPage('https://go.stripchat.com/api/models?limit=1&modelsList=' + model, self.defaultParams)
+					for item in (json.loads(data).get('models', []) if sts else []):
+						if item.get('username', '').lower() == model.lower() and item.get('status') == 'public':
+							videoUrl = (item.get('stream') or {}).get('url', '')
+			except Exception:
+				printExc()
+			if not videoUrl:
+				SetIPTVPlayerLastHostError(_('The model is offline or in a private show.'))
+				return ''
+			return urlparser.decorateUrl(videoUrl, {'Referer': parser + '/', 'User-Agent': self.HTTP_HEADER.get('User-Agent', ''), 'iptv_livestream': True})
 
 		if parser == 'https://hentai2w.com':
 			vid = self.cm.ph.getSearchGroups(url, r'-(\d+)\.html', 1, True)[0]
