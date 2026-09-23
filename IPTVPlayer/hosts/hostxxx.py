@@ -584,6 +584,11 @@ def hostImage():
 	return hostImage
 
 
+def menuHeader(text):
+	# site menu entry title, e.g. menuHeader(_('Top rated')) -> '--- Top rated ---'
+	return '--- %s ---' % text
+
+
 class IPTVHost(IHost):
 	LOGO_NAME = 'xxxlogo.png'
 	PATH_TO_LOGO = resolveFilename(SCOPE_PLUGINS, 'Extensions/IPTVPlayer/icons/logos/' + LOGO_NAME)
@@ -1247,7 +1252,7 @@ class Host(CBaseHostClass, XXXParser):
 				phUrl = self.cm.ph.getSearchGroups(item, '''href=['"]([^"^']+?)['"]''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'HELLMOMS-clips', siteLogo, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- Recently Added ---', 'Recently Added Videos', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'HELLMOMS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Recently added')), _('Recently added'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'HELLMOMS-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'HELLMOMS-search' == name:
 			return self.listsItems(-1, 'https://hellmoms.com/q/' + url.replace(' ', '+'), 'HELLMOMS-clips')
@@ -1296,7 +1301,7 @@ class Host(CBaseHostClass, XXXParser):
 					phUrl = self.MAIN_URL + phUrl
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'MUSTJAV-clips', siteLogo, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- Recently Added ---', 'Recently Added Videos', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'MUSTJAV-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Recently added')), _('Recently added'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'MUSTJAV-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'MUSTJAV-search' == name:
 			return self.listsItems(-1, 'https://mustjav.com/index.php/vod/search.html?wd=' + url.replace(' ', '+'), 'MUSTJAV-clips')
@@ -1340,10 +1345,10 @@ class Host(CBaseHostClass, XXXParser):
 				if phUrl and phTitle:
 					valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'FULLXCINEMA-clips', siteLogo, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- Latest ---', 'Latest Videos', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=latest'], 'FULLXCINEMA-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- Most Viewed ---', 'Most Viewed Videos', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=most-viewed'], 'FULLXCINEMA-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- Most Popular ---', 'Most Popular Videos', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=popular'], 'FULLXCINEMA-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- Random ---', 'Random Videos', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=random'], 'FULLXCINEMA-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=latest'], 'FULLXCINEMA-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=most-viewed'], 'FULLXCINEMA-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=popular'], 'FULLXCINEMA-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Random')), _('Random'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=random'], 'FULLXCINEMA-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'FULLXCINEMA-search' == name:
@@ -1408,10 +1413,10 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = hostImage() + 'teenxy.png'
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'TEENXY-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- New ---', 'New Videos', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new/'], 'TEENXY-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- Best ---', 'Best Videos', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best/'], 'TEENXY-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- Just For You ---', 'Videos  Just For You', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'TEENXY-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- Random ---', 'Random Videos', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/random/'], 'TEENXY-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new/'], 'TEENXY-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Best')), _('Best'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best/'], 'TEENXY-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem('--- Just For You ---', 'Videos Just For You', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'TEENXY-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Random')), _('Random'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/random/'], 'TEENXY-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'TEENXY-search' == name:
 			return self.listsItems(-1, 'https://teenxy.com/search/' + url.replace(' ', '-') + '/', 'TEENXY-clips')
@@ -1471,7 +1476,7 @@ class Host(CBaseHostClass, XXXParser):
 			tagTab.sort(key=lambda x: x.name)
 			valTab.append(CDisplayListItem('************ TAGS ************', '', CDisplayListItem.TYPE_MARKER, [''], '', '', None))
 			valTab.extend(tagTab)
-			valTab.insert(0, CDisplayListItem('--- Ultimos ---', 'Ultimos Videos', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'WARDDOGS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'WARDDOGS-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'WARDDOGS-search' == name:
 			return self.listsItems(-1, 'https://warddogs.com/?s=' + url.replace(' ', '+'), 'WARDDOGS-clips')
@@ -1517,8 +1522,8 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = self.cm.ph.getSearchGroups(item, '''src=['"]([^"^']+?)['"]''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'AMATEUR8-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- Latest ---', 'Latest Updates', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'latest-updates/'], 'AMATEUR8-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- Popular ---', 'Most Popular Videos', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'most-popular/'], 'AMATEUR8-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'latest-updates/'], 'AMATEUR8-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'most-popular/'], 'AMATEUR8-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'AMATEUR8-search' == name:
 			return self.listsItems(-1, 'https://www.amateur8.com/search' + '/' + url.replace(' ', '-'), 'AMATEUR8-clips')
@@ -1571,9 +1576,9 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = checkhttps(phImage)
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'DEFINEBABE-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- Recent ---', 'Recent Videos', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], 'DEFINEBABE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- Popular ---', 'Most Popular Videos', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/by-rate/'], 'DEFINEBABE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- Pornstars ---', 'Hottest and sexiest pornstars', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/babes/?filter=c0h0b0e0l0g2'], 'DEFINEBABE-pornstars', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], 'DEFINEBABE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/by-rate/'], 'DEFINEBABE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Pornstars')), 'Hottest and sexiest pornstars', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/babes/?filter=c0h0b0e0l0g2'], 'DEFINEBABE-pornstars', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'DEFINEBABE-search' == name:
 			return self.listsItems(-1, 'https://www.definebabe.com/search/popular/?f=1&q=%s' % url.replace(' ', '-'), 'DEFINEBABE-clips')
@@ -1653,10 +1658,10 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = checkhttps(phImage)
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'HELLOPORN-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- New ---', 'New Videos', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new/'], 'HELLOPORN-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- Trending ---', 'Trending Videos', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/trending/'], 'HELLOPORN-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- Best---', 'The Best Videos', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best/'], 'HELLOPORN-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- Pornstars ---', 'Pornstars', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/pornstars/videos/'], 'HELLOPORN-pornstars', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new/'], 'HELLOPORN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Trending')), _('Trending'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/trending/'], 'HELLOPORN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Best')), 'The Best Videos', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best/'], 'HELLOPORN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Pornstars')), _('Pornstars'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/pornstars/videos/'], 'HELLOPORN-pornstars', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'HELLOPORN-search' == name:
 			return self.listsItems(-1, 'https://hello.porn/search/%s/' % url.replace(' ', '-'), 'HELLOPORN-clips')
@@ -1759,9 +1764,9 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = self.cm.ph.getSearchGroups(item, '''src=['"]([^"^']+?)['"]''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'XOZILLA-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- Latest ---', 'Latest Updates', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'XOZILLA-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- Top Rated ---', 'Top Rated Videos', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'XOZILLA-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- Most Popular ---', 'Most Popular Videos', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'XOZILLA-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'XOZILLA-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'XOZILLA-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'XOZILLA-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'XOZILLA-search' == name:
 			return self.listsItems(-1, 'https://api.xozilla.com/api/v1/search?query=' + url.replace(' ', '-') + '&sort=latest&size=100&from=1&min=0&max=40', 'XOZILLA-api')
@@ -1858,10 +1863,10 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = self.cm.ph.getSearchGroups(item, '''src=['"]([^"^']+?)['"]''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'OHSEXFILM-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- Neue Sex Filme ---', 'Neue Sex Filme', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/sex-filme/'], 'OHSEXFILM-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- Top PornoFilme ---', 'Top PornoFilme von Heute', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'OHSEXFILM-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- Top SexFilme ---', 'Top SexFilme', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-sexfilme/'], 'OHSEXFILM-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- Besten Angesehen ---', 'Besten Angesehen Sexfilme', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/besten-angesehen-sexfilme/'], 'OHSEXFILM-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/sex-filme/'], 'OHSEXFILM-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top')), _('Top'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'OHSEXFILM-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top')), _('Top'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-sexfilme/'], 'OHSEXFILM-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/besten-angesehen-sexfilme/'], 'OHSEXFILM-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'OHSEXFILM-search' == name:
 			return self.listsItems(-1, 'https://www.ohsexfilm.com/search/' + url.replace(' ', '-') + '/', 'OHSEXFILM-clips')
@@ -1911,10 +1916,10 @@ class Host(CBaseHostClass, XXXParser):
 				if 'videos' in phUrl:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'MATUREAMATEURSEX-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- HOME ---', 'Home', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'MATUREAMATEURSEX-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- Latest ---', 'Latest Updates', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'MATUREAMATEURSEX-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- Top Rated ---', 'Top Reted Videos', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'MATUREAMATEURSEX-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- Most Popular ---', 'Most Popular Videos', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'MATUREAMATEURSEX-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Home')), _('Home'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'MATUREAMATEURSEX-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'MATUREAMATEURSEX-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'MATUREAMATEURSEX-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'MATUREAMATEURSEX-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'MATUREAMATEURSEX-search' == name:
 			return self.listsItems(-1, 'https://www.mature-amateur-sex.com/search/' + '/' + url.replace(' ', '%20') + '/', 'MATUREAMATEURSEX-clips')
@@ -1968,10 +1973,10 @@ class Host(CBaseHostClass, XXXParser):
 				phRating = self.cm.ph.getSearchGroups(item, '''positive"[>]([^"^']+?)[<]/div''', 1, True)[0].strip()
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos + '\nRating Positive: ' + phRating, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'TOPVIDS-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- Latest ---', 'New Videos ', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new-videos/'], 'TOPVIDS-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- HOME ---', 'Videos Being Watched ', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'TOPVIDS-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- Most Popular ---', 'Most Viewed Videos ', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'TOPVIDS-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- Models ---', 'Top Rated Models ', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], 'TOPVIDS-models', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new-videos/'], 'TOPVIDS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Home')), _('Being watched'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'TOPVIDS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'TOPVIDS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Models')), 'Top Rated Models', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], 'TOPVIDS-models', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'TOPVIDS-search' == name:
 			return self.listsItems(-1, 'https://topvids.net/search/' + url.replace(' ', '-') + '/', 'TOPVIDS-clips')
@@ -2056,7 +2061,7 @@ class Host(CBaseHostClass, XXXParser):
 					phUrl = self.MAIN_URL + phUrl
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'EVERYCAMGIRL-clips', siteLogo, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- New ---', ' New Live Videos', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'EVERYCAMGIRL-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), 'New Live Videos', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'EVERYCAMGIRL-clips', siteLogo, None))
 			valTab.insert(0, CDisplayListItem('--- Model Features ---', 'Model Features', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'EVERYCAMGIRL-models', siteLogo, None))
 			return searchItems(valTab, True)
 
@@ -2131,9 +2136,9 @@ class Host(CBaseHostClass, XXXParser):
 				phRate = self.cm.ph.getSearchGroups(item, '''tive"[>]([^"^']+?)[<]/div''', 1, True)[0].strip()
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos + '\nRating Positive: ' + phRate, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'CAMVIDEOS-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- LATEST ---', 'NEW WEBCAM VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/recent/'], 'CAMVIDEOS-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED WEBCAM VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/rated/'], 'CAMVIDEOS-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST VIEWED ---', 'MOST VIEWED WEBCAM VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'CAMVIDEOS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), 'NEW WEBCAM VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/recent/'], 'CAMVIDEOS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), 'TOP RATED WEBCAM VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/rated/'], 'CAMVIDEOS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), 'MOST VIEWED WEBCAM VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'CAMVIDEOS-clips', siteLogo, None))
 			valTab.insert(0, CDisplayListItem('--- MODEL FEATURES ---', 'MODEL FEATURES', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], 'CAMVIDEOS-models', siteLogo, None))
 			return searchItems(valTab, True)
 
@@ -2256,7 +2261,7 @@ class Host(CBaseHostClass, XXXParser):
 			valTab.extend(tagTab)
 			valTab.append(CDisplayListItem('************ COUNTRIES ************', '', CDisplayListItem.TYPE_MARKER, [''], '', '', None))
 			valTab.extend(countTab)
-			valTab.insert(0, CDisplayListItem('--- New  ---', ' New Live Videos', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'MASTURBATE2GETHER-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), 'New Live Videos', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'MASTURBATE2GETHER-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'MASTURBATE2GETHER-search' == name:
@@ -2297,11 +2302,11 @@ class Host(CBaseHostClass, XXXParser):
 			if not sts:
 				return valTab
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- New ---', 'Just Arrived Cams', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new'], 'YOURLIVE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- HOME ---', 'Home Cams', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'YOURLIVE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), 'Just Arrived Cams', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new'], 'YOURLIVE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Home')), 'Home Cams', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'YOURLIVE-clips', siteLogo, None))
 			valTab.insert(0, CDisplayListItem('--- Girls ---', 'Girls Cams', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/girl'], 'YOURLIVE-clips', siteLogo, None))
 			valTab.insert(0, CDisplayListItem('--- Boys ---', 'Boys Cams', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/male'], 'YOURLIVE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- Couples ---', 'Couples Cams', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/couples'], 'YOURLIVE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Couples')), 'Couples Cams', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/couples'], 'YOURLIVE-clips', siteLogo, None))
 			valTab.insert(0, CDisplayListItem('--- Shemale ---', 'Shemale Cams', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/shemale'], 'YOURLIVE-clips', siteLogo, None))
 			return valTab
 
@@ -2347,9 +2352,9 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = 'https://cam-sex.net/assets/icons/android-icon-192x192.png'
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'CAMSEX-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- HOME ---', 'Live Cams', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/'], 'CAMSEX-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Home')), 'Live Cams', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/'], 'CAMSEX-clips', siteLogo, None))
 			valTab.insert(0, CDisplayListItem('--- Female ---', 'Female Cams', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/home/female'], 'CAMSEX-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- Couples ---', 'Couples Cams', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/home/couple'], 'CAMSEX-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Couples')), 'Couples Cams', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/home/couple'], 'CAMSEX-clips', siteLogo, None))
 			return valTab
 
 		if 'CAMSEX-clips' == name:
@@ -2404,9 +2409,9 @@ class Host(CBaseHostClass, XXXParser):
 				if phTitle:
 					valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle) + '\n' + Videos, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'CAMSTREAMS-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Most Viewed ---", "Most Viewed Videos ", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'most-popular/'], 'CAMSTREAMS-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Top Rated ---", "Top Rated Videos", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'top-rated/'], 'CAMSTREAMS-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Latest ---", "Latest Videos", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'latest-updates/'], 'CAMSTREAMS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'most-popular/'], 'CAMSTREAMS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'top-rated/'], 'CAMSTREAMS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'latest-updates/'], 'CAMSTREAMS-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'CAMSTREAMS-search' == name:
 			return self.listsItems(-1, 'https://camstreams.tv/search/%s/' % url.replace(' ', '-'), 'CAMSTREAMS-clips')
@@ -2472,9 +2477,9 @@ class Host(CBaseHostClass, XXXParser):
 				if phTitle:
 					valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle) + '\n' + Videos, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'CAMWHORESBAY-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Most Viewed ---", "Most Viewed Videos ", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'CAMWHORESBAY-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Top Rated ---", "Top Rated Videos", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'CAMWHORESBAY-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Latest ---", "Latest Videos", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'CAMWHORESBAY-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'CAMWHORESBAY-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'CAMWHORESBAY-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'CAMWHORESBAY-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'CAMWHORESBAY-search' == name:
 			return self.listsItems(-1, 'https://www.camwhoresbay.com/search/%s' % url.replace(' ', '-') + '/', 'CAMWHORESBAY-clips')
@@ -2528,12 +2533,12 @@ class Host(CBaseHostClass, XXXParser):
 				if phTitle:
 					valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'ANACAMS-clips', siteLogo, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- ALL  ---", "ALL CAMS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], 'ANACAMS-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- TOP MODELS  ---", "TOP MODELS BY FOLLOWERS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-followers/'], 'ANACAMS-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- COUPLES  ---", "COUPLES", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/gender/c/'], 'ANACAMS-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- TRANS  ---", "TRANS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/gender/s/'], 'ANACAMS-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- TOYS  ---", "REMOTE CONTROL TOYS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/tags/lovense/'], 'ANACAMS-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- NEW  ---", "NEW MODELS & FIRST TIME", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new-models/'], 'ANACAMS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('All')), "ALL CAMS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], 'ANACAMS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem("--- TOP MODELS ---", "TOP MODELS BY FOLLOWERS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-followers/'], 'ANACAMS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Couples')), _('Couples'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/gender/c/'], 'ANACAMS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem("--- TRANS ---", "TRANS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/gender/s/'], 'ANACAMS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem("--- TOYS ---", "REMOTE CONTROL TOYS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/tags/lovense/'], 'ANACAMS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), "NEW MODELS & FIRST TIME", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new-models/'], 'ANACAMS-clips', siteLogo, None))
 			return valTab
 
 		if 'ANACAMS-clips' == name:
@@ -2588,8 +2593,8 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'SHAMELESS-clips', phImage, None))
 			if url.endswith('/'):
 				valTab.sort(key=lambda poz: poz.name)
-				valTab.insert(0, CDisplayListItem('--- Latest ---', 'Latest Updates', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'SHAMELESS-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem('--- Models ---', 'Top Rated Models', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], 'SHAMELESS-models', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'SHAMELESS-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Models')), 'Top Rated Models', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], 'SHAMELESS-models', siteLogo, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				next = self.MAIN_URL + next
@@ -2666,8 +2671,8 @@ class Host(CBaseHostClass, XXXParser):
 					phUrl = self.MAIN_URL + phUrl
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'xvideos-clips', siteLogo, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- Best Videos ---', 'Best Videos', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best/'], 'xvideos-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- New Videos ---', 'New Videos', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'xvideos-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Best')), _('Best'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best/'], 'xvideos-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'xvideos-clips', siteLogo, None))
 			valTab.insert(0, CDisplayListItem('--- 100% Verified ---', '100% Verified', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/verified/videos'], 'xvideos-clips', siteLogo, None))
 			valTab.insert(0, CDisplayListItem('--- Countries ---', 'Videos by Countries', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/lang/'], 'xvideos-COUNTRIES', siteLogo, None))
 			return searchItems(valTab, True)
@@ -2782,7 +2787,7 @@ class Host(CBaseHostClass, XXXParser):
 				if phImage:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'hentaigasm-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- New ---", "New", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'hentaigasm-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'hentaigasm-clips', '', None))
 			return searchItems(valTab, True)
 		if 'hentaigasm-search' == name:
 			return self.listsItems(-1, 'https://hentaigasm.com/?s=' + url.replace(' ', '+'), 'hentaigasm-clips')
@@ -3137,11 +3142,11 @@ class Host(CBaseHostClass, XXXParser):
 				if phTitle and phUrl:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'youporn-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Most Discussed ---", "Most Discussed", CDisplayListItem.TYPE_CATEGORY, ["https://www.youporn.com/most_discussed/"], 'youporn-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Most Favorited ---", "Most Favorited", CDisplayListItem.TYPE_CATEGORY, ["https://www.youporn.com/most_favorited/"], 'youporn-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Most Viewed ---", "Most Viewed", CDisplayListItem.TYPE_CATEGORY, ["https://www.youporn.com/most_viewed/"], 'youporn-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Top Rated ---", "Top Rated", CDisplayListItem.TYPE_CATEGORY, ["https://www.youporn.com/top_rated/"], 'youporn-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- New ---", "New", CDisplayListItem.TYPE_CATEGORY, ["https://www.youporn.com/"], 'youporn-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most discussed')), _('Most discussed'), CDisplayListItem.TYPE_CATEGORY, ["https://www.youporn.com/most_discussed/"], 'youporn-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most favourited')), _('Most favourited'), CDisplayListItem.TYPE_CATEGORY, ["https://www.youporn.com/most_favorited/"], 'youporn-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, ["https://www.youporn.com/most_viewed/"], 'youporn-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, ["https://www.youporn.com/top_rated/"], 'youporn-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, ["https://www.youporn.com/"], 'youporn-clips', '', None))
 			return searchItems(valTab, True)
 		if 'youporn-search' == name:
 			return self.listsItems(-1, 'https://www.youporn.com/search/?query=%s' % url.replace(' ', '+'), 'youporn-clips')
@@ -3199,10 +3204,10 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = checkhttp(phImage)
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'redtube-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Most Favored ---", "Most Favored", CDisplayListItem.TYPE_CATEGORY, ["https://www.redtube.com/mostfavored?period=alltime"], 'redtube-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Most Viewed ---", "Most Viewed", CDisplayListItem.TYPE_CATEGORY, ["https://www.redtube.com/mostviewed?period=alltime"], 'redtube-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Top Rated ---", "Top Rated", CDisplayListItem.TYPE_CATEGORY, ["https://www.redtube.com/top?period=alltime"], 'redtube-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Newest ---", "Newest", CDisplayListItem.TYPE_CATEGORY, ["https://www.redtube.com/"], 'redtube-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most favourited')), _('Most favourited'), CDisplayListItem.TYPE_CATEGORY, ["https://www.redtube.com/mostfavored?period=alltime"], 'redtube-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, ["https://www.redtube.com/mostviewed?period=alltime"], 'redtube-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, ["https://www.redtube.com/top?period=alltime"], 'redtube-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, ["https://www.redtube.com/"], 'redtube-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'redtube-search' == name:
 			return self.listsItems(-1, 'https://www.redtube.com/?search=%s' % url.replace(' ', '+'), 'redtube-clips')
@@ -3297,10 +3302,10 @@ class Host(CBaseHostClass, XXXParser):
 			valTab.sort(key=lambda poz: poz.name)
 			valTab.insert(0, CDisplayListItem("--- 4k ---", "4k", CDisplayListItem.TYPE_CATEGORY, ["https://www.eporner.com/category/4k-porn/"], 'eporner-clips', siteLogo, '/4k/'))
 			valTab.insert(0, CDisplayListItem("--- HD ---", "HD", CDisplayListItem.TYPE_CATEGORY, ["https://www.eporner.com/hd/"], 'eporner-clips', siteLogo, '/hd/'))
-			valTab.insert(0, CDisplayListItem("--- Top Rated ---", "Top Rated", CDisplayListItem.TYPE_CATEGORY, ["https://www.eporner.com/top_rated/"], 'eporner-clips', siteLogo, '/top_rated/'))
-			valTab.insert(0, CDisplayListItem("--- Popular ---", "Popular", CDisplayListItem.TYPE_CATEGORY, ["https://www.eporner.com/weekly_top/"], 'eporner-clips', siteLogo, '/weekly_top/'))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, ["https://www.eporner.com/top_rated/"], 'eporner-clips', siteLogo, '/top_rated/'))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Popular'), CDisplayListItem.TYPE_CATEGORY, ["https://www.eporner.com/weekly_top/"], 'eporner-clips', siteLogo, '/weekly_top/'))
 			valTab.insert(0, CDisplayListItem("--- On Air ---", "On Air", CDisplayListItem.TYPE_CATEGORY, ["https://www.eporner.com/currently/"], 'eporner-clips', siteLogo, '/currently/'))
-			valTab.insert(0, CDisplayListItem("--- New ---", "New", CDisplayListItem.TYPE_CATEGORY, ["https://www.eporner.com/"], 'eporner-clips', siteLogo, ''))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, ["https://www.eporner.com/"], 'eporner-clips', siteLogo, ''))
 			return searchItems(valTab, True)
 		if 'eporner-search' == name:
 			return self.listsItems(-1, 'https://www.eporner.com/search/%s/' % url.replace(' ', '+'), 'eporner-clips')
@@ -3386,10 +3391,10 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + phUrl], 'pornhub-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
 			valTab.insert(0, CDisplayListItem("--- HD ---", "HD", CDisplayListItem.TYPE_CATEGORY, ["https://www.pornhub.com/video?c=38"], 'pornhub-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Longest ---", "Longest", CDisplayListItem.TYPE_CATEGORY, ["https://www.pornhub.com/video?o=lg"], 'pornhub-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Top Rated ---", "Top Rated", CDisplayListItem.TYPE_CATEGORY, ["https://www.pornhub.com/video?o=tr"], 'pornhub-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Most Viewed ---", "Most Viewed", CDisplayListItem.TYPE_CATEGORY, ["https://www.pornhub.com/video?o=mv"], 'pornhub-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Most Recent ---", "Most Recent", CDisplayListItem.TYPE_CATEGORY, ["https://www.pornhub.com/video?o=mr"], 'pornhub-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, ["https://www.pornhub.com/video?o=lg"], 'pornhub-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, ["https://www.pornhub.com/video?o=tr"], 'pornhub-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, ["https://www.pornhub.com/video?o=mv"], 'pornhub-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most recent')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, ["https://www.pornhub.com/video?o=mr"], 'pornhub-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'pornhub-search' == name:
 			return self.listsItems(-1, 'https://www.pornhub.com/video/search?search=%s' % url.replace(' ', '+'), 'pornhub-clips')
@@ -3435,8 +3440,8 @@ class Host(CBaseHostClass, XXXParser):
 				phUrl = self.cm.getFullUrl(phUrl, self.MAIN_URL)
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'hdporn-clips', siteLogo, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Top Rated ---", "Top Rated", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + "/top-rated/"], 'hdporn-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Home ---", "Home", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'hdporn-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + "/top-rated/"], 'hdporn-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Home')), _('Home'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'hdporn-clips', siteLogo, None))
 			return valTab
 		if 'hdporn-clips' == name:
 			COOKIEFILE = join(GetCookieDir(), 'hdporn.cookie')
@@ -3490,9 +3495,9 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(self.getNextItem(next_number, next_page, name))
 				printDBG('Next issue=' + next_page)
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Most Viewed ---", "Most Viewed", CDisplayListItem.TYPE_CATEGORY, ['https://www.pornrabbit.com/most-popular/'], 'pornrabbit', '', None))
-			valTab.insert(0, CDisplayListItem("--- Top Rated ---", "Top Rated", CDisplayListItem.TYPE_CATEGORY, ['https://www.pornrabbit.com/top-rated/'], 'pornrabbit', '', None))
-			valTab.insert(0, CDisplayListItem("--- New ---", "New", CDisplayListItem.TYPE_CATEGORY, ['https://www.pornrabbit.com/latest-updates/'], 'pornrabbit', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, ['https://www.pornrabbit.com/most-popular/'], 'pornrabbit', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, ['https://www.pornrabbit.com/top-rated/'], 'pornrabbit', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, ['https://www.pornrabbit.com/latest-updates/'], 'pornrabbit', '', None))
 			return searchItems(valTab, True)
 		if 'pornrabbit-search' == name:
 			return self.listsItems(-1, 'https://www.pornrabbit.com/%s/' % url.replace(' ', '-'), 'pornrabbit')
@@ -3550,9 +3555,9 @@ class Host(CBaseHostClass, XXXParser):
 				if phTitle:
 					valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'PORNWHITE-clips', phImage, phUrl))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Newest Videos ---", "Newest Videos", CDisplayListItem.TYPE_CATEGORY, ["https://www.pornwhite.com/latest-updates/"], 'PORNWHITE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Top Rated Videos ---", "Top Rated Videos", CDisplayListItem.TYPE_CATEGORY, ["https://www.pornwhite.com/top-rated/"], 'PORNWHITE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Popular Videos ---", "Popular Videos", CDisplayListItem.TYPE_CATEGORY, ["https://www.pornwhite.com/most-popular/"], 'PORNWHITE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, ["https://www.pornwhite.com/latest-updates/"], 'PORNWHITE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, ["https://www.pornwhite.com/top-rated/"], 'PORNWHITE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Popular'), CDisplayListItem.TYPE_CATEGORY, ["https://www.pornwhite.com/most-popular/"], 'PORNWHITE-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'PORNWHITE-search' == name:
 			return self.listsItems(-1, 'https://www.pornwhite.com/search/?q=%s' % url.replace(' ', '+'), 'PORNWHITE-clips')
@@ -3601,10 +3606,10 @@ class Host(CBaseHostClass, XXXParser):
 				phUrl = self.cm.ph.getSearchGroups(item, '''=['"]([^"^']+?)['"]''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phUrl, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'AHME-clips', phImage, phUrl))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Last Updates ---", "Last Updates", CDisplayListItem.TYPE_CATEGORY, ["https://www.ah-me.com/latest-updates/"], 'AHME-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Trending ---", "Trending", CDisplayListItem.TYPE_CATEGORY, ["https://www.ah-me.com/popular.porn-video/"], 'AHME-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Hot Porn Videos ---", "Hot Porn Videos", CDisplayListItem.TYPE_CATEGORY, ["https://www.ah-me.com/"], 'AHME-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Most Favorited ---", "Most Favorited", CDisplayListItem.TYPE_CATEGORY, ["https://www.ah-me.com/mostfavorites/page1.html"], 'AHME-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest updates')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, ["https://www.ah-me.com/latest-updates/"], 'AHME-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Trending')), _('Trending'), CDisplayListItem.TYPE_CATEGORY, ["https://www.ah-me.com/popular.porn-video/"], 'AHME-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Hot')), _('Hot'), CDisplayListItem.TYPE_CATEGORY, ["https://www.ah-me.com/"], 'AHME-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most favourited')), _('Most favourited'), CDisplayListItem.TYPE_CATEGORY, ["https://www.ah-me.com/mostfavorites/page1.html"], 'AHME-clips', '', None))
 			return searchItems(valTab)
 		if 'AHME-search' == name:
 			return self.listsItems(-1, 'https://www.ah-me.com/search/%s/' % url.replace(' ', '+'), 'AHME-clips')
@@ -3746,8 +3751,8 @@ class Host(CBaseHostClass, XXXParser):
 					valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle_2), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'SEXMATURE-clips', phImage, None))
 			if url.endswith('/'):
 				valTab.sort(key=lambda poz: poz.name)
-				valTab.insert(0, CDisplayListItem("--- POPULAR ---", "POPULAR", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'videos'], 'SEXMATURE-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem("--- NEW ---", "NEW VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'videos?s=n'], 'SEXMATURE-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'videos'], 'SEXMATURE-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'videos?s=n'], 'SEXMATURE-clips', siteLogo, None))
 				valTab.insert(0, CDisplayListItem("--- DURATION ---", "LONGEST MATURE PORN VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'videos?s=d'], 'SEXMATURE-clips', siteLogo, None))
 				valTab = searchItems(valTab, True)
 			if next:
@@ -3822,9 +3827,9 @@ class Host(CBaseHostClass, XXXParser):
 					valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle_2), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'TEENTUBER-clips', phImage, None))
 			if url.endswith('/'):
 				valTab.sort(key=lambda poz: poz.name)
-				valTab.insert(0, CDisplayListItem("--- POPULAR ---", "POPULAR", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'videos'], 'TEENTUBER-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem("--- NEW ---", "NEW VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'videos?s=n'], 'TEENTUBER-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem("--- LONGEST ---", "LONGEST MATURE PORN VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'videos?s=d'], 'TEENTUBER-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'videos'], 'TEENTUBER-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'videos?s=n'], 'TEENTUBER-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), "LONGEST MATURE PORN VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'videos?s=d'], 'TEENTUBER-clips', siteLogo, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				valTab.append(self.getNextItem(next.split('=')[-1], next, name))
@@ -3893,9 +3898,9 @@ class Host(CBaseHostClass, XXXParser):
 					valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle_2), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'PORN7-clips', phImage, None))
 			if url.endswith('/'):
 				valTab.sort(key=lambda poz: poz.name)
-				valTab.insert(0, CDisplayListItem("--- POPULAR ---", "POPULAR", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos'], 'PORN7-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem("--- NEW ---", "NEW VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?s=n'], 'PORN7-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem("--- LONGEST ---", "LONGEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?s=d'], 'PORN7-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos'], 'PORN7-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?s=n'], 'PORN7-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?s=d'], 'PORN7-clips', siteLogo, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				valTab.append(self.getNextItem(next.split('=')[-1], next, name))
@@ -3958,9 +3963,9 @@ class Host(CBaseHostClass, XXXParser):
 					valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'THEPORNAREA-clips', phImage, None))
 			if url.endswith('/'):
 				valTab.sort(key=lambda poz: poz.name)
-				valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'THEPORNAREA-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem("--- LATEST ---", "LATEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'THEPORNAREA-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem("--- MOST POPULAR ---", "MOST POPULAR VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'THEPORNAREA-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'THEPORNAREA-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'THEPORNAREA-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'THEPORNAREA-clips', siteLogo, None))
 				return searchItems(valTab, True)
 
 		if 'THEPORNAREA-search' == name:
@@ -4022,8 +4027,8 @@ class Host(CBaseHostClass, XXXParser):
 				if phTitle:
 					valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle) + '\n' + phVideos, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'XXXSHAKE-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- BEST ---", "BEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best/'], 'XXXSHAKE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- NEW ---", "NEW VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new/'], 'XXXSHAKE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Best')), _('Best'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best/'], 'XXXSHAKE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new/'], 'XXXSHAKE-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'XXXSHAKE-search' == name:
@@ -4090,9 +4095,9 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'YOUJIZZ-clips', '', None))
 			valTab.sort(key=lambda poz: poz.name)
 			valTab.insert(0, CDisplayListItem("--- HD ---", "HD", CDisplayListItem.TYPE_CATEGORY, ["https://www.youjizz.com/search/HighDefinition-1.html#"], 'YOUJIZZ-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Top Rated ---", "Top Rated", CDisplayListItem.TYPE_CATEGORY, ["https://www.youjizz.com/top-rated/1.html"], 'YOUJIZZ-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Newest ---", "Newest", CDisplayListItem.TYPE_CATEGORY, ["https://www.youjizz.com/newest-clips/1.html"], 'YOUJIZZ-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Popular ---", "Popular", CDisplayListItem.TYPE_CATEGORY, ["https://www.youjizz.com/most-popular/1.html"], 'YOUJIZZ-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, ["https://www.youjizz.com/top-rated/1.html"], 'YOUJIZZ-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, ["https://www.youjizz.com/newest-clips/1.html"], 'YOUJIZZ-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Popular'), CDisplayListItem.TYPE_CATEGORY, ["https://www.youjizz.com/most-popular/1.html"], 'YOUJIZZ-clips', '', None))
 			return searchItems(valTab, True)
 		if 'YOUJIZZ-search' == name:
 			return self.listsItems(-1, 'https://www.youjizz.com/search/%s-1.html' % url.replace(' ', '+'), 'YOUJIZZ-clips')
@@ -4146,10 +4151,10 @@ class Host(CBaseHostClass, XXXParser):
 					phUrl = self.MAIN_URL + phUrl
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'PORNHAT-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- New ---", "New", CDisplayListItem.TYPE_CATEGORY, ["https://www.pornhat.com"], 'PORNHAT-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Popular ---", "Popular", CDisplayListItem.TYPE_CATEGORY, ["https://www.pornhat.com/popular/"], 'PORNHAT-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Trending ---", "Trending", CDisplayListItem.TYPE_CATEGORY, ["https://www.pornhat.com/trending/"], 'PORNHAT-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Models ---", "Models", CDisplayListItem.TYPE_CATEGORY, ["https://www.pornhat.com/models/"], 'PORNHAT-models', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, ["https://www.pornhat.com"], 'PORNHAT-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Popular'), CDisplayListItem.TYPE_CATEGORY, ["https://www.pornhat.com/popular/"], 'PORNHAT-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Trending')), _('Trending'), CDisplayListItem.TYPE_CATEGORY, ["https://www.pornhat.com/trending/"], 'PORNHAT-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Models')), _('Models'), CDisplayListItem.TYPE_CATEGORY, ["https://www.pornhat.com/models/"], 'PORNHAT-models', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'PORNHAT-search' == name:
 			return self.listsItems(-1, 'https://www.pornhat.com/search/%s/' % url.replace(' ', '+'), 'PORNHAT-clips')
@@ -4314,10 +4319,10 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = strwithmeta(phImage, {'Referer': self.MAIN_URL})
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'TNAFLIX-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Featured ---", "Featured", CDisplayListItem.TYPE_CATEGORY, ["https://www.tnaflix.com/featured/?d=all&period=all"], 'TNAFLIX-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Most Popular ---", "Most Popular", CDisplayListItem.TYPE_CATEGORY, ["https://www.tnaflix.com/popular/?d=all&period=all"], 'TNAFLIX-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Top Rated ---", "Top Rated", CDisplayListItem.TYPE_CATEGORY, ["https://www.tnaflix.com/toprated/?d=all&period=all"], 'TNAFLIX-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- New ---", "New", CDisplayListItem.TYPE_CATEGORY, ["https://www.tnaflix.com/new/?d=all&period=all"], 'TNAFLIX-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Featured')), _('Featured'), CDisplayListItem.TYPE_CATEGORY, ["https://www.tnaflix.com/featured/?d=all&period=all"], 'TNAFLIX-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, ["https://www.tnaflix.com/popular/?d=all&period=all"], 'TNAFLIX-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, ["https://www.tnaflix.com/toprated/?d=all&period=all"], 'TNAFLIX-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, ["https://www.tnaflix.com/new/?d=all&period=all"], 'TNAFLIX-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'TNAFLIX-search' == name:
 			return self.listsItems(-1, 'https://www.tnaflix.com/search.php?what=%s&tab=' % url.replace(' ', '+'), 'TNAFLIX-clips')
@@ -4370,7 +4375,7 @@ class Host(CBaseHostClass, XXXParser):
 				phTitle = self.cm.ph.getSearchGroups(item, '''"[>]([^'^"]+)[<]/a''', 1, True)[0].title()
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'HELLPORNO-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- LATEST VIDEOS ---", "LATEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, ['https://hellporno.com/'], 'HELLPORNO-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, ['https://hellporno.com/'], 'HELLPORNO-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'HELLPORNO-search' == name:
 			return self.listsItems(-1, 'https://hellporno.com/search/?q=%s' % url.replace(' ', '+'), 'HELLPORNO-clips')
@@ -4514,7 +4519,7 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phUrl + '\nVideos: ' + phVideos, CDisplayListItem.TYPE_CATEGORY, [phUrl + '?sort_by=post_date'], 'RUSPORN-clips', phImage, phUrl))
 			if len(url) < 33:
 				valTab.sort(key=lambda poz: poz.name)
-				valTab.insert(0, CDisplayListItem("--- Newest Videos ---", "Newest Videos", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'RUSPORN-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'RUSPORN-clips', siteLogo, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				valTab.append(self.getMoreCatsItem(next.split('/')[-2], next, name))
@@ -5190,10 +5195,10 @@ class Host(CBaseHostClass, XXXParser):
 				if not phImage:
 					phImage = self.cm.ph.getSearchGroups(item, '''webp=["']([^"^']+?)["']''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'WATCHMYGF-clips', phImage, None))
-			valTab.insert(0, CDisplayListItem("--- NEW VIDEOS ---", "NEW VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new/'], 'WATCHMYGF-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- LONGEST VIDEOS ---", "LONGEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'WATCHMYGF-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED VIDEOS ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/rated/'], 'WATCHMYGF-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- POPULAR VIDEOS ---", "POPULAR VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/popular/'], 'WATCHMYGF-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new/'], 'WATCHMYGF-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'WATCHMYGF-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/rated/'], 'WATCHMYGF-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/popular/'], 'WATCHMYGF-clips', siteLogo, None))
 			if next:
 				if next.startswith('/'):
 					next = self.MAIN_URL + next
@@ -5249,10 +5254,10 @@ class Host(CBaseHostClass, XXXParser):
 				if phTitle:
 					valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'WANKOZ-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- MOST POPULAR ---", "MOST POPULAR VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular'], 'WANKOZ-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- LATEST UPDATES ---", "RECENTLY ADDED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates'], 'WANKOZ-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated'], 'WANKOZ-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- LONGEST ---", "LONGEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest'], 'WANKOZ-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular'], 'WANKOZ-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest updates')), _('Recently added'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates'], 'WANKOZ-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated'], 'WANKOZ-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest'], 'WANKOZ-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'WANKOZ-search' == name:
 			return self.listsItems(-1, 'https://www.wankoz.com/search/?q=%s' % url.replace(' ', '+'), 'WANKOZ-clips')
@@ -5306,12 +5311,12 @@ class Host(CBaseHostClass, XXXParser):
 					phUrl = self.MAIN_URL + phUrl
 				if phTitle:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'PORNMAKI-clips', phImage, None))
-			valTab.insert(0, CDisplayListItem("--- Newest ---", "Newest", CDisplayListItem.TYPE_CATEGORY, ["https://pornmaki.com/most-recent/"], 'PORNMAKI-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Home ---", "Home", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'PORNMAKI-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Random ---", "Random", CDisplayListItem.TYPE_CATEGORY, ["https://pornmaki.com/random/"], 'PORNMAKI-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Top Rated ---", "Top Rated", CDisplayListItem.TYPE_CATEGORY, ["https://pornmaki.com/top-rated/"], 'PORNMAKI-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, ["https://pornmaki.com/most-recent/"], 'PORNMAKI-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Home')), _('Home'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'PORNMAKI-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Random')), _('Random'), CDisplayListItem.TYPE_CATEGORY, ["https://pornmaki.com/random/"], 'PORNMAKI-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, ["https://pornmaki.com/top-rated/"], 'PORNMAKI-clips', siteLogo, None))
 			valTab.insert(0, CDisplayListItem("--- Most Viewed (Weekly) ---", "Most Viewed (Weekly)", CDisplayListItem.TYPE_CATEGORY, ["https://pornmaki.com/most-viewed-week/"], 'PORNMAKI-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Longest ---", "Longest", CDisplayListItem.TYPE_CATEGORY, ["https://pornmaki.com/longest/"], 'PORNMAKI-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, ["https://pornmaki.com/longest/"], 'PORNMAKI-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'PORNMAKI-search' == name:
@@ -5363,9 +5368,9 @@ class Host(CBaseHostClass, XXXParser):
 				phUrl = self.cm.ph.getSearchGroups(item2, '''href=['"]([^"^']+?)['"]''', 1, True)[0]
 				valTab.sort(key=lambda poz: poz.name)
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'MOMSLUST-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- Models Alphabetically---', 'Models Alphabetically', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/alphabetically/'], 'MOMSLUST-models', siteLogo, None))
+			valTab.insert(0, CDisplayListItem('--- Models Alphabetically ---', 'Models Alphabetically', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/alphabetically/'], 'MOMSLUST-models', siteLogo, None))
 			valTab.insert(0, CDisplayListItem('--- Popular Models ---', 'Popular Models', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/popular/'], 'MOMSLUST-models', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- Most Models ---', 'Models Having Most Videos ', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/most-videos/'], 'MOMSLUST-models', siteLogo, None))
+			valTab.insert(0, CDisplayListItem('--- Most Models ---', 'Models Having Most Videos', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/most-videos/'], 'MOMSLUST-models', siteLogo, None))
 			data = self.cm.ph.getDataBeetwenMarkers(data, '<strong>Videos</strong>', 'page-footer">', False)[1]
 			data = data.split('<div class="item')
 			if len(data):
@@ -5468,9 +5473,9 @@ class Host(CBaseHostClass, XXXParser):
 				if phUrl.startswith('/'):
 					phUrl = self.MAIN_URL + phUrl
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'PORNICOM-clips', phImage, None))
-			valTab.insert(0, CDisplayListItem("--- Most popular ---", "Most popular", CDisplayListItem.TYPE_CATEGORY, ['https://www.pornicom.com/most-popular/'], 'PORNICOM-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Latest updates ---", "Latest updates", CDisplayListItem.TYPE_CATEGORY, ['https://www.pornicom.com/latest-updates/'], 'PORNICOM-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Top rated ---", "Top rated", CDisplayListItem.TYPE_CATEGORY, ['https://www.pornicom.com/top-rated/'], 'PORNICOM-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, ['https://www.pornicom.com/most-popular/'], 'PORNICOM-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest updates')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, ['https://www.pornicom.com/latest-updates/'], 'PORNICOM-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, ['https://www.pornicom.com/top-rated/'], 'PORNICOM-clips', '', None))
 			return searchItems(valTab, True)
 		if 'PORNICOM-search' == name:
 			return self.listsItems(-1, 'https://www.pornicom.com/search/?q=%s' % url.replace(' ', '+'), 'PORNICOM-clips')
@@ -5523,10 +5528,10 @@ class Host(CBaseHostClass, XXXParser):
 				phUrl = self.cm.ph.getSearchGroups(item, '''href=['"]([^"^']+?)['"]''', 1, True)[0]
 				phImage = self.cm.ph.getSearchGroups(item, '''src=["']([^"^']+?)['"] alt''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'SEXVID-clips', phImage, None))
-			valTab.insert(0, CDisplayListItem("--- Most Viewed ---", "Most Viewed", CDisplayListItem.TYPE_CATEGORY, ['https://www.sexvid.xxx/p/'], 'SEXVID-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Newest ---", "Newest", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/p/date/'], 'SEXVID-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Longest ---", "Longest", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/p/duration/'], 'SEXVID-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Top Rated ---", "Top Rated", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/p/rating/'], 'SEXVID-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, ['https://www.sexvid.xxx/p/'], 'SEXVID-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/p/date/'], 'SEXVID-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/p/duration/'], 'SEXVID-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/p/rating/'], 'SEXVID-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'SEXVID-search' == name:
 			return self.listsItems(-1, 'https://www.sexvid.xxx/s/%s/' % url.replace(' ', '+'), 'SEXVID-clips')
@@ -5580,9 +5585,9 @@ class Host(CBaseHostClass, XXXParser):
 				next_page = self.cm.ph.getDataBeetwenMarkers(next_number, 'xxx/', '/', False)[1]
 				valTab.append(self.getNextItem(next_page, next_number, name))
 				printDBG('Next issue=' + next_page)
-			valTab.insert(0, CDisplayListItem("--- Popular ---", "Popular", CDisplayListItem.TYPE_CATEGORY, ['https://www.perfectgirls.xxx/popular/'], 'PERFECTGIRLS', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Trendings ---", "Trendings", CDisplayListItem.TYPE_CATEGORY, ['https://www.perfectgirls.xxx/trending/'], 'PERFECTGIRLS', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Models ---", "Models", CDisplayListItem.TYPE_CATEGORY, ['https://www.perfectgirls.xxx/pornstars/'], 'PERFECTGIRLS-Models', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Popular'), CDisplayListItem.TYPE_CATEGORY, ['https://www.perfectgirls.xxx/popular/'], 'PERFECTGIRLS', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Trending')), _('Trending'), CDisplayListItem.TYPE_CATEGORY, ['https://www.perfectgirls.xxx/trending/'], 'PERFECTGIRLS', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Models')), _('Models'), CDisplayListItem.TYPE_CATEGORY, ['https://www.perfectgirls.xxx/pornstars/'], 'PERFECTGIRLS-Models', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'PERFECTGIRLS-search' == name:
@@ -5726,8 +5731,8 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = self.cm.ph.getSearchGroups(item, '''data-src=['"]([^"^']+?)['"]''', 1, True)[0]
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'KOLOPORNO-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Pornstars ---", "Pornstars", CDisplayListItem.TYPE_CATEGORY, ['https://www.koloporno.com/pornstars/'], 'KOLOPORNO-Pornostars', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- Najlepsze Filmy ---", "Najlepsze Filmy", CDisplayListItem.TYPE_CATEGORY, ['https://www.koloporno.com/najlepiej-oceniane/m/'], 'KOLOPORNO-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Pornstars')), _('Pornstars'), CDisplayListItem.TYPE_CATEGORY, ['https://www.koloporno.com/pornstars/'], 'KOLOPORNO-Pornostars', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, ['https://www.koloporno.com/najlepiej-oceniane/m/'], 'KOLOPORNO-clips', catImage, None))
 			return searchItems(valTab, True)
 		if 'KOLOPORNO-search' == name:
 			return self.listsItems(-1, 'https://www.koloporno.com/search/?q=%s' % url.replace(' ', '+'), 'KOLOPORNO-clips')
@@ -5809,9 +5814,9 @@ class Host(CBaseHostClass, XXXParser):
 				if phTitle:
 					valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'PLAYVIDS-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Pornstar ---", "Pornstar", CDisplayListItem.TYPE_CATEGORY, ['https://www.playvids.com/pornstars&jsclick=1'], 'PLAYVIDS-pornstar', '', None))
-			valTab.insert(0, CDisplayListItem("--- Channels ---", "Channels", CDisplayListItem.TYPE_CATEGORY, ['https://www.playvids.com/channels&jsclick=1'], 'PLAYVIDS-channels', '', None))
-			valTab.insert(0, CDisplayListItem("--- Trending ---", "Trending", CDisplayListItem.TYPE_CATEGORY, ['https://www.playvids.com/Trending-Porn'], 'PLAYVIDS-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Pornstars')), _('Pornstars'), CDisplayListItem.TYPE_CATEGORY, ['https://www.playvids.com/pornstars&jsclick=1'], 'PLAYVIDS-pornstar', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Channels')), _('Channels'), CDisplayListItem.TYPE_CATEGORY, ['https://www.playvids.com/channels&jsclick=1'], 'PLAYVIDS-channels', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Trending')), _('Trending'), CDisplayListItem.TYPE_CATEGORY, ['https://www.playvids.com/Trending-Porn'], 'PLAYVIDS-clips', '', None))
 			return searchItems(valTab, True)
 		if 'PLAYVIDS-search' == name:
 			return self.listsItems(-1, 'https://www.playvids.com/sq?q=%s&jsclick=1&content=straight' % url.replace(' ', '+'), 'PLAYVIDS-clips')
@@ -5926,11 +5931,11 @@ class Host(CBaseHostClass, XXXParser):
 					phUrl = self.MAIN_URL + phUrl
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'HomeMoviesTube-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Longest ---", "Longest", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + "/longest/"], 'HomeMoviesTube-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Most viewed ---", "Most viewed", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + "/most-viewed/"], 'HomeMoviesTube-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Top Rated ---", "Top Rated", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + "/top-rated/"], 'HomeMoviesTube-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Most Recent ---", "Most Recent", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + "/most-recent/"], 'HomeMoviesTube-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Latest Videos ---", "Latest Videos", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'HomeMoviesTube-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + "/longest/"], 'HomeMoviesTube-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + "/most-viewed/"], 'HomeMoviesTube-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + "/top-rated/"], 'HomeMoviesTube-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most recent')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + "/most-recent/"], 'HomeMoviesTube-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'HomeMoviesTube-clips', '', None))
 			return searchItems(valTab, True)
 		if 'HomeMoviesTube-search' == name:
 			return self.listsItems(-1, self.MAIN_URL + '/search/%s/page1.html' % url.replace(' ', '+'), 'HomeMoviesTube-clips')
@@ -5979,7 +5984,7 @@ class Host(CBaseHostClass, XXXParser):
 			for phUrl, phTitle in re.findall(r'''<a href="([^"]+)" class="taxonomy-link">\s*<div class="taxonomy-info">\s*<h2>([^<]+)</h2>''', data):
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'MOTHERLESS-clips', siteLogo, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Latest ---", "Latest Videos", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/'], 'MOTHERLESS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/'], 'MOTHERLESS-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'MOTHERLESS-search' == name:
@@ -6020,9 +6025,9 @@ class Host(CBaseHostClass, XXXParser):
 					phUrl = self.MAIN_URL + phUrl
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'MOVIEFAP-clips', '', None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Most Recent ---", "Most Recent", CDisplayListItem.TYPE_CATEGORY, ["https://www.moviefap.com/browse/?category=mr&page="], 'MOVIEFAP-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Top Rated ---", "Top Rated", CDisplayListItem.TYPE_CATEGORY, ["https://www.moviefap.com/browse/?category=tr&page="], 'MOVIEFAP-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Being Watched ---", "Being Watched", CDisplayListItem.TYPE_CATEGORY, ["https://www.moviefap.com/browse/?category=bw&page="], 'MOVIEFAP-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most recent')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, ["https://www.moviefap.com/browse/?category=mr&page="], 'MOVIEFAP-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, ["https://www.moviefap.com/browse/?category=tr&page="], 'MOVIEFAP-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Being watched')), _('Being watched'), CDisplayListItem.TYPE_CATEGORY, ["https://www.moviefap.com/browse/?category=bw&page="], 'MOVIEFAP-clips', '', None))
 			return searchItems(valTab, True)
 		if 'MOVIEFAP-search' == name:
 			return self.listsItems(-1, self.MAIN_URL + '/search/%s' % url.replace(' ', '+'), 'MOVIEFAP-clips')
@@ -6070,7 +6075,7 @@ class Host(CBaseHostClass, XXXParser):
 				if phTitle:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'freeomovie-clips', '', None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Newest ---", "Newest", CDisplayListItem.TYPE_CATEGORY, ['https://www.freeomovie.to'], 'freeomovie-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, ['https://www.freeomovie.to'], 'freeomovie-clips', '', None))
 			return searchItems(valTab, True)
 		if 'freeomovie-search' == name:
 			return self.listsItems(-1, 'https://www.freeomovie.to/?s=%s' % url.replace(' ', '+'), 'freeomovie-clips')
@@ -6136,9 +6141,9 @@ class Host(CBaseHostClass, XXXParser):
 					phUrl = self.MAIN_URL + phUrl
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'KATESTUBE-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Most Popular ---", "Most Popular", CDisplayListItem.TYPE_CATEGORY, ['https://www.katestube.com/most-popular/'], 'KATESTUBE-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Top Rated ---", "Top Rated", CDisplayListItem.TYPE_CATEGORY, ['https://www.katestube.com/top-rated/'], 'KATESTUBE-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Latest ---", "Latest", CDisplayListItem.TYPE_CATEGORY, ['https://www.katestube.com/latest-updates/'], 'KATESTUBE-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, ['https://www.katestube.com/most-popular/'], 'KATESTUBE-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, ['https://www.katestube.com/top-rated/'], 'KATESTUBE-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, ['https://www.katestube.com/latest-updates/'], 'KATESTUBE-clips', '', None))
 			return searchItems(valTab, True)
 		if 'KATESTUBE-search' == name:
 			return self.listsItems(-1, 'https://www.katestube.com/search/?q=%s' % url.replace(' ', '+'), 'KATESTUBE-clips')
@@ -6189,7 +6194,7 @@ class Host(CBaseHostClass, XXXParser):
 					if phTitle != '2004' and phTitle != '2005' and phTitle != '2006':
 						valTab.append(CDisplayListItem(phTitle, phUrl.split('/')[-1], CDisplayListItem.TYPE_CATEGORY, [phUrl], 'ZBIORNIKMINI-filmy', siteLogo, None))
 			valTab.insert(0, CDisplayListItem("--- Ranking ---", "Ranking", CDisplayListItem.TYPE_CATEGORY, ['https://mini.zbiornik.com/ludzie/ranking'], 'ZBIORNIKMINI-ranking', '', None))
-			valTab.insert(0, CDisplayListItem("--- Wyświetl profile ---", "Wyświetl profile", CDisplayListItem.TYPE_CATEGORY, ['https://mini.zbiornik.com/ludzie/szukaj/0,1,1,1,0,1:0:0:0:18:50:2:0:0:1:0'], 'ZBIORNIKMINI-szukaj', '', None))
+			valTab.insert(0, CDisplayListItem("--- View Profiles ---", "View Profiles", CDisplayListItem.TYPE_CATEGORY, ['https://mini.zbiornik.com/ludzie/szukaj/0,1,1,1,0,1:0:0:0:18:50:2:0:0:1:0'], 'ZBIORNIKMINI-szukaj', '', None))
 			data2 = None
 			return valTab
 		if 'ZBIORNIKMINI-szukaj' == name:
@@ -6331,13 +6336,13 @@ class Host(CBaseHostClass, XXXParser):
 				if phUrl and phTitle:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'pornone-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Longest ---", "Longest", CDisplayListItem.TYPE_CATEGORY, ['https://www.pornone.com/longest/'], 'pornone-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, ['https://www.pornone.com/longest/'], 'pornone-clips', siteLogo, None))
 			valTab.insert(0, CDisplayListItem("--- Most Votes ---", "Most Votes", CDisplayListItem.TYPE_CATEGORY, ['https://www.pornone.com/votes/'], 'pornone-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Most Comments ---", "Most Comments", CDisplayListItem.TYPE_CATEGORY, ['https://www.pornone.com/comments/'], 'pornone-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Most Favorited ---", "Most Favorited", CDisplayListItem.TYPE_CATEGORY, ['https://www.pornone.com/favorites/'], 'pornone-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Most Viewed ---", "Most Viewed", CDisplayListItem.TYPE_CATEGORY, ['https://www.pornone.com/views/'], 'pornone-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Top Rated ---", "Top Rated", CDisplayListItem.TYPE_CATEGORY, ['https://www.pornone.com/rating/'], 'pornone-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Newest ---", "Newest", CDisplayListItem.TYPE_CATEGORY, ['https://www.pornone.com/newest/'], 'pornone-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most commented')), _('Most commented'), CDisplayListItem.TYPE_CATEGORY, ['https://www.pornone.com/comments/'], 'pornone-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most favourited')), _('Most favourited'), CDisplayListItem.TYPE_CATEGORY, ['https://www.pornone.com/favorites/'], 'pornone-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, ['https://www.pornone.com/views/'], 'pornone-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, ['https://www.pornone.com/rating/'], 'pornone-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, ['https://www.pornone.com/newest/'], 'pornone-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'pornone-search' == name:
 			return self.listsItems(-1, 'https://pornone.com/search?q=%s' % url.replace(' ', '+'), 'pornone-clips')
@@ -6389,10 +6394,10 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = self.cm.ph.getSearchGroups(item, '''src=['"]([^"^']+?)['"] alt''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'zbporn-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Longest ---", "Longest", CDisplayListItem.TYPE_CATEGORY, ['https://zbporn.com/longest/'], 'zbporn-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Most Popular ---", "Most Popular", CDisplayListItem.TYPE_CATEGORY, ['https://zbporn.com/most-popular/'], 'zbporn-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Top Rated ---", "Top Rated", CDisplayListItem.TYPE_CATEGORY, ['https://zbporn.com/top-rated/'], 'zbporn-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Newest ---", "Newest", CDisplayListItem.TYPE_CATEGORY, ['https://zbporn.com/latest-updates/'], 'zbporn-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, ['https://zbporn.com/longest/'], 'zbporn-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, ['https://zbporn.com/most-popular/'], 'zbporn-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, ['https://zbporn.com/top-rated/'], 'zbporn-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, ['https://zbporn.com/latest-updates/'], 'zbporn-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'zbporn-search' == name:
 			return self.listsItems(-1, 'https://zbporn.com/search/%s' % url.replace(' ', '+'), 'zbporn-results')
@@ -6466,10 +6471,10 @@ class Host(CBaseHostClass, XXXParser):
 				if phTitle != '':
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'pornoxo-clips', '', None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Longest ---", "Longest", CDisplayListItem.TYPE_CATEGORY, ['https://www.pornoxo.com/videos/longest/'], 'pornoxo-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Most Popular ---", "Most Popular", CDisplayListItem.TYPE_CATEGORY, ['https://www.pornoxo.com/videos/most-popular/today/'], 'pornoxo-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Top Rated ---", "Top Rated", CDisplayListItem.TYPE_CATEGORY, ['https://www.pornoxo.com/videos/top-rated/'], 'pornoxo-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Newest ---", "Newest", CDisplayListItem.TYPE_CATEGORY, ['https://www.pornoxo.com/videos/newest/'], 'pornoxo-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, ['https://www.pornoxo.com/videos/longest/'], 'pornoxo-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, ['https://www.pornoxo.com/videos/most-popular/today/'], 'pornoxo-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, ['https://www.pornoxo.com/videos/top-rated/'], 'pornoxo-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, ['https://www.pornoxo.com/videos/newest/'], 'pornoxo-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'pornoxo-search' == name:
 			return self.listsItems(-1, 'https://www.pornoxo.com/search/%s/?sort=mw&so=y' % url.replace(' ', '+'), 'pornoxo-clips')
@@ -6519,10 +6524,10 @@ class Host(CBaseHostClass, XXXParser):
 				if phTitle:
 					valTab.append(CDisplayListItem(phTitle, phDesc, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'PORNID-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Channels ---", "CHANNELS", CDisplayListItem.TYPE_CATEGORY, ['https://www.pornid.xxx/channels/'], 'PORNID-channels', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Longest ---", "LONGEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, ['https://www.pornid.xxx/longest/'], 'PORNID-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Top Rated ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, ['https://www.pornid.xxx/top-rated/'], 'PORNID-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Most Viewed ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, ['https://www.pornid.xxx/most-viewed/'], 'PORNID-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Channels')), _('Channels'), CDisplayListItem.TYPE_CATEGORY, ['https://www.pornid.xxx/channels/'], 'PORNID-channels', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, ['https://www.pornid.xxx/longest/'], 'PORNID-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, ['https://www.pornid.xxx/top-rated/'], 'PORNID-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, ['https://www.pornid.xxx/most-viewed/'], 'PORNID-clips', siteLogo, None))
 			valTab.insert(0, CDisplayListItem("--- Today Best Porn Clips ---", "TODAY BEST PORN CLIPS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'PORNID-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'PORNID-search' == name:
@@ -6602,7 +6607,7 @@ class Host(CBaseHostClass, XXXParser):
 			valTab.insert(0, CDisplayListItem("--- Mom Videos ---", "Mom Videos", CDisplayListItem.TYPE_CATEGORY, ['https://xbabe.com/categories/videos/mom/'], 'xbabe-clips', '', None))
 			valTab.insert(0, CDisplayListItem("--- Japanese Videos ---", "Japanese Videos", CDisplayListItem.TYPE_CATEGORY, ['https://xbabe.com/categories/videos/japanese/'], 'xbabe-clips', '', None))
 			valTab.insert(0, CDisplayListItem("--- Teen Videos ---", "Teen Videos", CDisplayListItem.TYPE_CATEGORY, ['https://xbabe.com/categories/videos/teen/'], 'xbabe-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Newest Videos ---", "Newest Videos", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'xbabe-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'xbabe-clips', '', None))
 			valTab.insert(0, CDisplayListItem("--- Anal Videos ---", "Anal Videos", CDisplayListItem.TYPE_CATEGORY, ['https://xbabe.com/categories/videos/anal/'], 'xbabe-clips', '', None))
 			valTab.insert(0, CDisplayListItem("--- Solo Girl Videos ---", "Solo Girl Videos", CDisplayListItem.TYPE_CATEGORY, ['https://xbabe.com/categories/videos/solo-girl/'], 'xbabe-clips', '', None))
 			valTab.insert(0, CDisplayListItem("--- Big Ass Videos ---", "Big Ass Videos", CDisplayListItem.TYPE_CATEGORY, ['https://xbabe.com/categories/videos/big-ass/'], 'xbabe-clips', '', None))
@@ -6763,9 +6768,9 @@ class Host(CBaseHostClass, XXXParser):
 					phImage = self.MAIN_URL + phImage
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'sunporno-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Trending ---", "Trending Videos", CDisplayListItem.TYPE_CATEGORY, ['https://www.sunporno.com/trending/'], 'sunporno-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Top Rated ---", "Top Rated Videos", CDisplayListItem.TYPE_CATEGORY, ['https://www.sunporno.com/top-rated/'], 'sunporno-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Recent ---", "Recent Videos", CDisplayListItem.TYPE_CATEGORY, ['https://www.sunporno.com/recent/'], 'sunporno-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Trending')), _('Trending'), CDisplayListItem.TYPE_CATEGORY, ['https://www.sunporno.com/trending/'], 'sunporno-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, ['https://www.sunporno.com/top-rated/'], 'sunporno-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, ['https://www.sunporno.com/recent/'], 'sunporno-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'sunporno-search' == name:
 			return self.listsItems(-1, 'https://www.sunporno.com/s/%s/' % url.replace(' ', '+'), 'sunporno-clips')
@@ -6819,8 +6824,8 @@ class Host(CBaseHostClass, XXXParser):
 				if phUrl:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'sexu-clips', '', None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Trending ---", "Trending", CDisplayListItem.TYPE_CATEGORY, ['https://sexu.com/trending/1'], 'sexu-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Newest ---", "Newest", CDisplayListItem.TYPE_CATEGORY, ['https://sexu.com/1'], 'sexu-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Trending')), _('Trending'), CDisplayListItem.TYPE_CATEGORY, ['https://sexu.com/trending/1'], 'sexu-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, ['https://sexu.com/1'], 'sexu-clips', '', None))
 			return searchItems(valTab, True)
 		if 'sexu-search' == name:
 			return self.listsItems(-1, 'https://sexu.com/search?q=%s' % url.replace(' ', '+'), 'sexu-clips')
@@ -6882,9 +6887,9 @@ class Host(CBaseHostClass, XXXParser):
 				if phUrl:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'tubewolf-clips', phImage, url))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Top Rated ---", "Top Rated", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated'], 'tubewolf-clips', '', self.MAIN_URL))
-			valTab.insert(0, CDisplayListItem("--- Most Popular ---", "Most Popular", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular'], 'tubewolf-clips', '', self.MAIN_URL))
-			valTab.insert(0, CDisplayListItem("--- Newest ---", "Newest", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates'], 'tubewolf-clips', '', self.MAIN_URL))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated'], 'tubewolf-clips', '', self.MAIN_URL))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular'], 'tubewolf-clips', '', self.MAIN_URL))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates'], 'tubewolf-clips', '', self.MAIN_URL))
 			return searchItems(valTab, True)
 		if 'tubewolf-search' == name:
 			return self.listsItems(-1, self.MAIN_URL + '/search/?q=%s' % url.replace(' ', '+'), 'tubewolf-clips')
@@ -6953,10 +6958,10 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = self.cm.ph.getSearchGroups(item, '''src=['"]([^"^']+?)['"]''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'ALPHAPORNO-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- MOST POPULAR ---", "MOST POPULAR VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'ALPHAPORNO-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- LONGEST ---", "LONGEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'ALPHAPORNO-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'ALPHAPORNO-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- PORNSTARS ---", "PORNSTARS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/pornstars'], 'ALPHAPORNO-pornstars', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'ALPHAPORNO-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'ALPHAPORNO-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'ALPHAPORNO-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Pornstars')), _('Pornstars'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/pornstars'], 'ALPHAPORNO-pornstars', siteLogo, None))
 			valTab = searchItems(valTab, True)
 			if next:
 				number = next.split('=')[-1]
@@ -7037,10 +7042,10 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = self.cm.ph.getSearchGroups(item, '''src=['"]([^"^']+?)['"]''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'CROCOTUBE-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- MOST POPULAR ---", "MOST POPULAR VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'most-popular/'], 'CROCOTUBE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- LONGEST ---", "LONGEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'longest/'], 'CROCOTUBE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'top-rated/'], 'CROCOTUBE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- PORNSTARS ---", "PORNSTARS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'CROCOTUBE-pornstars', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'most-popular/'], 'CROCOTUBE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'longest/'], 'CROCOTUBE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'top-rated/'], 'CROCOTUBE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Pornstars')), _('Pornstars'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'CROCOTUBE-pornstars', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'CROCOTUBE-search' == name:
 			return self.listsItems(-1, 'https://crocotube.com/search/?q=%s' % url.replace(' ', '+'), 'CROCOTUBE-clips')
@@ -7117,11 +7122,11 @@ class Host(CBaseHostClass, XXXParser):
 				if phTitle:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'MOMPORNONLY-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- LATEST ---", "LATEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, ['https://mompornonly.com/videos/'], 'MOMPORNONLY-clips', siteLogo, self.MAIN_URL))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, ['https://mompornonly.com/videos/'], 'MOMPORNONLY-clips', siteLogo, self.MAIN_URL))
 			valTab.insert(0, CDisplayListItem("--- HD Videos ---", "HD Videos", CDisplayListItem.TYPE_CATEGORY, ['https://mompornonly.com/videos/?onlyhd=true'], 'MOMPORNONLY-clips', siteLogo, self.MAIN_URL))
-			valTab.insert(0, CDisplayListItem("--- BEST ---", "BEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, ['https://mompornonly.com/videos/best/?onlyhd=true'], 'MOMPORNONLY-clips', siteLogo, self.MAIN_URL))
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, ['https://mompornonly.com/videos/most-viewed/'], 'MOMPORNONLY-clips', siteLogo, self.MAIN_URL))
-			valTab.insert(0, CDisplayListItem("--- RANDOM  ---", "RANDOM VIDEOS", CDisplayListItem.TYPE_CATEGORY, ['https://mompornonly.com/videos/random/'], 'MOMPORNONLY-clips', siteLogo, self.MAIN_URL))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Best')), _('Best'), CDisplayListItem.TYPE_CATEGORY, ['https://mompornonly.com/videos/best/?onlyhd=true'], 'MOMPORNONLY-clips', siteLogo, self.MAIN_URL))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, ['https://mompornonly.com/videos/most-viewed/'], 'MOMPORNONLY-clips', siteLogo, self.MAIN_URL))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Random')), _('Random'), CDisplayListItem.TYPE_CATEGORY, ['https://mompornonly.com/videos/random/'], 'MOMPORNONLY-clips', siteLogo, self.MAIN_URL))
 			return searchItems(valTab, True)
 
 		if 'MOMPORNONLY-search' == name:
@@ -7172,10 +7177,10 @@ class Host(CBaseHostClass, XXXParser):
 				if phTitle:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'LECOINPORNO-clips', siteLogo, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Most Recent ---", "Most Recent", CDisplayListItem.TYPE_CATEGORY, ['https://lecoinporno.fr/'], 'LECOINPORNO-clips', siteLogo, self.MAIN_URL))
-			valTab.insert(0, CDisplayListItem("--- Most Viewed ---", "Most Viewed", CDisplayListItem.TYPE_CATEGORY, ['https://lecoinporno.fr/videos/most-viewed/'], 'LECOINPORNO-clips', siteLogo, self.MAIN_URL))
-			valTab.insert(0, CDisplayListItem("--- Best Videos ---", "Best Videos", CDisplayListItem.TYPE_CATEGORY, ['https://lecoinporno.fr/videos/best/'], 'LECOINPORNO-clips', siteLogo, self.MAIN_URL))
-			valTab.insert(0, CDisplayListItem("--- Random Videos ---", "Random Videos", CDisplayListItem.TYPE_CATEGORY, ['https://lecoinporno.fr/videos/random/'], 'LECOINPORNO-clips', siteLogo, self.MAIN_URL))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most recent')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, ['https://lecoinporno.fr/'], 'LECOINPORNO-clips', siteLogo, self.MAIN_URL))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, ['https://lecoinporno.fr/videos/most-viewed/'], 'LECOINPORNO-clips', siteLogo, self.MAIN_URL))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Best')), _('Best'), CDisplayListItem.TYPE_CATEGORY, ['https://lecoinporno.fr/videos/best/'], 'LECOINPORNO-clips', siteLogo, self.MAIN_URL))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Random')), _('Random'), CDisplayListItem.TYPE_CATEGORY, ['https://lecoinporno.fr/videos/random/'], 'LECOINPORNO-clips', siteLogo, self.MAIN_URL))
 			valTab.insert(0, CDisplayListItem("--- HD Videos ---", "HD Videos", CDisplayListItem.TYPE_CATEGORY, ['https://lecoinporno.fr/videos/random/?onlyhd=true'], 'LECOINPORNO-clips', siteLogo, self.MAIN_URL))
 			return searchItems(valTab, True)
 
@@ -7220,9 +7225,9 @@ class Host(CBaseHostClass, XXXParser):
 				phTitle = self.cm.ph.getSearchGroups(item, '''"[>]([0-9]+?)[<]/''', 1, True)[0]
 				if phTitle:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'streamporn-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- STUDIOS ---', 'POPULAR STUDIOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/studios/'], 'streamporn-studios', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Studios')), 'POPULAR STUDIOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/studios/'], 'streamporn-studios', siteLogo, None))
 			valTab.insert(0, CDisplayListItem('--- ADULT VIDEOS ---', 'ADULT VIDEOS', CDisplayListItem.TYPE_CATEGORY, ['https://xxxscenes.streamporn.vip/'], 'streamporn-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST VIEWED ---', 'MOST VIEWED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'streamporn-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'streamporn-clips', siteLogo, None))
 			valTab.insert(0, CDisplayListItem('--- MOST RATING ---', 'MOST RATING VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-rating/'], 'streamporn-clips', siteLogo, None))
 			valTab.insert(0, CDisplayListItem('--- ADULT MOVIES ---', 'ADULT MOVIES', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/movies/'], 'streamporn-clips', siteLogo, None))
 			return searchItems(valTab, True)
@@ -7362,9 +7367,9 @@ class Host(CBaseHostClass, XXXParser):
 					phUrl = 'https://www.pornburst.xxx' + phUrl
 				if phTitle:
 					valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'PORNBURST-clips', phImage, None))
-			valTab.insert(0, CDisplayListItem("--- Channels ---", "CHANNELS", CDisplayListItem.TYPE_CATEGORY, ['https://www.pornburst.xxx/sites/videos/'], 'PORNBURST-clips', siteLogo, self.MAIN_URL))
-			valTab.insert(0, CDisplayListItem("--- Pornstars ---", "PORNSTARS", CDisplayListItem.TYPE_CATEGORY, ['https://www.pornburst.xxx/pornstars/'], 'PORNBURST-pornstars', siteLogo, self.MAIN_URL))
-			valTab.insert(0, CDisplayListItem("--- Most Recent ---", "MOST RECENT VIDEOS", CDisplayListItem.TYPE_CATEGORY, ['https://www.pornburst.xxx/'], 'PORNBURST-clips', siteLogo, self.MAIN_URL))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Channels')), _('Channels'), CDisplayListItem.TYPE_CATEGORY, ['https://www.pornburst.xxx/sites/videos/'], 'PORNBURST-clips', siteLogo, self.MAIN_URL))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Pornstars')), _('Pornstars'), CDisplayListItem.TYPE_CATEGORY, ['https://www.pornburst.xxx/pornstars/'], 'PORNBURST-pornstars', siteLogo, self.MAIN_URL))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most recent')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, ['https://www.pornburst.xxx/'], 'PORNBURST-clips', siteLogo, self.MAIN_URL))
 			return searchItems(valTab, True)
 
 		if 'PORNBURST-search' == name:
@@ -7453,12 +7458,12 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = phImage.replace('xxxbule.com//', 'xxxbule.com/')
 				if phTitle:
 					valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'XXXBULE-clips', phImage, None))
-			valTab.insert(0, CDisplayListItem("--- CHANNELS ---", "CHANNELS", CDisplayListItem.TYPE_CATEGORY, ['https://www.xxxbule.com/sites/'], 'XXXBULE-pornstars', siteLogo, self.MAIN_URL))
-			valTab.insert(0, CDisplayListItem("--- PORNSTARS ---", "PORNSTARS", CDisplayListItem.TYPE_CATEGORY, ['https://www.xxxbule.com/pornstars/'], 'XXXBULE-pornstars', siteLogo, self.MAIN_URL))
-			valTab.insert(0, CDisplayListItem("--- POPULAR ---", "POPULAR VIDEOS", CDisplayListItem.TYPE_CATEGORY, ['https://www.xxxbule.com/popular/'], 'XXXBULE-clips', siteLogo, self.MAIN_URL))
-			valTab.insert(0, CDisplayListItem("--- BEST VIDEOS ---", "BEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'XXXBULE-clips', siteLogo, self.MAIN_URL))
-			valTab.insert(0, CDisplayListItem("--- NEW VIDEOS ---", "NEW VIDEOS", CDisplayListItem.TYPE_CATEGORY, ['https://www.xxxbule.com/newest/'], 'XXXBULE-clips', siteLogo, self.MAIN_URL))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, ['https://www.xxxbule.com/top-rated/'], 'XXXBULE-clips', siteLogo, self.MAIN_URL))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Channels')), _('Channels'), CDisplayListItem.TYPE_CATEGORY, ['https://www.xxxbule.com/sites/'], 'XXXBULE-pornstars', siteLogo, self.MAIN_URL))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Pornstars')), _('Pornstars'), CDisplayListItem.TYPE_CATEGORY, ['https://www.xxxbule.com/pornstars/'], 'XXXBULE-pornstars', siteLogo, self.MAIN_URL))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Popular'), CDisplayListItem.TYPE_CATEGORY, ['https://www.xxxbule.com/popular/'], 'XXXBULE-clips', siteLogo, self.MAIN_URL))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Best')), _('Best'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'XXXBULE-clips', siteLogo, self.MAIN_URL))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, ['https://www.xxxbule.com/newest/'], 'XXXBULE-clips', siteLogo, self.MAIN_URL))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, ['https://www.xxxbule.com/top-rated/'], 'XXXBULE-clips', siteLogo, self.MAIN_URL))
 			valTab = searchItems(valTab, True)
 			if next:
 				valTab.append(self.getNextItem(next, next, name))
@@ -7541,10 +7546,10 @@ class Host(CBaseHostClass, XXXParser):
 				phTitle = self.cm.ph.getSearchGroups(item, '''title=["']([^"^']+?)["']''', 1, True)[0]
 				if phTitle:
 					valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'PORNDIG-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- STUDIOS ---", "STUDIOS", CDisplayListItem.TYPE_CATEGORY, ['https://www.porndig.com/studios/'], 'PORNDIG-studios', siteLogo, self.MAIN_URL))
-			valTab.insert(0, CDisplayListItem("--- PORNSTARS ---", "PORNSTARS", CDisplayListItem.TYPE_CATEGORY, ['https://www.porndig.com/pornstars/'], 'PORNDIG-pornstars', siteLogo, self.MAIN_URL))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Studios')), _('Studios'), CDisplayListItem.TYPE_CATEGORY, ['https://www.porndig.com/studios/'], 'PORNDIG-studios', siteLogo, self.MAIN_URL))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Pornstars')), _('Pornstars'), CDisplayListItem.TYPE_CATEGORY, ['https://www.porndig.com/pornstars/'], 'PORNDIG-pornstars', siteLogo, self.MAIN_URL))
 			valTab.insert(0, CDisplayListItem("--- AMATEUR ---", "AMATEUR VIDEOS", CDisplayListItem.TYPE_CATEGORY, ['https://www.porndig.com/amateur/videos/'], 'PORNDIG-clips', siteLogo, self.MAIN_URL))
-			valTab.insert(0, CDisplayListItem("--- MOST POPULAR ---", "MOST POPULAR VIDEOS", CDisplayListItem.TYPE_CATEGORY, ['https://www.porndig.com/video/'], 'PORNDIG-clips', siteLogo, self.MAIN_URL))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, ['https://www.porndig.com/video/'], 'PORNDIG-clips', siteLogo, self.MAIN_URL))
 			return searchItems(valTab, True)
 
 		if 'PORNDIG-search' == name:
@@ -7671,11 +7676,11 @@ class Host(CBaseHostClass, XXXParser):
 				if phTitle:
 					valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos + '\nRating Positive: ' + phRate, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'ruleporn-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Most Recent ---", "Most Recent", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], 'ruleporn-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Most Viewed ---", "Most Viewed", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'ruleporn-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Top Rated ---", "Top Rated", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'ruleporn-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Most Discussed ---", "Most Discussed", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-discussed/'], 'ruleporn-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Longest ---", "Longest", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'ruleporn-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most recent')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], 'ruleporn-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'ruleporn-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'ruleporn-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most discussed')), _('Most discussed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-discussed/'], 'ruleporn-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'ruleporn-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'ruleporn-search' == name:
 			return self.listsItems(-1, 'https://ruleporn.com/search/%s/' % url.replace(' ', '-'), 'ruleporn-clips')
@@ -7734,10 +7739,10 @@ class Host(CBaseHostClass, XXXParser):
 				if phUrl:
 					valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'DANSMOVIES-clips', siteLogo, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- NEW ---", "NEW", CDisplayListItem.TYPE_CATEGORY, ['https://www.dansmovies.com/?sortby=newest'], 'DANSMOVIES-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED", CDisplayListItem.TYPE_CATEGORY, ['https://www.dansmovies.com/most-viewed/'], 'DANSMOVIES-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED", CDisplayListItem.TYPE_CATEGORY, ['https://www.dansmovies.com/top-rated/'], 'DANSMOVIES-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- LONGEST ---", "LONGEST", CDisplayListItem.TYPE_CATEGORY, ['https://www.dansmovies.com/top-longest/'], 'DANSMOVIES-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, ['https://www.dansmovies.com/?sortby=newest'], 'DANSMOVIES-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, ['https://www.dansmovies.com/most-viewed/'], 'DANSMOVIES-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, ['https://www.dansmovies.com/top-rated/'], 'DANSMOVIES-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, ['https://www.dansmovies.com/top-longest/'], 'DANSMOVIES-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'DANSMOVIES-search' == name:
 			return self.listsItems(-1, 'https://dansmovies.com/search/videos/%s/' % url.replace(' ', '-'), 'DANSMOVIES-clips')
@@ -7968,10 +7973,10 @@ class Host(CBaseHostClass, XXXParser):
 					valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], '3MOVS-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
 			valTab.insert(0, CDisplayListItem("--- TODAY'S FEATURED ---", "TODAY'S FEATURED PORN VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], '3MOVS-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- NEW VIDEOS ---", "NEW VIDEOS", CDisplayListItem.TYPE_CATEGORY, ['https://www.3movs.com/videos/'], '3MOVS-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, ['https://www.3movs.com/top-rated/all-time/'], '3MOVS-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST VIEWED ---', 'MOST VIEWED VIDEOS ', CDisplayListItem.TYPE_CATEGORY, ['https://www.3movs.com/most-viewed/all-time/'], '3MOVS-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- LONGEST VIDEOS ---', 'LONGEST VIDEOS', CDisplayListItem.TYPE_CATEGORY, ['https://www.3movs.com/longest/'], '3MOVS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, ['https://www.3movs.com/videos/'], '3MOVS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, ['https://www.3movs.com/top-rated/all-time/'], '3MOVS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, ['https://www.3movs.com/most-viewed/all-time/'], '3MOVS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, ['https://www.3movs.com/longest/'], '3MOVS-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if '3MOVS-search' == name:
 			return self.listsItems(-1, 'https://www.3movs.com/search_videos/?q=%s' % url.replace(' ', '-'), '3MOVS-clips')
@@ -8030,7 +8035,7 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = self.cm.ph.getSearchGroups(item, '''src=['"]([^"^']+?)['"]''', 1, True)[0]
 				if phTitle:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'ANALDIN-clips', phImage, None))
-			valTab.insert(0, CDisplayListItem("--- LATEST ---", "LATEST", CDisplayListItem.TYPE_CATEGORY, ['https://www.analdin.com/latest-updates/'], 'ANALDIN-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, ['https://www.analdin.com/latest-updates/'], 'ANALDIN-clips', '', None))
 			return searchItems(valTab, True)
 		if 'ANALDIN-search' == name:
 			return self.listsItems(-1, 'https://www.analdin.com/search/%s/' % url.replace(' ', '+'), 'ANALDIN-clips')
@@ -8100,9 +8105,9 @@ class Host(CBaseHostClass, XXXParser):
 				if phTitle:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'IN35-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'IN35-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'IN35-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- NEW ---", "NEW VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new/'], 'IN35-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'IN35-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'IN35-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new/'], 'IN35-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'IN35-search' == name:
 			return self.listsItems(-1, 'https://in35.com/search/%s/' % url.replace(' ', '-'), 'IN35-clips')
@@ -8153,11 +8158,11 @@ class Host(CBaseHostClass, XXXParser):
 				if phTitle:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'RELAX SEX-clips', siteLogo, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- ALL ---", "ALL VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'RELAX SEX-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- LATEST ---", "LATEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=latest'], 'RELAX SEX-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- LONGEST ---", "LONGEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=longest'], 'RELAX SEX-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- POPULAR ---", "POPULAR VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=popular'], 'RELAX SEX-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- RANDOM ---", "RANDOM VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=random'], 'RELAX SEX-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('All')), _('All'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'RELAX SEX-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=latest'], 'RELAX SEX-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=longest'], 'RELAX SEX-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=popular'], 'RELAX SEX-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Random')), _('Random'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=random'], 'RELAX SEX-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'RELAX SEX-search' == name:
 			return self.listsItems(-1, 'https://relax-sex.com/?s=%s' % url.replace(' ', '+'), 'RELAX SEX-clips')
@@ -8199,11 +8204,11 @@ class Host(CBaseHostClass, XXXParser):
 				if phTitle:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'BABES34-clips', siteLogo, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=most-viewed'], 'BABES34-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- NEWEST ---", "NEWEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=latest'], 'BABES34-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- LONGEST ---", "LONGEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=longest'], 'BABES34-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- BEST ---", "BEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=popular'], 'BABES34-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- RANDOM ---", "RANDOM VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=random'], 'BABES34-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=most-viewed'], 'BABES34-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=latest'], 'BABES34-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=longest'], 'BABES34-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Best')), _('Best'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=popular'], 'BABES34-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Random')), _('Random'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=random'], 'BABES34-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'BABES34-search' == name:
 			return self.listsItems(-1, 'https://babes34.me/?s=%s' % url.replace(' ', '+'), 'BABES34-clips')
@@ -8251,12 +8256,12 @@ class Host(CBaseHostClass, XXXParser):
 				if phTitle:
 					valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'PORNBOLT-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/most-viewed'], 'PORNBOLT-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- NEWEST ---", "NEWEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos'], 'PORNBOLT-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- LONGEST ---", "LONGEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/longest'], 'PORNBOLT-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- POPULAR ---", "POPULAR VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'PORNBOLT-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/top-rated'], 'PORNBOLT-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- PORNSTARS ---", "PORNSTARS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/pornstars'], 'PORNBOLT-pornstars', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/most-viewed'], 'PORNBOLT-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos'], 'PORNBOLT-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/longest'], 'PORNBOLT-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'PORNBOLT-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/top-rated'], 'PORNBOLT-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Pornstars')), _('Pornstars'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/pornstars'], 'PORNBOLT-pornstars', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'PORNBOLT-search' == name:
 			return self.listsItems(-1, 'https://pornbolt.com/search/videos?search_query=%s' % url.replace(' ', '+'), 'PORNBOLT-clips')
@@ -8329,13 +8334,13 @@ class Host(CBaseHostClass, XXXParser):
 				if phTitle:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'WETSINS-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST POPULAR VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'WETSINS-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- MOST RECENT ---", "MOST RECENT VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], 'WETSINS-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- LONGEST ---", "LONGEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'WETSINS-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- BEING WATCHED ---", "BEING WATCHED NOW", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'WETSINS-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED MOVIES", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'WETSINS-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- MOST DISCUSSED ---", "MOST DISCUSSED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-discussed/'], 'WETSINS-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- MODELS ---", "MODELS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], 'WETSINS-models', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'WETSINS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most recent')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], 'WETSINS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'WETSINS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Being watched')), "BEING WATCHED NOW", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'WETSINS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'WETSINS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most discussed')), _('Most discussed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-discussed/'], 'WETSINS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Models')), _('Models'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], 'WETSINS-models', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'WETSINS-search' == name:
 			return self.listsItems(-1, 'https://www.wetsins.com/search/%s/' % url.replace(' ', '-'), 'WETSINS-clips')
@@ -8414,12 +8419,12 @@ class Host(CBaseHostClass, XXXParser):
 				if not Alert:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'PORNENIX-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST POPULAR VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'PORNENIX-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- MOST RECENT ---", "MOST RECENT VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], 'PORNENIX-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- LONGEST ---", "LONGEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'PORNENIX-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED MOVIES", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'PORNENIX-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- MOST DISCUSSED ---", "MOST DISCUSSED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-discussed/'], 'PORNENIX-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- MODELS ---", "MODELS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], 'PORNENIX-models', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'PORNENIX-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most recent')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], 'PORNENIX-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'PORNENIX-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'PORNENIX-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most discussed')), _('Most discussed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-discussed/'], 'PORNENIX-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Models')), _('Models'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], 'PORNENIX-models', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'PORNENIX-search' == name:
 			return self.listsItems(-1, 'https://pornenix.com/search/%s/' % url.replace(' ', '-'), 'PORNENIX-clips')
@@ -8510,10 +8515,10 @@ class Host(CBaseHostClass, XXXParser):
 				if phTitle:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'PORNOHAMMER-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- BELIEBTESTE ---", "BELIEBTESTE PORNOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/beliebteste-pornos/'], 'PORNOHAMMER-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- NEUE ---", "NEUE PORNOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/neue-pornos/'], 'PORNOHAMMER-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- MEIST BESUCHSTE ---", "MEIST BESUCHSTE PORNOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/meist-besuchte-pornos/'], 'PORNOHAMMER-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- PORNOSTARS ---", "PORNOSTARS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/pornostars/'], 'PORNOHAMMER-pornostars', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/beliebteste-pornos/'], 'PORNOHAMMER-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/neue-pornos/'], 'PORNOHAMMER-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/meist-besuchte-pornos/'], 'PORNOHAMMER-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Pornstars')), _('Pornstars'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/pornostars/'], 'PORNOHAMMER-pornostars', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'PORNOHAMMER-search' == name:
 			return self.listsItems(-1, 'https://www.pornohammer.com/suche/?k=%s' % url.replace(' ', '+'), 'PORNOHAMMER-clips')
@@ -8590,10 +8595,10 @@ class Host(CBaseHostClass, XXXParser):
 				if phTitle:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'XGROOVY-clips', siteLogo, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- TRENDING ---", "TRENDING VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'XGROOVY-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- BEST ---", "BEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best/'], 'XGROOVY-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- PORNSTARS ---", "PORNSTARS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/pornstars/'], 'XGROOVY-channels', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- CHANNELS ---", "CHANNELS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/channels/'], 'XGROOVY-channels', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Trending')), _('Trending'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'XGROOVY-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Best')), _('Best'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best/'], 'XGROOVY-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Pornstars')), _('Pornstars'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/pornstars/'], 'XGROOVY-channels', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Channels')), _('Channels'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/channels/'], 'XGROOVY-channels', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'XGROOVY-search' == name:
 			return self.listsItems(-1, 'https://xgroovy.com/search/%s/' % url.replace(' ', '-'), 'XGROOVY-clips')
@@ -8698,11 +8703,11 @@ class Host(CBaseHostClass, XXXParser):
 				if phUrl and phTitle:
 					valTab.append(CDisplayListItem(phTitle, phTitle + '\nVideos: ' + phVideos, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'FITPORN-clips', siteLogo, str(max_page) if max_page else None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- NEW ---", "NEW VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'FITPORN-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'FITPORN-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'FITPORN-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- MODELS ---", "MODELS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/actresses/'], 'FITPORN-models', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- STUDIOS ---", "STUDIOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/studios/'], 'FITPORN-studios', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'FITPORN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'FITPORN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'FITPORN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Models')), _('Models'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/actresses/'], 'FITPORN-models', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Studios')), _('Studios'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/studios/'], 'FITPORN-studios', siteLogo, None))
 			return valTab
 		if 'FITPORN-clips' == name:
 			self.MAIN_URL = 'https://fit.porn'
@@ -8797,11 +8802,11 @@ class Host(CBaseHostClass, XXXParser):
 				if phUrl and phTitle:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'THEYAREHUGE-clips', siteLogo, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- TRENDING ---", "TRENDING BIG BOOBS PORN FOR TODAY", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'THEYAREHUGE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- POPULAR ---", "POPULAR PORN VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/popular.porn-video/'], 'THEYAREHUGE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- RECENT ---", "RECENT PORN VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/recent/'], 'THEYAREHUGE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED PORN VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'THEYAREHUGE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- PORNSTARS ---", "PORNSTARS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/pornstars/'], 'THEYAREHUGE-pornstars', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Trending')), "TRENDING BIG BOOBS PORN FOR TODAY", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'THEYAREHUGE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/popular.porn-video/'], 'THEYAREHUGE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/recent/'], 'THEYAREHUGE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'THEYAREHUGE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Pornstars')), _('Pornstars'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/pornstars/'], 'THEYAREHUGE-pornstars', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'THEYAREHUGE-search' == name:
 			valTab = self.listsItems(-1, 'https://www.theyarehuge.com/search/%s/' % url.replace(' ', '-'), 'THEYAREHUGE-clips')
@@ -8873,11 +8878,11 @@ class Host(CBaseHostClass, XXXParser):
 			valTab.append(CDisplayListItem('Mature', 'Mature\nVideos: 20455', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/tags/mature/'], 'OKXXX-clips', siteLogo, None))
 			valTab.append(CDisplayListItem('Pregnant', 'Pregnant\nVideos: 1071', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/tags/pregnant/'], 'OKXXX-clips', siteLogo, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- TRENDING ---", "TRENDING XXX VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/trending/'], 'OKXXX-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- POPULAR ---", "POPULAR XXX VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/popular/'], 'OKXXX-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- NEW ---", "NEW XXX VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'OKXXX-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- MODELS ---", "MODELS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], 'OKXXX-models', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- CHANNELS ---", "CHANNELS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/channels/'], 'OKXXX-models', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Trending')), "TRENDING XXX VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/trending/'], 'OKXXX-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), "POPULAR XXX VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/popular/'], 'OKXXX-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), "NEW XXX VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'OKXXX-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Models')), _('Models'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], 'OKXXX-models', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Channels')), _('Channels'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/channels/'], 'OKXXX-models', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'OKXXX-search' == name:
 			valTab = self.listsItems(-1, 'https://ok.xxx/search/%s/' % url.replace(' ', '-'), 'OKXXX-clips')
@@ -8955,12 +8960,12 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = self.cm.ph.getSearchGroups(item, '''src=['"]([^"^']+?)['"].alt''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'LAIDHUB-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- MOST RECENT ---', 'MOST RECENT VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], 'LAIDHUB-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'LAIDHUB-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST POPULAR ---', 'MOST POPULAR VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'LAIDHUB-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST DISCUSSED ---', 'MOST DISCUSSED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-discussed/'], 'LAIDHUB-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- LONGEST ---', 'LONGEST VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'LAIDHUB-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- CHANNELS ---', 'CHANNELS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/paysites/'], 'LAIDHUB-channels', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most recent')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], 'LAIDHUB-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'LAIDHUB-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'LAIDHUB-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most discussed')), _('Most discussed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-discussed/'], 'LAIDHUB-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'LAIDHUB-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Channels')), _('Channels'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/paysites/'], 'LAIDHUB-channels', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'LAIDHUB-search' == name:
 			return self.listsItems(-1, 'https://www.laidhub.com/search/' + url.replace(' ', '-') + '/', 'LAIDHUB-clips')
@@ -9038,9 +9043,9 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'W4NKR-clips', phImage, None))
 			if url.endswith('categories/'):
 				valTab.sort(key=lambda poz: poz.name)
-				valTab.insert(0, CDisplayListItem("--- LATEST  ---", "LATEST UPDATES", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'W4NKR-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem("--- TOP RATED  ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'W4NKR-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem("--- MOST POPULAR  ---", "MOST POPULAR VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'W4NKR-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'W4NKR-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'W4NKR-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'W4NKR-clips', siteLogo, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				next = self.MAIN_URL + next
@@ -9141,9 +9146,9 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'MOMXL-clips', phImage, None))
 			if next == '2':
 				valTab.sort(key=lambda poz: poz.name)
-				valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED PORN VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'top-rated/'], 'MOMXL-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem('--- MOST VIEWED ---', 'MOST VIEWED PORN VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'most-popular/'], 'MOMXL-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem('--- LATEST ---', 'LATEST PORN VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'latest-updates/'], 'MOMXL-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'top-rated/'], 'MOMXL-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'most-popular/'], 'MOMXL-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'latest-updates/'], 'MOMXL-clips', siteLogo, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				next_page = self.MAIN_URL + 'categories/' + str(next) + '/'
@@ -9208,12 +9213,12 @@ class Host(CBaseHostClass, XXXParser):
 				phVideos = self.cm.ph.getSearchGroups(item, '''info.+[>]([^"^']+?)[<]/div''', 1, True)[0].strip()
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle) + '\n' + phVideos, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'YOURLUST-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- HOME ---', 'PORN VIDEOS BEING WATCHED', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'YOURLUST-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED PORN VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'YOURLUST-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST VIEWED ---', 'MOST VIEWED PORN VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'YOURLUST-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- LATEST ---', 'LATEST PORN VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'YOURLUST-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- CHANNELS ---', 'CHANNELS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/channels/'], 'YOURLUST-channels', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MODELS ---', 'MODELS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], 'YOURLUST-channels', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Home')), _('Being watched'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'YOURLUST-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'YOURLUST-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'YOURLUST-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'YOURLUST-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Channels')), _('Channels'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/channels/'], 'YOURLUST-channels', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Models')), _('Models'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], 'YOURLUST-channels', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'YOURLUST-search' == name:
@@ -9295,12 +9300,12 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle) + '\n' + phVideos, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'ITSPORN-clips', phImage, None))
 			if next == '2':
 				valTab.sort(key=lambda poz: poz.name)
-				valTab.insert(0, CDisplayListItem('--- HOME ---', 'VIDEOS BEING WATCHED', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'ITSPORN-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best/'], 'ITSPORN-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem('--- MOST VIEWED ---', 'MOST VIEWED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/popular/'], 'ITSPORN-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem('--- LATEST ---', 'NEW VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new/'], 'ITSPORN-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem('--- CHANNELS ---', 'CHANNELS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/channels/'], 'ITSPORN-channels', siteLogo, None))
-				valTab.insert(0, CDisplayListItem('--- MODELS ---', 'MODELS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], 'ITSPORN-channels', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Home')), _('Being watched'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'ITSPORN-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best/'], 'ITSPORN-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/popular/'], 'ITSPORN-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new/'], 'ITSPORN-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Channels')), _('Channels'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/channels/'], 'ITSPORN-channels', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Models')), _('Models'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], 'ITSPORN-channels', siteLogo, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				next_page = currUrl + str(next) + '/'
@@ -9384,11 +9389,11 @@ class Host(CBaseHostClass, XXXParser):
 					phUrl = self.MAIN_URL + phUrl
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'AD69-clips', mainIcon, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- MOST VIEWED ---', 'MOST VIEWED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'AD69-clips', mainIcon, None))
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?order=rating'], 'AD69-clips', mainIcon, None))
-			valTab.insert(0, CDisplayListItem('--- MOST RECENT ---', 'NEW VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?order=date'], 'AD69-clips', mainIcon, None))
-			valTab.insert(0, CDisplayListItem('--- CHANNELS ---', 'CHANNELS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/sites/'], 'AD69-channels', mainIcon, None))
-			valTab.insert(0, CDisplayListItem('--- MODELS ---', 'MODELS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], 'AD69-channels', mainIcon, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'AD69-clips', mainIcon, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?order=rating'], 'AD69-clips', mainIcon, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most recent')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?order=date'], 'AD69-clips', mainIcon, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Channels')), _('Channels'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/sites/'], 'AD69-channels', mainIcon, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Models')), _('Models'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], 'AD69-channels', mainIcon, None))
 			return searchItems(valTab, True)
 
 		if 'AD69-search' == name:
@@ -9465,9 +9470,9 @@ class Host(CBaseHostClass, XXXParser):
 				phRate = self.cm.ph.getSearchGroups(item, '''tive"[>]([^"^']+?)[<]''', 1, True)[0].strip()
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle) + '\n' + phVideos + '\nRating Positive: ' + phRate, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'PORNBIMBO-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- MOST VIEWED ---', 'MOST VIEWED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'PORNBIMBO-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- NEW ---', 'LATEST UPDATES', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'PORNBIMBO-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MODELS ---', 'MODELS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], 'PORNBIMBO-channels', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'PORNBIMBO-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'PORNBIMBO-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Models')), _('Models'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], 'PORNBIMBO-channels', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'PORNBIMBO-search' == name:
@@ -9567,10 +9572,10 @@ class Host(CBaseHostClass, XXXParser):
 				phRate = self.cm.ph.getSearchGroups(item, '''tive"[>]([^"^']+?)[<]''', 1, True)[0].strip()
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle) + '\n' + phVideos + '\nRating Positive: ' + phRate, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'CAMBRO-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'CAMBRO-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST POPULAR ---', 'MOST POPULAR  VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'CAMBRO-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- NEW ---', 'LATEST UPDATES', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'CAMBRO-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MODELS ---', 'MODELS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], 'CAMBRO-channels', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'CAMBRO-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'CAMBRO-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'CAMBRO-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Models')), _('Models'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], 'CAMBRO-channels', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'CAMBRO-search' == name:
@@ -9650,9 +9655,9 @@ class Host(CBaseHostClass, XXXParser):
 				phRate = self.cm.ph.getSearchGroups(item, '''tive"[>]([^"^']+?)[<]''', 1, True)[0].strip()
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle) + '\n' + phVideos + '\nRating Positive: ' + phRate, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'PORNFD-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'PORNFD-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST POPULAR ---', 'MOST POPULAR VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'PORNFD-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- LATEST ---', 'LATEST UPDATES', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'PORNFD-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'PORNFD-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'PORNFD-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'PORNFD-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'PORNFD-search' == name:
@@ -9729,9 +9734,9 @@ class Host(CBaseHostClass, XXXParser):
 				phUrl = self.cm.ph.getSearchGroups(item, '''href=['"]([^"^']+?)['"]''', 1, True)[0]
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'FEMEFUN-clips', Icon, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/?sort_by=rating'], 'FEMEFUN-clips', Icon, None))
-			valTab.insert(0, CDisplayListItem('--- MOST VIEWED ---', 'MOST VIEWED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/?sort_by=video_viewed'], 'FEMEFUN-clips', Icon, None))
-			valTab.insert(0, CDisplayListItem('--- LATEST ---', 'LATEST UPDATES', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/latest-updates/'], 'FEMEFUN-clips', Icon, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/?sort_by=rating'], 'FEMEFUN-clips', Icon, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/?sort_by=video_viewed'], 'FEMEFUN-clips', Icon, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/latest-updates/'], 'FEMEFUN-clips', Icon, None))
 			return searchItems(valTab, True)
 
 		if 'FEMEFUN-search' == name:
@@ -9789,12 +9794,12 @@ class Host(CBaseHostClass, XXXParser):
 					phImage = siteLogo
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'HANDJOBHUB-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- MOST RECENT ---', 'MOST RECENT VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], 'HANDJOBHUB-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'HANDJOBHUB-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST VIEWED ---', 'MOST VIEWED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'HANDJOBHUB-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- LATEST ---', 'LATEST UPDATES', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/?sort_by=post_date'], 'HANDJOBHUB-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST DISCUSSED ---', 'MOST DISCUSSED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-discussed/'], 'HANDJOBHUB-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- LONGEST ---', 'LONGEST', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'HANDJOBHUB-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most recent')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], 'HANDJOBHUB-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'HANDJOBHUB-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'HANDJOBHUB-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/?sort_by=post_date'], 'HANDJOBHUB-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most discussed')), _('Most discussed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-discussed/'], 'HANDJOBHUB-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'HANDJOBHUB-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'HANDJOBHUB-search' == name:
@@ -9997,10 +10002,10 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle) + '\n' + phVideos, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'SHEMALEHD-clips', phImage, None))
 			if url.endswith('from=1'):
 				valTab.sort(key=lambda poz: poz.name)
-				valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/rated/'], 'SHEMALEHD-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem('--- MOST VIEWED ---', 'MOST VIEWED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/popular/'], 'SHEMALEHD-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem('--- FEATURED ---', 'FEATURED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/featured/'], 'SHEMALEHD-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem('--- LONGEST ---', 'LONGEST VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'SHEMALEHD-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/rated/'], 'SHEMALEHD-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/popular/'], 'SHEMALEHD-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Featured')), _('Featured'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/featured/'], 'SHEMALEHD-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'SHEMALEHD-clips', siteLogo, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				next_page = url + '?mode=async&function=get_block&block_id=list_categories_categories_list&sort_by=&from=%s' % str(next.rpartition('/')[-1])
@@ -10064,12 +10069,12 @@ class Host(CBaseHostClass, XXXParser):
 					phImage = siteLogo
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'YOURAMATEURTUBE-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- MOST RECENT ---', 'MOST RECENT VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], 'YOURAMATEURTUBE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'YOURAMATEURTUBE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST VIEWED ---', 'MOST VIEWED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'YOURAMATEURTUBE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- LATEST ---', 'LATEST UPDATES', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/?sort_by=post_date'], 'YOURAMATEURTUBE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST DISCUSSED ---', 'MOST DISCUSSED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-discussed/'], 'YOURAMATEURTUBE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- LONGEST ---', 'LONGEST', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'YOURAMATEURTUBE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most recent')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], 'YOURAMATEURTUBE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'YOURAMATEURTUBE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'YOURAMATEURTUBE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/?sort_by=post_date'], 'YOURAMATEURTUBE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most discussed')), _('Most discussed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-discussed/'], 'YOURAMATEURTUBE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'YOURAMATEURTUBE-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'YOURAMATEURTUBE-search' == name:
@@ -10126,11 +10131,11 @@ class Host(CBaseHostClass, XXXParser):
 				if phTitle:
 					valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'SHESHAFT-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- MOST POPULAR ---", "MOST POPULAR VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular'], 'SHESHAFT-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- LATEST UPDATES ---", "RECENTLY ADDED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'SHESHAFT-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'SHESHAFT-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- LONGEST ---", "LONGEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'SHESHAFT-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'SHESHAFT-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular'], 'SHESHAFT-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest updates')), _('Recently added'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'SHESHAFT-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'SHESHAFT-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'SHESHAFT-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'SHESHAFT-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'SHESHAFT-search' == name:
@@ -10189,12 +10194,12 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle) + '\n' + phVideos + ' Videos', CDisplayListItem.TYPE_CATEGORY, [phUrl], 'PUNISHBANG-clips', phImage, None))
 			if url.endswith('s/'):
 				valTab.sort(key=lambda poz: poz.name)
-				valTab.insert(0, CDisplayListItem('--- MOST COMMENTED ---', 'MOST COMMENTED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/?sort_by=most_commented&from=1'], 'PUNISHBANG-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem('--- MOST FAVOURITED ---', 'MOST FAVOURITED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?sort_by=most_favourited&from=1'], 'PUNISHBANG-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem('--- LONGEST ---', 'LONGEST VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?sort_by=duration&from=1'], 'PUNISHBANG-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?sort_by=rating&from=1'], 'PUNISHBANG-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem('--- MOST POPULAR ---', 'MOST POPULAR VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?sort_by=video_viewed&from=1'], 'PUNISHBANG-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem('--- LATEST ---', 'LATEST UPDATES', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?sort_by=post_date&from=1'], 'PUNISHBANG-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Most commented')), _('Most commented'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/?sort_by=most_commented&from=1'], 'PUNISHBANG-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Most favourited')), _('Most favourited'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?sort_by=most_favourited&from=1'], 'PUNISHBANG-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?sort_by=duration&from=1'], 'PUNISHBANG-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?sort_by=rating&from=1'], 'PUNISHBANG-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?sort_by=video_viewed&from=1'], 'PUNISHBANG-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?sort_by=post_date&from=1'], 'PUNISHBANG-clips', siteLogo, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				next_page = self.MAIN_URL + "/categories/%s/" % (str(next))
@@ -10265,11 +10270,11 @@ class Host(CBaseHostClass, XXXParser):
 					phImage = siteLogo
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'XNXXHAMSTER-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- MOST RECENT ---', 'MOST RECENT VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], 'XNXXHAMSTER-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'XNXXHAMSTER-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST VIEWED ---', 'MOST VIEWED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'XNXXHAMSTER-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST DISCUSSED ---', 'MOST DISCUSSED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-discussed/'], 'XNXXHAMSTER-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- LONGEST ---', 'LONGEST', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'XNXXHAMSTER-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most recent')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], 'XNXXHAMSTER-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'XNXXHAMSTER-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'XNXXHAMSTER-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most discussed')), _('Most discussed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-discussed/'], 'XNXXHAMSTER-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'XNXXHAMSTER-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'XNXXHAMSTER-search' == name:
@@ -10326,10 +10331,10 @@ class Host(CBaseHostClass, XXXParser):
 					phImage = siteLogo
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'TROPICTUBE-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- NEWEST ---', 'NEWEST VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/updates/'], 'TROPICTUBE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST POPULAR ---', 'MOST POPULAR VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top/'], 'TROPICTUBE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/rated/'], 'TROPICTUBE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- CHANNELS ---', 'CHANNELS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/sites/'], 'TROPICTUBE-channels', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/updates/'], 'TROPICTUBE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top/'], 'TROPICTUBE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/rated/'], 'TROPICTUBE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Channels')), _('Channels'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/sites/'], 'TROPICTUBE-channels', siteLogo, None))
 			valTab = searchItems(valTab, True)
 			if next:
 				next_page = self.MAIN_URL + next
@@ -10398,9 +10403,9 @@ class Host(CBaseHostClass, XXXParser):
 			self.MAIN_URL = 'https://porcore.com'
 			COOKIEFILE = join(GetCookieDir(), 'porcore.cookie')
 			self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE, 'return_data': True}
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/top-rated/'], 'PORCORE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST POPULAR ---', 'MOST VIEWED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/most-viewed/'], 'PORCORE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- LATEST ---', 'MOST RECENT VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], 'PORCORE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/top-rated/'], 'PORCORE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/most-viewed/'], 'PORCORE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], 'PORCORE-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'PORCORE-search' == name:
@@ -10455,10 +10460,10 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = self.cm.ph.getSearchGroups(item, '''src=["]([^#^@]+?)["]''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'AL4A-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'AL4A-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST POPULAR ---', 'MOST VIEWED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'AL4A-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- LATEST ---', 'MOST RECENT VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], 'AL4A-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- LONGEST ---', 'LONGEST VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'AL4A-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'AL4A-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'AL4A-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], 'AL4A-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'AL4A-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'AL4A-search' == name:
@@ -10510,9 +10515,9 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle) + '\n' + phVideos + '\nRating Positive: ' + phRate, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'CAMHUB-clips', phImage, None))
 			if len(url) < 34:
 				valTab.sort(key=lambda poz: poz.name)
-				valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'CAMHUB-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem('--- MOST POPULAR ---', 'MOST POPULAR VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'CAMHUB-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem('--- LATEST ---', 'MOST RECENT VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'CAMHUB-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'CAMHUB-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'CAMHUB-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'CAMHUB-clips', siteLogo, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				next = url + str(next) + '/'
@@ -10580,11 +10585,11 @@ class Host(CBaseHostClass, XXXParser):
 				phVideos = self.cm.ph.getSearchGroups(item, '''video...[>]([^#^@]+?)[<]/''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'JIZZBOOM-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/rating.html'], 'JIZZBOOM-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST POPULAR ---', 'MOST VIEWED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/popular.html'], 'JIZZBOOM-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- LATEST ---', 'MOST RECENT VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'JIZZBOOM-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- LONGEST ---', 'LONGEST VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest.html'], 'JIZZBOOM-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- CHANNELS ---', 'CHANNELS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/channel.html'], 'JIZZBOOM-channels', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/rating.html'], 'JIZZBOOM-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/popular.html'], 'JIZZBOOM-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'JIZZBOOM-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest.html'], 'JIZZBOOM-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Channels')), _('Channels'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/channel.html'], 'JIZZBOOM-channels', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'JIZZBOOM-search' == name:
@@ -10669,9 +10674,9 @@ class Host(CBaseHostClass, XXXParser):
 				phRate = self.cm.ph.getSearchGroups(item, '''tive"[>]([^#^@]+?)[<]''', 1, True)[0].strip()
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos + '\nRating Posotive: ' + phRate, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'JAVBANGERS-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'JAVBANGERS-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST POPULAR ---', 'MOST VIEWED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'JAVBANGERS-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- LATEST ---', 'MOST RECENT VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'JAVBANGERS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'JAVBANGERS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'JAVBANGERS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'JAVBANGERS-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'JAVBANGERS-search' == name:
@@ -10729,9 +10734,9 @@ class Host(CBaseHostClass, XXXParser):
 				phVideos = self.cm.ph.getSearchGroups(item, '''score"[>]([^#^@]+?)[<]''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos + ' Videos', CDisplayListItem.TYPE_CATEGORY, [phUrl], 'XXXDAN-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- TRENDING ---', 'TRENDING VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/straight/trending'], 'XXXDAN-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- POPULAR ---', 'POPULAR VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/straight/popular1'], 'XXXDAN-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- RECENT ---', 'RECENT VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/newest'], 'XXXDAN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Trending')), _('Trending'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/straight/trending'], 'XXXDAN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/straight/popular1'], 'XXXDAN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/newest'], 'XXXDAN-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'XXXDAN-search' == name:
@@ -10778,11 +10783,11 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = self.cm.ph.getSearchGroups(item, '''src=["]([^@]+?)["]''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'TRENDYPORN-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- RANDOM ---', 'RANDOM VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/random/'], 'TRENDYPORN-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- LONGEST ---', 'LONGEST VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'TRENDYPORN-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST VIEWED ---', 'MOST VIEWED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'TRENDYPORN-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'TRENDYPORN-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST RECENT ---', 'MOST RECENT VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-recent/'], 'TRENDYPORN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Random')), _('Random'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/random/'], 'TRENDYPORN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'TRENDYPORN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'TRENDYPORN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'TRENDYPORN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most recent')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-recent/'], 'TRENDYPORN-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'TRENDYPORN-search' == name:
@@ -10836,11 +10841,11 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = self.cm.ph.getSearchGroups(item, '''src=["]([^@]+?)["]''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'HYPNOTUBE-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- MOST DISCUSSED ---', 'MOST DISCUSSED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-discussed/'], 'HYPNOTUBE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- LONGEST ---', 'LONGEST VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'HYPNOTUBE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST VIEWED ---', 'MOST VIEWED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'HYPNOTUBE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'HYPNOTUBE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST RECENT ---', 'MOST RECENT VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], 'HYPNOTUBE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most discussed')), _('Most discussed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-discussed/'], 'HYPNOTUBE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'HYPNOTUBE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'HYPNOTUBE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'HYPNOTUBE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most recent')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], 'HYPNOTUBE-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'HYPNOTUBE-search' == name:
@@ -10907,9 +10912,9 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(title.upper(), title, CDisplayListItem.TYPE_CATEGORY, [fullUrl], 'ALOTPORN-clips', siteLogo, None))
 
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- MOST POPULAR ---', 'MOST POPULAR VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'ALOTPORN-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'ALOTPORN-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST RECENT ---', 'MOST RECENT VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'ALOTPORN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'ALOTPORN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'ALOTPORN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most recent')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'ALOTPORN-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'ALOTPORN-search' == name:
@@ -11001,9 +11006,9 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'ANONV-clips', phImage, None))
 			if url.endswith('porn/'):
 				valTab.sort(key=lambda poz: poz.name)
-				valTab.insert(0, CDisplayListItem('--- MOST POPULAR ---', 'MOST POPULAR VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'ANONV-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'ANONV-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem('--- MOST RECENT ---', 'MOST RECENT VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'ANONV-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'ANONV-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'ANONV-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Most recent')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'ANONV-clips', siteLogo, None))
 			if next:
 				if not url.endswith('porn/'):
 					url = re.search('([a-z:/.-]+)[/]./', url).group(1)
@@ -11057,9 +11062,9 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = siteLogo
 				if len(phTitle) >= 3:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'MYPORNHERE-clips', phImage, None))
-			valTab.insert(0, CDisplayListItem('--- MOST POPULAR ---', 'MOST POPULAR VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'MYPORNHERE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'MYPORNHERE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- LATEST ---', 'LATEST UPDATES', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'MYPORNHERE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'MYPORNHERE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'MYPORNHERE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'MYPORNHERE-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'MYPORNHERE-search' == name:
@@ -11113,10 +11118,10 @@ class Host(CBaseHostClass, XXXParser):
 					phImage = siteLogo
 				phVideos = self.cm.ph.getSearchGroups(item, '''"videos"[>]([^@]+?)[<]/''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'EBONY8-clips', phImage, None))
-			valTab.insert(0, CDisplayListItem('--- BEING WATCHED ---', 'BEING WATCHED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'EBONY8-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST POPULAR ---', 'MOST POPULAR VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'EBONY8-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'EBONY8-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- LATEST ---', 'LATEST UPDATES', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'EBONY8-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Being watched')), _('Being watched'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'EBONY8-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'EBONY8-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'EBONY8-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'EBONY8-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'EBONY8-search' == name:
@@ -11181,9 +11186,9 @@ class Host(CBaseHostClass, XXXParser):
 				phRate = self.cm.ph.getSearchGroups(item, '''tive"[>]([^"^']+?)[<]''', 1, True)[0].strip()
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos + '\nRating Positive: ' + phRate, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'NUDEZ-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- LATEST ---', 'LATEST VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'NUDEZ-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'NUDEZ-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST POPULAR ---', 'MOST POPULAR VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'NUDEZ-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'NUDEZ-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'NUDEZ-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'NUDEZ-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'NUDEZ-search' == name:
@@ -11242,9 +11247,9 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = self.cm.ph.getSearchGroups(item, '''src=["]([^"^']+?)["]''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'FREEPORNHQ-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- MOST RECENT ---', 'MOST RECENT VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-recent/'], 'FREEPORNHQ-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'FREEPORNHQ-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST POPULAR ---', 'MOST POPULAR VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'FREEPORNHQ-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most recent')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-recent/'], 'FREEPORNHQ-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'FREEPORNHQ-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'FREEPORNHQ-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'FREEPORNHQ-search' == name:
@@ -11298,9 +11303,9 @@ class Host(CBaseHostClass, XXXParser):
 				phRate = self.cm.ph.getSearchGroups(item, '''tive"[>](\n.+\n.+)[<]/''', 1, True)[0].strip()
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle) + '\n' + phVideos + '\nRating Positive: ' + phRate, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'PORNOREINO-clips', phImage, phImage))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- MOST RECENT ---', 'MOST RECENT VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-recent/'], 'PORNOREINO-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'PORNOREINO-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST POPULAR ---', 'MOST POPULAR VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'PORNOREINO-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most recent')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-recent/'], 'PORNOREINO-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'PORNOREINO-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'PORNOREINO-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'PORNOREINO-search' == name:
@@ -11359,9 +11364,9 @@ class Host(CBaseHostClass, XXXParser):
 				phVideos = self.cm.ph.getSearchGroups(item, '''text"[>]([^@]+?)[<]''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos + ' Videos', CDisplayListItem.TYPE_CATEGORY, [phUrl], 'WHORESHUB-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- LATEST ---', 'LATEST UPDATES', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'WHORESHUB-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'WHORESHUB-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST VIEWED ---', 'MOST VIEWED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'WHORESHUB-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'WHORESHUB-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'WHORESHUB-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'WHORESHUB-clips', siteLogo, None))
 			if next:
 				next = currUrl + str(next) + '/'
 				valTab.append(self.getMoreCatsItem(next, next, name))
@@ -11431,7 +11436,7 @@ class Host(CBaseHostClass, XXXParser):
 			except Exception:
 				printExc()
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- NEW ---', 'NEW VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/api/videos?sort=newest'], 'VEPORN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/api/videos?sort=newest'], 'VEPORN-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'VEPORN-search' == name:
@@ -11519,8 +11524,8 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = siteLogo
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'PORNXP-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- NEW ---', 'NEW VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/released/'], 'PORNXP-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- BEST ---', 'BEST VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best/'], 'PORNXP-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/released/'], 'PORNXP-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Best')), _('Best'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best/'], 'PORNXP-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'PORNXP-search' == name:
@@ -11582,9 +11587,9 @@ class Host(CBaseHostClass, XXXParser):
 				phRate = self.cm.ph.getSearchGroups(item, '''tive"[>]([^"^']+?)[<]/div''', 1, True)[0].strip()
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos + '\nRating Positive: ' + phRate, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'SEVEREPORN-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- LATEST ---', 'LATEST VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'SEVEREPORN-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'SEVEREPORN-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST VIEWED ---', 'MOST VIEWED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'SEVEREPORN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'SEVEREPORN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'SEVEREPORN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'SEVEREPORN-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'SEVEREPORN-search' == name:
@@ -11640,8 +11645,8 @@ class Host(CBaseHostClass, XXXParser):
 				phVideos = self.cm.ph.getSearchGroups(item, '''fwb"[>]([^"^#]+?)[<]/''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos + ' Videos', CDisplayListItem.TYPE_CATEGORY, [phUrl], 'PORNOFLIX-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- NEW ---', 'NEW VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'PORNOFLIX-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- PORNSTARS ---', 'PORNSTARS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/pornstars/'], 'PORNOFLIX-pornstars', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'PORNOFLIX-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Pornstars')), _('Pornstars'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/pornstars/'], 'PORNOFLIX-pornstars', siteLogo, None))
 			if next:
 				valTab.append(self.getMoreCatsItem(next.split('/')[-2], next, name))
 			return searchItems(valTab, True)
@@ -11717,10 +11722,10 @@ class Host(CBaseHostClass, XXXParser):
 				phVideos = self.cm.ph.getSearchGroups(item, '''videos"[>]([^"^#]+?)[<]/''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'NEPORN-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- NEW ---', 'NEW VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'NEPORN-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'NEPORN-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST VIEWED ---', 'MOST VIEWED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'NEPORN-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MODELS ---', 'MODELS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], 'NEPORN-models', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'NEPORN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'NEPORN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'NEPORN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Models')), _('Models'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], 'NEPORN-models', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'NEPORN-search' == name:
@@ -11802,12 +11807,12 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = self.cm.ph.getSearchGroups(item, '''src=["]([^"^#]+?)["]''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'PORNYTEEN-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- MOST RECENT ---', 'MOST RECENT VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], 'PORNYTEEN-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'PORNYTEEN-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST VIEWED ---', 'MOST VIEWED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'PORNYTEEN-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST DISCUSSED ---', 'MOST DISCUSSED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-discussed/'], 'PORNYTEEN-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- LONGEST ---', 'LONGEST VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'PORNYTEEN-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MODELS ---', 'MODELS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], 'PORNYTEEN-models', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most recent')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], 'PORNYTEEN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'PORNYTEEN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'PORNYTEEN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most discussed')), _('Most discussed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-discussed/'], 'PORNYTEEN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'PORNYTEEN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Models')), _('Models'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], 'PORNYTEEN-models', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'PORNYTEEN-search' == name:
@@ -11882,9 +11887,9 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = siteLogo
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'CUCKOLDPLACETUBE-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- MOST POPULAR ---', 'MOST POPULAR VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'CUCKOLDPLACETUBE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- LATEST ---', 'LATEST VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'CUCKOLDPLACETUBE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'CUCKOLDPLACETUBE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'CUCKOLDPLACETUBE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'CUCKOLDPLACETUBE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'CUCKOLDPLACETUBE-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'CUCKOLDPLACETUBE-search' == name:
@@ -11935,9 +11940,9 @@ class Host(CBaseHostClass, XXXParser):
 				phRate = self.cm.ph.getSearchGroups(item, '''span[>]([.0-9]+?)[<]''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideo + ' Videos\n' + phViews + ' Views\n' + phRate + ' Rates', CDisplayListItem.TYPE_CATEGORY, [phUrl], 'BADDIES-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- MOST RECENT ---', 'MOST RECENT VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/?videos_per_page=30&sort_by=post_date'], 'BADDIES-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST VIEWED ---', 'MOST VIEWED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/?videos_per_page=30&sort_by=video_viewed'], 'BADDIES-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- BEST RATED ---', 'BEST RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/?videos_per_page=30&sort_by=rating'], 'BADDIES-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most recent')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/?videos_per_page=30&sort_by=post_date'], 'BADDIES-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/?videos_per_page=30&sort_by=video_viewed'], 'BADDIES-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/?videos_per_page=30&sort_by=rating'], 'BADDIES-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'BADDIES-search' == name:
@@ -12012,9 +12017,9 @@ class Host(CBaseHostClass, XXXParser):
 				if phUrl:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'AMAZINGCUCKOLD-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- MOST POPULAR ---', 'MOST POPULAR VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'AMAZINGCUCKOLD-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- LATEST ---', 'LATEST VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'AMAZINGCUCKOLD-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'AMAZINGCUCKOLD-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'AMAZINGCUCKOLD-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'AMAZINGCUCKOLD-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'AMAZINGCUCKOLD-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'AMAZINGCUCKOLD-search' == name:
@@ -12075,8 +12080,8 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos + '\nRating Positive: ' + phRate, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'SHAREANYNUDES-clips', phImage, None))
 			if url.endswith('categories/'):
 				valTab.sort(key=lambda poz: poz.name)
-				valTab.insert(0, CDisplayListItem("--- LATEST ---", "NEW VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'SHAREANYNUDES-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'SHAREANYNUDES-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'SHAREANYNUDES-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'SHAREANYNUDES-clips', siteLogo, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				next = self.MAIN_URL + next
@@ -12169,8 +12174,8 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], '24PORN-clips', phImage, None))
 			if url.endswith('videos/'):
 				valTab.sort(key=lambda poz: poz.name)
-				valTab.insert(0, CDisplayListItem("--- NEW ---", "NEW VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new-videos/'], '24PORN-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem("--- BEST ---", "BEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best-videos/'], '24PORN-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new-videos/'], '24PORN-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Best')), _('Best'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best-videos/'], '24PORN-clips', siteLogo, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				next = self.MAIN_URL + next
@@ -12253,7 +12258,7 @@ class Host(CBaseHostClass, XXXParser):
 				phTitle = self.cm.ph.getSearchGroups(item, 'name"[>]([^"]+?)[<]', 1, True)[0].upper()
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'ADULTXHUB-clips', siteLogo, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- LATEST ---", "LATEST UPDATES", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'ADULTXHUB-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'ADULTXHUB-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'ADULTXHUB-search' == name:
@@ -12574,9 +12579,9 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos + ' videos\nRating Positive: ' + phRate, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'AVEXXX-clips', phImage, None))
 			if url.endswith('categories/'):
 				valTab.sort(key=lambda poz: poz.name)
-				valTab.insert(0, CDisplayListItem("--- MOST POPULAR ---", "MOST POPULAR VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'AVEXXX-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem("--- LATEST ---", "LATEST UPDATES", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'AVEXXX-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'AVEXXX-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'AVEXXX-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'AVEXXX-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'AVEXXX-clips', siteLogo, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				next = '%s/categories/%s/' % (self.MAIN_URL, str(next))
@@ -12665,9 +12670,9 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'BIGBUMBABES-clips', phImage, None))
 			if url.endswith('categories/'):
 				valTab.sort(key=lambda poz: poz.name)
-				valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/?sort_by=video_viewed'], 'BIGBUMBABES-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem("--- MOST FAVOURITED ---", "MOST FAVOURITED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/?sort_by=most_favourited'], 'BIGBUMBABES-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem("--- LONGEST ---", "LONGEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/?sort_by=duration'], 'BIGBUMBABES-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/?sort_by=video_viewed'], 'BIGBUMBABES-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Most favourited')), _('Most favourited'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/?sort_by=most_favourited'], 'BIGBUMBABES-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/?sort_by=duration'], 'BIGBUMBABES-clips', siteLogo, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				next = self.MAIN_URL + next
@@ -12747,9 +12752,9 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'BIGTITSXL-clips', phImage, None))
 			if url.endswith('categories/'):
 				valTab.sort(key=lambda poz: poz.name)
-				valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/?sort_by=video_viewed'], 'BIGTITSXL-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem("--- MOST FAVOURITED ---", "MOST FAVOURITED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/?sort_by=most_favourited'], 'BIGTITSXL-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem("--- LONGEST ---", "LONGEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/?sort_by=duration'], 'BIGTITSXL-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/?sort_by=video_viewed'], 'BIGTITSXL-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Most favourited')), _('Most favourited'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/?sort_by=most_favourited'], 'BIGTITSXL-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/?sort_by=duration'], 'BIGTITSXL-clips', siteLogo, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				next = self.MAIN_URL + next
@@ -12829,7 +12834,7 @@ class Host(CBaseHostClass, XXXParser):
 				phRate = self.cm.ph.getSearchGroups(item, r'[\s]([0-9%]+?)[\s]', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos + '\nRating Positive: ' + phRate, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'CHERRYGASP-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- Models ---', 'Top Rated Models', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], 'CHERRYGASP-models', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Models')), 'Top Rated Models', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], 'CHERRYGASP-models', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'CHERRYGASP-search' == name:
@@ -12951,9 +12956,9 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'DESIRESXL-clips', phImage, None))
 			if url.endswith('categories/'):
 				valTab.sort(key=lambda poz: poz.name)
-				valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'DESIRESXL-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem("--- MOST FAVOURITED ---", "MOST FAVOURITED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'DESIRESXL-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'DESIRESXL-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'DESIRESXL-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Most favourited')), _('Most favourited'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'DESIRESXL-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'DESIRESXL-clips', siteLogo, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				next = self.MAIN_URL + next
@@ -13033,9 +13038,9 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'EBONYPLAYZ-clips', phImage, None))
 			if url.endswith('categories/'):
 				valTab.sort(key=lambda poz: poz.name)
-				valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/?sort_by=video_viewed'], 'EBONYPLAYZ-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem("--- MOST FAVOURITED ---", "MOST FAVOURITED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/?sort_by=most_favourited'], 'EBONYPLAYZ-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem("--- LONGEST ---", "LONGEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/?sort_by=duration'], 'EBONYPLAYZ-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/?sort_by=video_viewed'], 'EBONYPLAYZ-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Most favourited')), _('Most favourited'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/?sort_by=most_favourited'], 'EBONYPLAYZ-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/?sort_by=duration'], 'EBONYPLAYZ-clips', siteLogo, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				next = self.MAIN_URL + next
@@ -13115,9 +13120,9 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'FUKXL-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
 			if url.endswith('es/'):
-				valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'FUKXL-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'FUKXL-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem("--- LATEST ---", "LATEST UPDATES", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'FUKXL-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'FUKXL-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'FUKXL-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'FUKXL-clips', siteLogo, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				next = self.MAIN_URL + next
@@ -13200,7 +13205,7 @@ class Host(CBaseHostClass, XXXParser):
 				Rate = self.cm.ph.getSearchGroups(item, r'[\s]([0-9%]+?)[\s]', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + Videos + '\nRating Positive: ' + Rate, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'HORNYFAP-clips', siteLogo, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'HORNYFAP-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'HORNYFAP-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'HORNYFAP-search' == name:
@@ -13279,8 +13284,8 @@ class Host(CBaseHostClass, XXXParser):
 				phTitle = self.cm.ph.getSearchGroups(item, 'name"[>]([^"]+?)[<]', 1, True)[0].upper()
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'JAPANESEMATURES-clips', siteLogo, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- BEING WATCHED ---", "VIDEOS BEING WATCHED", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'JAPANESEMATURES-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- NEW ---", "NEW VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'JAPANESEMATURES-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Being watched')), _('Being watched'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'JAPANESEMATURES-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'JAPANESEMATURES-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'JAPANESEMATURES-search' == name:
@@ -13357,7 +13362,7 @@ class Host(CBaseHostClass, XXXParser):
 				phTitle = self.cm.ph.getSearchGroups(item, 'name"[>]([^"]+?)[<]', 1, True)[0].upper()
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'JAPANESETEENS-clips', siteLogo, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- LATEST ---", "LATEST UPDATES", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'JAPANESETEENS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'JAPANESETEENS-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'JAPANESETEENS-search' == name:
@@ -13433,7 +13438,7 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + Videos + ' videos', CDisplayListItem.TYPE_CATEGORY, [phUrl], 'LESB8-clips', phImage, max_page))
 			if url.endswith('categories/'):
 				valTab.sort(key=lambda poz: poz.name)
-				valTab.insert(0, CDisplayListItem("--- LATEST ---", "LATEST UPDATES", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'LESB8-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'LESB8-clips', siteLogo, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				next = self.MAIN_URL + next
@@ -13512,9 +13517,9 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + Videos + ' videos\nRating Positive: ' + Rate, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'MOREHARDPORN-clips', phImage, None))
 			if url.endswith('es/'):
 				valTab.sort(key=lambda poz: poz.name)
-				valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'MOREHARDPORN-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'MOREHARDPORN-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem("--- LATEST ---", "LATEST UPDATES", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'MOREHARDPORN-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'MOREHARDPORN-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'MOREHARDPORN-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'MOREHARDPORN-clips', siteLogo, None))
 				valTab = searchItems(valTab, True)
 			if next_number:
 				next = "%s/categories/%s/" % (self.MAIN_URL, str(next_number))
@@ -13617,9 +13622,9 @@ class Host(CBaseHostClass, XXXParser):
 				phTitle = self.cm.ph.getSearchGroups(item, '"[>]([^"]+?)[<]/a', 1, True)[0].upper()
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'PORNTRY-clips', siteLogo, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'PORNTRY-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'PORNTRY-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- LATEST ---", "LATEST UPDATES", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'PORNTRY-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'PORNTRY-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'PORNTRY-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'PORNTRY-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'PORNTRY-search' == name:
@@ -13781,8 +13786,8 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'REDPORN-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
 			if url.endswith('tubes/'):
-				valTab.insert(0, CDisplayListItem("--- BEST ---", "BEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best'], 'REDPORN-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem("--- NEW ---", "NEW VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new'], 'REDPORN-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Best')), _('Best'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best'], 'REDPORN-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new'], 'REDPORN-clips', siteLogo, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				next = "%s%s" % (self.MAIN_URL, next)
@@ -13872,11 +13877,11 @@ class Host(CBaseHostClass, XXXParser):
 				max_page = (int(Videos) + limit - 1) // limit
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + Videos + ' videos', CDisplayListItem.TYPE_CATEGORY, [phUrl], 'SHEMALETUBE-clips', phImage, max_page))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- MOST POPULAR ---", "MOST POPULAR VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/all/all-popular.html'], 'SHEMALETUBE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- MOST RECENT ---", "MOST RECENT VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/all/all-recent.html'], 'SHEMALETUBE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/all/all-view.html'], 'SHEMALETUBE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/all/all-rate.html'], 'SHEMALETUBE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- LONGEST ---", "LONGEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/all/all-length.html'], 'SHEMALETUBE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/all/all-popular.html'], 'SHEMALETUBE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most recent')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/all/all-recent.html'], 'SHEMALETUBE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/all/all-view.html'], 'SHEMALETUBE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/all/all-rate.html'], 'SHEMALETUBE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/all/all-length.html'], 'SHEMALETUBE-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'SHEMALETUBE-search' == name:
@@ -13951,10 +13956,10 @@ class Host(CBaseHostClass, XXXParser):
 				Videos = self.cm.ph.getSearchGroups(item, '[>]([0-9]+?)[<]/span', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + Videos + ' video(s)', CDisplayListItem.TYPE_CATEGORY, [phUrl], 'THROATLUST-clips', siteLogo, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=most-viewed'], 'THROATLUST-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- NEW ---", "NEW VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'THROATLUST-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- POPULAR ---", "POPULAR VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=popular'], 'THROATLUST-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- LONGEST ---", "LONGEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=longest'], 'THROATLUST-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=most-viewed'], 'THROATLUST-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'THROATLUST-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=popular'], 'THROATLUST-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=longest'], 'THROATLUST-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'THROATLUST-search' == name:
@@ -14038,10 +14043,10 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'ZZZTUBE-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
 			if url.endswith('categories/'):
-				valTab.insert(0, CDisplayListItem("--- CHANNELS ---", "CHANNELS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/channels/'], 'ZZZTUBE-channels', siteLogo, None))
-				valTab.insert(0, CDisplayListItem("--- BEST ---", "BEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best'], 'ZZZTUBE-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem("--- NEW ---", "NEW VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest'], 'ZZZTUBE-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem("--- HOT ---", "HOT VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/hot/'], 'ZZZTUBE-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Channels')), _('Channels'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/channels/'], 'ZZZTUBE-channels', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Best')), _('Best'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best'], 'ZZZTUBE-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest'], 'ZZZTUBE-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Hot')), _('Hot'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/hot/'], 'ZZZTUBE-clips', siteLogo, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				next = "%s%s" % (self.MAIN_URL, next)
@@ -14148,8 +14153,8 @@ class Host(CBaseHostClass, XXXParser):
 			for phUrl, phTitle in re.findall(r'''menu-item-object-genres[^"]*"><a href="([^"]+)">([^<]+)</a>''', data):
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'PANDAMOVIE-clips', siteLogo, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Most Viewed ---", "Most Viewed", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed'], 'PANDAMOVIE-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Latest ---", "Latest Movies", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/'], 'PANDAMOVIE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed'], 'PANDAMOVIE-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/'], 'PANDAMOVIE-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'PANDAMOVIE-search' == name:
@@ -14212,7 +14217,7 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = self.cm.ph.getSearchGroups(item, '''src=['"]([^"^#]+?)['"]''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'BEAUTYMOVIES-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- LATEST ---', 'LATEST VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/en/'], 'BEAUTYMOVIES-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/en/'], 'BEAUTYMOVIES-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'BEAUTYMOVIES-search' == name:
@@ -14263,12 +14268,12 @@ class Host(CBaseHostClass, XXXParser):
 				phVideos = self.cm.ph.getSearchGroups(item, '''play">.+\n.+[ ]([0-9].{,7})''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos + ' Videos', CDisplayListItem.TYPE_CATEGORY, [phUrl], 'XXBRITS-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- LATEST ---', 'LATEST VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-videos/?mode=async&function=get_block&block_id=list_videos_latest_videos_list&sort_by=post_date&from=1'], 'XXBRITS-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-videos/?mode=async&function=get_block&block_id=list_videos_latest_videos_list&sort_by=rating&from=1'], 'XXBRITS-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- LONGEST ---', 'LONGEST VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-videos/?mode=async&function=get_block&block_id=list_videos_latest_videos_list&sort_by=duration&from=1'], 'XXBRITS-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST VIEWED ---', 'MOST VIEWED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-videos/?mode=async&function=get_block&block_id=list_videos_latest_videos_list&sort_by=video_viewed&from=1'], 'XXBRITS-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST FAVOURITED ---', 'MOST FAVOURITED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-videos/?mode=async&function=get_block&block_id=list_videos_latest_videos_list&sort_by=most_favourited&from=1'], 'XXBRITS-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST COMMENTED ---', 'MOST COMMENTED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-videos/?mode=async&function=get_block&block_id=list_videos_latest_videos_list&sort_by=most_commented&from=1'], 'XXBRITS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-videos/?mode=async&function=get_block&block_id=list_videos_latest_videos_list&sort_by=post_date&from=1'], 'XXBRITS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-videos/?mode=async&function=get_block&block_id=list_videos_latest_videos_list&sort_by=rating&from=1'], 'XXBRITS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-videos/?mode=async&function=get_block&block_id=list_videos_latest_videos_list&sort_by=duration&from=1'], 'XXBRITS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-videos/?mode=async&function=get_block&block_id=list_videos_latest_videos_list&sort_by=video_viewed&from=1'], 'XXBRITS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most favourited')), _('Most favourited'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-videos/?mode=async&function=get_block&block_id=list_videos_latest_videos_list&sort_by=most_favourited&from=1'], 'XXBRITS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most commented')), _('Most commented'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-videos/?mode=async&function=get_block&block_id=list_videos_latest_videos_list&sort_by=most_commented&from=1'], 'XXBRITS-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'XXBRITS-search' == name:
@@ -14338,8 +14343,8 @@ class Host(CBaseHostClass, XXXParser):
 				phUrl = self.MAIN_URL + self.cm.ph.getSearchGroups(item, '''['"]([^"^#]+?)['"]''', 1, True)[0]
 				phImage = siteLogo
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'HDPUSSY-clips', phImage, None))
-			valTab.insert(0, CDisplayListItem('--- NEW ---', 'NEW VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new/'], 'HDPUSSY-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- BEST ---', 'BEST VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best/'], 'HDPUSSY-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new/'], 'HDPUSSY-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Best')), _('Best'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best/'], 'HDPUSSY-clips', siteLogo, None))
 			valTab.sort(key=lambda poz: poz.name)
 			return valTab
 
@@ -14389,10 +14394,10 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = self.cm.ph.getSearchGroups(item, '''src=['"]([^"^#]+?)['"]''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'CAMBEAUTIES-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- LATEST ---', 'LATEST VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=latest'], 'CAMBEAUTIES-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- LONGEST ---', 'LONGEST VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=longest'], 'CAMBEAUTIES-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- POPULAR ---', 'POPULAR VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=popular'], 'CAMBEAUTIES-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- RANDOM ---', 'RANDOM VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=random'], 'CAMBEAUTIES-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=latest'], 'CAMBEAUTIES-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=longest'], 'CAMBEAUTIES-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=popular'], 'CAMBEAUTIES-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Random')), _('Random'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=random'], 'CAMBEAUTIES-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'CAMBEAUTIES-search' == name:
@@ -14444,10 +14449,10 @@ class Host(CBaseHostClass, XXXParser):
 				if phVideos:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'XPAJA-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- MOST RECENT ---', 'MOST RECENT VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos'], 'XPAJA-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- LONGEST ---', 'LONGEST VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest'], 'XPAJA-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated'], 'XPAJA-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- RECOMMENDED ---', 'RECOMMENDED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/recommended'], 'XPAJA-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most recent')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos'], 'XPAJA-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest'], 'XPAJA-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated'], 'XPAJA-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Recommended')), _('Recommended'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/recommended'], 'XPAJA-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'XPAJA-search' == name:
@@ -14487,13 +14492,13 @@ class Host(CBaseHostClass, XXXParser):
 			self.defaultParams = {'header': self.HTTP_HEADER, 'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE}
 			sts, data = self.get_Page(url, self.defaultParams)
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- MOST RECENT ---', 'MOST RECENT VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?type=public'], 'XRARES-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- BEING WATCHED ---', 'BEING WATCHED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?type=public&o=bw'], 'XRARES-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?type=public&o=tr'], 'XRARES-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST VIEWED ---', 'MOST VIEWED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?type=public&o=mv'], 'XRARES-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- MOST COMMENTED ---', 'MOST COMMENTED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?type=public&o=md'], 'XRARES-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- TOP FAVORITES ---', 'TOP FAVORITES VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?type=public&o=tf'], 'XRARES-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- LONGEST ---', 'LONGEST VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?type=public&o=lg'], 'XRARES-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most recent')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?type=public'], 'XRARES-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Being watched')), _('Being watched'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?type=public&o=bw'], 'XRARES-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?type=public&o=tr'], 'XRARES-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?type=public&o=mv'], 'XRARES-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most commented')), _('Most commented'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?type=public&o=md'], 'XRARES-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most favourited')), _('Most favourited'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?type=public&o=tf'], 'XRARES-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?type=public&o=lg'], 'XRARES-clips', siteLogo, None))
 			data = data.split('class="col-sm-6')
 			if len(data):
 				del data[0]
@@ -14552,11 +14557,11 @@ class Host(CBaseHostClass, XXXParser):
 				if phTitle:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'XTITS-clips', phImage, None))
 			if url.endswith('categories/'):
-				valTab.insert(0, CDisplayListItem('--- NEWEST ---', 'NEWEST VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'XTITS-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem('--- BEST ---', 'BEST VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'XTITS-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem('--- MOST VIEWED ---', 'MOST VIEWED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'XTITS-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem('--- MOST COMMENTED ---', 'MOST COMMENTED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-commented/'], 'XTITS-clips', siteLogo, None))
-				valTab.insert(0, CDisplayListItem('--- MODELS ---', 'MODELS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], 'XTITS-models', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'XTITS-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Best')), _('Best'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'XTITS-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'XTITS-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Most commented')), _('Most commented'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-commented/'], 'XTITS-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Models')), _('Models'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], 'XTITS-models', siteLogo, None))
 				valTab.sort(key=lambda poz: poz.name)
 				valTab = searchItems(valTab, True)
 			if next == last:
@@ -14648,7 +14653,7 @@ class Host(CBaseHostClass, XXXParser):
 				Desc = self.cm.ph.getSearchGroups(item, '''alt=["]([^ß]+?)["]''', 1, True)[0].upper()
 				if phUrl and phTitle and 'themes' not in phUrl:
 					valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + Desc, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'TERKNL-clips', phImage, None))
-			valTab.insert(0, CDisplayListItem("--- LATEST ---", "TODAY'S AMATEUR VIDEO'S", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], "TERKNL-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), "TODAY'S AMATEUR VIDEO'S", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], "TERKNL-clips", siteLogo, None))
 			valTab.sort(key=lambda poz: poz.name)
 			return searchItems(valTab, True)
 
@@ -14713,10 +14718,10 @@ class Host(CBaseHostClass, XXXParser):
 					phImage = siteLogo
 				phImage = urlparser.decorateUrl(phImage, {'Referer': url})
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'HARDSEXVIDS-clips', phImage, None))
-			valTab.insert(0, CDisplayListItem("--- LATEST ---", "NEW SEX VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], "HARDSEXVIDS-clips", siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], "HARDSEXVIDS-clips", siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], "HARDSEXVIDS-clips", siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- MODELS ---", "TOP RATED MODELS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], "HARDSEXVIDS-models", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), "NEW SEX VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], "HARDSEXVIDS-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], "HARDSEXVIDS-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], "HARDSEXVIDS-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Models')), "TOP RATED MODELS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], "HARDSEXVIDS-models", siteLogo, None))
 			valTab.sort(key=lambda poz: poz.name)
 			return searchItems(valTab, True)
 
@@ -14797,9 +14802,9 @@ class Host(CBaseHostClass, XXXParser):
 				phTitle = self.cm.ph.getSearchGroups(item, '''alt=["]([^ß]+?)["]''', 1, True)[0].upper()
 				phImage = self.MAIN_URL + self.cm.ph.getSearchGroups(item, '''src=["]([^"^#]+?)["]''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'AMATEURRED-clips', phImage, None))
-			valTab.insert(0, CDisplayListItem("--- MOST RECENT ---", "MOST RECENT VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?o=mr'], "AMATEURRED-clips", siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?o=mv'], "AMATEURRED-clips", siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?o=tr'], "AMATEURRED-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most recent')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?o=mr'], "AMATEURRED-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?o=mv'], "AMATEURRED-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?o=tr'], "AMATEURRED-clips", siteLogo, None))
 			valTab.sort(key=lambda poz: poz.name)
 			return searchItems(valTab, True)
 
@@ -14853,7 +14858,7 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = strwithmeta(phImage)
 				phVideos = self.cm.ph.getSearchGroups(item, '''div[>]([0-9]+?)[<]''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos + ' videos', CDisplayListItem.TYPE_CATEGORY, [phUrl], 'YOUNG SEX TUBE-clips', phImage, None))
-			valTab.insert(0, CDisplayListItem("--- HOME ---", "YOUNG LEGAL TEENS XXX VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], "YOUNG SEX TUBE-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Home')), "YOUNG LEGAL TEENS XXX VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], "YOUNG SEX TUBE-clips", siteLogo, None))
 			valTab.sort(key=lambda poz: poz.name)
 			return searchItems(valTab, True)
 
@@ -14946,10 +14951,10 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = self.cm.ph.getSearchGroups(item, '''src=["]([^ß]+?)["]''', 1, True)[0]
 				Videos = self.cm.ph.getSearchGroups(item, '''videos"[>]([^ß]+?)[<]''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + Videos, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'PORNVIDEOSBEST-clips', phImage, None))
-			valTab.insert(0, CDisplayListItem("--- LATEST ---", "LATEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest/'], "PORNVIDEOSBEST-clips", siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- BEST ---", "BEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best/'], "PORNVIDEOSBEST-clips", siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], "PORNVIDEOSBEST-clips", siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- MODELS ---", "MODELS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/?mode=async&function=get_block&block_id=list_categories_categories_list&sort_by=total_videos&from=1'], "PORNVIDEOSBEST-models", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest/'], "PORNVIDEOSBEST-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Best')), _('Best'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best/'], "PORNVIDEOSBEST-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], "PORNVIDEOSBEST-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Models')), _('Models'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/?mode=async&function=get_block&block_id=list_categories_categories_list&sort_by=total_videos&from=1'], "PORNVIDEOSBEST-models", siteLogo, None))
 			valTab.sort(key=lambda poz: poz.name)
 			if url[-2].isalpha():
 				valTab = searchItems(valTab, True)
@@ -15089,7 +15094,7 @@ class Host(CBaseHostClass, XXXParser):
 				Videos = self.cm.ph.getSearchGroups(item, '''videos"[>]([^ß]+?)[<]''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + Videos + ' videos', CDisplayListItem.TYPE_CATEGORY, [phUrl], 'ORIENTAL SEX-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- BEST ---", "BEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/tube/1.html'], "ORIENTAL SEX-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Best')), _('Best'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/tube/1.html'], "ORIENTAL SEX-clips", siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'ORIENTAL SEX-search' == name:
@@ -15141,7 +15146,7 @@ class Host(CBaseHostClass, XXXParser):
 				phTitle = self.cm.ph.getSearchGroups(item, '''"[>]([^ß]+?)[<]''', 1, True)[0].upper()
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], '69TEENTUBE-clips', siteLogo, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- BEST ---", "BEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/teen-videos/'], "69TEENTUBE-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Best')), _('Best'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/teen-videos/'], "69TEENTUBE-clips", siteLogo, None))
 			return searchItems(valTab, True)
 
 		if '69TEENTUBE-search' == name:
@@ -15193,9 +15198,9 @@ class Host(CBaseHostClass, XXXParser):
 				Videos = self.cm.ph.getSearchGroups(item, r'''[\[]([^ß]+?)[\]]</em''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + Videos, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'MILFFOX-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- POPULAR ---", "POPULAR VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], "MILFFOX-clips", siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- RECENT ---", "LAST ADDED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?o=1'], "MILFFOX-clips", siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- LONGEST ---", "LONGEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?o=2'], "MILFFOX-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], "MILFFOX-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), "LAST ADDED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?o=1'], "MILFFOX-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?o=2'], "MILFFOX-clips", siteLogo, None))
 			if url[-2].isalpha():
 				valTab = searchItems(valTab, True)
 			if next:
@@ -15255,11 +15260,11 @@ class Host(CBaseHostClass, XXXParser):
 				phTitle = self.cm.ph.getSearchGroups(item, r'/"[>]([A-Za-z\s]+?)[<]/a', 1, True)[0].upper()
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], '9VIDS-clips', siteLogo, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- NEWEST ---", "LATEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=latest'], "9VIDS-clips", siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- POPULAR ---", "POPULAR VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=popular'], "9VIDS-clips", siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- LONGEST ---", "LONGEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=longest'], "9VIDS-clips", siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=most-viewed'], "9VIDS-clips", siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- RANDOM ---", "RANDOM VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=random'], "9VIDS-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=latest'], "9VIDS-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=popular'], "9VIDS-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=longest'], "9VIDS-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=most-viewed'], "9VIDS-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Random')), _('Random'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?filter=random'], "9VIDS-clips", siteLogo, None))
 			return searchItems(valTab, True)
 
 		if '9VIDS-search' == name:
@@ -15360,12 +15365,12 @@ class Host(CBaseHostClass, XXXParser):
 				phRate = self.cm.ph.getSearchGroups(item, r'''tion">[\s]([\0-9%]+?)[<]''', 1, True)[0].strip()
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos + '\nRating Positive: ' + phRate, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'PORNDR-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- NEWEST ---", "LATEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], "PORNDR-clips", siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], "PORNDR-clips", siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- MOST POPULAR ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], "PORNDR-clips", siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- RECOMMENDED ---", "RECOMMENDED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/recommended/'], "PORNDR-clips", siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- MOST COMMENTED ---", "MOST COMMENTED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most_commented/'], "PORNDR-clips", siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- RANDOM ---", "RANDOM VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/random/'], "PORNDR-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], "PORNDR-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], "PORNDR-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], "PORNDR-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Recommended')), _('Recommended'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/recommended/'], "PORNDR-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most commented')), _('Most commented'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most_commented/'], "PORNDR-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Random')), _('Random'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/random/'], "PORNDR-clips", siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'PORNDR-search' == name:
@@ -15499,9 +15504,9 @@ class Host(CBaseHostClass, XXXParser):
 				phRate = self.cm.ph.getSearchGroups(item, r'''tive">[\s]([\0-9%]+?)[<]''', 1, True)[0].strip()
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos + '\nRating Positive: ' + phRate, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'MOREAMATEURS-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- NEWEST ---", "LATEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], "MOREAMATEURS-clips", siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], "MOREAMATEURS-clips", siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- MOST POPULAR ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], "MOREAMATEURS-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], "MOREAMATEURS-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], "MOREAMATEURS-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], "MOREAMATEURS-clips", siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'MOREAMATEURS-search' == name:
@@ -15568,10 +15573,10 @@ class Host(CBaseHostClass, XXXParser):
 				phVideos = self.cm.ph.getSearchGroups(item, '''ing"[>]([^ß]+?)[<]''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'FUQER-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- NEWEST ---", "LATEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], "FUQER-clips", siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], "FUQER-clips", siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], "FUQER-clips", siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- LONGEST ---", "LONGEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], "FUQER-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], "FUQER-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], "FUQER-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], "FUQER-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], "FUQER-clips", siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'FUQER-search' == name:
@@ -15670,9 +15675,9 @@ class Host(CBaseHostClass, XXXParser):
 				catUrl = urljoin(self.MAIN_URL + '/', decodeHtml(nextCat).replace('&amp;', '&'))
 
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- LATEST ---', 'LATEST VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'BLOWJOBIT-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- POPULAR ---', 'POPULAR VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/q?orderBy=views&sort=desc'], 'BLOWJOBIT-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem('--- LONGEST ---', 'LONGEST VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/q?orderBy=duration&sort=desc'], 'BLOWJOBIT-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'BLOWJOBIT-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/q?orderBy=views&sort=desc'], 'BLOWJOBIT-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/q?orderBy=duration&sort=desc'], 'BLOWJOBIT-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'BLOWJOBIT-search' == name:
@@ -15752,7 +15757,7 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'AMATEURCOUGAR-clips', phImage, None))
 
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- HOME ---", "HOME VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], "AMATEURCOUGAR-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Home')), _('Home'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], "AMATEURCOUGAR-clips", siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'AMATEURCOUGAR-search' == name:
@@ -15887,9 +15892,9 @@ class Host(CBaseHostClass, XXXParser):
 				if 'Videos' in phTitle:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'FIRSTANALVIDEOS-clips', 'phImage', None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- LATEST ---", "LATEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'latest-updates/'], 'FIRSTANALVIDEOS-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'top-rated/'], 'FIRSTANALVIDEOS-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- MOST POPULAR ---", "MOST POPULAR VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'most-popular/'], 'FIRSTANALVIDEOS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'latest-updates/'], 'FIRSTANALVIDEOS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'top-rated/'], 'FIRSTANALVIDEOS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'most-popular/'], 'FIRSTANALVIDEOS-clips', siteLogo, None))
 			return valTab
 		if 'FIRSTANALVIDEOS-clips' == name:
 			COOKIEFILE = join(GetCookieDir(), 'firstanalvideos.cookie')
@@ -15939,9 +15944,9 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = self.cm.ph.getSearchGroups(item, '''data-src=['"]([^"^']+?)['"]''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'PORNDROIDS-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Latest Updates ---", "Latest Updates", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'PORNDROIDS-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Channels ---", "Channels", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/channels/'], 'PORNDROIDS-channels', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Pornstars ---", "Pornstars", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/pornstars'], 'PORNDROIDS-pornstars', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest updates')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'PORNDROIDS-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Channels')), _('Channels'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/channels/'], 'PORNDROIDS-channels', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Pornstars')), _('Pornstars'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/pornstars'], 'PORNDROIDS-pornstars', siteLogo, None))
 			valTab = searchItems(valTab, True)
 			if next:
 				valTab.append(self.getMoreCatsItem(next.split('=')[-1], next, name))
@@ -16037,9 +16042,9 @@ class Host(CBaseHostClass, XXXParser):
 				if phUrl:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'lovehomeporn-clips', '', None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Most Viewed ---", "Most Viewed", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'videos?o=mv'], 'lovehomeporn-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Top Rated ---", "Top Rated", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'videos?o=tr'], 'lovehomeporn-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Most Recent ---", "Most Recent", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'videos?o=mr'], 'lovehomeporn-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'videos?o=mv'], 'lovehomeporn-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'videos?o=tr'], 'lovehomeporn-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most recent')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'videos?o=mr'], 'lovehomeporn-clips', '', None))
 			return searchItems(valTab, True)
 		if 'lovehomeporn-search' == name:
 			return self.listsItems(-1, 'https://lovehomeporn.com/search?search_type=videos&search_query=%s' % url.replace(' ', '+'), 'lovehomeporn-clips')
@@ -16096,8 +16101,8 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(title, title, CDisplayListItem.TYPE_CATEGORY, [url], 'EROPROFILE-clips', '', None))
 			valTab.sort(key=lambda poz: poz.name)
 			valTab.insert(0, CDisplayListItem("--- Fun Videos ---", "Fun Videos", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + "/m/videos/search?niche=17"], 'EROPROFILE-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Popular Videos ---", "Popular Videos", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + "/m/videos/popular"], 'EROPROFILE-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Videos Home ---", "Videos Home", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + "/m/videos/home"], 'EROPROFILE-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + "/m/videos/popular"], 'EROPROFILE-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Home')), _('Home'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + "/m/videos/home"], 'EROPROFILE-clips', '', None))
 			return searchItems(valTab, True)
 		if 'EROPROFILE-search' == name:
 			return self.listsItems(-1, 'https://www.eroprofile.com/m/videos/search?niche=13.14.12.19.27.25.5.11.18.20.23.24.10.26.17.7.15.6.30.16.28.9.8.32.33.34&text=%s&pnum=1' % url.replace(' ', '+'), 'EROPROFILE-clips')
@@ -16152,9 +16157,9 @@ class Host(CBaseHostClass, XXXParser):
 				if phUrl:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'absoluporn-clips', '', None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Most Viewed ---", "Most Viewed", CDisplayListItem.TYPE_CATEGORY, ['http://www.absoluporn.com/en/wall-main-1.html'], 'absoluporn-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Top Rated ---", "Top Rated", CDisplayListItem.TYPE_CATEGORY, ['http://www.absoluporn.com/en/wall-note-1.html'], 'absoluporn-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Most Recent ---", "Most Recent", CDisplayListItem.TYPE_CATEGORY, ['http://www.absoluporn.com/en/wall-date-1.html'], 'absoluporn-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, ['http://www.absoluporn.com/en/wall-main-1.html'], 'absoluporn-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, ['http://www.absoluporn.com/en/wall-note-1.html'], 'absoluporn-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most recent')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, ['http://www.absoluporn.com/en/wall-date-1.html'], 'absoluporn-clips', '', None))
 			return searchItems(valTab, True)
 		if 'absoluporn-search' == name:
 			return self.listsItems(-1, 'http://www.absoluporn.com/en/search-%s-1.html' % url.replace(' ', '+'), 'absoluporn-clips')
@@ -16215,7 +16220,7 @@ class Host(CBaseHostClass, XXXParser):
 				if phUrl:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'porngo-clips', '', None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Most Recent ---", "Most Recent", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'porngo-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most recent')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'porngo-clips', '', None))
 			return searchItems(valTab, True)
 		if 'porngo-search' == name:
 			return self.listsItems(-1, 'https://www.porngo.com/search/%s/' % url.replace(' ', '-'), 'porngo-clips')
@@ -16270,7 +16275,7 @@ class Host(CBaseHostClass, XXXParser):
 				if phUrl:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'anybunny-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- New ---", "New", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new/1'], 'anybunny-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new/1'], 'anybunny-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'anybunny-search' == name:
 			return self.listsItems(-1, 'https://anybunny.org/top/%s' % url.replace(' ', '+'), 'anybunny-clips')
@@ -16372,11 +16377,11 @@ class Host(CBaseHostClass, XXXParser):
 				if phUrl:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'ZIPORN-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Random Videos ---", "Random Videos", CDisplayListItem.TYPE_CATEGORY, ['https://ziporn.com/'], 'ZIPORN-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Latest Videos ---", "Latest Videos", CDisplayListItem.TYPE_CATEGORY, ['https://ziporn.com/?filter=latest'], 'ZIPORN-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Most Viewed Videos ---", "Most Viewed Videos", CDisplayListItem.TYPE_CATEGORY, ['https://ziporn.com/?filter=most-viewed'], 'ZIPORN-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Longest Videos ---", "Longest Videos", CDisplayListItem.TYPE_CATEGORY, ['https://ziporn.com/?filter=longest'], 'ZIPORN-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Popular Videos ---", "Popular Videos", CDisplayListItem.TYPE_CATEGORY, ['https://ziporn.com/?filter=popular'], 'ZIPORN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Random')), _('Random'), CDisplayListItem.TYPE_CATEGORY, ['https://ziporn.com/'], 'ZIPORN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, ['https://ziporn.com/?filter=latest'], 'ZIPORN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, ['https://ziporn.com/?filter=most-viewed'], 'ZIPORN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, ['https://ziporn.com/?filter=longest'], 'ZIPORN-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Popular'), CDisplayListItem.TYPE_CATEGORY, ['https://ziporn.com/?filter=popular'], 'ZIPORN-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'ZIPORN-search' == name:
@@ -16428,7 +16433,7 @@ class Host(CBaseHostClass, XXXParser):
 				if phUrl and phTitle:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'hqporner-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Newest ---", "Newest", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'hqporner-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'hqporner-clips', siteLogo, None))
 			valTab.insert(0, CDisplayListItem("--- Most Viewed (Week) ---", "Most Viewed (Week)", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top/week'], 'hqporner-clips', siteLogo, None))
 			valTab.insert(0, CDisplayListItem("--- Most Viewed (Month) ---", "Most Viewed (Month)", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top/month'], 'hqporner-clips', siteLogo, None))
 			valTab.insert(0, CDisplayListItem("--- All Time Best ---", "All Time Best", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top'], 'hqporner-clips', siteLogo, None))
@@ -16512,10 +16517,10 @@ class Host(CBaseHostClass, XXXParser):
 				if phUrl and phTitle:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'SHOOSHTIME-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Most Viewed ---", "Most Viewed Videos", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/viewed'], 'SHOOSHTIME-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Best ---", "Best Videos", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/rated/'], 'SHOOSHTIME-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Most Commented ---", "Most Commented Videos", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/comments'], 'SHOOSHTIME-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Recommended ---", "Recommended Videos", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/recommended'], 'SHOOSHTIME-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/viewed'], 'SHOOSHTIME-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Best')), _('Best'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/rated/'], 'SHOOSHTIME-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most commented')), _('Most commented'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/comments'], 'SHOOSHTIME-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Recommended')), _('Recommended'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/recommended'], 'SHOOSHTIME-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'SHOOSHTIME-search' == name:
 			return self.listsItems(-1, 'https://shooshtime.com/search/%s' % url.replace(' ', '-'), 'SHOOSHTIME-clips')
@@ -16572,7 +16577,7 @@ class Host(CBaseHostClass, XXXParser):
 				if phUrl and phTitle:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'cumlouder-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Channels ---", "channels", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/channels/'], 'cumlouder-girls', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Channels')), _('Channels'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/channels/'], 'cumlouder-girls', '', None))
 			valTab.insert(0, CDisplayListItem("--- Series ---", "series", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/series/'], 'cumlouder-girls', '', None))
 			valTab.insert(0, CDisplayListItem("--- Girls ---", "girls", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/girls/'], 'cumlouder-girls', '', None))
 			return searchItems(valTab, True)
@@ -16707,11 +16712,11 @@ class Host(CBaseHostClass, XXXParser):
 					phUrl = self.MAIN_URL + phUrl
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'watchpornx-clips', siteLogo, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Pornstars ---", "Pornstars", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'watchpornx-years', siteLogo, "Pornstars"))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Pornstars')), _('Pornstars'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'watchpornx-years', siteLogo, "Pornstars"))
 			valTab.insert(0, CDisplayListItem("--- Years ---", "Years", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'watchpornx-years', siteLogo, "Years"))
-			valTab.insert(0, CDisplayListItem("--- Studios ---", "Studios", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'watchpornx-years', siteLogo, "Studios"))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Studios')), _('Studios'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'watchpornx-years', siteLogo, "Studios"))
 			valTab.insert(0, CDisplayListItem("--- Clips & Scenes ---", "Clips & Scenes", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/scenes'], 'watchpornx-clips', siteLogo, self.MAIN_URL))
-			valTab.insert(0, CDisplayListItem("--- New ---", "New", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'watchpornx-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'watchpornx-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'watchpornx-search' == name:
 			return self.listsItems(-1, 'https://watchpornx.com/?s=%s' % url.replace(' ', '+'), 'watchpornx-clips')
@@ -16803,9 +16808,9 @@ class Host(CBaseHostClass, XXXParser):
 				if phTitle:
 					valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'PORN300-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Pornstars ---", "Pornstars", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/pornstars'], 'PORN300-pornstars', '', None))
-			valTab.insert(0, CDisplayListItem("--- Channels ---", "Channels", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/channels/'], 'PORN300-channels', '', None))
-			valTab.insert(0, CDisplayListItem("--- Home ---", "Home", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'PORN300-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Pornstars')), _('Pornstars'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/pornstars'], 'PORN300-pornstars', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Channels')), _('Channels'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/channels/'], 'PORN300-channels', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Home')), _('Home'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'PORN300-clips', '', None))
 			valTab = searchItems(valTab, True)
 			if next_page:
 				valTab.append(self.getMoreCatsItem(next_page.split('=')[-1], next_page, name))
@@ -16909,9 +16914,9 @@ class Host(CBaseHostClass, XXXParser):
 				if phTitle:
 					valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle) + '\n' + Videos, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'JIZZBUNKER-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Popular ---", "Popular", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/straight/popular7'], 'JIZZBUNKER-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Newest ---", "Newest", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/newest'], 'JIZZBUNKER-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Trending ---", "Trending", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/straight/trending'], 'JIZZBUNKER-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/straight/popular7'], 'JIZZBUNKER-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/newest'], 'JIZZBUNKER-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Trending')), _('Trending'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/straight/trending'], 'JIZZBUNKER-clips', '', None))
 			return searchItems(valTab, True)
 		if 'JIZZBUNKER-search' == name:
 			return self.listsItems(-1, 'https://jizzbunker.com/search?query=%s' % url.replace(' ', '+'), 'JIZZBUNKER-clips')
@@ -16972,8 +16977,8 @@ class Host(CBaseHostClass, XXXParser):
 					valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl + '?sort_by=post_date'], 'ANYPORN-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
 			valTab.insert(0, CDisplayListItem("--- HD ---", "HD", CDisplayListItem.TYPE_CATEGORY, ['https://anyporn.com/categories/hd/?sort_by=post_date'], 'ANYPORN-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Most Viewed ---", "Most Viewed", CDisplayListItem.TYPE_CATEGORY, ['https://anyporn.com/popular/?sort_by=post_date'], 'ANYPORN-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Latest ---", "Latest", CDisplayListItem.TYPE_CATEGORY, ['https://anyporn.com/newest/?sort_by=post_date'], 'ANYPORN-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, ['https://anyporn.com/popular/?sort_by=post_date'], 'ANYPORN-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, ['https://anyporn.com/newest/?sort_by=post_date'], 'ANYPORN-clips', '', None))
 			return searchItems(valTab, True)
 		if 'ANYPORN-search' == name:
 			return self.listsItems(-1, 'https://anyporn.com/search/%s/' % url.replace(' ', '+'), 'ANYPORN-clips')
@@ -17052,10 +17057,10 @@ class Host(CBaseHostClass, XXXParser):
 				if phTitle:
 					valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle) + '\n' + Movies, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'ANYSEX-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- New Videos ---", "New Videos", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'videos/new/'], 'ANYSEX-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Best ---", "Best Videos", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'videos/best/'], 'ANYSEX-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Most Viewed ---", "Most Viewed Videos", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'videos/most-viewed/'], 'ANYSEX-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Top Rated ---", "Top Rated Videos", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'videos/top-rated/'], 'ANYSEX-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'videos/new/'], 'ANYSEX-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Best')), _('Best'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'videos/best/'], 'ANYSEX-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'videos/most-viewed/'], 'ANYSEX-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'videos/top-rated/'], 'ANYSEX-clips', siteLogo, None))
 			valTab.insert(0, CDisplayListItem("--- New 4K Videos ---", "New 4K Videos", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + 'videos/4k/'], 'ANYSEX-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'ANYSEX-search' == name:
@@ -17114,8 +17119,8 @@ class Host(CBaseHostClass, XXXParser):
 					phImage = self.MAIN_URL + phImage
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl + '?sort_by=post_date'], 'bravoporn-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Popular ---", "Popular", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'bravoporn-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Newest ---", "Newest", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'bravoporn-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'bravoporn-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'bravoporn-clips', '', None))
 			return searchItems(valTab, True)
 		if 'bravoporn-search' == name:
 			return self.listsItems(-1, 'https://www.bravoporn.com/s/?q=%s' % url.replace(' ', '+'), 'bravoporn-clips')
@@ -17181,9 +17186,9 @@ class Host(CBaseHostClass, XXXParser):
 					phImage = self.MAIN_URL + phImage
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl + '?sort_by=post_date'], 'bravoteens-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Top Rated ---", "Top Rated", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top/'], 'bravoteens-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Popular ---", "Popular", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/popular/'], 'bravoteens-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- New ---", "New", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new/'], 'bravoteens-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top/'], 'bravoteens-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/popular/'], 'bravoteens-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new/'], 'bravoteens-clips', '', None))
 			return searchItems(valTab, True)
 		if 'bravoteens-search' == name:
 			return self.listsItems(-1, 'https://www.bravoteens.com/search/?q=%s' % url.replace(' ', '+'), 'bravoteens-clips')
@@ -17251,9 +17256,9 @@ class Host(CBaseHostClass, XXXParser):
 					phImage = self.MAIN_URL + phImage
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl + '?sort_by=post_date'], 'sleazyneasy-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Top Rated ---", "Top Rated", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'sleazyneasy-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- Popular ---", "Popular", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'sleazyneasy-clips', '', None))
-			valTab.insert(0, CDisplayListItem("--- New ---", "New", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'sleazyneasy-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'sleazyneasy-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'sleazyneasy-clips', '', None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'sleazyneasy-clips', '', None))
 			return searchItems(valTab, True)
 		if 'sleazyneasy-search' == name:
 			return self.listsItems(-1, 'https://www.sleazyneasy.com/search/?q=%s' % url.replace(' ', '+'), 'sleazyneasy-clips')
@@ -17315,9 +17320,9 @@ class Host(CBaseHostClass, XXXParser):
 					phImage = self.MAIN_URL + phImage
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'homepornking-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Longest ---", "Longest", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/long/'], 'homepornking-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Popular ---", "Popular", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'homepornking-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- New Videos ---", "New Videos", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new/'], 'homepornking-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/long/'], 'homepornking-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'homepornking-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new/'], 'homepornking-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'homepornking-search' == name:
 			return self.listsItems(-1, 'https://www.homepornking.com/search/?q=%s' % url.replace(' ', '+'), 'homepornking-clips')
@@ -17367,12 +17372,12 @@ class Host(CBaseHostClass, XXXParser):
 					phImage = self.MAIN_URL + phImage
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'freeones-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Latest---", "Latest", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], 'freeones-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Top Rated ---", "Top Rated", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?l=24&f[status][0]=active&s=votes.average&o=desc'], 'freeones-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Most Viewed ---", "Most Viewed", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?l=24&s=views&o=desc'], 'freeones-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Longest ---", "Longest", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?l=24&s=duration&o=desc'], 'freeones-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], 'freeones-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?l=24&f[status][0]=active&s=votes.average&o=desc'], 'freeones-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?l=24&s=views&o=desc'], 'freeones-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?l=24&s=duration&o=desc'], 'freeones-clips', siteLogo, None))
 			valTab.insert(0, CDisplayListItem("--- HD Videos ---", "HD Videos", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?f[video.hd]=true'], 'freeones-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- Channels ---", "Channels", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/channels/'], 'freeones-channels', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Channels')), _('Channels'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/channels/'], 'freeones-channels', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'freeones-search' == name:
 			return self.listsItems(-1, 'https://www.freeones.com/videos?q=%s&' % url.replace(' ', '%20'), 'freeones-clips')
@@ -17462,7 +17467,7 @@ class Host(CBaseHostClass, XXXParser):
 				if phTitle:
 					valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'XCUM-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Most Recent Videos ---", "Most Recent Videos", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'XCUM-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most recent')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'XCUM-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'XCUM-search' == name:
 			return self.listsItems(-1, 'https://xcum.com/q/%s/' % url.replace(' ', '+'), 'XCUM-clips')
@@ -17681,7 +17686,7 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'MOMSSEXVIDEOS-clips', phImage, None))
 
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- HOME ---", "HOME VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], "MOMSSEXVIDEOS-clips", siteLogo, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Home')), _('Home'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], "MOMSSEXVIDEOS-clips", siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'MOMSSEXVIDEOS-search' == name:
@@ -17732,10 +17737,10 @@ class Host(CBaseHostClass, XXXParser):
 				phUrl = phUrl.replace(' ', '%20')
 				phTitle = self.cm.ph.getSearchGroups(item, '[>]([^>]+?)[<]/a', 1, True)[0].upper()
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], '8KPORNER-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- TOP ---", "TOP VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/top'], '8KPORNER-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- ALL TAGS ---", "ALL CATEGORIES & TAGS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/categories'], '8KPORNER-categories', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- LATEST ---", "LATEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/latest'], '8KPORNER-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- TRENDING ---", "TRENDING VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/trending'], '8KPORNER-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top')), _('Top'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/top'], '8KPORNER-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Tags')), "ALL CATEGORIES & TAGS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/categories'], '8KPORNER-categories', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/latest'], '8KPORNER-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Trending')), _('Trending'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/trending'], '8KPORNER-clips', catImage, None))
 			return searchItems(valTab, True)
 
 		if '8KPORNER-categories' == name:
@@ -17885,9 +17890,9 @@ class Host(CBaseHostClass, XXXParser):
 				if phTitle:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'ANALMEDIA-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- NEWEST ---", "NEWEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/newest/'], 'ANALMEDIA-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- POPULAR ---", "MOST POPULAR VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/popular/'], 'ANALMEDIA-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- TRENDING ---", "TRENDING VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'ANALMEDIA-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/newest/'], 'ANALMEDIA-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/popular/'], 'ANALMEDIA-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Trending')), _('Trending'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'ANALMEDIA-clips', catImage, None))
 			return searchItems(valTab, True)
 
 		if 'ANALMEDIA-search' == name:
@@ -17981,9 +17986,9 @@ class Host(CBaseHostClass, XXXParser):
 				phTitle = self.cm.ph.getSearchGroups(item, '''name"[>]([^#^@]+?)[<]''', 1, True)[0].title()
 				phUrl = self.cm.ph.getSearchGroups(item, '''href=["]([^#]+?)["]''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'BDSMTUBE-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem('--- MOST FAVORITED ---', 'MOST FAVORITED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/favorited/'], 'BDSMTUBE-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem('--- MOST VIEWED ---', 'MOST VIEWED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/views/'], 'BDSMTUBE-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best/'], 'BDSMTUBE-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most favourited')), _('Most favourited'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/favorited/'], 'BDSMTUBE-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/views/'], 'BDSMTUBE-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best/'], 'BDSMTUBE-clips', catImage, None))
 			valTab.insert(0, CDisplayListItem('--- HD PORN ---', 'HD PORN VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/date/hd/'], 'BDSMTUBE-clips', catImage, None))
 			return searchItems(valTab, True)
 
@@ -18056,12 +18061,12 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = self.cm.ph.getSearchGroups(item, '''-src=["']([^;]+?)["']''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'VAGINA-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- NEWEST ---", "NEWEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/sexfilms/newest'], "VAGINA-clips", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/sexfilms/newest'], "VAGINA-clips", catImage, None))
 			valTab.insert(0, CDisplayListItem("--- DUTCH ---", "DUTCH VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/categories/view/nederlands'], "VAGINA-clips", catImage, None))
-			valTab.insert(0, CDisplayListItem("--- MOST POPULAR ---", "MOST POPULAR VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/sexfilms/popular'], "VAGINA-clips", catImage, None))
-			valTab.insert(1, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/sexfilms/top'], "VAGINA-clips", catImage, None))
-			valTab.insert(2, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/sexfilms/views'], "VAGINA-clips", catImage, None))
-			valTab.insert(3, CDisplayListItem("--- LONGEST ---", "LONGEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/sexfilms/longest'], "VAGINA-clips", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/sexfilms/popular'], "VAGINA-clips", catImage, None))
+			valTab.insert(1, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/sexfilms/top'], "VAGINA-clips", catImage, None))
+			valTab.insert(2, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/sexfilms/views'], "VAGINA-clips", catImage, None))
+			valTab.insert(3, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/sexfilms/longest'], "VAGINA-clips", catImage, None))
 			valTab.insert(4, CDisplayListItem("--- SORT BY LIKES ---", "SORT BY LIKES", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/video/?orderby=post_like&order=DESC'], "VAGINA-clips", catImage, None))
 			return searchItems(valTab, True)
 
@@ -18119,13 +18124,13 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = self.cm.ph.getSearchGroups(item, '''src=["']([^;]+?)["']''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'INDIANPORNTUBE-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- ALL ---", "ALL VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], "INDIANPORNTUBE-clips", catImage, None))
-			valTab.insert(1, CDisplayListItem("--- MOST RECENT ---", "MOST RECENT VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], "INDIANPORNTUBE-clips", catImage, None))
-			valTab.insert(2, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], "INDIANPORNTUBE-clips", catImage, None))
-			valTab.insert(3, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], "INDIANPORNTUBE-clips", catImage, None))
-			valTab.insert(4, CDisplayListItem("--- LONGEST ---", "LONGEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], "INDIANPORNTUBE-clips", catImage, None))
-			valTab.insert(5, CDisplayListItem("--- MOST DISCUSSED ---", "MOST DISCUSSED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-discussed/'], "INDIANPORNTUBE-clips", catImage, None))
-			valTab.insert(6, CDisplayListItem("--- MODELS ---", "MODELS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], "INDIANPORNTUBE-models", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('All')), _('All'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], "INDIANPORNTUBE-clips", catImage, None))
+			valTab.insert(1, CDisplayListItem(menuHeader(_('Most recent')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], "INDIANPORNTUBE-clips", catImage, None))
+			valTab.insert(2, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], "INDIANPORNTUBE-clips", catImage, None))
+			valTab.insert(3, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], "INDIANPORNTUBE-clips", catImage, None))
+			valTab.insert(4, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], "INDIANPORNTUBE-clips", catImage, None))
+			valTab.insert(5, CDisplayListItem(menuHeader(_('Most discussed')), _('Most discussed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-discussed/'], "INDIANPORNTUBE-clips", catImage, None))
+			valTab.insert(6, CDisplayListItem(menuHeader(_('Models')), _('Models'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], "INDIANPORNTUBE-models", catImage, None))
 			return searchItems(valTab, True)
 
 		if 'INDIANPORNTUBE-search' == name:
@@ -18207,8 +18212,8 @@ class Host(CBaseHostClass, XXXParser):
 				return valTab
 			self.page = 1
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- MOST POPULAR ---", "MOST POPULAR VIDEOS", CDisplayListItem.TYPE_CATEGORY, ['https://voyeurhit.com/api/json/videos2/86400/str/top-rated/60/..1.all..all.json'], 'VOYEURHIT-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, ['https://voyeurhit.com/api/json/videos2/86400/str/top-rated/60/..1.all..all.json'], 'VOYEURHIT-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, ['https://voyeurhit.com/api/json/videos2/86400/str/top-rated/60/..1.all..all.json'], 'VOYEURHIT-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, ['https://voyeurhit.com/api/json/videos2/86400/str/top-rated/60/..1.all..all.json'], 'VOYEURHIT-clips', catImage, None))
 			try:
 				result = byteify(json.loads(data))
 				for item in result["categories"]:
@@ -18258,9 +18263,9 @@ class Host(CBaseHostClass, XXXParser):
 			printDBG('Host listsItems begin name=' + name)
 			self.MAIN_URL = 'https://www.realmatureporn.com'
 			catImage = siteLogo
-			valTab.append(CDisplayListItem("--- MOST POPULAR ---", "MOST POPULAR VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/mature/'], 'REALMATUREPORN-clips', catImage, None))
-			valTab.append(CDisplayListItem("--- LONGEST ---", "LONGEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/mature/longest-videos/'], 'REALMATUREPORN-clips', catImage, None))
-			valTab.append(CDisplayListItem("--- NEWEST ---", "NEWEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/mature/newest-videos/'], 'REALMATUREPORN-clips', catImage, None))
+			valTab.append(CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/mature/'], 'REALMATUREPORN-clips', catImage, None))
+			valTab.append(CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/mature/longest-videos/'], 'REALMATUREPORN-clips', catImage, None))
+			valTab.append(CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/mature/newest-videos/'], 'REALMATUREPORN-clips', catImage, None))
 			return searchItems(valTab, True)
 
 		if 'REALMATUREPORN-search' == name:
@@ -18375,8 +18380,8 @@ class Host(CBaseHostClass, XXXParser):
 					valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos + ' videos', CDisplayListItem.TYPE_CATEGORY, [phUrl], 'RUNPORN-clips', catImage, None))
 
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- BEST ---", "BEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best/'], 'RUNPORN-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- NEW ---", "NEW VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest/'], 'RUNPORN-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Best')), _('Best'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best/'], 'RUNPORN-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest/'], 'RUNPORN-clips', catImage, None))
 			return searchItems(valTab, True)
 
 		if 'RUNPORN-search' == name:
@@ -18431,7 +18436,7 @@ class Host(CBaseHostClass, XXXParser):
 
 			valTab.sort(key=lambda poz: poz.name)
 			valTab.insert(0, CDisplayListItem("--- TODAY'S FEATURED ---", "NAKED GIRLS AND NAKED WOMEN", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], 'NAKEDGIRLS-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- HOME ---", "NAKED GIRLS PORN VIDEO & HOT NUDE WOMEN", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'NAKEDGIRLS-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Home')), "NAKED GIRLS PORN VIDEO & HOT NUDE WOMEN", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'NAKEDGIRLS-clips', catImage, None))
 			return searchItems(valTab, True)
 
 		if 'NAKEDGIRLS-search' == name:
@@ -18489,7 +18494,7 @@ class Host(CBaseHostClass, XXXParser):
 			valTab.sort(key=lambda poz: poz.name)
 			valTab.insert(0, CDisplayListItem('--- BRAZZERS ---', 'BRAZZERS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/brazzers/'], 'YESPORNPLEASE-clips', mainIcon, None))
 			valTab.insert(0, CDisplayListItem('--- PORNKTUBE ---', 'PORNKTUBE', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/xnxx/pornktube/'], 'YESPORNPLEASE-clips', mainIcon, None))
-			valTab.insert(0, CDisplayListItem('--- PORNSTARS ---', 'PORNSTARS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/pornstars/'], 'YESPORNPLEASE-pornstars', mainIcon, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Pornstars')), _('Pornstars'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/pornstars/'], 'YESPORNPLEASE-pornstars', mainIcon, None))
 			return searchItems(valTab, True)
 
 		if 'YESPORNPLEASE-search' == name:
@@ -18566,14 +18571,14 @@ class Host(CBaseHostClass, XXXParser):
 				if phTitle and phUrl:
 					valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle) + '\n' + phVideos + ' videos', CDisplayListItem.TYPE_CATEGORY, [phUrl], 'HDTUBE-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- MOST POPULAR ---', 'MOST POPULAR VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], 'HDTUBE-clips', mainIcon, None))
-			valTab.insert(0, CDisplayListItem('--- LATEST ---', 'LATEST UPDATES', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/latest-updates/'], 'HDTUBE-clips', mainIcon, None))
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/top-rated/'], 'HDTUBE-clips', mainIcon, None))
-			valTab.insert(0, CDisplayListItem('--- LATEST ---', 'LATEST UPDATES', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/latest-updates/'], 'HDTUBE-clips', mainIcon, None))
-			valTab.insert(0, CDisplayListItem('--- LONGEST ---', 'LONGEST VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/longest/'], 'HDTUBE-clips', mainIcon, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], 'HDTUBE-clips', mainIcon, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/latest-updates/'], 'HDTUBE-clips', mainIcon, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/top-rated/'], 'HDTUBE-clips', mainIcon, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/latest-updates/'], 'HDTUBE-clips', mainIcon, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/longest/'], 'HDTUBE-clips', mainIcon, None))
 			valTab.insert(0, CDisplayListItem('--- BEST OF 2022 ---', 'BEST OF 2022', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best/year-2022/'], 'HDTUBE-clips', mainIcon, None))
-			valTab.insert(0, CDisplayListItem('--- CHANNELS ---', 'CHANNELS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/channels/'], 'HDTUBE-pornstars', mainIcon, None))
-			valTab.insert(0, CDisplayListItem('--- PORNSTARS ---', 'PORNSTARS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/pornstars/'], 'HDTUBE-pornstars', mainIcon, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Channels')), _('Channels'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/channels/'], 'HDTUBE-pornstars', mainIcon, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Pornstars')), _('Pornstars'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/pornstars/'], 'HDTUBE-pornstars', mainIcon, None))
 			return searchItems(valTab, True)
 
 		if 'HDTUBE-search' == name:
@@ -18647,8 +18652,8 @@ class Host(CBaseHostClass, XXXParser):
 				if phTitle and phUrl:
 					valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle) + '\n' + phVideos + ' videos', CDisplayListItem.TYPE_CATEGORY, [phUrl], 'PORNSLASH-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- HOME ---', 'HOME', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'PORNSLASH-clips', mainIcon, None))
-			valTab.insert(0, CDisplayListItem('--- PORNSTARS ---', 'PORNSTARS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/pornstars/'], 'PORNSLASH-pornstars', mainIcon, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Home')), _('Home'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'PORNSLASH-clips', mainIcon, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Pornstars')), _('Pornstars'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/pornstars/'], 'PORNSLASH-pornstars', mainIcon, None))
 			return searchItems(valTab, True)
 
 		if 'PORNSLASH-search' == name:
@@ -18761,11 +18766,11 @@ class Host(CBaseHostClass, XXXParser):
 				if phTitle and phUrl:
 					valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'REALGFPORN-clips', mainIcon, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- MOST RECENT ---', 'MOST RECENT VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'REALGFPORN-clips', mainIcon, None))
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'REALGFPORN-clips', mainIcon, None))
-			valTab.insert(0, CDisplayListItem('--- MOST VIEWED ---', 'MOST VIEWED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'REALGFPORN-clips', mainIcon, None))
-			valTab.insert(0, CDisplayListItem('--- LONGEST ---', 'LONGEST VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'REALGFPORN-clips', mainIcon, None))
-			valTab.insert(0, CDisplayListItem('--- MOST DISCUSSED ---', 'MOST DISCUSSED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-discussed/'], 'REALGFPORN-clips', mainIcon, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most recent')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'REALGFPORN-clips', mainIcon, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'REALGFPORN-clips', mainIcon, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'REALGFPORN-clips', mainIcon, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'REALGFPORN-clips', mainIcon, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most discussed')), _('Most discussed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-discussed/'], 'REALGFPORN-clips', mainIcon, None))
 			return searchItems(valTab, True)
 
 		if 'REALGFPORN-search' == name:
@@ -18831,10 +18836,10 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = decodeUrl(phImage)
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'PARADISEHILL-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- STUDIOS ---', 'STUDIOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/studios/?sort=by_likes'], 'PARADISEHILL-folders', mainIcon, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Studios')), _('Studios'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/studios/?sort=by_likes'], 'PARADISEHILL-folders', mainIcon, None))
 			valTab.insert(0, CDisplayListItem('--- ACTORS ---', 'PORN ACTORS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/actors/?sort=by_likes'], 'PARADISEHILL-folders', mainIcon, None))
-			valTab.insert(0, CDisplayListItem('--- POPULAR ---', 'POPULAR PORN MOVIES', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/popular/?filter=all&sort=by_likes'], 'PARADISEHILL-clips', mainIcon, None))
-			valTab.insert(0, CDisplayListItem('--- ALL ---', 'ALL PORN MOVIES', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/all/?sort=created_at'], 'PARADISEHILL-clips', mainIcon, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/popular/?filter=all&sort=by_likes'], 'PARADISEHILL-clips', mainIcon, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('All')), _('All'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/all/?sort=created_at'], 'PARADISEHILL-clips', mainIcon, None))
 			return searchItems(valTab, True)
 
 		if 'PARADISEHILL-search' == name:
@@ -19076,7 +19081,7 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle) + '\n' + phVideos + ' videos', CDisplayListItem.TYPE_CATEGORY, [phUrl], 'SENIORAS-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
 			valTab.insert(0, CDisplayListItem("--- HALL OF FAME ---", "HALL OF FAME", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/all'], 'SENIORAS-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- NEW ---", "NEW VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new'], 'SENIORAS-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new'], 'SENIORAS-clips', catImage, None))
 			if next:
 				next = "%s%s" % (self.MAIN_URL, next)
 				valTab.append(self.getMoreCatsItem(next.split('=')[-1], next, name))
@@ -19133,9 +19138,9 @@ class Host(CBaseHostClass, XXXParser):
 				if phTitle:
 					valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + Videos + '\nRating Positive: ' + Rate, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'PORNGEM-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'PORNGEM-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'PORNGEM-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- RECOMMENDED ---", "RECOMMENDED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/recommended/'], 'PORNGEM-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'PORNGEM-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'PORNGEM-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Recommended')), _('Recommended'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/recommended/'], 'PORNGEM-clips', catImage, None))
 			return searchItems(valTab, True)
 
 		if 'PORNGEM-search' == name:
@@ -19244,7 +19249,7 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + Videos + ' videos', CDisplayListItem.TYPE_CATEGORY, [phUrl], 'LUSTYSEXTUBE-clips', phImage, max_page))
 			valTab.sort(key=lambda poz: poz.name)
 			valTab.insert(0, CDisplayListItem("--- FRESH VIDEOS ---", "NEW FREE PORN", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest/'], 'LUSTYSEXTUBE-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- TOP VIDEOS ---", "TOP PORN CLIPS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best/'], 'LUSTYSEXTUBE-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top')), _('Top'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best/'], 'LUSTYSEXTUBE-clips', catImage, None))
 			return searchItems(valTab, True)
 
 		if 'LUSTYSEXTUBE-search' == name:
@@ -19328,9 +19333,9 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = self.cm.ph.getSearchGroups(item, 'src=["]([^ß]+?)["]', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'PORNDREAMZ-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], "PORNDREAMZ-clips", catImage, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], "PORNDREAMZ-clips", catImage, None))
-			valTab.insert(0, CDisplayListItem("--- LATEST ---", "LATEST UPDATES", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], "PORNDREAMZ-clips", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], "PORNDREAMZ-clips", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], "PORNDREAMZ-clips", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], "PORNDREAMZ-clips", catImage, None))
 			valTab = searchItems(valTab, True)
 			return valTab
 
@@ -19751,9 +19756,9 @@ class Host(CBaseHostClass, XXXParser):
 					valTab.append(CDisplayListItem(title, title, CDisplayListItem.TYPE_CATEGORY,
 												[self.MAIN_URL + '/s/' + slug + '/'], 'SPANKBANG-clips', '', None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('New Videos', 'New Videos', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new_videos/'], 'SPANKBANG-clips', '', None))
-			valTab.insert(0, CDisplayListItem('Most Popular', 'Most Popular', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most_popular/'], 'SPANKBANG-clips', '', None))
-			valTab.insert(0, CDisplayListItem('Latest', 'Latest', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/'], 'SPANKBANG-clips', '', None))
+			valTab.insert(0, CDisplayListItem(_('New'), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new_videos/'], 'SPANKBANG-clips', '', None))
+			valTab.insert(0, CDisplayListItem(_('Most popular'), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most_popular/'], 'SPANKBANG-clips', '', None))
+			valTab.insert(0, CDisplayListItem(_('Latest'), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/'], 'SPANKBANG-clips', '', None))
 			return searchItems(valTab, True)
 
 		if 'SPANKBANG-search' == name:
@@ -19823,8 +19828,8 @@ class Host(CBaseHostClass, XXXParser):
 				phVideos = self.cm.ph.getSearchGroups(item, r'total"[>]([0-9kmt.\svideos]+?)[<]', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'SEXSQ-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- MOST POPULAR ---", "MOST POPULAR VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/popular/'], "SEXSQ-clips", catImage, None))
-			valTab.insert(0, CDisplayListItem("--- NEW ---", "NEW VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/newest/'], "SEXSQ-clips", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/popular/'], "SEXSQ-clips", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/newest/'], "SEXSQ-clips", catImage, None))
 			return searchItems(valTab, True)
 
 		if 'SEXSQ-search' == name:
@@ -19912,9 +19917,9 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos + ' videos', CDisplayListItem.TYPE_CATEGORY, [phUrl], 'BIGBOOBS-clips', phImage, max_page))
 			valTab.sort(key=lambda poz: poz.name)
 			if url.endswith('es/'):
-				valTab.insert(0, CDisplayListItem("--- BEST ---", "BEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best/?mode=async&function=get_block&block_id=list_videos_all_thumb&sort_by=ctr&from=1'], "BIGBOOBS-clips", catImage, None))
-				valTab.insert(0, CDisplayListItem("--- NEW ---", "NEW VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new/?mode=async&function=get_block&block_id=list_videos_all_thumb&sort_by=post_date_and_popularity&from=1'], "BIGBOOBS-clips", catImage, None))
-				valTab.insert(0, CDisplayListItem("--- RANDOM ---", "RANDOM VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/random/'], "BIGBOOBS-clips", catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Best')), _('Best'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best/?mode=async&function=get_block&block_id=list_videos_all_thumb&sort_by=ctr&from=1'], "BIGBOOBS-clips", catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new/?mode=async&function=get_block&block_id=list_videos_all_thumb&sort_by=post_date_and_popularity&from=1'], "BIGBOOBS-clips", catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Random')), _('Random'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/random/'], "BIGBOOBS-clips", catImage, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				next_page = self.MAIN_URL + next
@@ -20007,11 +20012,11 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos + ' videos\nRating Positive: ' + Rate, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'TABOOTUBE-clips', phImage, max_page))
 			valTab.sort(key=lambda poz: poz.name)
 			if url.endswith('es/'):
-				valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?mode=async&function=get_block&block_id=list_videos_most_recent_videos&sort_by=rating&from=1'], "TABOOTUBE-clips", catImage, None))
-				valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?mode=async&function=get_block&block_id=list_videos_most_recent_videos&sort_by=video_viewed&from=1'], "TABOOTUBE-clips", catImage, None))
-				valTab.insert(0, CDisplayListItem("--- LONGEST ---", "LONGEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?mode=async&function=get_block&block_id=list_videos_most_recent_videos&sort_by=duration&from=1'], "TABOOTUBE-clips", catImage, None))
-				valTab.insert(0, CDisplayListItem("--- MOST COMMENTED ---", "MOST COMMENTED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?mode=async&function=get_block&block_id=list_videos_most_recent_videos&sort_by=most_commented&from=1'], "TABOOTUBE-clips", catImage, None))
-				valTab.insert(0, CDisplayListItem("--- MOST FAVOURITED ---", "MOST FAVOURITED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?mode=async&function=get_block&block_id=list_videos_most_recent_videos&sort_by=most_favourited&from=1'], "TABOOTUBE-clips", catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?mode=async&function=get_block&block_id=list_videos_most_recent_videos&sort_by=rating&from=1'], "TABOOTUBE-clips", catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?mode=async&function=get_block&block_id=list_videos_most_recent_videos&sort_by=video_viewed&from=1'], "TABOOTUBE-clips", catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?mode=async&function=get_block&block_id=list_videos_most_recent_videos&sort_by=duration&from=1'], "TABOOTUBE-clips", catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Most commented')), _('Most commented'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?mode=async&function=get_block&block_id=list_videos_most_recent_videos&sort_by=most_commented&from=1'], "TABOOTUBE-clips", catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Most favourited')), _('Most favourited'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?mode=async&function=get_block&block_id=list_videos_most_recent_videos&sort_by=most_favourited&from=1'], "TABOOTUBE-clips", catImage, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				next_page = self.MAIN_URL + next
@@ -20132,9 +20137,9 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos + ' videos', CDisplayListItem.TYPE_CATEGORY, [phUrl], 'LESLEZ-clips', phImage, max_page))
 			valTab.sort(key=lambda poz: poz.name)
 			if url.endswith('es/'):
-				valTab.insert(0, CDisplayListItem("--- NEW ---", "NEW VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new/'], "LESLEZ-clips", catImage, None))
-				valTab.insert(0, CDisplayListItem("--- BEST ---", "BEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best/'], "LESLEZ-clips", catImage, None))
-				valTab.insert(0, CDisplayListItem("--- RANDOM ---", "RANDOM VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/random/'], "LESLEZ-clips", catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new/'], "LESLEZ-clips", catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Best')), _('Best'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best/'], "LESLEZ-clips", catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Random')), _('Random'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/random/'], "LESLEZ-clips", catImage, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				next_page = self.MAIN_URL + next
@@ -20230,8 +20235,8 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos + ' videos', CDisplayListItem.TYPE_CATEGORY, [phUrl], 'HARDPORNO-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
 			if url.endswith('es'):
-				valTab.insert(0, CDisplayListItem("--- POPULAR ---", "POPULAR VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], "HARDPORNO-clips", catImage, None))
-				valTab.insert(0, CDisplayListItem("--- NEWEST ---", "NEWEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/recently-added/'], "HARDPORNO-clips", catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], "HARDPORNO-clips", catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/recently-added/'], "HARDPORNO-clips", catImage, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				next_page = self.MAIN_URL + next
@@ -20327,9 +20332,9 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'EBOBLACK-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
 			if url.endswith('tags/'):
-				valTab.insert(0, CDisplayListItem("--- RANDOM ---", "RANDOM VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/random/'], "EBOBLACK-clips", catImage, None))
-				valTab.insert(0, CDisplayListItem("--- BEST ---", "BEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best-videos/'], "EBOBLACK-clips", catImage, None))
-				valTab.insert(0, CDisplayListItem("--- NEW ---", "NEW VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new-videos/'], "EBOBLACK-clips", catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Random')), _('Random'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/random/'], "EBOBLACK-clips", catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Best')), _('Best'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best-videos/'], "EBOBLACK-clips", catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new-videos/'], "EBOBLACK-clips", catImage, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				next_page = self.MAIN_URL + next
@@ -20507,9 +20512,9 @@ class Host(CBaseHostClass, XXXParser):
 				Rate = self.cm.ph.getSearchGroups(item, r'[\s]([0-9%]+?)[\s]', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + Videos + ' videos\nRate Positive: ' + Rate, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'PORNEKIP-clips', catImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'PORNEKIP-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'PORNEKIP-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- LATEST ---", "LATEST AMATEUR PORN VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'PORNEKIP-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'PORNEKIP-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'PORNEKIP-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), "LATEST AMATEUR PORN VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'PORNEKIP-clips', catImage, None))
 			return searchItems(valTab, True)
 
 		if 'PORNEKIP-search' == name:
@@ -20718,9 +20723,9 @@ class Host(CBaseHostClass, XXXParser):
 			valTab.sort(key=lambda poz: poz.name)
 			if '?page' not in url:
 				valTab.insert(0, CDisplayListItem("--- ENGAGING ---", "MOST INTERESTING VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/engaging'], 'HOGTV-clips', catImage, None))
-				valTab.insert(0, CDisplayListItem("--- HALL OF FAME ---", "BEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/all'], 'HOGTV-clips', catImage, None))
-				valTab.insert(0, CDisplayListItem("--- TRENDING ---", "TRENDING VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/trending'], 'HOGTV-clips', catImage, None))
-				valTab.insert(0, CDisplayListItem("--- NEW ---", "NEW VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new'], 'HOGTV-clips', catImage, None))
+				valTab.insert(0, CDisplayListItem("--- HALL OF FAME ---", _('Best'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/all'], 'HOGTV-clips', catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Trending')), _('Trending'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/trending'], 'HOGTV-clips', catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new'], 'HOGTV-clips', catImage, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				next_page = self.MAIN_URL + next
@@ -20820,9 +20825,9 @@ class Host(CBaseHostClass, XXXParser):
 				if phUrl:
 					valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + Videos + ' videos', CDisplayListItem.TYPE_CATEGORY, [phUrl], 'FETISHSHRINE-clips', phImage, max_page))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'FETISHSHRINE-clips', catImage, 999))
-			valTab.insert(0, CDisplayListItem("--- MOST POPULAR ---", "MOST POPULAR VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'FETISHSHRINE-clips', catImage, 999))
-			valTab.insert(0, CDisplayListItem("--- NEW ---", "NEW VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'FETISHSHRINE-clips', catImage, 999))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'FETISHSHRINE-clips', catImage, 999))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'FETISHSHRINE-clips', catImage, 999))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'FETISHSHRINE-clips', catImage, 999))
 			return searchItems(valTab, True)
 
 		if 'FETISHSHRINE-search' == name:
@@ -20929,7 +20934,7 @@ class Host(CBaseHostClass, XXXParser):
 			valTab.sort(key=lambda poz: poz.name)
 			valTab.insert(0, CDisplayListItem("--- HD ---", "HD VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/channel/hd'], 'WANKGALORE-clips', catImage, 999))
 			valTab.insert(0, CDisplayListItem("--- POPULAR (7 DAYS) ---", "POPULAR VIDEOS (7 DAYS)", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/straight/popular7'], 'WANKGALORE-clips', catImage, 2))
-			valTab.insert(0, CDisplayListItem("--- TRENDING ---", "TRENDING VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/straight/trending'], 'WANKGALORE-clips', catImage, 1))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Trending')), _('Trending'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/straight/trending'], 'WANKGALORE-clips', catImage, 1))
 			return searchItems(valTab, True)
 
 		if 'WANKGALORE-search' == name:
@@ -21023,10 +21028,10 @@ class Host(CBaseHostClass, XXXParser):
 				if phUrl:
 					valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + Videos + ' videos', CDisplayListItem.TYPE_CATEGORY, [phUrl], 'UIPORN-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- NEW ---", "NEW VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'UIPORN-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'UIPORN-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- MOST RECOMMENDED ---", "MOST RECOMMENDED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-commented/'], 'UIPORN-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'UIPORN-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'UIPORN-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'UIPORN-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Recommended')), _('Recommended'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-commented/'], 'UIPORN-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'UIPORN-clips', catImage, None))
 			return searchItems(valTab, True)
 
 		if 'UIPORN-search' == name:
@@ -21124,8 +21129,8 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + Videos + ' videos\nRating Positive: ' + Rate, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'DAFREEPORN-clips', phImage, Videos))
 			valTab.sort(key=lambda poz: poz.name)
 
-			valTab.insert(0, CDisplayListItem("--- NEW ---", "NEW VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'DAFREEPORN-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'DAFREEPORN-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'DAFREEPORN-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'DAFREEPORN-clips', catImage, None))
 			return searchItems(valTab, True)
 
 		if 'DAFREEPORN-search' == name:
@@ -21220,9 +21225,9 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + Videos + ' videos\nRating Positive: ' + Rate, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'CUCKOLDSPORN-clips', phImage, Videos))
 			valTab.sort(key=lambda poz: poz.name)
 
-			valTab.insert(0, CDisplayListItem("--- NEW ---", "NEW VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'CUCKOLDSPORN-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'CUCKOLDSPORN-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'CUCKOLDSPORN-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'CUCKOLDSPORN-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'CUCKOLDSPORN-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'CUCKOLDSPORN-clips', catImage, None))
 			return searchItems(valTab, True)
 
 		if 'CUCKOLDSPORN-search' == name:
@@ -21406,11 +21411,11 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'PORNXXXVIDEOS-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
 
-			valTab.insert(0, CDisplayListItem("--- LONGEST ---", "LONGEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'PORNXXXVIDEOS-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'PORNXXXVIDEOS-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- MOST DISCUSSED ---", "MOST DISCUSSED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-discussed/'], 'PORNXXXVIDEOS-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'PORNXXXVIDEOS-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- MOST RECENT ---", "MOST RECENT VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], 'PORNXXXVIDEOS-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'PORNXXXVIDEOS-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-viewed/'], 'PORNXXXVIDEOS-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most discussed')), _('Most discussed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-discussed/'], 'PORNXXXVIDEOS-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'PORNXXXVIDEOS-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most recent')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], 'PORNXXXVIDEOS-clips', catImage, None))
 			return searchItems(valTab, True)
 
 		if 'PORNXXXVIDEOS-search' == name:
@@ -21499,9 +21504,9 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'XDPORNER-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
 			if 'page' not in url:
-				valTab.insert(0, CDisplayListItem("--- BEST ---", "BEST VIDEOS", CDisplayListItem.
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Best')), _('Best'), CDisplayListItem.
 				TYPE_CATEGORY, [self.MAIN_URL + '/best'], 'XDPORNER-clips', catImage, None))
-				valTab.insert(0, CDisplayListItem("--- LATEST ---", "LATEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest'], 'XDPORNER-clips', catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest'], 'XDPORNER-clips', catImage, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				valTab.append(self.getMoreCatsItem(next.split('=')[-1], next, name))
@@ -21587,9 +21592,9 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + Videos + ' videos\nRating Positive: ' + Rate, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'MONDETUBE-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
 
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'MONDETUBE-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'MONDETUBE-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- LATEST ---", "LATEST UPDATES", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'MONDETUBE-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'MONDETUBE-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'MONDETUBE-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'MONDETUBE-clips', catImage, None))
 			return searchItems(valTab, True)
 
 		if 'MONDETUBE-search' == name:
@@ -21678,8 +21683,8 @@ class Host(CBaseHostClass, XXXParser):
 			valTab.sort(key=lambda poz: poz.name)
 
 			valTab.insert(0, CDisplayListItem("--- EXCLUSIVE ---", "EXCLUSIVE VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/categories/exclusive/?videos_per_page=32&sort_by=post_date'], 'PIMPBUNNY-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- BEST RATED ---", "BEST RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/?videos_per_page=32&sort_by=rating'], 'PIMPBUNNY-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/?videos_per_page=32&sort_by=video_viewed'], 'PIMPBUNNY-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/?videos_per_page=32&sort_by=rating'], 'PIMPBUNNY-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/?videos_per_page=32&sort_by=video_viewed'], 'PIMPBUNNY-clips', catImage, None))
 			return searchItems(valTab, True)
 
 		if 'PIMPBUNNY-search' == name:
@@ -21794,9 +21799,9 @@ class Host(CBaseHostClass, XXXParser):
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'FYXXR-clips', catImage, None))
 			valTab.sort(key=lambda poz: poz.name)
 
-			valTab.insert(0, CDisplayListItem("--- BESTBEWERTETE VIDEOS ---", "BESTBEWERTETE VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'FYXXR-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- MEISTGESEHENE VIDEOS ---", "MEISTGESEHENE VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'FYXXR-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- NEUE VIDEOS ---", "NEUE VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'FYXXR-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'FYXXR-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'FYXXR-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'FYXXR-clips', catImage, None))
 			return searchItems(valTab, True)
 
 		if 'FYXXR-search' == name:
@@ -22041,7 +22046,7 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'CRAZYAMATEURS-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
 
-			valTab.insert(0, CDisplayListItem("--- HOME ---", "ALL VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'CRAZYAMATEURS-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Home')), _('All'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'CRAZYAMATEURS-clips', catImage, None))
 			if url[-2].isalpha():
 				valTab = searchItems(valTab, True)
 			if next:
@@ -22098,7 +22103,7 @@ class Host(CBaseHostClass, XXXParser):
 				if section:
 					valTab.append(CDisplayListItem('********  ' + section + '   ********', '', CDisplayListItem.TYPE_ARTICLE, [''], '', '', None))
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'XXXELF-clips', phImage, None))
-			valTab.insert(0, CDisplayListItem("--- NEWEST ---", "NEWEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?order=newest&p=1'], 'XXXELF-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?order=newest&p=1'], 'XXXELF-clips', catImage, None))
 			return searchItems(valTab, True)
 
 		if 'XXXELF-search' == name:
@@ -22187,9 +22192,9 @@ class Host(CBaseHostClass, XXXParser):
 				videos = self.cm.ph.getSearchGroups(item, r'videos"[>]([0-9]+)[\s]', 1, True)[0]
 				rate = self.cm.ph.getSearchGroups(item, r'[\s]([0-9%]+)[\s]', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + videos + ' videos\nRating Negative: ' + rate, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'MODPORN-clips', phImage, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'MODPORN-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'MODPORN-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- LATEST ---", "LATEST UPDATES", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'MODPORN-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'MODPORN-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'MODPORN-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'MODPORN-clips', catImage, None))
 			return searchItems(valTab, True)
 
 		if 'MODPORN-search' == name:
@@ -22291,8 +22296,8 @@ class Host(CBaseHostClass, XXXParser):
 				videos = self.cm.ph.getSearchGroups(item, r'video"[>]([0-9]+)[\s]', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + videos + ' videos', CDisplayListItem.TYPE_CATEGORY, [phUrl], 'MAXPORN-clips', phImage, None))
 			if url[-2].isalpha():
-				valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'MAXPORN-clips', catImage, None))
-				valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'MAXPORN-clips', catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'MAXPORN-clips', catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'MAXPORN-clips', catImage, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				next_page = self.MAIN_URL + next
@@ -22631,8 +22636,8 @@ class Host(CBaseHostClass, XXXParser):
 				phTitle = self.cm.ph.getSearchGroups(item, "alt=[']([^'#]+?)[']", 1, True)[0].upper()
 				phImage = self.MAIN_URL + '/' + self.cm.ph.getSearchGroups(item, "src=[']([^'#]+?)[']", 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'PORN4DAYS-clips', phImage, None))
-			valTab.insert(0, CDisplayListItem("--- POPULAR ---", "POPULAR MOVIES", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/popullar'], 'PORN4DAYS-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- NEWEST ---", "LATEST MOVIES", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/newest'], 'PORN4DAYS-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/popullar'], 'PORN4DAYS-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/newest'], 'PORN4DAYS-clips', catImage, None))
 			return searchItems(valTab, True)
 
 		if 'PORN4DAYS-search' == name:
@@ -22738,9 +22743,9 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos + ' videos', CDisplayListItem.TYPE_CATEGORY, [phUrl], 'BIGBOOBS-clips', phImage, max_page))
 			valTab.sort(key=lambda poz: poz.name)
 			if url.endswith('es/'):
-				valTab.insert(0, CDisplayListItem("--- BEST ---", "BEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best/?mode=async&function=get_block&block_id=list_videos_all_thumb&sort_by=ctr&from=1'], "BIGBOOBS-clips", catImage, None))
-				valTab.insert(0, CDisplayListItem("--- NEW ---", "NEW VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new/?mode=async&function=get_block&block_id=list_videos_all_thumb&sort_by=post_date_and_popularity&from=1'], "BIGBOOBS-clips", catImage, None))
-				valTab.insert(0, CDisplayListItem("--- RANDOM ---", "RANDOM VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/random/'], "BIGBOOBS-clips", catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Best')), _('Best'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best/?mode=async&function=get_block&block_id=list_videos_all_thumb&sort_by=ctr&from=1'], "BIGBOOBS-clips", catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new/?mode=async&function=get_block&block_id=list_videos_all_thumb&sort_by=post_date_and_popularity&from=1'], "BIGBOOBS-clips", catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Random')), _('Random'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/random/'], "BIGBOOBS-clips", catImage, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				next_page = self.MAIN_URL + next
@@ -22821,11 +22826,11 @@ class Host(CBaseHostClass, XXXParser):
 				phTitle = self._cleanHtmlStr(item).strip()
 				phUrl = self.cm.ph.getSearchGroups(item, '''href=['"]([^"^']+?)['"]''', 1, True)[0].split('/')[-1]
 				valTab.append(CDisplayListItem(phTitle, phUrl, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'BONGACAMS-clips', '', phTitle))
-			valTab.insert(0, CDisplayListItem("--- Couples ---", "Pary", CDisplayListItem.TYPE_CATEGORY, ["couples"], 'BONGACAMS-clips', '', "---couples"))
-			valTab.insert(0, CDisplayListItem("--- Male ---", "Mężczyźni", CDisplayListItem.TYPE_CATEGORY, ["male"], 'BONGACAMS-clips', '', "---male"))
-			valTab.insert(0, CDisplayListItem("--- Transsexual ---", "Transseksualiści", CDisplayListItem.TYPE_CATEGORY, ["transsexual"], 'BONGACAMS-clips', '', "---transsexual"))
-			valTab.insert(0, CDisplayListItem("--- New ---", "Nowe", CDisplayListItem.TYPE_CATEGORY, ["new"], 'BONGACAMS-clips', '', "---new"))
-			valTab.insert(0, CDisplayListItem("--- Female ---", "Kobiety", CDisplayListItem.TYPE_CATEGORY, ["females"], 'BONGACAMS-clips', '', "---females"))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Couples')), _('Couples'), CDisplayListItem.TYPE_CATEGORY, ["couples"], 'BONGACAMS-clips', '', "---couples"))
+			valTab.insert(0, CDisplayListItem("--- Male ---", "Male", CDisplayListItem.TYPE_CATEGORY, ["male"], 'BONGACAMS-clips', '', "---male"))
+			valTab.insert(0, CDisplayListItem("--- Transsexual ---", "Transsexual", CDisplayListItem.TYPE_CATEGORY, ["transsexual"], 'BONGACAMS-clips', '', "---transsexual"))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), "Nowe", CDisplayListItem.TYPE_CATEGORY, ["new"], 'BONGACAMS-clips', '', "---new"))
+			valTab.insert(0, CDisplayListItem("--- Female ---", "Female", CDisplayListItem.TYPE_CATEGORY, ["females"], 'BONGACAMS-clips', '', "---females"))
 			return valTab
 
 		if 'BONGACAMS-clips' == name:
@@ -22913,9 +22918,9 @@ class Host(CBaseHostClass, XXXParser):
 				phVideos = self.cm.ph.getSearchGroups(item, 'videos"[>]([^ß]+?)[<]', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'XMEGADRIVE-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- NEWEST ---", "LATEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], "XMEGADRIVE-clips", catImage, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], "XMEGADRIVE-clips", catImage, None))
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], "XMEGADRIVE-clips", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], "XMEGADRIVE-clips", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], "XMEGADRIVE-clips", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], "XMEGADRIVE-clips", catImage, None))
 			return searchItems(valTab, True)
 
 		if 'XMEGADRIVE-search' == name:
@@ -22985,7 +22990,7 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos + ' videos', CDisplayListItem.TYPE_CATEGORY, [phUrl], 'XHAND-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
 			valTab.insert(0, CDisplayListItem("--- FRESH ---", "FRESH VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], "XHAND-clips", catImage, None))
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], "XHAND-clips", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], "XHAND-clips", catImage, None))
 			return searchItems(valTab, True)
 
 		if 'XHAND-search' == name:
@@ -23051,8 +23056,8 @@ class Host(CBaseHostClass, XXXParser):
 				phVideos = self.cm.ph.getSearchGroups(item, r'videos"[>]([0-9\svideos]+?)[<]', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'LESBIAN8-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- LATEST ---", "LATEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], "LESBIAN8-clips", catImage, None))
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], "LESBIAN8-clips", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], "LESBIAN8-clips", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], "LESBIAN8-clips", catImage, None))
 			return searchItems(valTab, True)
 
 		if 'LESBIAN8-search' == name:
@@ -23143,12 +23148,12 @@ class Host(CBaseHostClass, XXXParser):
 				phVideos = self.cm.ph.getSearchGroups(item, r'count"[>]([0-9kmt.\svideos]+?)[<]', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'MYLUST-clips', catImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- BEST ---", "BEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best/'], "MYLUST-clips", catImage, None))
-			valTab.insert(0, CDisplayListItem("--- RECOMMENDED ---", "RECOMMENDED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/you/recommend/'], "MYLUST-clips", catImage, None))
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], "MYLUST-clips", catImage, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], "MYLUST-clips", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Best')), _('Best'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/best/'], "MYLUST-clips", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Recommended')), _('Recommended'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/you/recommend/'], "MYLUST-clips", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], "MYLUST-clips", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], "MYLUST-clips", catImage, None))
 			valTab.insert(0, CDisplayListItem("--- 4K ---", "4K VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/4k/'], "MYLUST-clips", catImage, None))
-			valTab.insert(0, CDisplayListItem("--- LATEST ---", "LATEST UPDATES", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], "MYLUST-clips", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], "MYLUST-clips", catImage, None))
 			return searchItems(valTab, True)
 
 		if 'MYLUST-search' == name:
@@ -23247,9 +23252,9 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'W1MP-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
 			if url.endswith('es/'):
-				valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], "W1MP-clips", catImage, None))
-				valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], "W1MP-clips", catImage, None))
-				valTab.insert(0, CDisplayListItem("--- LATEST ---", "LATEST UPDATES", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], "W1MP-clips", catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], "W1MP-clips", catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], "W1MP-clips", catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], "W1MP-clips", catImage, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				next_page = self.MAIN_URL + next
@@ -23365,9 +23370,9 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'BIGBUTTHOLES-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
 			if url.endswith('es/'):
-				valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], "BIGBUTTHOLES-clips", catImage, None))
-				valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], "BIGBUTTHOLES-clips", catImage, None))
-				valTab.insert(0, CDisplayListItem("--- LATEST ---", "LATEST UPDATES", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], "BIGBUTTHOLES-clips", catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], "BIGBUTTHOLES-clips", catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], "BIGBUTTHOLES-clips", catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], "BIGBUTTHOLES-clips", catImage, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				next_page = self.MAIN_URL + next
@@ -23466,9 +23471,9 @@ class Host(CBaseHostClass, XXXParser):
 				if Videos:
 					valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + Videos + ' videos', CDisplayListItem.TYPE_CATEGORY, [phUrl], 'VIKIPORN-clips', phImage, max_page))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], "VIKIPORN-clips", catImage, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], "VIKIPORN-clips", catImage, None))
-			valTab.insert(0, CDisplayListItem("--- LATEST ---", "LATEST UPDATES", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], "VIKIPORN-clips", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], "VIKIPORN-clips", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], "VIKIPORN-clips", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], "VIKIPORN-clips", catImage, None))
 			return searchItems(valTab, True)
 
 		if 'VIKIPORN-search' == name:
@@ -23550,9 +23555,9 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'MATUREXY-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
 			if url.endswith('es/'):
-				valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], "MATUREXY-clips", catImage, None))
-				valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], "MATUREXY-clips", catImage, None))
-				valTab.insert(0, CDisplayListItem("--- LATEST ---", "LATEST UPDATES", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], "MATUREXY-clips", catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], "MATUREXY-clips", catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], "MATUREXY-clips", catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], "MATUREXY-clips", catImage, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				next_page = self.MAIN_URL + next
@@ -23654,9 +23659,9 @@ class Host(CBaseHostClass, XXXParser):
 				if phImage:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'XXXBUNKER-clips', phImage, Videos))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/mostviewed'], "XXXBUNKER-clips", catImage, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/toprated'], "XXXBUNKER-clips", catImage, None))
-			valTab.insert(0, CDisplayListItem("--- NEWEST ---", "NEWEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/newest'], "XXXBUNKER-clips", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/mostviewed'], "XXXBUNKER-clips", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/toprated'], "XXXBUNKER-clips", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/newest'], "XXXBUNKER-clips", catImage, None))
 			return searchItems(valTab, True)
 
 		if 'XXXBUNKER-search' == name:
@@ -23829,12 +23834,12 @@ class Host(CBaseHostClass, XXXParser):
 			catImage = siteLogo
 			self.SEARCH_proc = 'LETSPORN-search'
 			# LetsPorn main menu
-			valTab.append(CDisplayListItem('Home', 'Home', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/'], 'LETSPORN-home', catImage, None))
+			valTab.append(CDisplayListItem(_('Home'), _('Home'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/'], 'LETSPORN-home', catImage, None))
 			valTab.append(CDisplayListItem('Explore', 'Explore', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/explore'], 'LETSPORN-explore', catImage, None))
 			valTab.append(CDisplayListItem('Charts', 'Charts', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/charts'], 'LETSPORN-charts', catImage, None))
-			valTab.append(CDisplayListItem('Channels', 'Channels', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/channels'], 'LETSPORN-channels', catImage, None))
-			valTab.append(CDisplayListItem('Pornstars', 'Pornstars', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/pornstars'], 'LETSPORN-pornstars', catImage, None))
-			valTab.append(CDisplayListItem('Categories', 'Categories', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/categories'], 'LETSPORN-categories', catImage, None))
+			valTab.append(CDisplayListItem(_('Channels'), _('Channels'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/channels'], 'LETSPORN-channels', catImage, None))
+			valTab.append(CDisplayListItem(_('Pornstars'), _('Pornstars'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/pornstars'], 'LETSPORN-pornstars', catImage, None))
+			valTab.append(CDisplayListItem(_('Categories'), _('Categories'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/categories'], 'LETSPORN-categories', catImage, None))
 
 			self.SEARCH_proc = 'LETSPORN-search'
 			self.oldName = name
@@ -24294,7 +24299,7 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = self.cm.ph.getSearchGroups(item, 'src=["]([^ß]+?)["]', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'JIZZBERRY-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- NEWEST ---", "NEWEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/newest/'], "JIZZBERRY-clips", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/newest/'], "JIZZBERRY-clips", catImage, None))
 			return searchItems(valTab, True)
 
 		if 'JIZZBERRY-search' == name:
@@ -24393,12 +24398,12 @@ class Host(CBaseHostClass, XXXParser):
 			valTab.sort(key=lambda poz: poz.name)
 			modeUrl = 'https://www.justporn.com/porn-videos/?mode=async&function=get_block&block_id=list_videos_most_recent_videos&sort_by='
 			Page = '&from=1'
-			valTab.insert(0, CDisplayListItem("--- RECENT ---", "LATEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [modeUrl + 'post_date' + Page], "JUSTPORN-clips", catImage, None))
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [modeUrl + 'video_viewed' + Page], "JUSTPORN-clips", catImage, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [modeUrl + 'rating' + Page], "JUSTPORN-clips", catImage, None))
-			valTab.insert(0, CDisplayListItem("--- LONGEST ---", "LONGEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [modeUrl + 'duration' + Page], "JUSTPORN-clips", catImage, None))
-			valTab.insert(0, CDisplayListItem("--- MOST COMMENTED ---", "MOST COMMENTED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [modeUrl + 'most_commented' + Page], "JUSTPORN-clips", catImage, None))
-			valTab.insert(0, CDisplayListItem("--- MOST FAVOURITED ---", "MOST FAVOURITED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [modeUrl + 'most_favourited' + Page], "JUSTPORN-clips", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [modeUrl + 'post_date' + Page], "JUSTPORN-clips", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [modeUrl + 'video_viewed' + Page], "JUSTPORN-clips", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [modeUrl + 'rating' + Page], "JUSTPORN-clips", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [modeUrl + 'duration' + Page], "JUSTPORN-clips", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most commented')), _('Most commented'), CDisplayListItem.TYPE_CATEGORY, [modeUrl + 'most_commented' + Page], "JUSTPORN-clips", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most favourited')), _('Most favourited'), CDisplayListItem.TYPE_CATEGORY, [modeUrl + 'most_favourited' + Page], "JUSTPORN-clips", catImage, None))
 			return searchItems(valTab, True)
 
 		if 'JUSTPORN-search' == name:
@@ -24468,13 +24473,13 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = self.cm.ph.getSearchGroups(item, '''-src=['"]([^"]+?)['"]''', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'WORLDSEX-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- NEW ---", "NEW VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], "WORLDSEX-clips", catImage, None))
-			valTab.insert(1, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/most-viewed/'], "WORLDSEX-clips", catImage, None))
-			valTab.insert(2, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/top-rated/'], "WORLDSEX-clips", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], "WORLDSEX-clips", catImage, None))
+			valTab.insert(1, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/most-viewed/'], "WORLDSEX-clips", catImage, None))
+			valTab.insert(2, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/top-rated/'], "WORLDSEX-clips", catImage, None))
 			valTab.insert(3, CDisplayListItem("--- 0-10 MINUTE ---", "0-10 MINUTE VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/?df=0&dt=600'], "WORLDSEX-clips", catImage, None))
 			valTab.insert(4, CDisplayListItem("--- 10-20 MINUTE ---", "10-20 MINUTE VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/?df=600&dt=1200'], "WORLDSEX-clips", catImage, None))
 			valTab.insert(5, CDisplayListItem("--- 20+ MINUTE ---", "20+ MINUTE VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/?df=1200&dt=7200'], "WORLDSEX-clips", catImage, None))
-			valTab.insert(6, CDisplayListItem("--- PORNSTARS ---", "PORNSTARS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/pornstars/'], "WORLDSEX-pornstars", catImage, None))
+			valTab.insert(6, CDisplayListItem(menuHeader(_('Pornstars')), _('Pornstars'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/pornstars/'], "WORLDSEX-pornstars", catImage, None))
 			return searchItems(valTab, True)
 
 		if 'WORLDSEX-search' == name:
@@ -24557,7 +24562,7 @@ class Host(CBaseHostClass, XXXParser):
 				phTitle = self.cm.ph.getSearchGroups(item, '''text"[>]([^ß]+?)[<]''', 1, True)[0].upper()
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'ENGORGEDTITS-clips', catImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- LATEST ---", "LATEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], "ENGORGEDTITS-clips", catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], "ENGORGEDTITS-clips", catImage, None))
 			valTab.insert(1, CDisplayListItem("--- SORT BY NAME ---", "SORT BY NAME", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/video/?orderby=title&order=ASC'], "ENGORGEDTITS-clips", catImage, None))
 			valTab.insert(2, CDisplayListItem("--- SORT BY DATE ---", "SORT BY DATE", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/video/?orderby=date&order=DESC'], "ENGORGEDTITS-clips", catImage, None))
 			valTab.insert(3, CDisplayListItem("--- SORT BY COMMENTS ---", "SORT BY COMMENTS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/video/?orderby=comment_count&order=DESC'], "ENGORGEDTITS-clips", catImage, None))
@@ -24651,9 +24656,9 @@ class Host(CBaseHostClass, XXXParser):
 				if phUrl:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'PORNPAPA-clips', catImage, None))
 
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'PORNPAPA-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- LATEST ---", "LATEST UPDATES", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'PORNPAPA-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- MOST POPULAR ---", "MOST POPULAR VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'PORNPAPA-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'PORNPAPA-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'PORNPAPA-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'PORNPAPA-clips', catImage, None))
 			self.SEARCH_proc = 'PORNPAPA-search'
 			return searchItems(valTab, True)
 
@@ -24742,7 +24747,7 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = self.cm.ph.getSearchGroups(item, 'src=["]([^"#]+?)["]', 1, True)[0]
 				if phTitle:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'SMUTR-clips', phImage, None))
-			valTab.insert(0, CDisplayListItem('--- New ---', "NEW VIDEOS AND SEX MOVIES", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], 'SMUTR-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), "NEW VIDEOS AND SEX MOVIES", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/'], 'SMUTR-clips', catImage, None))
 			return valTab
 
 		if 'SMUTR-clips' == name:
@@ -24818,10 +24823,10 @@ class Host(CBaseHostClass, XXXParser):
 				phUrl = phUrl.replace(' ', '%20')
 				phTitle = self.cm.ph.getSearchGroups(item, '[>]([^>]+?)[<]/a', 1, True)[0].upper()
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'HQFAP-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- TOP ---", "TOP VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/top'], 'HQFAP-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- ALL TAGS ---", "ALL CATEGORIES & TAGS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/categories'], 'HQFAP-categories', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- LATEST ---", "LATEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/latest'], 'HQFAP-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- TRENDING ---", "TRENDING VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/trending'], 'HQFAP-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top')), _('Top'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/top'], 'HQFAP-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Tags')), "ALL CATEGORIES & TAGS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/categories'], 'HQFAP-categories', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/latest'], 'HQFAP-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Trending')), _('Trending'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/trending'], 'HQFAP-clips', catImage, None))
 			return searchItems(valTab, True)
 
 		if 'HQFAP-categories' == name:
@@ -24981,10 +24986,10 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = self.cm.ph.getSearchGroups(item, 'src=["]([^"#]+?)["]', 1, True)[0]
 				if phTitle:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'NAIJAPORNSITE-clips', phImage, None))
-			valTab.insert(0, CDisplayListItem("--- NEW ---", "NEW VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/page/1/?filter=latest'], 'NAIJAPORNSITE-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- BEST ---", "BEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/page/1/?filter=popular'], 'NAIJAPORNSITE-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/page/1/?filter=most-viewed'], 'NAIJAPORNSITE-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- LONGEST ---", "LONGEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/page/1/?filter=longest'], 'NAIJAPORNSITE-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/page/1/?filter=latest'], 'NAIJAPORNSITE-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Best')), _('Best'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/page/1/?filter=popular'], 'NAIJAPORNSITE-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/page/1/?filter=most-viewed'], 'NAIJAPORNSITE-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/page/1/?filter=longest'], 'NAIJAPORNSITE-clips', catImage, None))
 			valTab = searchItems(valTab, True)
 			if next:
 				valTab.append(self.getMoreCatsItem(next.split('/')[-2], next, name))
@@ -25081,7 +25086,7 @@ class Host(CBaseHostClass, XXXParser):
 				Videos = self.cm.ph.getSearchGroups(item, '[(]([0-9]+?)[)]', 1, True)[0]
 				if phTitle:
 					valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + Videos + ' videos', CDisplayListItem.TYPE_CATEGORY, [phUrl], 'NUVID-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- TRENDING ---", "TRENDING VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/1'], 'NUVID-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Trending')), _('Trending'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos/1'], 'NUVID-clips', catImage, None))
 			return searchItems(valTab, True)
 
 		if 'NUVID-search' == name:
@@ -25179,9 +25184,9 @@ class Host(CBaseHostClass, XXXParser):
 					valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + Videos + ' videos\nRating Positive: ' + Rate, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'JUICYVID-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
 			if url.endswith('es/'):
-				valTab.insert(0, CDisplayListItem("--- LATEST ---", "LATEST UPDATES", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'JUICYVID-clips', catImage, None))
-				valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'JUICYVID-clips', catImage, None))
-				valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'JUICYVID-clips', catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'JUICYVID-clips', catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'JUICYVID-clips', catImage, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'JUICYVID-clips', catImage, None))
 				valTab = searchItems(valTab, True)
 			if next:
 				next_page = self.MAIN_URL + next
@@ -25281,9 +25286,9 @@ class Host(CBaseHostClass, XXXParser):
 				if Videos:
 					valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + Videos + ' videos', CDisplayListItem.TYPE_CATEGORY, [phUrl], 'LAPIPPA-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- MOST ---", "MOST RECENT VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?o=mr'], 'LAPIPPA-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?o=tr'], 'LAPIPPA-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?o=mv'], 'LAPIPPA-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem("--- MOST ---", _('Most recent'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?o=mr'], 'LAPIPPA-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?o=tr'], 'LAPIPPA-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?o=mv'], 'LAPIPPA-clips', catImage, None))
 			return searchItems(valTab, True)
 
 		if 'LAPIPPA-search' == name:
@@ -25358,13 +25363,13 @@ class Host(CBaseHostClass, XXXParser):
 			catImage = siteLogo
 			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='Firefox')
 			self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'return_data': True, 'timeout': 15}
-			valTab.append(CDisplayListItem('LATEST', 'LATEST VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/'], 'FAPLANE-clips', catImage, None))
-			valTab.append(CDisplayListItem('POPULAR', 'POPULAR VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?sort=popular'], 'FAPLANE-clips', catImage, None))
-			valTab.append(CDisplayListItem('TOP RATED', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?sort=top_rated'], 'FAPLANE-clips', catImage, None))
-			valTab.append(CDisplayListItem('LONGEST', 'LONGEST VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?sort=longest'], 'FAPLANE-clips', catImage, None))
-			valTab.append(CDisplayListItem('CATEGORIES', 'BROWSE CATEGORIES', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/categories'], 'FAPLANE-catalog', catImage, None))
-			valTab.append(CDisplayListItem('MODELS', 'BROWSE MODELS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models'], 'FAPLANE-catalog', catImage, None))
-			valTab.append(CDisplayListItem('CHANNELS', 'BROWSE CHANNELS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/channels'], 'FAPLANE-catalog', catImage, None))
+			valTab.append(CDisplayListItem(_('Latest'), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/'], 'FAPLANE-clips', catImage, None))
+			valTab.append(CDisplayListItem(_('Popular'), _('Popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?sort=popular'], 'FAPLANE-clips', catImage, None))
+			valTab.append(CDisplayListItem(_('Top rated'), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?sort=top_rated'], 'FAPLANE-clips', catImage, None))
+			valTab.append(CDisplayListItem(_('Longest'), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/?sort=longest'], 'FAPLANE-clips', catImage, None))
+			valTab.append(CDisplayListItem(_('Categories'), 'BROWSE CATEGORIES', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/categories'], 'FAPLANE-catalog', catImage, None))
+			valTab.append(CDisplayListItem(_('Models'), 'BROWSE MODELS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models'], 'FAPLANE-catalog', catImage, None))
+			valTab.append(CDisplayListItem(_('Channels'), 'BROWSE CHANNELS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/channels'], 'FAPLANE-catalog', catImage, None))
 			return searchItems(valTab, True)
 
 		if 'FAPLANE-catalog' == name:
@@ -25535,7 +25540,7 @@ class Host(CBaseHostClass, XXXParser):
 				phTitle = self.cm.ph.getSearchGroups(item, '[>]([^"]+?)[<]/a', 1, True)[0].upper()
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'INXXX-clips', catImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- HOT ---", "HOT VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/hot/'], 'INXXX-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Hot')), _('Hot'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/hot/'], 'INXXX-clips', catImage, None))
 			return searchItems(valTab, True)
 
 		if 'INXXX-search' == name:
@@ -25627,12 +25632,12 @@ class Host(CBaseHostClass, XXXParser):
 				if phUrl and phTitle:
 					valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos + ' videos', CDisplayListItem.TYPE_CATEGORY, [phUrl], 'RATXXX-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- MODELS ---", "MODELS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/actresses/'], 'RATXXX-models', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- STUDIOS ---", "STUDIOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/studios/'], 'RATXXX-studios', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- LONGEST ---", "LONGEST VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'RATXXX-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'RATXXX-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'RATXXX-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- NEW ---", "NEW VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'RATXXX-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Models')), _('Models'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/actresses/'], 'RATXXX-models', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Studios')), _('Studios'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/studios/'], 'RATXXX-studios', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Longest')), _('Longest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/longest/'], 'RATXXX-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'RATXXX-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'RATXXX-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'RATXXX-clips', catImage, None))
 			return searchItems(valTab, True)
 
 		if 'RATXXX-search' == name:
@@ -25781,9 +25786,9 @@ class Host(CBaseHostClass, XXXParser):
 				phTitle = decodeHtml(phTitle).strip().upper() if phTitle else phUrl.rstrip('/').split('/')[-1].replace('-', ' ').upper()
 				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'FAPNFUCK-clips', phImage or catImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem('--- TOP RATED ---', 'TOP RATED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'FAPNFUCK-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem('--- MOST VIEWED ---', 'MOST VIEWED VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'FAPNFUCK-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem('--- NEW ---', 'NEW VIDEOS', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'FAPNFUCK-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'FAPNFUCK-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'FAPNFUCK-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'FAPNFUCK-clips', catImage, None))
 			if url.endswith('ries/'):
 				valTab = searchItems(valTab, True)
 			if next:
@@ -25895,10 +25900,10 @@ class Host(CBaseHostClass, XXXParser):
 				phRate = self.cm.ph.getSearchGroups(item, r'[\s]([0-9%]{3})[<]', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + phVideos + '\nRating Positive: ' + phRate, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'FAPALITY-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- CHANNELS ---", "CHANNELS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/channels/'], 'FAPALITY-channels', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top/'], 'FAPALITY-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- POPULAR ---", "MOST POPULAR VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/popular/'], 'FAPALITY-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- NEW ---", "RECENTLY ADDED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/newest/'], 'FAPALITY-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Channels')), _('Channels'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/channels/'], 'FAPALITY-channels', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top/'], 'FAPALITY-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Most popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/popular/'], 'FAPALITY-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('Recently added'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/newest/'], 'FAPALITY-clips', catImage, None))
 			return searchItems(valTab, True)
 
 		if 'FAPALITY-search' == name:
@@ -26025,7 +26030,7 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = self.cm.ph.getSearchGroups(item, 'src=["]([^"]+?)["]', 1, True)[0]
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'FUCKER-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- TAGS ---", "TAGS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/tags'], 'FUCKER-tags', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Tags')), _('Tags'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/tags'], 'FUCKER-tags', catImage, None))
 			return searchItems(valTab, True)
 
 		if 'FUCKER-tags' == name:
@@ -26174,9 +26179,9 @@ class Host(CBaseHostClass, XXXParser):
 				Subs = self.cm.ph.getSearchGroups(item, 'rss"></i[>]([0-9.KHM]+?)[<]', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + Videos + ' videos\nSubscribers: ' + Subs, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'EMPFLIX-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- FEATURED  ---", "FEATURED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/featured'], 'EMPFLIX-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- TOP RATED  ---", "TOP RATED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/toprated'], 'EMPFLIX-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- MOST RECENT  ---", "MOST RECENT VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new'], 'EMPFLIX-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Featured')), _('Featured'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/featured'], 'EMPFLIX-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Top rated')), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/toprated'], 'EMPFLIX-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most recent')), _('Most recent'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new'], 'EMPFLIX-clips', catImage, None))
 			return searchItems(valTab, True)
 
 		if 'EMPFLIX-search' == name:
@@ -26351,9 +26356,9 @@ class Host(CBaseHostClass, XXXParser):
 				Rate = self.cm.ph.getSearchGroups(item, r'[\s]([0-9%]+?)[\s]\s', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, phTitle + '\n' + Videos + '\nRating Positive: ' + Rate, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'TEENAGER365-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- MOST VIEWED ---", "MOST VIEWED VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'TEENAGER365-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- POPULAR  ---", "POPULAR VIDEOS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'TEENAGER365-clips', catImage, None))
-			valTab.insert(0, CDisplayListItem("--- LATEST  ---", "LATEST UPDATES", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'TEENAGER365-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Most viewed')), _('Most viewed'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/most-popular/'], 'TEENAGER365-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], 'TEENAGER365-clips', catImage, None))
+			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest updates'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/latest-updates/'], 'TEENAGER365-clips', catImage, None))
 			return searchItems(valTab, True)
 
 		if 'TEENAGER365-search' == name:
@@ -26442,10 +26447,10 @@ class Host(CBaseHostClass, XXXParser):
 			sts, data = self.getPageWithCFBypass(self.MAIN_URL + '/')
 			if not sts:
 				return valTab
-			valTab.append(CDisplayListItem('Top Rated', 'Top Rated', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'FAAPY-clips', siteLogo, None))
-			valTab.append(CDisplayListItem('Categories', 'Categories', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/categories/'], 'FAAPY-categories', siteLogo, None))
-			valTab.append(CDisplayListItem('Models', 'Models', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], 'FAAPY-models', siteLogo, None))
-			valTab.append(CDisplayListItem('Channels', 'Channels', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/channels/'], 'FAAPY-channels', siteLogo, None))
+			valTab.append(CDisplayListItem(_('Top rated'), _('Top rated'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/top-rated/'], 'FAAPY-clips', siteLogo, None))
+			valTab.append(CDisplayListItem(_('Categories'), _('Categories'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/categories/'], 'FAAPY-categories', siteLogo, None))
+			valTab.append(CDisplayListItem(_('Models'), _('Models'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/models/'], 'FAAPY-models', siteLogo, None))
+			valTab.append(CDisplayListItem(_('Channels'), _('Channels'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/channels/'], 'FAAPY-channels', siteLogo, None))
 			valTab = searchItems(valTab, True)
 			return valTab
 
