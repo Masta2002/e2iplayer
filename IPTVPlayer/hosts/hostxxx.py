@@ -79,7 +79,7 @@ def get_base_url(url):
 
 
 SITEDATA = {
-# '24PORN': ('https://24porn.com/videos/', '', ''), # OFFLINE - Seite auf Vue/Nuxt-SPA umgestellt, alte HTML-Marker greifen nicht mehr
+# '24PORN': ('https://24porn.com/videos/', '', ''), # OFFLINE - site moved to a Vue/Nuxt SPA, the old HTML markers no longer match
 '3MOVS': ('https://www.3movs.com/categories/', '', ''),
 '69TEENTUBE': ('https://69teentube.com/hdporn/', '', ''),
 '9VIDS': ('https://9vids.com/tags/', '', ''),
@@ -96,10 +96,10 @@ SITEDATA = {
 'AMAZINGCUCKOLD': ('https://www.amazingcuckold.com', '', ''),
 'ANALDIN': ('https://www.analdin.com/categories/', '', ''),
 'ANALPORNOSEX': ('https://analpornosex.com/categories/', '', ''),
-'ANYBUNNY': ('https://anybunny.com', 'anybunny', ''),
+'ANYBUNNY': ('https://anybunny.org', 'anybunny', ''),
 'ANYPORN': ('https://anyporn.com/categories/', '', ''),
 'ANYSEX': ('https://anysex.com/videos/categories/', '', ''),
-# 'ASIANPORN': ('https://asianporn.life/categories', '', ''), # DEAKTIVIERT - Video-Play scheitert an CF-Redirect auf de.asianporn.life mit leerem Cookie, kein Fix möglich
+# 'ASIANPORN': ('https://asianporn.life/categories', '', ''), # DISABLED - video playback fails on a Cloudflare redirect to de.asianporn.life with an empty cookie, no fix possible
 'AVEXXX': ('https://avexxx.com/categories/', '', ''),
 'BABES34': ('https://babes34.me/tags/', '', ''),
 'BADDIES': ('https://baddies.xxx/categories/', '', ''),
@@ -124,7 +124,7 @@ SITEDATA = {
 'EPORNER': ('https://www.eporner.com/cats/', 'eporner', ''),
 'EROPROFILE': ('https://www.eroprofile.com', '', ''),
 'FAMILYPORN': ('https://familyporn.tv/categories/', 'familyporn', ''),
-# 'FEMEFUN': ('https://femefun.com/categories/piercing/', '', ''), # DEAKTIVIERT - Listing funktioniert, aber praktisch kein Video mehr online (Alt-Content grossflaechig entfernt/CDN tot), auf Nutzerwunsch deaktiviert
+# 'FEMEFUN': ('https://femefun.com/categories/piercing/', '', ''), # DISABLED - listing works, but hardly any video is online anymore (old content removed on a large scale / CDN dead), disabled on user request
 'FETISHPAPA': ('https://www.fetishpapa.com/', '', ''),
 'FIRSTANALVIDEOS': ('https://www.firstanalvideos.com/categories/', '', None),
 'FITPORN': ('https://fit.porn/categories/', '', None),
@@ -145,17 +145,17 @@ SITEDATA = {
 'HELLPORNO': ('https://hellporno.com/categories/', '', ''),
 'HOME MOVIES TUBE': ('https://www.homemoviestube.com/channels/', 'HomeMoviesTube', ''),
 'HOMEPORNKING': ('https://www.homepornking.com/categories/', 'homepornking', ''),
-# 'HORNYFAP': ('https://hornyfap.tv/categories/', '', ''), # DEAKTIVIERT - Cloudflare-Challenge nicht lösbar (externer Solver liefert leeren Cookie zurück), kein Fix möglich
+# 'HORNYFAP': ('https://hornyfap.tv/categories/', '', ''), # DISABLED - Cloudflare challenge not solvable (the external solver returns an empty cookie), no fix possible
 'HQPORNER': ('https://hqporner.com/categories', 'hqporner', ''),
 'HYPNOTUBE': ('https://hypnotube.com/channels/', '', ''),
 'IN35': ('https://in35.com/categories/', '', ''),
 'JAPANESE MATURES': ('https://japanesematures.com/tags/', 'JAPANESEMATURES', ''),
 'JAPANESE TEENS': ('https://18tokyo.com/tags/', 'JAPANESETEENS', ''),
-# "IT'S PORN": ('https://www.its.porn/categories/', 'ITSPORN', ''), # DEAKTIVIERT - Seite ist zu einem reinen Weiterleitungs-Aggregator mit verschluesselten "go?vx=..."-Links auf fremde Partnerseiten geworden, kein eigener Video-Content mehr
+# "IT'S PORN": ('https://www.its.porn/categories/', 'ITSPORN', ''), # DISABLED - the site became a pure redirect aggregator with encrypted "go?vx=..." links to partner sites, no own video content anymore
 'JAVBANGERS': ('https://www.javbangers.com/categories/', '', ''),
 'JAVTEENTUBE': ('https://javteentube.com/categories/', '', None),
 'JIZZBOOM': ('https://jizzboom.com/category.html', '', ''),
-# 'JIZZBUNKER': ('https://jizzbunker.com/channels/alphabetically', '', ''), # DEAKTIVIERT - härtere Cloudflare-Challenge-Stufe, auch nach erfolgreichem CF-Token weiterhin 403, kein Fix möglich
+# 'JIZZBUNKER': ('https://jizzbunker.com/channels/alphabetically', '', ''), # DISABLED - stricter Cloudflare challenge level, still 403 even after a successful CF token, no fix possible
 'KATESTUBE': ('https://www.katestube.com/categories/', '', ''),
 'KOLOPORNO': ('https://www.koloporno.com/kategoriach/', '', ''),
 'LAIDHUB': ('https://www.laidhub.com/porn-categories/', '', ''),
@@ -210,10 +210,10 @@ SITEDATA = {
 'PORNREWIND': ('https://www.pornrewind.com/categories/', '', ''),
 'PORNTREX': ('https://www.porntrex.com/categories/', '', ''),
 'PORNTRY': ('https://www.porntry.com/', '', ''),
-# 'PORNVIDEOS 4K': ('http://pornvideos4k.com/en/', 'pornvideos4k', ''), # DEAKTIVIERT - Seite blockt praktisch jeden Zugriff mit HTTP 403 (Rate-Limiting/Bot-Schutz), auch nach laengerer Wartezeit kein zuverlaessiger Zugriff moeglich, kein Fix moeglich
+# 'PORNVIDEOS 4K': ('http://pornvideos4k.com/en/', 'pornvideos4k', ''), # DISABLED - the site blocks practically every request with HTTP 403 (rate limiting / bot protection), no reliable access even after waiting, no fix possible
 'PORNVIDEOSBEST': ('https://pornvideosbest.com/niches/', '', ''),
 'PORNWHITE': ('https://www.pornwhite.com/categories/', '', ''),
-# 'PORNX': ('https://pornx.to/', '', ''), # DEAKTIVIERT - sowohl pornx.fr als auch pornx.to liefern auf der Box direkt 403 vom Cloudflare-Bot-Schutz, kein Fix moeglich
+# 'PORNX': ('https://pornx.to/', '', ''), # DISABLED - both pornx.fr and pornx.to return 403 from the Cloudflare bot protection on the box, no fix possible
 'PORNXP': ('https://pornxp.org/', '', ''),
 'PORNYTEEN': ('https://pornyteen.com/categories/', '', ''),
 'PUNISHBANG': ('https://www.punishbang.com/categories/', '', ''),
@@ -360,13 +360,13 @@ SITEDATA = {
 'BIGBUTTHOLES': ('https://bigbuttholes.com/categories/', '', ''),
 
 # 'MOMS-SEX-VIDEOS': ('https://www.moms-sex-videos.com/categories/', 'MOMSSEXVIDEOS', ''),
-# 'REAL-MATURE-PORN': ('https://www.realmatureporn.com/mature/', 'REALMATUREPORN', ''), # DEAKTIVIERT - Cloudflare "Managed Challenge" hinterlaesst kein wiederverwendbares cf_clearance-Cookie, Video-Wiedergabe nie loesbar, kein Fix moeglich
+# 'REAL-MATURE-PORN': ('https://www.realmatureporn.com/mature/', 'REALMATUREPORN', ''), # DISABLED - the Cloudflare "Managed Challenge" leaves no reusable cf_clearance cookie, video playback never solvable, no fix possible
 'PORNDREAMZ': ('https://porndreamz.com/', '', ''),
 'SEXETAG': ('https://www.sexetag.com/', '', ''),
 # 'XXXELF': ('https://xxxelf.com/categories', '', ''),
 'EROGARGA': ('https://www.erogarga.com/', '', ''),
 'TUBEV': ('https://www.tubev.sex/categories', '', ''),
-# 'REALGFPORN': ('https://www.realgfporn.com/', '', ''), # DEAKTIVIERT - Listing funktioniert, aber praktisch kein Video mehr online (CDN liefert durchgehend 404, auch mit frischen Tokens verifiziert), auf Nutzerwunsch deaktiviert
+# 'REALGFPORN': ('https://www.realgfporn.com/', '', ''), # DISABLED - listing works, but hardly any video is online anymore (the CDN returns 404 throughout, verified with fresh tokens), disabled on user request
 # 'CRAZYAMATEURS': ('https://www.crazy-amateurs.com/categories/', '', ''),
 'VIDEOSECTION': ('https://videosection.com/', '', ''),
 '4TUBE': ('https://www.4tube.com/', '', ''),
@@ -375,7 +375,7 @@ SITEDATA = {
 }
 
 SITEDATA_CAMS = {
-# 'ANACAMS': ('https://anacams.com/discover/', '', None), # DEAKTIVIERT - Cloudflare-Challenge kann vom Begleit-Solver nicht geloest werden (Token-Antwort kommt ohne Cookie zurueck), Retry liefert weiterhin 403, kein Fix moeglich
+# 'ANACAMS': ('https://anacams.com/discover/', '', None), # DISABLED - the companion solver cannot solve the Cloudflare challenge (the token reply comes back without a cookie), retries still get 403, no fix possible
 'BONGACAMS': ('https://en.bongacams.com/', '', ''),
 'CAMBEAUTIES': ('https://cambeauties.com/categories-54297a-707/', '', ''),
 'CAMHUB': ('https://www.camhub.cc/categories/', '', ''),
@@ -383,12 +383,12 @@ SITEDATA_CAMS = {
 'CAMWHORESBAY': ('https://www.camwhoresbay.com/categories/', '', ''),
 'FOTKA-PL-KAMERKI': ('https://api.fotka.pl/v2/cams/get?page=1&limit=100&gender=f', 'FOTKA', None),
 'MASTURBATE2GETHER': ('https://www.masturbate2gether.com', '', ''),
-# 'MOREAMATEURS': ('https://moreamateurs.com/categories/', '', ''), # DEAKTIVIERT - Domain leitet komplett auf megacamz.com um, eine unabhaengige Cam-Review-/Affiliate-Seite ohne Videoinhalte, kein Fix moeglich
+# 'MOREAMATEURS': ('https://moreamateurs.com/categories/', '', ''), # DISABLED - the domain redirects entirely to megacamz.com, an unrelated cam review / affiliate site without videos, no fix possible
 'XHAMSTERLIVE': ('https://xhamsterlive.com', 'xhamsterlive', None),
 
-# 'CAM-SEX': ('https://cam-sex.net', 'CAMSEX', None), # DEAKTIVIERT - Listing funktioniert, aber alle Videos sind eingebettete Chaturbate-Rooms, Chaturbate blockt aktuell jeden Zugriff mit Login/Altersverifizierung (gleiches Problem wie CHATURBATE), Video-Abspielen zu 100% kaputt
+# 'CAM-SEX': ('https://cam-sex.net', 'CAMSEX', None), # DISABLED - listing works, but all videos are embedded Chaturbate rooms and Chaturbate currently blocks every request with login / age verification (same problem as CHATURBATE), playback 100% broken
 # 'CAMBRO.TV': ('https://www.cambro.tv/categories/', 'CAMBRO', None),
-# 'CAMVIDEOS': ('https://www.camvideos.tv/categories/', '', ''), # DEAKTIVIERT - Listing funktioniert, aber Video-CDN-Backend (sharded u*.camvideos.tv/remote_control.php-Nodes) durchgehend ueberlastet/nicht erreichbar, 0% der Videos spielbar, auf Nutzerwunsch deaktiviert
+# 'CAMVIDEOS': ('https://www.camvideos.tv/categories/', '', ''), # DISABLED - listing works, but the video CDN backend (sharded u*.camvideos.tv/remote_control.php nodes) is overloaded / unreachable throughout, 0% of the videos play, disabled on user request
 # 'CHATURBATE': ('https://chaturbate.com/api/ts/hashtags/tag-table-data/?limit=100', '', None),
 'EVERYCAMGIRL': ('https://everycamgirl.com/', '', ''),
 # 'SHOWUP   - live cams': ('https://showup.tv', 'showup', None),
@@ -16252,10 +16252,10 @@ class Host(CBaseHostClass, XXXParser):
 			return valTab
 
 		if 'anybunny' == name:
-			self.MAIN_URL = 'https://anybunny.com'
+			self.MAIN_URL = 'https://anybunny.org'
 			COOKIEFILE = join(GetCookieDir(), 'anybunny.cookie')
 			self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE}
-			sts, data = self.getPage(url, 'anybunny.cookie', 'anybunny.com', self.defaultParams)
+			sts, data = self.getPage(url, 'anybunny.cookie', 'anybunny.org', self.defaultParams)
 			if not sts:
 				return valTab
 			data = data.split('<li>             <a')
@@ -16270,15 +16270,15 @@ class Host(CBaseHostClass, XXXParser):
 				if phUrl:
 					valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'anybunny-clips', phImage, None))
 			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem("--- Top Rated ---", "Top Rated", CDisplayListItem.TYPE_CATEGORY, ['https://anybunny.com/top/'], 'anybunny-clips', siteLogo, None))
-			valTab.insert(0, CDisplayListItem("--- New ---", "New", CDisplayListItem.TYPE_CATEGORY, ['https://anybunny.com/new/'], 'anybunny-clips', siteLogo, None))
+			valTab.insert(0, CDisplayListItem("--- New ---", "New", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/new/1'], 'anybunny-clips', siteLogo, None))
 			return searchItems(valTab, True)
 		if 'anybunny-search' == name:
-			return self.listsItems(-1, 'https://anybunny.com/top/%s' % url.replace(' ', '+'), 'anybunny-clips')
+			return self.listsItems(-1, 'https://anybunny.org/top/%s' % url.replace(' ', '+'), 'anybunny-clips')
 		if 'anybunny-clips' == name:
+			self.MAIN_URL = 'https://anybunny.org'
 			COOKIEFILE = join(GetCookieDir(), 'anybunny.cookie')
 			self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE}
-			sts, data = self.getPage(url, 'anybunny.cookie', 'anybunny.com', self.defaultParams)
+			sts, data = self.getPage(url, 'anybunny.cookie', 'anybunny.org', self.defaultParams)
 			if not sts:
 				return valTab
 			next = self.cm.ph.getSearchGroups(data, '''["]([^"^']+?)["]>Next''', 1, True)[0]

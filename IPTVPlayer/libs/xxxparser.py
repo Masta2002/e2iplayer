@@ -742,6 +742,8 @@ class XXXParser:
 		if url.startswith('https://www.hentaicity.com'):
 			return 'https://www.hentaicity.com'
 
+		if url.startswith(('https://anybunny.org', 'https://anybunny.com')):
+			return 'https://anybunny.org'
 		return self.MAIN_URL
 
 	def _parse_base64_m3u8(self, url, cookie_name):
@@ -5803,26 +5805,36 @@ class XXXParser:
 				videoUrl = decryptHash(videoUrl, license_code, '16')
 			return urlparser.decorateUrl(videoUrl, {'Referer': url, 'User-Agent': self.HTTP_HEADER['User-Agent']})
 
-		if parser == 'https://anybunny.com':
+		if parser == 'https://anybunny.org':
 			COOKIEFILE = join(GetCookieDir(), 'anybunny.cookie')
 			self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE}
-			sts, data = self.getPage(url, 'anybunny.cookie', 'anybunny.com', self.defaultParams)
+			sts, data = self.getPage(url, 'anybunny.cookie', 'anybunny.org', self.defaultParams)
 			if not sts:
 				return ''
-			videoUrls = self.cm.ph.getSearchGroups(data, '''file:"[ ]([^"^>]+?)[?]''')[0]
-			printDBG('ANYBUNNY Links: ' + str(videoUrls))
-			if '.m3u8' in videoUrls:
-				if self.cm.isValidUrl(videoUrls):
-					tmp = getDirectM3U8Playlist(videoUrls, checkContent=True, sortWithMaxBitrate=999999999)
-					printDBG('ready list: ' + str(tmp))
-					if not tmp:
-						videoUrl = self.cm.ph.getSearchGroups(data, '''or[ ]([^"^>]+?)[ ]:cast''')[0]
-						printDBG('Direkt link: ' + videoUrl)
-						return videoUrl
-					for item in tmp:
-						return item['url']
-			printDBG('Fetched link: ' + videoUrl)
-			return videoUrl
+			# the video page embeds a player page whose Playerjs "file" lists
+			# "[quality]url:cast:url" entries; the stream1 URLs redirect to the CDN
+			embedUrl = self.cm.ph.getSearchGroups(data, r'''<iframe[^>]+src=["']([^"']+?)["']''', 1, True)[0]
+			if not embedUrl:
+				printDBG('ANYBUNNY: player iframe not found')
+				return ''
+			embedUrl = urljoin(url, embedUrl.replace('&amp;', '&'))
+			sts, data = self.getPage(embedUrl, 'anybunny.cookie', 'anybunny.org', self.defaultParams)
+			if not sts:
+				return ''
+			fileStr = self.cm.ph.getSearchGroups(data, r'''file\s*:\s*["']([^"']+)["']''', 1, True)[0]
+			videoUrl, bestQuality = '', -1
+			for part in re.split(r',(?=\[)', fileStr):
+				m = re.match(r'\[(\d+)[^\]]*\](.+)', part)
+				if not m:
+					continue
+				streamUrl = m.group(2).split(':cast:')[0].strip()
+				if streamUrl.startswith('http') and int(m.group(1)) > bestQuality:
+					videoUrl, bestQuality = streamUrl, int(m.group(1))
+			if not videoUrl:
+				printDBG('ANYBUNNY: no stream in the player')
+				return ''
+			printDBG('ANYBUNNY %sp: %s' % (bestQuality, videoUrl))
+			return urlparser.decorateUrl(videoUrl, {'Referer': embedUrl, 'User-Agent': USER_AGENT})
 
 		if parser == 'https://hqporner.com':
 			videoUrl = urlparser.decorateUrl(url, {'Referer': url})
