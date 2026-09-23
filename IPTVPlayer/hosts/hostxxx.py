@@ -389,6 +389,7 @@ SITEDATA = {
 'XFREEHD': ('https://beta.xfreehd.com', '', ''),
 'PORNMZ': ('https://pornmz.com', '', ''),
 'HITPRN': ('https://www.hitprn.net', '', ''),
+'PORNOBAE': ('https://pornobae.com', '', ''),
 
 }
 
@@ -414,6 +415,7 @@ KVS_NETWORK = {
 WPTUBE_NETWORK = {
 	'PORNMZ': {'url': 'https://pornmz.com', 'categories': '/categories/'},
 	'HITPRN': {'url': 'https://www.hitprn.net', 'categories': None},
+	'PORNOBAE': {'url': 'https://pornobae.com', 'categories': '/categories/'},
 }
 
 SITEDATA_CAMS = {

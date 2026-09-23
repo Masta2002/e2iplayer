@@ -63,7 +63,7 @@ TXXX_NETWORK_SITES = ('https://upornia.com', 'https://hdzog.com', 'https://vxxx.
 KVS_SITES = ('https://freshporno.org', 'https://www.freepornvideos.xxx', 'https://www.fpo.xxx', 'https://heroero.com', 'https://porndd.com')
 
 # WordPress tube theme sites (hostxxx.py WPTUBE_NETWORK): own player page or a file hoster iframe
-WPTUBE_SITES = ('https://pornmz.com', 'https://www.hitprn.net')
+WPTUBE_SITES = ('https://pornmz.com', 'https://www.hitprn.net', 'https://pornobae.com')
 
 # live cam sites (hostxxx.py SITEDATA_CAMS), the stream is looked up when it is played
 LIVECAM_SITES = ('https://www.cam4.com', 'https://www.camsoda.com', 'https://www.myfreecams.com', 'https://streamate.com', 'https://www.xlovecam.com', 'https://api.sinparty.com', 'https://stripchat.com')
@@ -6691,6 +6691,17 @@ class XXXParser:
 				# file hoster embed; lulust.com is the same service as luluvdo.com, which urlparser knows
 				frame = re.sub(r'^https?://(?:www\.)?lulust\.com/', 'https://luluvdo.com/', frame)
 				if 1 != self.up.checkHostSupport(frame):
+					# unknown hoster (e.g. tubexplayer.com): packed JWPlayer setup with the playlist in "file"
+					self.HTTP_HEADER['Referer'] = url
+					sts, player = self.cm.getPage(frame, self.defaultParams)
+					packed = re.findall(r'(?s)>eval\(function\(p,a,c,k,e,d\)(.+?)</script>', player) if sts else []
+					try:
+						player = unpackJSPlayerParams(packed[-1], TEAMCASTPL_decryptPlayerParams, 0, True, True) if packed else player
+					except Exception:
+						printExc()
+					videoUrl = self.cm.ph.getSearchGroups(player or '', r'''file\s*:\s*["']([^"']+\.(?:m3u8|mp4)[^"']*)["']''', 1, True)[0]
+					if videoUrl:
+						return urlparser.decorateUrl(videoUrl, {'Referer': frame, 'User-Agent': self.HTTP_HEADER.get('User-Agent', '')})
 					continue
 				try:
 					for item in self.up.getVideoLinkExt(frame) or []:
