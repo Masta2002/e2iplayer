@@ -178,7 +178,7 @@ class XXXParser:
 			return 'https://porndig.com'
 		if url.startswith('https://www.playvids.com'):
 			return 'https://www.playvids.com'
-		if url.startswith('https://glavmatures.com'):
+		if url.startswith(('https://glavmatures.com', 'https://www.glavmatures.com')):
 			return 'https://glavmatures.com'
 		if url.startswith('https://xcum.com'):
 			return 'https://xcum.com'
@@ -796,6 +796,70 @@ class XXXParser:
 		if 'gounlimited.to' in url and 'embed' not in url:
 			url = 'https://gounlimited.to/embed-{0}.html'.format(url.split('/')[3])
 
+		if parser == 'https://letsporn.com':
+			printDBG('LETSPORN PARSER')
+			COOKIEFILE = join(GetCookieDir(), 'letsporn.cookie')
+			self.USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = url
+			self.HTTP_HEADER['User-Agent'] = self.USER_AGENT
+			self.defaultParams = {'header': self.HTTP_HEADER, 'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE, 'return_data': True, 'timeout': 15}
+			sts, data = self.getPage(url, 'letsporn.cookie', 'letsporn.com', self.defaultParams)
+			if not sts or not data:
+				printDBG('LETSPORN: page load failed')
+				return ''
+
+			def clean(value):
+				value = (value or '').strip().replace('\\/', '/').replace('\\u002F', '/').replace('\\u002f', '/').replace('\\u003A', ':').replace('\\u003a', ':').replace('&amp;', '&')
+				if value.startswith('//'):
+					return 'https:' + value
+				if value.startswith('/'):
+					return urljoin(url, value)
+				return value
+
+			def valid(value):
+				v = value.lower()
+				if not v.startswith('http'):
+					return False
+				if any(x in v for x in ('/contents/videos_screenshots/', '.jpg', '.jpeg', '.png', '.webp', '.vtt')):
+					return False
+				return '.mp4' in v or '.m3u8' in v or '/stream/' in v or '/video/' in v
+
+			def first_valid(candidates):
+				for item in candidates:
+					candidate = clean(item)
+					if valid(candidate):
+						return candidate
+				return ''
+
+			anyMedia = r'''["']((?:https?:)?//[^"'\s<>]+?\.(?:mp4|m3u8)(?:\?[^"'\s<>]*)?)["']'''
+			videoUrl = ''
+			for pat in (r'''["']video_url["']\s*[:=]\s*["']([^"']+)["']''',
+						r'''\bvideo_url\s*[:=]\s*["']([^"']+)["']''',
+						r'''["']videoUrl["']\s*[:=]\s*["']([^"']+)["']''',
+						r'''\bvideoUrl\s*[:=]\s*["']([^"']+)["']''',
+						r'''["']file["']\s*[:=]\s*["']([^"']+)["']''',
+						r'''\bfile\s*[:=]\s*["']([^"']+\.(?:mp4|m3u8)(?:\?[^"']*)?)["']''',
+						r'''<source[^>]+src=["']([^"']+\.(?:mp4|m3u8)(?:\?[^"']*)?)["']''',
+						r'''contentUrl["']?\s*[:=]\s*["']([^"']+\.(?:mp4|m3u8)(?:\?[^"']*)?)["']''',
+						anyMedia):
+				videoUrl = first_valid(re.findall(pat, data, re.I | re.S))
+				if videoUrl:
+					break
+			if not videoUrl:
+				embed = self.cm.ph.getSearchGroups(data, r'''<iframe[^>]+src=["']([^"']+?)["']''', 1, True)[0]
+				if embed:
+					embed = clean(embed)
+					printDBG('LETSPORN iframe: ' + embed)
+					sts2, data2 = self.getPage(embed, 'letsporn.cookie', 'letsporn.com', self.defaultParams)
+					if sts2 and data2:
+						videoUrl = first_valid(re.findall(anyMedia, data2, re.I))
+			if videoUrl:
+				printDBG('LETSPORN video URL: ' + videoUrl)
+				return urlparser.decorateUrl(videoUrl, {'Referer': url, 'User-Agent': self.USER_AGENT})
+			printDBG('LETSPORN: no video URL found')
+			return ''
+
 		if parser == 'mjpg_stream':
 			try:
 				stream = urlopen(url, timeout=15)
@@ -1127,6 +1191,64 @@ class XXXParser:
 						return '' if item['bitrate'] == 'unknown' else item['url']
 					except Exception:
 						pass
+			return ''
+
+		if parser == 'https://faapy.com':
+			printDBG('FAAPY PARSER')
+			COOKIEFILE = join(GetCookieDir(), 'faapy.cookie')
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = url
+			params = {'header': self.HTTP_HEADER, 'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE, 'return_data': True, 'timeout': 15}
+			sts, pageData = self.getPage(url, 'faapy.cookie', 'faapy.com', params)
+			if not sts:
+				return ''
+			# the /get_file/ MP4 only plays with the session cookie of this video page
+			try:
+				cookieHeader = self.cm.getCookieHeader(COOKIEFILE)
+			except Exception:
+				printExc()
+				cookieHeader = ''
+
+			# Try the player iframe when the video page exposes one.  If the
+			# iframe itself returns 404, keep the original video-page HTML and
+			# continue searching it for a real source.
+			data = pageData
+			embed = self.cm.ph.getSearchGroups(data, r'<iframe[^>]+src=["\']([^"\']*(?:/embed/|embed/)[^"\']*)["\']', 1, True)[0]
+			if embed:
+				embed = embed.replace('\\/', '/').strip()
+				embed = checkhttps(embed)
+				if embed.startswith('/'):
+					embed = 'https://faapy.com' + embed
+				sts2, data2 = self.getPage(embed, 'faapy.cookie', 'faapy.com', params)
+				if sts2 and data2:
+					data = data2
+
+			# Search both player HTML and the original video page.  FAAPY has
+			# used several JS/source formats, so accept direct MP4/M3U8 URLs,
+			# JSON file/src fields and escaped URLs.  Never return trailer/preview
+			# files or the known generic HCL1 placeholder.
+			search_blocks = [data]
+			if data is not pageData:
+				search_blocks.append(pageData)
+			patterns = [
+				r'(?:file|src|source|videoUrl|video_url|fileUrl|file_url)\s*[:=]\s*["\']([^"\']+\.(?:mp4|m3u8)(?:[/\?][^"\']*)?)["\']',
+				r'(?:file|src|source|videoUrl|video_url|fileUrl|file_url)\\?\s*[:=]\\?\s*["\']([^"\']+\\.(?:mp4|m3u8)(?:[/\\?][^"\']*)?)["\']',
+				r'<source[^>]+src=["\']([^"\']+\.(?:mp4|m3u8)(?:\?[^"\']*)?)["\']',
+				r'(https?://[^"\'\s<>]+\.(?:mp4|m3u8)(?:\?[^"\'\s<>]*)?)',
+			]
+			for block in search_blocks:
+				for pat in patterns:
+					for match in re.finditer(pat, block, re.I):
+						videoUrl = match.group(1).replace('\\/', '/').replace('\\u0026', '&')
+						videoUrl = checkhttps(videoUrl)
+						low = videoUrl.lower()
+						if 'hcl1 - en.mp4' in low or 'trailer' in low or 'preview' in low:
+							continue
+						if '.mp4' in low or '.m3u8' in low:
+							meta = {'Referer': url, 'Origin': 'https://faapy.com', 'User-Agent': self.HTTP_HEADER.get('User-Agent', USER_AGENT)}
+							if cookieHeader:
+								meta['Cookie'] = cookieHeader
+							return urlparser.decorateUrl(videoUrl, meta)
 			return ''
 
 		if parser == 'https://hellporno.com/':
@@ -3940,18 +4062,6 @@ class XXXParser:
 			if videoUrl:
 				return urlparser.decorateUrl(videoUrl, {'Referer': url})
 
-		if parser == 'https://letsporn.com':
-			printDBG('LETSPORN PARSER')
-			COOKIEFILE = join(GetCookieDir(), 'letsporn.cookie')
-			self.USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36'
-			self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE, 'return_data': True}
-			sts, data = self.getPage(url, 'letsporn.cookie', 'letsporn.com', self.defaultParams)
-			videoUrl = self.cm.ph.getSearchGroups(data, r'contentUrl":\s["]([^"]+?)["]')[0]
-			printDBG('Videolink: ' + videoUrl)
-			if videoUrl:
-				cookieHeader = self.cm.getCookieHeader(COOKIEFILE)
-				return urlparser.decorateUrl(videoUrl, {'Referer': url, 'Cookie': cookieHeader, 'User-Agent': self.USER_AGENT})
-
 		if parser == 'https://jizzberry.com':
 			printDBG('JIZZBERRY PARSER')
 			COOKIEFILE = join(GetCookieDir(), 'jizzberry.cookie')
@@ -5946,16 +6056,94 @@ class XXXParser:
 			return urlparser.decorateUrl(videoUrl, {'Referer': url}) if videoUrl else ''
 
 		if parser == 'https://glavmatures.com':
+			printDBG('GLAVMATURES PARSER START')
+
+			video_url = url
+			if video_url.startswith('/'):
+				video_url = 'https://www.glavmatures.com' + video_url
+
+			# reuse the session cookie the host created while browsing
 			COOKIEFILE = join(GetCookieDir(), 'glavmatures.cookie')
-			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='iphone')
-			self.defaultParams = {'use_cookie': True, 'load_cookie': False, 'save_cookie': True, 'cookiefile': COOKIEFILE}
-			sts, data = self.getPage(url, 'glavmatures.cookie', 'glavmatures.com', self.defaultParams)
-			if not sts:
+			header = self.cm.getDefaultHeader(browser='chrome')
+			header['Referer'] = video_url
+			header['Accept'] = 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8'
+			header['Accept-Language'] = 'en-US,en;q=0.7'
+
+			params = {
+				'header': header,
+				'use_cookie': True,
+				'load_cookie': True,
+				'save_cookie': True,
+				'cookiefile': COOKIEFILE,
+				'return_data': True,
+				'timeout': 30
+			}
+
+			printDBG('GLAVMATURES VIDEO PAGE GET: ' + video_url)
+			sts, data = self.cm.getPage(video_url, params)
+			printDBG('GLAVMATURES VIDEO PAGE RESULT sts=%s len=%s' % (str(sts), str(len(data) if data else 0)))
+
+			if not sts or not data:
+				printDBG('GLAVMATURES PARSER: page load failed')
 				return ''
-			data = self.cm.ph.getDataBeetwenMarkers(data, 'votes)</span></span>', 'PHPSESSID', False)[1]
-			videoUrl = self.cm.ph.getDataBeetwenMarkers(data, '<a href="', '" data', False)[1]
-			printDBG('Ready link: ' + videoUrl)
-			return videoUrl
+
+			if data.strip() == 'Something went wrong :( Try to refresh the page.':
+				printDBG('GLAVMATURES PARSER: site returned error page')
+				return ''
+
+			def norm(value):
+				value = value.replace('\\/', '/')
+				value = value.replace('&amp;', '&')
+				value = value.replace('&quot;', '"')
+				if value.startswith('//'):
+					value = 'https:' + value
+				return value
+
+			urls = []
+
+			# player variables first, then direct m3u8/mp4 URLs in the page
+			for rx in [
+				r'setVideoHLS\s*\(\s*[\'"]([^\'"]+?\.m3u8[^\'"]*)[\'"]',
+				r'setVideoUrlHigh\s*\(\s*[\'"]([^\'"]+?\.mp4[^\'"]*)[\'"]',
+				r'setVideoUrlLow\s*\(\s*[\'"]([^\'"]+?\.mp4[^\'"]*)[\'"]',
+				r'[\'"](https?://[^\'"]+?\.m3u8(?:\?[^\'"]*)?)[\'"]',
+				r'[\'"](https?://[^\'"]+?\.mp4(?:\?[^\'"]*)?)[\'"]'
+			]:
+				for um in re.finditer(rx, data, re.I):
+					u = norm(um.group(1))
+					if u and u not in urls:
+						urls.append(u)
+
+			printDBG('GLAVMATURES VIDEO URLS: ' + str(urls[:5]))
+
+			for u in urls:
+				stream_header = {
+					'Referer': video_url,
+					'User-Agent': header.get('User-Agent', USER_AGENT)
+				}
+
+				if '.m3u8' in u.lower():
+					decorated = urlparser.decorateUrl(u, stream_header)
+					try:
+						ret = getDirectM3U8Playlist(decorated, checkContent=True, sortWithMaxBitrate=999999999)
+						if ret:
+							printDBG('GLAVMATURES HLS RESOLVED LINKS: ' + str(len(ret)))
+							# getResolvedURL returns one URL, not a list of links
+							resolved_url = ret[0].get('url', '')
+							if resolved_url:
+								resolved_url = urlparser.decorateUrl(resolved_url, stream_header)
+								printDBG('GLAVMATURES FINAL HLS URL: ' + resolved_url)
+								return resolved_url
+					except Exception as e:
+						printDBG('GLAVMATURES HLS resolve exception: ' + str(e))
+
+					return decorated
+
+				if '.mp4' in u.lower():
+					return urlparser.decorateUrl(u, stream_header)
+
+			printDBG('GLAVMATURES: no playable URL found')
+			return ''
 
 		if parser == 'https://www.pornheed.com':
 			COOKIEFILE = join(GetCookieDir(), 'pornheed.cookie')
