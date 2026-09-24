@@ -60,7 +60,7 @@ def checkhttps(url):
 TXXX_NETWORK_SITES = ('https://upornia.com', 'https://hdzog.com', 'https://vxxx.com')
 
 # plain KVS sites (hostxxx.py KVS_NETWORK), resolved by the shared KVS branch
-KVS_SITES = ('https://freshporno.org', 'https://www.freepornvideos.xxx', 'https://www.fpo.xxx', 'https://heroero.com', 'https://porndd.com')
+KVS_SITES = ('https://freshporno.org', 'https://www.freepornvideos.xxx', 'https://www.fpo.xxx', 'https://heroero.com', 'https://porndd.com', 'https://amateurporn.me')
 
 # WordPress tube theme sites (hostxxx.py WPTUBE_NETWORK): own player page or a file hoster iframe
 WPTUBE_SITES = ('https://pornmz.com', 'https://www.hitprn.net', 'https://pornobae.com')
@@ -6238,11 +6238,15 @@ class XXXParser:
 			sts, data = self.cm.getPage(url, self.defaultParams)
 			if not sts:
 				return ''
-			# (quality, url): flashvars video_url / video_alt_urlN (+ _text), else <source label="...">
+			# (quality, url): flashvars video_url / video_alt_urlN (+ _text), else <source> tags (label optional,
+			# the quality is then taken from the file name, e.g. _720p.mp4)
 			texts = dict(re.findall(r"(video_url|video_alt_url[0-9]*)_text\s*:\s*'([^']*)'", data))
 			sources = [(texts.get(key, ''), value) for key, value in re.findall(r"(video_url|video_alt_url[0-9]*)\s*:\s*'([^']+)'", data)]
 			if not sources:
-				sources = [(label, src) for src, label in re.findall(r'''<source[^>]+src=["']([^"']+)["'][^>]*?label=["']([^"']*)["']''', data)]
+				for tag in re.findall(r'<source\b[^>]*>', data):
+					src = self.cm.ph.getSearchGroups(tag, r'''src=["']([^"']+)["']''', 1, True)[0]
+					if src:
+						sources.append((self.cm.ph.getSearchGroups(tag, r'''label=["']([^"']*)["']''', 1, True)[0], decodeHtml(src)))
 			licenseCode = self.cm.ph.getSearchGroups(data, r"license_code\s*:\s*'([^']+)'", 1, True)[0]
 			candidates = []
 			for order, (label, videoUrl) in enumerate(sources):

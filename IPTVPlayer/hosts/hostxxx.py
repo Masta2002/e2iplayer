@@ -385,6 +385,7 @@ SITEDATA = {
 'FPO.XXX': ('https://www.fpo.xxx', 'FPOXXX', ''),
 'HEROERO': ('https://heroero.com', '', ''),
 'PORNDD': ('https://porndd.com', '', ''),
+'AMATEURPORN': ('https://amateurporn.me', '', ''),
 'LUXURETV': ('https://en.luxuretv.com', '', ''),
 'XFREEHD': ('https://beta.xfreehd.com', '', ''),
 'PORNMZ': ('https://pornmz.com', '', ''),
@@ -409,6 +410,7 @@ KVS_NETWORK = {
 	'FPOXXX': {'url': 'https://www.fpo.xxx', 'sorts': (('Latest', '/new-1/'), ('Popular', '/popular-1/')), 'search': '/search/%s/?from_videos=1'},
 	'HEROERO': {'url': 'https://heroero.com', 'sorts': (('Latest', '/latest-updates/'), ('Most popular', '/most-popular/'), ('Top rated', '/top-rated/')), 'search': '/search/%s/'},
 	'PORNDD': {'url': 'https://porndd.com', 'sorts': (('Latest', '/latest-updates/'), ('Most popular', '/most-popular/'), ('Top rated', '/top-rated/')), 'search': '/search/%s/'},
+	'AMATEURPORN': {'url': 'https://amateurporn.me', 'sorts': (('Latest', '/latest-updates/'), ('Most popular', '/most-popular/'), ('Top rated', '/top-rated/')), 'search': '/search/%s/'},
 }
 
 # WordPress tube theme sites (<article data-video-id>, ?filter= sort, /page/<n>/ paging),
