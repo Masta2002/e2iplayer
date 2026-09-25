@@ -653,8 +653,8 @@ def menuHeader(text):
 def isBlockedContent(text):
 	# never list categories or videos with (drawn) minors, animals, secretly filmed people or leaked private content
 	text = (text or '').lower()
-	return any(term in text for term in ('loli', 'shota', 'shouta', 'underage', 'school girl', 'schoolgirl', 'bestiality', 'beastiality', 'zoophil',
-										'voyeur', 'upskirt', 'hidden cam', 'spycam', 'spy cam', 'sneak shot', 'leaked'))
+	return any(term in text for term in ('loli', 'shota', 'shouta', 'underage', 'bestiality', 'beastiality', 'zoophil',
+										'upskirt', 'hidden cam', 'spycam', 'spy cam', 'sneak shot', 'leaked'))
 
 
 def formatDuration(seconds):
