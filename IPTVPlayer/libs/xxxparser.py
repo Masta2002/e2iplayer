@@ -6424,8 +6424,12 @@ class XXXParser:
 					if session.get('vstate') == 0 and session.get('server_name'):
 						videoUrl = 'https://%s.myfreecams.com/NxServer/ngrp:mfc_%s%d.f4v_mobile/playlist.m3u8' % (session['server_name'], session.get('phase') or '', int(user['id']) + 100000000)
 				elif parser == 'https://streamate.com':
+					# 403/404 while the model is in a private show or gone
 					sts, data = self.cm.getPage('https://manifest-server.naiadsystems.com/live/s:%s.json?last=load&format=mp4-hls' % model, self.defaultParams)
-					videoUrl = json.loads(data).get('formats', {}).get('mp4-hls', {}).get('manifest', '') if sts else ''
+					hls = json.loads(data).get('formats', {}).get('mp4-hls', {}) if sts and data.lstrip().startswith('{') else {}
+					# the master manifest only lists 768x432; the encodings also offer 720p as a direct playlist
+					encodings = [e for e in hls.get('encodings') or [] if e.get('location')]
+					videoUrl = max(encodings, key=lambda e: e.get('videoHeight') or 0)['location'] if encodings else hls.get('manifest', '')
 				elif parser == 'https://www.xlovecam.com':
 					# the list POST filtered by nickname returns a fresh playlist token
 					self.HTTP_HEADER.update({'Referer': 'https://www.xlovecam.com/en/', 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json'})
