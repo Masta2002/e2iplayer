@@ -4828,12 +4828,7 @@ class Host(CBaseHostClass, XXXParser):
 			_add_item('Tags', self.MAIN_URL + '/tags', 'GLAVMATURES-tags')
 			_add_item('Pornstars', self.MAIN_URL + '/pornstars', 'GLAVMATURES-pornstars')
 
-			self.SEARCH_proc = 'GLAVMATURES-search'
-			self.oldName = name
-			valTab.insert(0, CDisplayListItem(_('Search'), _('Search'), CDisplayListItem.TYPE_SEARCH, [''], '', hostImage() + 'searchimage.png', None))
-			valTab.insert(1, CDisplayListItem(_('Search history'), _('Search history'), CDisplayListItem.TYPE_SEARCH_HISTORY, [''], 'HISTORY', hostImage() + 'searchhistory.png', None))
-			valTab.insert(2, CDisplayListItem(_('Delete search history'), _('Delete search history'), CDisplayListItem.TYPE_SEARCH_HISTORY_DELETE, [''], 'HISTORYDELETE', '', None))
-			return valTab
+			return searchItems(valTab, True)
 
 		if 'GLAVMATURES-search' == name:
 			query = url.replace(' ', '+')
@@ -24492,7 +24487,6 @@ class Host(CBaseHostClass, XXXParser):
 			printDBG('Host listsItems begin name=' + name)
 			self.MAIN_URL = 'https://letsporn.com'
 			catImage = siteLogo
-			self.SEARCH_proc = 'LETSPORN-search'
 			# LetsPorn main menu
 			valTab.append(CDisplayListItem(_('Home'), _('Home'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/'], 'LETSPORN-home', catImage, None))
 			valTab.append(CDisplayListItem('Explore', 'Explore', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/explore'], 'LETSPORN-explore', catImage, None))
@@ -24500,12 +24494,7 @@ class Host(CBaseHostClass, XXXParser):
 			valTab.append(CDisplayListItem(_('Channels'), _('Channels'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/channels'], 'LETSPORN-channels', catImage, None))
 			valTab.append(CDisplayListItem(_('Pornstars'), _('Pornstars'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/pornstars'], 'LETSPORN-pornstars', catImage, None))
 			valTab.append(CDisplayListItem(_('Categories'), _('Categories'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/categories'], 'LETSPORN-categories', catImage, None))
-
-			self.SEARCH_proc = 'LETSPORN-search'
-			self.oldName = name
-			valTab.append(CDisplayListItem(_('Search'), _('Search'), CDisplayListItem.TYPE_SEARCH, [''], '', hostImage() + 'searchimage.png', None))
-			valTab.append(CDisplayListItem(_('Search history'), _('Search history'), CDisplayListItem.TYPE_SEARCH_HISTORY, [''], 'HISTORY', hostImage() + 'searchhistory.png', None))
-			return valTab
+			return searchItems(valTab, True)
 
 		if name in ('LETSPORN-home', 'LETSPORN-explore'):
 			# Home and Explore are plain clip lists
