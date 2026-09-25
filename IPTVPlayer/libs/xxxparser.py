@@ -772,7 +772,7 @@ class XXXParser:
 				return site
 		if re.match(r'https://v[0-9]+\.erome\.com/', url):
 			return 'https://www.erome.com'
-		for site in LIVECAM_SITES + KVS_SITES + WPTUBE_SITES + ('https://en.luxuretv.com', 'https://beta.xfreehd.com', 'https://321tube.com'):
+		for site in LIVECAM_SITES + KVS_SITES + WPTUBE_SITES + ('https://en.luxuretv.com', 'https://beta.xfreehd.com', 'https://321tube.com', 'https://alpenrammler.com'):
 			if url.startswith(site + '/'):
 				return site
 		return self.MAIN_URL
@@ -6262,6 +6262,31 @@ class XXXParser:
 			if not getattr(self, 'format4k', True):
 				candidates = [c for c in candidates if c[0] <= 1080] or candidates[-1:]
 			return urlparser.decorateUrl(candidates[0][1], {'Referer': url, 'User-Agent': self.HTTP_HEADER.get('User-Agent', '')})
+
+		if parser == 'https://alpenrammler.com':
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = parser + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(url, self.defaultParams)
+			if not sts:
+				return ''
+			# the page only names the 360p file (contentUrl); its embed wraps a lapippa.com player listing all qualities
+			videoUrl = self.cm.ph.getSearchGroups(data, r'''contentUrl"\s*:\s*"([^"]+)"''', 1, True)[0]
+			embedUrl = self.cm.ph.getSearchGroups(data, r'''embedUrl"\s*:\s*"([^"]+)"''', 1, True)[0]
+			if embedUrl:
+				self.HTTP_HEADER['Referer'] = url
+				sts, embed = self.cm.getPage(embedUrl, self.defaultParams)
+				playerUrl = self.cm.ph.getSearchGroups(embed, r'''<iframe[^>]+src=["']([^"']+)["']''', 1, True)[0] if sts else ''
+				if playerUrl:
+					self.HTTP_HEADER['Referer'] = embedUrl
+					sts, player = self.cm.getPage(playerUrl, self.defaultParams)
+					sources = re.findall(r'''<source[^>]+src=["']([^"']+)["']''', player) if sts else []
+					sources.sort(key=lambda src: int(self.cm.ph.getSearchGroups(src, r'_([0-9]{3,4})p\.', 1, True)[0] or 0), reverse=True)
+					if sources:
+						videoUrl = sources[0]
+			if not videoUrl:
+				return ''
+			return urlparser.decorateUrl(videoUrl, {'Referer': self.HTTP_HEADER['Referer'], 'User-Agent': self.HTTP_HEADER.get('User-Agent', '')})
 
 		if parser == 'https://321tube.com':
 			# EXPERIMENTAL: turbovidhls player; its HLS segments are TS behind a PNG header on Google's image CDN

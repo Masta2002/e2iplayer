@@ -392,6 +392,7 @@ SITEDATA = {
 'HITPRN': ('https://www.hitprn.net', '', ''),
 'PORNOBAE': ('https://pornobae.com', '', ''),
 '321TUBE': ('https://321tube.com', 'TUBE321', ''),
+'ALPENRAMMLER': ('https://alpenrammler.com', '', ''),
 
 }
 
@@ -16909,10 +16910,9 @@ class Host(CBaseHostClass, XXXParser):
 			for item in data:
 				phUrl = self.cm.ph.getSearchGroups(item, '''href=["']([^"^']+?)['"]''', 1, True)[0]
 				phTitle = self.cm.ph.getSearchGroups(item, '''alt=['"]([^@]+?)['"]''', 1, True)[0]
-				phImage = "https://anysex.com/static/logo-2.png"
+				phImage = self.cm.ph.getSearchGroups(item, '''data-jpg=['"]([^"']+?)['"]''', 1, True)[0] or siteLogo
 				phTime = self.cm.ph.getSearchGroups(item, '''duration">([^>]+?)<''', 1, True)[0]
 				Views = self.cm.ph.getSearchGroups(item, '''views.+[>]([^>]+?)</div''', 1, True)[0].strip()
-				phImage = checkhttps(phImage)
 				if phTitle:
 					valTab.append(CDisplayListItem(decodeHtml(phTitle), '[' + phTime + '] ' + decodeHtml(phTitle) + '\n' + Views, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', phUrl, 1)], 0, phImage, None))
 			if next:
@@ -19871,6 +19871,50 @@ class Host(CBaseHostClass, XXXParser):
 				# the next link is relative to the list (page2.html)
 				nextUrl = urljoin(re.sub(r'page[0-9]+\.html$', '', url.split('?')[0]), nextUrl)
 				valTab.append(self.getNextItem(self.cm.ph.getSearchGroups(nextUrl, r'page([0-9]+)', 1, True)[0], nextUrl, name))
+			return valTab
+
+		if 'ALPENRAMMLER' == name:
+			self.MAIN_URL = 'https://alpenrammler.com'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(self.MAIN_URL + '/', self.defaultParams)
+			if sts:
+				for m in re.finditer(r'''(?s)<a href="([^"]+)" class="cat-card">.+?src="([^"]+)".+?cat-name">([^<]+)<.+?cat-count">([^<]+)<''', data):
+					catTitle = decodeHtml(m.group(3)).strip()
+					if not isBlockedContent(catTitle):
+						valTab.append(CDisplayListItem(catTitle, catTitle + '\n' + m.group(4).strip(), CDisplayListItem.TYPE_CATEGORY, [urljoin(self.MAIN_URL + '/', m.group(1))], 'ALPENRAMMLER-clips', urljoin(self.MAIN_URL + '/', m.group(2)), None))
+			valTab.sort(key=lambda poz: poz.name)
+			for title, path in reversed(((_('Latest'), '/neue-pornos-und-sexfilme'), (_('Top'), '/top-pornos-und-sexfilme'), (_('Longest'), '/lange-pornos-und-sexfilme'))):
+				valTab.insert(0, CDisplayListItem(menuHeader(title), title, CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + path], 'ALPENRAMMLER-clips', siteLogo, None))
+			return searchItems(valTab, True)
+
+		if 'ALPENRAMMLER-search' == name:
+			return self.listsItems(-1, 'https://alpenrammler.com/suche?q=' + URL_QUOTE(url), 'ALPENRAMMLER-clips')
+
+		if 'ALPENRAMMLER-clips' == name:
+			self.MAIN_URL = 'https://alpenrammler.com'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			sts, data = self.cm.getPage(url, self.defaultParams)
+			if not sts:
+				return valTab
+			for m in re.finditer(r'''(?s)<a href="([^"]+)" class="video-card">(.+?)</a>''', data):
+				item = m.group(2)
+				phTitle = decodeHtml(self.cm.ph.getSearchGroups(item, r'''video-title">([^<]+)<''', 1, True)[0]).strip()
+				if not phTitle or isBlockedContent(phTitle):
+					continue
+				phImage = urljoin(self.MAIN_URL + '/', self.cm.ph.getSearchGroups(item, r'''<img src="([^"]+)"''', 1, True)[0])
+				phTime = self.cm.ph.getSearchGroups(item, r'''video-duration">([^<]+)<''', 1, True)[0].strip()
+				views = self.cm.ph.getSearchGroups(item, r'''([0-9.]+) Aufrufe''', 1, True)[0]
+				desc = '[' + phTime + '] ' + phTitle + ('\n' + views + ' views' if views else '')
+				valTab.append(CDisplayListItem(phTitle, desc, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', urljoin(self.MAIN_URL + '/', m.group(1)), 1)], 0, phImage, None))
+			nextUrl = decodeHtml(self.cm.ph.getSearchGroups(data, r'''href="([^"]+)">Weiter''', 1, True)[0])
+			if nextUrl:
+				# the next link is either an absolute path (search) or a bare query string (lists)
+				nextUrl = urljoin(url, nextUrl)
+				valTab.append(self.getNextItem(self.cm.ph.getSearchGroups(nextUrl, r'page=([0-9]+)', 1, True)[0], nextUrl, name))
 			return valTab
 
 		if 'XFREEHD' == name:
