@@ -6440,6 +6440,11 @@ class XXXParser:
 						if item.get('nickname', '').lower() == model.lower():
 							videoUrl = item.get('hlsPlaylist', '')
 							break
+					# hlsPlaylist is the low bitrate ".../safe.m3u8"; the same stream is served in higher quality as high.m3u8
+					if '/safe.m3u8' in videoUrl:
+						sts, data = self.cm.getPage(videoUrl.replace('/safe.m3u8', '/high.m3u8'), self.defaultParams)
+						if sts and '#EXTINF' in data:
+							videoUrl = videoUrl.replace('/safe.m3u8', '/high.m3u8')
 				elif parser == 'https://api.sinparty.com':
 					self.HTTP_HEADER.update({'Referer': 'https://sinparty.com/', 'Origin': 'https://sinparty.com'})
 					sts, data = self.cm.getPage(url, self.defaultParams)
