@@ -1038,9 +1038,10 @@ class XXXParser:
 			for key in replacemap:
 				videoUrl = videoUrl.replace(replacemap[key], key)
 			videoUrl = base64.b64decode(videoUrl)
-			printDBG('After decoding: ' + str(videoUrl))
-			videoUrl = str(videoUrl).replace("b'", "")
-			printDBG('After repair: ' + str(videoUrl))
+			# py3: bytes - str(bytes) left a trailing ' on the URL
+			if not isinstance(videoUrl, str):
+				videoUrl = videoUrl.decode('utf-8', 'ignore')
+			printDBG('After decoding: ' + videoUrl)
 			videoUrl = checkhttps(videoUrl)
 			if videoUrl.startswith('/'):
 				videoUrl = 'https://tubepornclassic.com' + videoUrl
@@ -1895,9 +1896,9 @@ class XXXParser:
 					newUrl = ret['data'].replace("\n", "")
 					if newUrl:
 						if subTracks:
-							newUrl = urlparser.decorateUrl(newUrl, {'Referer': baseUrl, 'external_sub_tracks': subTracks})
+							newUrl = urlparser.decorateUrl(newUrl, {'Referer': baseUrl, 'external_sub_tracks': subTracks, 'iptv_format': 'mp4'})
 						else:
-							newUrl = urlparser.decorateUrl(newUrl, {'Referer': baseUrl})
+							newUrl = urlparser.decorateUrl(newUrl, {'Referer': baseUrl, 'iptv_format': 'mp4'})
 						params = {'name': 'link', 'url': newUrl}
 						urlsTab.append(params)
 			return urlsTab
@@ -2658,7 +2659,8 @@ class XXXParser:
 			real_url = response.geturl()
 			response.close()
 			if real_url:
-				return urlparser.decorateUrl(str(real_url), {'Referer': url})
+				# <source type="application/x-mpegURL"> - the redirect target need not end in .m3u8
+				return urlparser.decorateUrl(str(real_url), {'Referer': url, 'iptv_proto': 'm3u8'})
 
 		if parser == 'https://www.shemaletubevideos.com':
 			COOKIEFILE = join(GetCookieDir(), 'shemaletube.cookie')
@@ -2754,7 +2756,7 @@ class XXXParser:
 						if i + 1 < len(lines):
 							urls.append(lines[i + 1].strip())
 				videoUrl = urljoin(videoUrl, urls[-1])
-				return videoUrl
+				return strwithmeta(videoUrl, {'iptv_proto': 'm3u8'})  # variant line of the master playlist
 			else:
 				HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
 				HTTP_HEADER['Referer'] = videoUrl
@@ -3190,7 +3192,7 @@ class XXXParser:
 						SetIPTVPlayerLastHostError(_('THIS IS A PREMIUM VIDEO.\nLOGIN OR PREMIUM REQUIRED.'))
 						return []
 				videoUrl = self.cm.ph.getSearchGroups(data3, "urlPlaylistUrl = [']([^']+?)[']")[0]
-				return urlparser.decorateUrl(videoUrl, {'Referer': url, 'User-Agent': self.USER_AGENT})
+				return urlparser.decorateUrl(videoUrl, {'Referer': url, 'User-Agent': self.USER_AGENT, 'iptv_proto': 'm3u8'})
 			else:
 				SetIPTVPlayerLastHostError(_('THIS IS A PREMIUM VIDEO. \nLOGIN OR PREMIUM REQUIRED.'))
 				return []
@@ -3399,10 +3401,10 @@ class XXXParser:
 				printDBG('Last video link: ' + lastUrl)
 				videoUrl = self.cm.ph.getSearchGroups(lastUrl, '["]([^"]+?)[#]', 1, True)[0].strip()
 				printDBG('Last URL: ' + str(videoUrl))
-				return videoUrl
+				return strwithmeta(videoUrl, {'iptv_proto': 'm3u8'})  # variant line of the master playlist
 			else:
 				printDBG('SELECTED RESOLUTION:\n' + url)
-				return url
+				return strwithmeta(url, {'iptv_proto': 'm3u8'})  # variant picked in hostxxx PORNSLASH-server
 
 		if parser == 'https://www.realgfporn.com':
 			printDBG('REALGFPORN PARSER')
@@ -4040,6 +4042,8 @@ class XXXParser:
 			license_code = self.cm.ph.getSearchGroups(data, r"license_code:\s[']([^']+?)[']")[0].strip()
 			rnd = re.search("rnd:.[']([0-9]+)[']", data).group(1)
 			videoUrl = self.cm.ph.getSearchGroups(data, "video_url:.[']([^']+?)[']")[-1]
+			if 'function/0/' in videoUrl:
+				videoUrl = decryptHash(videoUrl, license_code, '16')
 			printDBG('videoURL: ' + videoUrl)
 			return urlparser.decorateUrl(videoUrl, {'Referer': url})
 
@@ -4509,7 +4513,8 @@ class XXXParser:
 					videoUrl = 'https:' + videoUrl
 				if not videoUrl:
 					continue
-				meta = {'Referer': url, 'Origin': 'https://eroticmv.com', 'User-Agent': self.HTTP_HEADER.get('User-Agent', USER_AGENT)}
+				# every candidate is an m3u8 match, but the base64-decoded CDN URL has no .m3u8 in it
+				meta = {'Referer': url, 'Origin': 'https://eroticmv.com', 'User-Agent': self.HTTP_HEADER.get('User-Agent', USER_AGENT), 'iptv_proto': 'm3u8'}
 				return urlparser.decorateUrl(videoUrl, meta)
 			return ''
 
@@ -4523,9 +4528,9 @@ class XXXParser:
 			if not sts:
 				return ''
 			embedUrl = self.cm.ph.getSearchGroups(data, "videoPlayer.{,40}src=[']([^']+?)[']")[0]
-			if not videoUrl:
+			if not embedUrl:
 				embedUrl = self.cm.ph.getSearchGroups(data, r'const\sSERVER\d_URL\s=\s["]([^"]+)["];')[0]
-			if not videoUrl:
+			if not embedUrl:
 				embedUrl = self.cm.ph.getSearchGroups(data, r'embedUrl":\s["]([^"]+)["]')[0]
 			printDBG('EMBEDURL: ' + embedUrl)
 			if 'openload' in embedUrl:
@@ -5101,7 +5106,7 @@ class XXXParser:
 			sts, data = self.getPage(videoUrl, 'perfectgirls.cookie', 'perfectgirls.com', self.defaultParams)
 			videoUrl = self.cm.ph.getSearchGroups(data, r'''1280.+\s[h](.+)''')[0]
 			videoUrl = 'h' + videoUrl
-			return videoUrl
+			return strwithmeta(videoUrl, {'iptv_proto': 'm3u8'})  # variant line of the master playlist
 
 		if parser == 'https://jizzbunker.com':
 			COOKIEFILE = join(GetCookieDir(), 'jizzbunker.cookie')
@@ -5385,7 +5390,8 @@ class XXXParser:
 
 		if parser == 'https://hello.porn':
 			printDBG('Selected Resolution: ' + url)
-			videoUrl = urlparser.decorateUrl(url, {'Referer': url})
+			# url is a variant line picked in hostxxx HELLOPORN-serwer
+			videoUrl = urlparser.decorateUrl(url, {'Referer': url, 'iptv_proto': 'm3u8'})
 			return videoUrl if videoUrl else ''
 
 		if parser == 'https://dansmovies.com':
@@ -5945,7 +5951,8 @@ class XXXParser:
 					best = checkhttps(srcm.group(1))
 			if not best:
 				return ''
-			return strwithmeta(best, {'Referer': url})
+			# /vsrc/hd/<id> has no file extension
+			return strwithmeta(best, {'Referer': url, 'iptv_format': 'mp4'})
 
 		if parser == 'https://hentai-moon.com':
 			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
@@ -6111,7 +6118,7 @@ class XXXParser:
 			parts[1] += '8/' + token
 			parts[5] = str(int(parts[5]) - ss - es)
 			videoUrl = urljoin('https://sxyprn.com/', '/'.join(parts))
-			return urlparser.decorateUrl(videoUrl, {'Referer': url, 'User-Agent': self.HTTP_HEADER.get('User-Agent', '')})
+			return urlparser.decorateUrl(videoUrl, {'Referer': url, 'User-Agent': self.HTTP_HEADER.get('User-Agent', ''), 'iptv_format': 'mp4'})
 
 		if parser == 'https://fullporner.com':
 			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
@@ -6129,7 +6136,7 @@ class XXXParser:
 			if not qualities:
 				return ''
 			videoUrl = 'https://xiaoshenke.net/vid/%s/%d' % (m.group(1)[::-1], max(qualities))
-			return urlparser.decorateUrl(videoUrl, {'Referer': 'https://xiaoshenke.net/', 'User-Agent': self.HTTP_HEADER.get('User-Agent', '')})
+			return urlparser.decorateUrl(videoUrl, {'Referer': 'https://xiaoshenke.net/', 'User-Agent': self.HTTP_HEADER.get('User-Agent', ''), 'iptv_format': 'mp4'})
 
 		if parser == 'https://www.erome.com':
 			# the album page already lists the direct MP4 files, they only need an erome referer
@@ -6891,6 +6898,12 @@ class XXXParser:
 
 			if videoUrl:
 				metaParams = {'Referer': url, 'Origin': 'https://videosection.com', 'User-Agent': self.HTTP_HEADER.get('User-Agent', USER_AGENT)}
+				# a single nginx-vod segment (.../seg-1-v1-a1.ts) would play only a few
+				# seconds - its media playlist is .../index-v1-a1.m3u8
+				segUrl = re.sub(r'/seg-\d+-(v\d+(?:-a\d+)?)\.ts', r'/index-\1.m3u8', videoUrl)
+				if segUrl != videoUrl:
+					videoUrl = segUrl
+					metaParams['iptv_proto'] = 'm3u8'
 				videoUrl = urlparser.decorateUrl(videoUrl, metaParams)
 				printDBG('VideoSection V11 FINAL dynamic stream: ' + videoUrl)
 				return videoUrl
@@ -7224,7 +7237,7 @@ class XXXParser:
 				match = re.findall('"[\n]([^"]+?)[\n]', data2, re.S)
 				videoUrl = match[-1]
 				printDBG('Fetched new VIDEOURL 2:\n' + videoUrl)
-			return videoUrl
+			return strwithmeta(videoUrl, {'iptv_proto': 'm3u8'})  # variant line of the master playlist
 
 		if parser == 'https://www.drtuber.com':
 			params = re.findall(r'params\s\+=\s\'h=(.*?)\'.*?params\s\+=\s\'%26t=(.*?)\'.*?params\s\+=\s\'%26vkey=\'\s\+\s\'(.*?)\'', data, re.S)
