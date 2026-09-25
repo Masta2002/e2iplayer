@@ -5354,6 +5354,10 @@ class XXXParser:
 			# "[quality]url:cast:url" entries; the stream1 URLs redirect to the CDN
 			embedUrl = self.cm.ph.getSearchGroups(data, r'''<iframe[^>]+src=["']([^"']+?)["']''', 1, True)[0]
 			if not embedUrl:
+				# /too/ links redirect to a /to/<id>.html page that carries the MP4 directly (inside a JS string)
+				videoUrl = self.cm.ph.getSearchGroups(data, r'''<source src=\\?['"](https?://[^'"\\]+\.mp4[^'"\\]*)''', 1, True)[0]
+				if videoUrl:
+					return urlparser.decorateUrl(videoUrl, {'Referer': url, 'User-Agent': USER_AGENT})
 				printDBG('ANYBUNNY: player iframe not found')
 				return ''
 			embedUrl = urljoin(url, embedUrl.replace('&amp;', '&'))
@@ -5361,19 +5365,30 @@ class XXXParser:
 			if not sts:
 				return ''
 			fileStr = self.cm.ph.getSearchGroups(data, r'''file\s*:\s*["']([^"']+)["']''', 1, True)[0]
-			videoUrl, bestQuality = '', -1
+			candidates = []
 			for part in re.split(r',(?=\[)', fileStr):
 				m = re.match(r'\[(\d+)[^\]]*\](.+)', part)
 				if not m:
 					continue
-				streamUrl = m.group(2).split(':cast:')[0].strip()
-				if streamUrl.startswith('http') and int(m.group(1)) > bestQuality:
-					videoUrl, bestQuality = streamUrl, int(m.group(1))
-			if not videoUrl:
+				for streamUrl in m.group(2).split(':cast:'):
+					streamUrl = re.sub(r'\s+', '', streamUrl)
+					if streamUrl.startswith('http'):
+						candidates.append((int(m.group(1)), streamUrl))
+			if not candidates:
 				printDBG('ANYBUNNY: no stream in the player')
 				return ''
-			printDBG('ANYBUNNY %sp: %s' % (bestQuality, videoUrl))
-			return urlparser.decorateUrl(videoUrl, {'Referer': embedUrl, 'User-Agent': USER_AGENT})
+			# single qualities of a video answer 403 (a different one per video): take the best one that answers
+			candidates.sort(key=lambda c: c[0], reverse=True)
+			header = {'User-Agent': USER_AGENT, 'Referer': embedUrl, 'Range': 'bytes=0-0'}
+			for quality, streamUrl in candidates:
+				sts, response = self.cm.getPage(streamUrl, {'header': header, 'return_data': False})
+				if sts and response is not None:
+					response.close()
+					printDBG('ANYBUNNY %sp: %s' % (quality, streamUrl))
+					return urlparser.decorateUrl(streamUrl, {'Referer': embedUrl, 'User-Agent': USER_AGENT})
+				printDBG('ANYBUNNY %sp refused: %s' % (quality, streamUrl))
+			SetIPTVPlayerLastHostError(_('The site refuses all qualities of this video at the moment (HTTP 403). Try again later.'))
+			return ''
 
 		if parser == 'https://hqporner.com':
 			videoUrl = urlparser.decorateUrl(url, {'Referer': url})
