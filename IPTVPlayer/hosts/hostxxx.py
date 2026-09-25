@@ -27122,84 +27122,27 @@ class Host(CBaseHostClass, XXXParser):
 			# generic/latest list, which is exactly what we must avoid here.
 			return self.listsItems(-1, self.MAIN_URL + '/search/' + query.replace(' ', '+') + '/', 'FAAPY-clips')
 
-		if 'FAAPY-categories' == name:
+		if name in ('FAAPY-categories', 'FAAPY-models', 'FAAPY-channels'):
 			self.MAIN_URL = 'https://faapy.com'
 			sts, data = self.getPageWithCFBypass(url)
-			if not sts:
-				return valTab
-			seen = set()
-			for m in re.finditer(r'href=[\"\']([^\"\']*/category/[^\"\']+)[\"\'][^>]*>(.*?)</a>', data, re.S | re.I):
-				phUrl = m.group(1)
-				phTitle = self._cleanHtmlStr(m.group(2))
-				if phUrl.startswith('/'):
-					phUrl = self.MAIN_URL + phUrl
-				if phUrl in seen or not phTitle:
-					continue
-				seen.add(phUrl)
-				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'FAAPY-clips', siteLogo, None))
-			return valTab
-
-		if 'FAAPY-models' == name or 'FAAPY-channels' == name:
-			self.MAIN_URL = 'https://faapy.com'
-			sts, data = self.getPageWithCFBypass(url)
-			# FAAPY may serve the channels index without the trailing slash.
-			if not sts and name == 'FAAPY-channels' and url.rstrip('/') == self.MAIN_URL + '/channels':
-				sts, data = self.getPageWithCFBypass(self.MAIN_URL + '/channels')
 			if not sts or not data:
 				return self.showNotFoundMessage(name)
-
-			# IMPORTANT: /models/2/, /models/3/ ... and /channels/2/, /channels/3/ ...
-			# are pagination URLs, not model/channel names.  Individual entries are
-			# /model/<slug>/ and /channels/<slug>/.
-			if name == 'FAAPY-models':
-				pattern = r'<a\b[^>]+href=["\']([^"\']*/model/(?![0-9]+(?:/|$))[^"\']+/?)["\'][^>]*>(.*?)</a>'
-			else:
-				pattern = r'<a\b[^>]+href=["\']([^"\']*/channels/(?![0-9]+(?:/|$))[^"\']+/?)["\'][^>]*>(.*?)</a>'
-
-			seen = set()
-			for m in re.finditer(pattern, data, re.S | re.I):
-				phUrl = m.group(1)
-				if phUrl.startswith('/'):
-					phUrl = self.MAIN_URL + phUrl
-				elif phUrl.startswith('http'):
-					pass
-				else:
+			# all three index pages use the same cards: <a class="channel|album" href title> image, video count, photo count
+			for m in re.finditer(r'''(?s)<a class="(?:channel|album)" href="([^"]+)" title="([^"]+)">(.+?)</a>''', data):
+				phTitle = decodeHtml(m.group(2)).strip()
+				if isBlockedContent(phTitle):
 					continue
-				phUrl = phUrl.rstrip('/') + '/'
-				if phUrl in seen:
-					continue
-
-				# The anchor often contains nested div/img elements, so plain anchor
-				# text is not reliable. Prefer title/alt, then visible text.
-				anchor = m.group(0)
-				phTitle = self.cm.ph.getSearchGroups(anchor, r'\btitle=["\']([^"\']+)["\']', 1, True)[0]
-				if not phTitle:
-					phTitle = self.cm.ph.getSearchGroups(anchor, r'\balt=["\']([^"\']+)["\']', 1, True)[0]
-				if not phTitle:
-					phTitle = self._cleanHtmlStr(m.group(2))
-				phTitle = decodeHtml(phTitle).strip()
-				if not phTitle:
-					continue
-				seen.add(phUrl)
-				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'FAAPY-clips', siteLogo, None))
-
-			# The site's own Models index shows pagination as /models/2/,
-			# /models/3/, ... and Channels follows the same numbered form.
-			# Prefer the explicit rel=next link; otherwise calculate the next
-			# numbered page. Do not take the first pagination link because that
-			# can be the current page itself.
-			section = 'models' if name == 'FAAPY-models' else 'channels'
-			current = re.search(r'/' + section + r'/(\d+)$', url.rstrip('/'), re.I)
-			if current:
-				page_num = int(current.group(1)) + 1
-			else:
-				page_num = 2
-			next_url = self.MAIN_URL + '/' + section + '/' + str(page_num) + '/'
-			page_num = next_url.rstrip('/').split('/')[-1].split('?')[0]
-			valTab.append(self.getNextItem(str(page_num), next_url, name, 'Next'))
-
-			# Models uses the normal E2iPlayer Search History action at the top.
-			# Do not add a separate Search button here.
+				phImage = self.cm.ph.getSearchGroups(m.group(3), r'''<img src="([^"]+)"''', 1, True)[0]
+				if not phImage or 'no_avatar' in phImage or 'no-cs-avatar' in phImage:
+					phImage = siteLogo
+				videos = self.cm.ph.getSearchGroups(m.group(3), r'''icon-circle-play"></i>\s*<span>([0-9]+)<''', 1, True)[0]
+				desc = phTitle + ('\n' + videos + ' videos' if videos else '')
+				valTab.append(CDisplayListItem(phTitle, desc, CDisplayListItem.TYPE_CATEGORY, [urljoin(self.MAIN_URL + '/', m.group(1).replace(' ', '%20'))], 'FAAPY-clips', phImage.replace(' ', '%20'), None))
+			# models/channels page through /models/N/ and /channels/N/; categories is a single page
+			section = url.rstrip('/').split('/')[3] if url.count('/') > 3 else ''
+			page = int(self.cm.ph.getSearchGroups(url, r'/([0-9]+)/?$', 1, True)[0] or 1)
+			if section in ('models', 'channels') and re.search(r'href="/%s/%d/"' % (section, page + 1), data):
+				valTab.append(self.getNextItem(str(page + 1), '%s/%s/%d/' % (self.MAIN_URL, section, page + 1), name))
 			return valTab
 
 		if 'FAAPY-clips' == name:
