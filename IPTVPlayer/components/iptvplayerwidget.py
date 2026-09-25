@@ -2734,7 +2734,13 @@ class E2iPlayerWidget(Screen):
                 self.session.open(MessageBox, reaseon, type=MessageBox.TYPE_INFO, timeout=10)
                 return
 
-            isBufferingMode = False if url.startswith('file://') else self.activePlayer.get('buffering', self.checkBuffering(url))
+            if url.startswith('file://'):
+                isBufferingMode = False
+            elif url.meta.get('iptv_buffering', '') in ('required', 'forbidden'):
+                # the stream itself demands it, this overrides the player chosen for the host
+                isBufferingMode = self.checkBuffering(url)
+            else:
+                isBufferingMode = self.activePlayer.get('buffering', self.checkBuffering(url))
             bufferingPath = config.plugins.iptvplayer.bufferingPath.value
             downloadingPath = config.plugins.iptvplayer.DownloadsDir.value
             destinationPath = downloadingPath if recorderMode else bufferingPath
