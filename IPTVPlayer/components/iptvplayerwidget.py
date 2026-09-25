@@ -2633,14 +2633,8 @@ class E2iPlayerWidget(Screen):
         # check flag forcing of the using/not using buffering
         if 'iptv_buffering' in url.meta:
             if "required" == url.meta['iptv_buffering']:
-                # iptv_buffering was set as required, this is done probably due to
-                # extra http headers needs, at now extgstplayer and exteplayer can handle this headers,
-                # so we skip forcing buffering for such links. at now this is temporary
-                # solution we need to add separate filed iptv_extraheaders_need!
-                if url.startswith("http") and self.getMoviePlayer(False, False).value in ['extgstplayer', 'exteplayer']:
-                    pass  # skip forcing buffering
-                else:
-                    return True
+                # the stream only plays through a downloader, e.g. HLS segments the players' demuxer refuses
+                return True
             elif "forbidden" == url.meta['iptv_buffering']:
                 return False
         if "|" in url:

@@ -6314,7 +6314,12 @@ class XXXParser:
 			videoUrl = self.cm.ph.getSearchGroups(data, r'''(https?://[^"'<>\s]+\.m3u8[^"'<>\s]*)''', 1, True)[0] or self.cm.ph.getSearchGroups(data, r'''(?:urlPlay|file)\s*[:=]\s*["'](https?://[^"']+\.mp4[^"']*)["']''', 1, True)[0]
 			if not videoUrl:
 				return ''
-			return urlparser.decorateUrl(videoUrl.replace('\\/', '/'), {'Referer': embedUrl, 'User-Agent': self.HTTP_HEADER.get('User-Agent', '')})
+			meta = {'Referer': embedUrl, 'User-Agent': self.HTTP_HEADER.get('User-Agent', '')}
+			if '.m3u8' in videoUrl:
+				# the segments sit on Google's image CDN with a PNG header in front of the TS data: exteplayer3/gstplayer
+				# find no tracks in them, hlsdl just fetches the bytes -> only playable through the buffer
+				meta['iptv_buffering'] = 'required'
+			return urlparser.decorateUrl(videoUrl.replace('\\/', '/'), meta)
 
 		if parser in ('https://en.luxuretv.com', 'https://beta.xfreehd.com'):
 			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
