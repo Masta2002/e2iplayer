@@ -6458,7 +6458,15 @@ class XXXParser:
 				# not match the claimed browser); a player User-Agent passes. Buffering is no way out: hlsdl drops the
 				# separate audio track of these streams
 				userAgent = 'VLC/3.0.20 LibVLC/3.0.20'
-			return urlparser.decorateUrl(videoUrl, {'Referer': parser + '/', 'User-Agent': userAgent, 'iptv_livestream': True})
+			videoUrl = urlparser.decorateUrl(videoUrl, {'Referer': parser + '/', 'User-Agent': userAgent, 'iptv_livestream': True})
+			if parser == 'https://www.camsoda.com':
+				# exteplayer3 plays the first variant of the master playlist, here the smallest (256x144); take the best
+				# one, merged with the separate audio rendition
+				variants = getDirectM3U8Playlist(videoUrl, checkExt=False, sortWithMaxBitrate=999999999)
+				if variants:
+					videoUrl = variants[0]['url']
+					videoUrl.meta['iptv_livestream'] = True
+			return videoUrl
 
 		if parser == 'https://hentai2w.com':
 			vid = self.cm.ph.getSearchGroups(url, r'-(\d+)\.html', 1, True)[0]
