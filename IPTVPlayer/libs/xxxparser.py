@@ -6451,6 +6451,15 @@ class XXXParser:
 					for item in (json.loads(data).get('models', []) if sts else []):
 						if item.get('username', '').lower() == model.lower() and item.get('status') == 'public':
 							videoUrl = (item.get('stream') or {}).get('url', '')
+					# the API hands out the 480p master (MOUFLON-obfuscated); the "_160p" master of the same stream also
+					# lists the untouched "source" rendition (up to 1080p) as a plain fMP4 playlist
+					streamId = self.cm.ph.getSearchGroups(videoUrl, r'''/hls/([0-9]+)/''', 1, True)[0]
+					if streamId:
+						self.HTTP_HEADER['Origin'] = 'https://stripchat.com'
+						sts, data = self.cm.getPage('%s/hls/%s/master/%s_160p.m3u8' % (videoUrl.split('/hls/')[0], streamId, streamId), self.defaultParams)
+						source = self.cm.ph.getSearchGroups(data, r'''NAME="source"[^\n]*\n([^\n#]+)''', 1, True)[0].strip() if sts else ''
+						if source:
+							videoUrl = urljoin(videoUrl, source)
 			except Exception:
 				printExc()
 			if not videoUrl:
