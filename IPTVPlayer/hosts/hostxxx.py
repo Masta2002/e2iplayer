@@ -27179,20 +27179,9 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = checkhttp(phImage)
 				seen.add(phUrl)
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_VIDEO, [CUrlItem('', phUrl, 1)], '', phImage, None))
-			# FAAPY uses numbered path pagination on these content lists:
-			#   /category/<slug>/2/
-			#   /model/<slug>/2/
-			#   /channels/<slug>/2/
-			#   /search/<term>/2/
-			# The previous /page/2/ construction broke the selected model/channel
-			# context and produced unrelated or empty results.
-			cur = url.rstrip('/')
-			next_url = ''
-			m = re.search(r'^(https?://[^/]+/(?:category/[^/]+|model/[^/]+|channels/[^/]+|search/[^/]+)/)(\d+)$', cur, re.I)
-			if m:
-				next_url = m.group(1) + str(int(m.group(2)) + 1) + '/'
-			else:
-				next_url = cur + '/2/'
-			page_num = next_url.rstrip('/').split('/')[-1]
-			valTab.append(self.getNextItem(page_num, next_url, name, catUrl))
+			# numbered path pagination (/category/<slug>/2/, /top-rated/2/ ...); rel="next" only exists when there is a next page
+			next_url = self.cm.ph.getSearchGroups(data, r'''<a rel="next" href="([^"]+)"''', 1, True)[0]
+			if next_url:
+				next_url = urljoin(self.MAIN_URL + '/', next_url)
+				valTab.append(self.getNextItem(next_url.rstrip('/').split('/')[-1], next_url, name, catUrl))
 			return valTab
