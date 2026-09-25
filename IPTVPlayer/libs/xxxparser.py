@@ -6452,7 +6452,13 @@ class XXXParser:
 			if not videoUrl:
 				SetIPTVPlayerLastHostError(_('The model is offline or in a private show.'))
 				return ''
-			return urlparser.decorateUrl(videoUrl, {'Referer': parser + '/', 'User-Agent': self.HTTP_HEADER.get('User-Agent', ''), 'iptv_livestream': True})
+			userAgent = self.HTTP_HEADER.get('User-Agent', '')
+			if parser == 'https://www.camsoda.com':
+				# the stream edges (Cloudflare) answer 403 to a browser User-Agent sent by ffmpeg/exteplayer3 (TLS does
+				# not match the claimed browser); a player User-Agent passes. Buffering is no way out: hlsdl drops the
+				# separate audio track of these streams
+				userAgent = 'VLC/3.0.20 LibVLC/3.0.20'
+			return urlparser.decorateUrl(videoUrl, {'Referer': parser + '/', 'User-Agent': userAgent, 'iptv_livestream': True})
 
 		if parser == 'https://hentai2w.com':
 			vid = self.cm.ph.getSearchGroups(url, r'-(\d+)\.html', 1, True)[0]
