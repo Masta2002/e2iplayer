@@ -2,4 +2,4 @@
 # YYYY.MM.DD.DAY_RELEASE
 # oe-mirrors Version
 
-IPTV_VERSION = "2026.09.25.09"
+IPTV_VERSION = "2026.09.25.12"

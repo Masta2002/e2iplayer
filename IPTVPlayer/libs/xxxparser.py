@@ -1123,6 +1123,7 @@ class XXXParser:
 				if playpath:
 					Checksum = playpath.group(1)
 					if len(Checksum) < 30:
+						privateMsg = ''
 						for _x in range(1, 10):
 							ws.send(zapytanie)
 							result = ws.recv()
@@ -1132,13 +1133,15 @@ class XXXParser:
 								printDBG('Host time group(2): ' + czas.group(2))
 								czas = int(czas.group(1)) - int(czas.group(2))
 								printDBG('Host a: ' + str(czas))
-								a = str(czas)
-								if a == '0':
-									a = 'kilka'
-								Checksum = 'PRIVATE - Czekaj ' + a + ' sekund'
+								if czas <= 0:
+									privateMsg = _('PRIVATE - wait a few seconds')
+								else:
+									privateMsg = _('PRIVATE - wait %s seconds') % czas
 								break
-						if Checksum == '' or Checksum == 'failure':
-							Checksum = 'OFFLINE'
+						if privateMsg:
+							Checksum = privateMsg
+						elif Checksum == '' or Checksum == 'failure':
+							Checksum = _('OFFLINE')
 						ws.close()
 						SetIPTVPlayerLastHostError(Checksum)
 						return []
@@ -2746,7 +2749,7 @@ class XXXParser:
 			if 'multi' in videoUrl:
 				sts, tmp = self.get_Page(videoUrl)
 				if 'expired' in tmp:
-					msg = 'ACCESS DENIED.\nTHIS VIDEO IS DELETED OR NOT AVAILABLE TO YOUR REGION.'
+					msg = _('ACCESS DENIED.\nTHIS VIDEO IS DELETED OR NOT AVAILABLE TO YOUR REGION.')
 					self.sessionEx.waitForFinishOpen(MessageBox, msg, type=MessageBox.TYPE_INFO)
 					return None
 				lines = tmp.splitlines()
@@ -2762,7 +2765,7 @@ class XXXParser:
 				HTTP_HEADER['Referer'] = videoUrl
 				sts, response = self.cm.getPage(videoUrl, {'header': HTTP_HEADER, 'return_data': False})
 				if not sts or response is None:
-					msg = 'ACCESS DENIED.\nTHIS VIDEO IS DELETED OR NOT AVAILABLE TO YOUR REGION.'
+					msg = _('ACCESS DENIED.\nTHIS VIDEO IS DELETED OR NOT AVAILABLE TO YOUR REGION.')
 					self.sessionEx.waitForFinishOpen(MessageBox, msg, type=MessageBox.TYPE_INFO)
 					return None
 				real_url = response.geturl()
@@ -4534,7 +4537,7 @@ class XXXParser:
 				embedUrl = self.cm.ph.getSearchGroups(data, r'embedUrl":\s["]([^"]+)["]')[0]
 			printDBG('EMBEDURL: ' + embedUrl)
 			if 'openload' in embedUrl:
-				msg = 'THIS VIDEO HAS BEEN REMOVED DUE TO COPYRIGHT INFRINGEMENT.\n PLEASE CHOOSE ANOTHER ONE!'
+				msg = _('THIS VIDEO HAS BEEN REMOVED DUE TO COPYRIGHT INFRINGEMENT.\n PLEASE CHOOSE ANOTHER ONE!')
 				self.sessionEx.waitForFinishOpen(MessageBox, msg, type=MessageBox.TYPE_INFO)
 				return self.listsItems(-1, self.MAIN_URL, 'PORN4DAYS')
 			sts, data2 = self.get_Page(embedUrl)
@@ -4668,7 +4671,7 @@ class XXXParser:
 				printDBG('direkt link: ' + str(videoUrl))
 				return urlparser.decorateUrl(videoUrl, {'Referer': url})
 			else:
-				msg = 'THIS LINK CONTAINS PHOTOS ONLY.\n PLEASE CHOOSE ANOTHER ONE!'
+				msg = _('THIS LINK CONTAINS PHOTOS ONLY.\n PLEASE CHOOSE ANOTHER ONE!')
 				self.sessionEx.waitForFinishOpen(MessageBox, msg, type=MessageBox.TYPE_INFO)
 				return []
 
@@ -7009,7 +7012,7 @@ class XXXParser:
 			videoUrl = self.cm.ph.getSearchGroups(data, '''hls_source.{8,15}[2]([^"^']+?)[,]''')[0].replace('\\u002D', '-').replace('\\u0022', '')
 			printDBG('ANACAMS linklista: ' + videoUrl)
 			if not videoUrl:
-				self.sessionEx.waitForFinishOpen(MessageBox, 'HIDDEN CAM SHOW IN PROGRESS. TRY AGAIN LATER!', type=MessageBox.TYPE_INFO, timeout=30)
+				self.sessionEx.waitForFinishOpen(MessageBox, _('HIDDEN CAM SHOW IN PROGRESS. TRY AGAIN LATER!'), type=MessageBox.TYPE_INFO, timeout=30)
 				return ''
 			if self.cm.isValidUrl(videoUrl):
 				tmp = getDirectM3U8Playlist(videoUrl)
@@ -7086,7 +7089,7 @@ class XXXParser:
 				printDBG('Fixed address ' + videoUrl)
 				videoUrl2 = strwithmeta(videoUrl)
 				if sts and videoUrl2.meta.get('status_code', 0) in [410, 404]:
-					self.sessionEx.waitForFinishOpen(MessageBox, 'HIDDEN CAM SHOW IN PROGRESS. TRY AGAIN LATER!', type=MessageBox.TYPE_INFO, timeout=30)
+					self.sessionEx.waitForFinishOpen(MessageBox, _('HIDDEN CAM SHOW IN PROGRESS. TRY AGAIN LATER!'), type=MessageBox.TYPE_INFO, timeout=30)
 					return ''
 				if self.cm.isValidUrl(videoUrl):
 					try:
