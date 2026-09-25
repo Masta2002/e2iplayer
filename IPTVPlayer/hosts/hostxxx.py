@@ -668,6 +668,33 @@ def formatDuration(seconds):
 	return '%d:%02d:%02d' % (h, rest // 60, rest % 60) if h else '%d:%02d' % (rest // 60, rest % 60)
 
 
+def kvsNextPage(data, url):
+	# next page of a KVS (Kernel Video Sharing) list as (page, url): the pager's own "next" link, or - when that
+	# is only an ajax "#" link - the list block itself (?mode=async&function=get_block&block_id=..&from=..).
+	# ('', '') on the last page, None when the page has no KVS pager at all
+	def pageOf(link):
+		m = re.search(r'[?&]from(?:_videos)?=([0-9]+)', link) or re.search(r'/([0-9]+)/?$', link.split('?')[0])
+		return int(m.group(1)) if m else 1
+
+	href = re.search(r'''<li class="next">\s*<a[^>]*?href="([^"#][^"]*)"''', data)
+	if href:
+		nextUrl = urljoin(url, decodeHtml(href.group(1)))
+		return str(pageOf(nextUrl)), nextUrl
+	links = re.findall(r'''<a[^>]+data-block-id="([^"]+)"[^>]+data-parameters="([^"]*from[^"]*)"''', data)
+	if not links:
+		return None
+	current = pageOf(url)
+	for block, params in links:
+		page = re.search(r'from[^:;]*:([0-9]+)', params)
+		if page and int(page.group(1)) == current + 1:
+			query = []
+			for param in params.split(';'):
+				key, _sep, value = param.partition(':')
+				query.extend('%s=%s' % (k, value) for k in key.split('+'))
+			return str(current + 1), url.split('?')[0] + '?mode=async&function=get_block&block_id=' + block + '&' + '&'.join(query)
+	return '', ''
+
+
 class IPTVHost(IHost):
 	LOGO_NAME = 'xxxlogo.png'
 	PATH_TO_LOGO = resolveFilename(SCOPE_PLUGINS, 'Extensions/IPTVPlayer/icons/logos/' + LOGO_NAME)
@@ -19748,7 +19775,12 @@ class Host(CBaseHostClass, XXXParser):
 				seen.add(phUrl)
 				phTime = self.cm.ph.getSearchGroups(item, r'(?s)class="[^"]*(?:duration|time)[^"]*"[^>]*>\s*(?:<[^>]+>\s*)*([0-9]+:[0-9:]+)', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, ('[' + phTime + '] ' if phTime else '') + phTitle, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', phUrl, 1)], 0, checkhttps(phImage), None))
-			if len(valTab) >= 12:
+			pager = kvsNextPage(data, url)
+			if pager is not None:
+				if pager[1]:
+					valTab.append(self.getNextItem(pager[0], pager[1], name))
+			elif len(valTab) >= 12:
+				# no KVS pager on the page: guess the next numbered page
 				m = re.search(r'([?&]from_videos=)([0-9]+)', url)
 				if m:
 					page = int(m.group(2)) + 1

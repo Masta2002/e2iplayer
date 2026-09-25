@@ -6263,6 +6263,9 @@ class XXXParser:
 				height = int(self.cm.ph.getSearchGroups(label + ' ' + videoUrl, r'([0-9]{3,4})[pm]', 1, True)[0] or 0)
 				candidates.append((height or order, videoUrl))
 			if not candidates:
+				if 'embed.clips4sale.com' in data:
+					# some list entries are only an embedded clips4sale trailer for a paid clip
+					SetIPTVPlayerLastHostError(_('This is only an advert for a paid clip (clips4sale), there is no free video.'))
 				return ''
 			candidates.sort(reverse=True)
 			if not getattr(self, 'format4k', True):
