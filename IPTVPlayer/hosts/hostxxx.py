@@ -387,7 +387,7 @@ SITEDATA = {
 'PORNDD': ('https://porndd.com', '', ''),
 'AMATEURPORN': ('https://amateurporn.me', '', ''),
 'LUXURETV': ('https://en.luxuretv.com', '', ''),
-'XFREEHD': ('https://beta.xfreehd.com', '', ''),
+'XFREEHD': ('https://beta.xfreehd.com', '', None),
 'PORNMZ': ('https://pornmz.com', '', ''),
 'HITPRN': ('https://www.hitprn.net', '', ''),
 'PORNOBAE': ('https://pornobae.com', '', ''),
@@ -19985,10 +19985,8 @@ class Host(CBaseHostClass, XXXParser):
 			valTab.sort(key=lambda poz: poz.name)
 			for title, order in reversed(((_('Latest'), 'mr'), (_('Being watched'), 'bw'), (_('Most viewed'), 'mv'), (_('Top rated'), 'tr'), (_('Most commented'), 'md'), (_('Longest'), 'lg'))):
 				valTab.insert(0, CDisplayListItem(menuHeader(title), title, CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/videos?o=' + order], 'XFREEHD-clips', siteLogo, None))
-			return searchItems(valTab, True)
-
-		if 'XFREEHD-search' == name:
-			return self.listsItems(-1, 'https://beta.xfreehd.com/search?search_query=' + URL_QUOTE(url) + '&search_type=videos', 'XFREEHD-clips')
+			# no search: every search URL sits behind a Cloudflare JavaScript challenge
+			return valTab
 
 		if 'XFREEHD-clips' == name:
 			self.MAIN_URL = 'https://beta.xfreehd.com'
@@ -20143,12 +20141,15 @@ class Host(CBaseHostClass, XXXParser):
 			sts, data = self.cm.getPage(url, self.defaultParams)
 			if not sts:
 				return valTab
-			for m in re.finditer(r'(?s)<div class="item">\s*<a href="(/watch/[^"]+)"[^>]*>(.*?)</a>\s*</div>', data):
-				item = m.group(2)
-				phTitle = decodeHtml(self.cm.ph.getSearchGroups(item, r'<div class="title">([^<]+)</div>', 1, True)[0]).strip() or 'Video'
+			for m in re.finditer(r'(?s)<div class="item"([^>]*)>\s*<a href="(/watch/[^"]+)"[^>]*>(.*?)</a>\s*</div>', data):
+				item = m.group(3)
+				phTitle = self.cm.ph.getSearchGroups(m.group(1), r'data-video-title-base="([^"]+)"', 1, True)[0] or self.cm.ph.getSearchGroups(item, r'<div class="title">([^<]+)</div>', 1, True)[0]
+				phTitle = decodeHtml(phTitle).strip() or 'Video'
+				if isBlockedContent(phTitle):
+					continue
 				phImage = self.cm.ph.getSearchGroups(item, r'data-src="([^"]+)"', 1, True)[0]
 				phTime = self.cm.ph.getSearchGroups(item, r'(?s)<div class="m_time">.*?([0-9]+:[0-9]+(?::[0-9]+)?)', 1, True)[0]
-				valTab.append(CDisplayListItem(phTitle, ('[' + phTime + '] ' if phTime else '') + phTitle, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', self.MAIN_URL + m.group(1), 1)], 0, phImage, None))
+				valTab.append(CDisplayListItem(phTitle, ('[' + phTime + '] ' if phTime else '') + phTitle, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', self.MAIN_URL + m.group(2), 1)], 0, phImage, None))
 			if len(valTab) >= 24:
 				# page 0 has no parameter, the following pages are loaded with p=1, p=2, ...
 				page = self.cm.ph.getSearchGroups(url, r'[?&]p=([0-9]+)', 1, True)[0]
@@ -20272,13 +20273,14 @@ class Host(CBaseHostClass, XXXParser):
 			return searchItems(valTab, True)
 
 		if 'FULLPORNER-search' == name:
-			return self.listsItems(-1, 'https://fullporner.com/search/' + URL_QUOTE(re.sub(r'\s+', '-', url.strip())) + '/', 'FULLPORNER-clips')
+			return self.listsItems(-1, 'https://fullporner.com/search?q=' + URL_QUOTE(url.strip()), 'FULLPORNER-clips')
 
 		if 'FULLPORNER-clips' == name:
 			self.MAIN_URL = 'https://fullporner.com'
 			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
 			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
-			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			# the site's search answers only after ~30 s
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True, 'timeout': 60}
 			sts, data = self.cm.getPage(url, self.defaultParams)
 			if not sts:
 				return valTab
@@ -20293,7 +20295,11 @@ class Host(CBaseHostClass, XXXParser):
 				phTime = self.cm.ph.getSearchGroups(item, r'([0-9]+:[0-9]{2}(?::[0-9]{2})?)', 1, True)[0]
 				valTab.append(CDisplayListItem(phTitle, ('[' + phTime + '] ' if phTime else '') + phTitle, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', self.MAIN_URL + phUrl, 1)], 0, phImage, None))
 			# the sorted /home/<sort> lists have only one page
-			if len(valTab) >= 24 and not re.search(r'/home/(?:recent|views|rating)', url):
+			if len(valTab) >= 24 and '/search?' in url:
+				# search pages: /search?q=<term>&p=<n>
+				page = int(self.cm.ph.getSearchGroups(url, r'[?&]p=([0-9]+)', 1, True)[0] or 1) + 1
+				valTab.append(self.getNextItem(str(page), re.sub(r'&p=[0-9]+', '', url) + '&p=%d' % page, name))
+			elif len(valTab) >= 24 and not re.search(r'/home/(?:recent|views|rating)', url):
 				base, _sep, query = url.partition('?')
 				m = re.search(r'/([0-9]+)/?$', base)
 				if m:

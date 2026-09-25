@@ -4533,6 +4533,9 @@ class XXXParser:
 				msg = _('THIS VIDEO HAS BEEN REMOVED DUE TO COPYRIGHT INFRINGEMENT.\n PLEASE CHOOSE ANOTHER ONE!')
 				self.sessionEx.waitForFinishOpen(MessageBox, msg, type=MessageBox.TYPE_INFO)
 				return self.listsItems(-1, self.MAIN_URL, 'PORN4DAYS')
+			if re.search(r'\.(?:mp4|m3u8)(?:\?|$)', embedUrl):
+				# SERVER1 is a direct file now (iceyfile, redirects to a tokenised download URL)
+				return urlparser.decorateUrl(embedUrl, {'Referer': url, 'User-Agent': self.HTTP_HEADER.get('User-Agent', '')})
 			sts, data2 = self.get_Page(embedUrl)
 			if not sts:
 				return ''
@@ -5944,6 +5947,8 @@ class XXXParser:
 			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
 			self.HTTP_HEADER['Referer'] = 'https://www.tokyomotion.net/'
 			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			# the title part of /video/<id>/<title> is often Japanese; the page is the same without it
+			url = self.cm.ph.getSearchGroups(url, r'''(https?://[^/]+/video/[0-9]+/)''', 1, True)[0] or url
 			sts, data = self.cm.getPage(url, self.defaultParams)
 			if not sts:
 				return ''
@@ -6134,7 +6139,7 @@ class XXXParser:
 		if parser == 'https://fullporner.com':
 			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
 			self.HTTP_HEADER['Referer'] = 'https://fullporner.com/'
-			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True, 'timeout': 60}
 			sts, data = self.cm.getPage(url, self.defaultParams)
 			if not sts:
 				return ''
