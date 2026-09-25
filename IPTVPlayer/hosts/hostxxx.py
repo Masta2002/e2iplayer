@@ -25251,93 +25251,43 @@ class Host(CBaseHostClass, XXXParser):
 			return valTab
 
 		if 'ENGORGEDTITS' == name:
-			printDBG('Host listsItems begin name=' + name)
-			COOKIEFILE = join(GetCookieDir(), 'engorgedtits.cookie')
+			# the site is a JavaScript app now; lists come from its JSON API (server-side sorting, search and paging)
 			self.MAIN_URL = 'https://engorgedtits.com'
-			catImage = siteLogo
-			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='Firefox')
-			self.defaultParams = {'header': self.HTTP_HEADER, 'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE}
-			sts, data = self.get_Page(url, self.defaultParams)
-			data1 = self.cm.ph.getDataBeetwenMarkers(data, '34" role', 'object-page', False)[1]
-			data2 = self.cm.ph.getDataBeetwenMarkers(data, 'menu-category', 'Toggle Menu', False)[1]
-			data = data1 + data2
-			data = data.split('tag menu-item')
-			if len(data):
-				del data[0]
-			for item in data:
-				phUrl = self.cm.ph.getSearchGroups(item, '''href=["]([^"^#]+?)["]''', 1, True)[0]
-				phTitle = self.cm.ph.getSearchGroups(item, '''text"[>]([^ß]+?)[<]''', 1, True)[0].upper()
-				valTab.append(CDisplayListItem(phTitle, phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'ENGORGEDTITS-clips', catImage, None))
-			valTab.sort(key=lambda poz: poz.name)
-			valTab.insert(0, CDisplayListItem(menuHeader(_('Latest')), _('Latest'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL], "ENGORGEDTITS-clips", catImage, None))
-			valTab.insert(1, CDisplayListItem("--- SORT BY NAME ---", "SORT BY NAME", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/video/?orderby=title&order=ASC'], "ENGORGEDTITS-clips", catImage, None))
-			valTab.insert(2, CDisplayListItem("--- SORT BY DATE ---", "SORT BY DATE", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/video/?orderby=date&order=DESC'], "ENGORGEDTITS-clips", catImage, None))
-			valTab.insert(3, CDisplayListItem("--- SORT BY COMMENTS ---", "SORT BY COMMENTS", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/video/?orderby=comment_count&order=DESC'], "ENGORGEDTITS-clips", catImage, None))
-			valTab.insert(4, CDisplayListItem("--- SORT BY LIKES ---", "SORT BY LIKES", CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/video/?orderby=post_like&order=DESC'], "ENGORGEDTITS-clips", catImage, None))
+			api = self.MAIN_URL + '/api/videos/grid?limit=36&page=1'
+			for title, sort in ((_('Latest'), ''), (_('Most viewed'), '&sort=views'), (_('Top rated'), '&sort=likes')):
+				valTab.append(CDisplayListItem(menuHeader(title), title, CDisplayListItem.TYPE_CATEGORY, [api + sort], 'ENGORGEDTITS-clips', siteLogo, None))
 			return searchItems(valTab, True)
 
 		if 'ENGORGEDTITS-search' == name:
-			printDBG('Host listsItems begin name=' + name)
-			valTab = self.listsItems(-1, 'https://engorgedtits.com/?s=%s&search=&nonce=b4cc52f1cb&content_type=video' % url.replace(' ', '+'), 'ENGORGEDTITS-clips')
-			return valTab
+			return self.listsItems(-1, 'https://engorgedtits.com/api/videos/grid?limit=36&page=1&q=' + URL_QUOTE(url.strip()), 'ENGORGEDTITS-clips')
 
 		if 'ENGORGEDTITS-clips' == name:
-			printDBG('Host listsItems begin name=' + name)
-			COOKIEFILE = join(GetCookieDir(), 'engorgedtits.cookie')
-			catUrl = self.currList[Index].possibleTypesOfSearch
-			catImage = siteLogo
-			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='Firefox')
-			self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE, 'return_data': True}
-			sts, data = self.get_Page(url, self.defaultParams)
-			if not sts:
-				return valTab
-			next = self.cm.ph.getSearchGroups(data, 'next.+href=["]([^"]+?)["]', 1, True)[0]
-			printDBG('NEXT: ' + str(next))
-			data = data.split('post-item')
-			if len(data):
-				del data[0]
-			for item in data:
-				phUrl = self.cm.ph.getSearchGroups(item, '''perma.+href=["]([^"^#]+?)["]''', 1, True)[0]
-				phTitle = self.cm.ph.getSearchGroups(item, '''".title=["]([^"]+?)["]''', 1, True)[0]
-				phImage = self.cm.ph.getSearchGroups(item, '''src=['"]([^"]+?)['"]''', 1, True)[0]
-				Time = self.cm.ph.getSearchGroups(item, '''badge">\n.+[\\s]([0-9:]+?)[<]''', 1, True)[0]
-				TimeLabel = ('[' + Time + '] ') if Time else ''
-				Uploaded = self.cm.ph.getSearchGroups(item, r'''time=["]([\s0-9:-]+?)["]''', 1, True)[0]
-				if not Uploaded:
-					Uploaded = 'Recently'
-				if not phUrl.endswith('2/'):
-					valTab.append(CDisplayListItem(decodeHtml(phTitle), TimeLabel + decodeHtml(phTitle) + '\nUploaded: ' + Uploaded, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', phUrl, 1)], '', phImage, None))
-			if next:
-				next_number = self.cm.ph.getSearchGroups(next, 'page/([0-9]+?)', 1, True)[0]
-				printDBG('NEXT NUMBER: ' + str(next_number))
-				valTab.append(self.getNextItem(str(next_number), next, name, catUrl))
-			return valTab
-
-		if 'ENGORGEDTITS-pornstars' == name:
-			printDBG('Host listsItems begin name=' + name)
 			self.MAIN_URL = 'https://engorgedtits.com'
-			COOKIEFILE = join(GetCookieDir(), 'engorgedtits.cookie')
-			self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE}
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = self.MAIN_URL + '/'
+			self.defaultParams = {'header': self.HTTP_HEADER, 'return_data': True}
 			sts, data = self.cm.getPage(url, self.defaultParams)
 			if not sts:
 				return valTab
-			next = self.cm.ph.getDataBeetwenMarkers(data, 'paginatie"', '/nav', False)[1]
-			next = self.cm.ph.getSearchGroups(next, 'nt.{8}\n.+href=["]([^"]+?)["]', 1, True)[0]
-			if next:
-				printDBG('NEXT: ' + str(next))
-			data = data.split('content-item')
-			if len(data):
-				del data[0]
-			for item in data:
-				phTitle = self.cm.ph.getSearchGroups(item, '''name"[>]([^"]+?)[<]''', 1, True)[0]
-				phUrl = self.cm.ph.getSearchGroups(item, '''ref=['"]([^"^']+?)['"].t''', 1, True)[0]
-				phUrl = phUrl + 'videos/'
-				phImage = self.cm.ph.getSearchGroups(item, '''src=['"]([^"^']+?)[|]h''', 1, True)[0]
-				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'WORLDSEX-clips', phImage, None))
-			if next:
-				next_number = next.split('=')[-1]
-				printDBG('NEXT NUMBER: ' + str(next_number))
-				valTab.append(self.getNextItem(str(next_number), next, name))
+			try:
+				result = byteify(json.loads(data))
+			except Exception:
+				printExc()
+				return valTab
+			for item in result.get('videos', []):
+				# encrypted HLS videos are premium only (the key needs a member token), shorts are vertical snippets
+				if item.get('isHls') or item.get('isShort') or not item.get('id'):
+					continue
+				phTitle = decodeHtml(str(item.get('title', ''))).strip()
+				if not phTitle or isBlockedContent(phTitle):
+					continue
+				desc = '[%s] %s' % (item.get('duration', ''), phTitle)
+				if item.get('channel'):
+					desc += '\n' + decodeHtml(str(item['channel']))
+				valTab.append(CDisplayListItem(phTitle, desc, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', '%s/watch.html?id=%s' % (self.MAIN_URL, item['id']), 1)], 0, str(item.get('thumbnail', '')).replace(' ', '%20'), None))
+			page = int(result.get('page') or 1)
+			if page < int(result.get('totalPages') or 0):
+				valTab.append(self.getNextItem(str(page + 1), re.sub(r'([?&]page=)[0-9]+', r'\g<1>%d' % (page + 1), url), name))
 			return valTab
 
 # E

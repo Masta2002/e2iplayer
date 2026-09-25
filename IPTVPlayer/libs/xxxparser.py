@@ -3173,30 +3173,25 @@ class XXXParser:
 				return videoUrl
 
 		if parser == 'https://engorgedtits.com':
-			printDBG('ENGORGEDTITS PARSER')
-			COOKIEFILE = join(GetCookieDir(), 'engorgedtits.cookie')
-			self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE, 'return_data': True}
-			sts, data = self.getPage(url, 'engorgedtits.cookie', 'engorgedtits.com', self.defaultParams)
-			data2 = self.cm.ph.getDataBeetwenMarkers(data, 'embed-inner', 'embed-->', False)[1]
-			printDBG('ENGORGEDTITS PARSERDATA 2: ' + data2)
-			videoUrl = re.findall('quot[;]([^;^]+?.mp4)[&]quot.{,10}type', data2, re.S)
-			if videoUrl:
-				printDBG('Video links: ' + str(videoUrl))
-				videoUrl = videoUrl[0]
-				videoUrl = videoUrl.replace(r'\/', '/')
-				return urlparser.decorateUrl(videoUrl, {'Referer': url, 'User-Agent': self.USER_AGENT})
-
-			if not videoUrl:
-				embedUrl = self.cm.ph.getSearchGroups(data, 'fullscreen".src=["]([^"]+?)["]')[0]
-				sts, data3 = self.get_Page(embedUrl)
-				if not sts or data3 is None:
-						SetIPTVPlayerLastHostError(_('THIS IS A PREMIUM VIDEO.\nLOGIN OR PREMIUM REQUIRED.'))
-						return []
-				videoUrl = self.cm.ph.getSearchGroups(data3, "urlPlaylistUrl = [']([^']+?)[']")[0]
-				return urlparser.decorateUrl(videoUrl, {'Referer': url, 'User-Agent': self.USER_AGENT, 'iptv_proto': 'm3u8'})
-			else:
-				SetIPTVPlayerLastHostError(_('THIS IS A PREMIUM VIDEO. \nLOGIN OR PREMIUM REQUIRED.'))
-				return []
+			# watch.html?id=<id> -> the JSON API names the file: free videos are plain MP4, encrypted HLS is premium only
+			videoId = self.cm.ph.getSearchGroups(url, r'[?&]id=([0-9]+)', 1, True)[0]
+			if not videoId:
+				return ''
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = url
+			sts, data = self.cm.getPage('https://engorgedtits.com/api/videos/' + videoId, {'header': self.HTTP_HEADER, 'return_data': True})
+			try:
+				video = json.loads(data).get('video', {}) if sts else {}
+			except Exception:
+				printExc()
+				video = {}
+			videoUrl = video.get('videoUrl', '')
+			if video.get('hlsKeyId') or '.m3u8' in videoUrl:
+				SetIPTVPlayerLastHostError(_('THIS IS A PREMIUM VIDEO.\nLOGIN OR PREMIUM REQUIRED.'))
+				return ''
+			if not videoUrl.startswith('http'):
+				return ''
+			return urlparser.decorateUrl(videoUrl, {'Referer': 'https://engorgedtits.com/', 'User-Agent': self.HTTP_HEADER.get('User-Agent', '')})
 
 		if parser == 'https://bdsm.one':
 			printDBG('BDSMTUBE PARSER')
