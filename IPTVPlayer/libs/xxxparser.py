@@ -1105,14 +1105,12 @@ class XXXParser:
 				ws = websocket.create_connection(wsURL2)
 
 				zapytanie = '{ "id": 0, "value": ["", ""]}'
-				zapytanie = zapytanie.decode("utf-8")
 				printDBG('Host zapytanie1: ' + zapytanie)
 				ws.send(zapytanie)
 				result = ws.recv()
 				printDBG('Host result1: ' + result)
 
 				zapytanie = '{ "id": 2, "value": ["%s"]}' % modelName
-				zapytanie = zapytanie.decode("utf-8")
 				printDBG('Host zapytanie2: ' + zapytanie)
 				ws.send(zapytanie)
 				result = ws.recv()
