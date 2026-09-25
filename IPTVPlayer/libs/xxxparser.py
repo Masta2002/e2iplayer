@@ -6459,13 +6459,18 @@ class XXXParser:
 				# separate audio track of these streams
 				userAgent = 'VLC/3.0.20 LibVLC/3.0.20'
 			videoUrl = urlparser.decorateUrl(videoUrl, {'Referer': parser + '/', 'User-Agent': userAgent, 'iptv_livestream': True})
+			variants = []
 			if parser == 'https://www.camsoda.com':
 				# exteplayer3 plays the first variant of the master playlist, here the smallest (256x144); take the best
 				# one, merged with the separate audio rendition
 				variants = getDirectM3U8Playlist(videoUrl, checkExt=False, sortWithMaxBitrate=999999999)
-				if variants:
-					videoUrl = variants[0]['url']
-					videoUrl.meta['iptv_livestream'] = True
+			elif parser == 'https://api.sinparty.com' and '_adaptive.m3u8' in videoUrl:
+				# the top variant of these (Ant Media) playlists is the model's untouched WebRTC source (1080p, ~10 Mbit/s,
+				# 8 s segments) that plays without sound; take the best transcoded one (up to 720p) instead
+				variants = getDirectM3U8Playlist(videoUrl, checkExt=False, sortWithMaxBitrate=5000000)
+			if variants:
+				videoUrl = variants[0]['url']
+				videoUrl.meta['iptv_livestream'] = True
 			return videoUrl
 
 		if parser == 'https://hentai2w.com':
