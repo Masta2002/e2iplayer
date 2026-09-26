@@ -681,9 +681,18 @@ def kvsNextPage(data, url):
 		nextUrl = urljoin(url, decodeHtml(href.group(1)))
 		return str(pageOf(nextUrl)), nextUrl
 	links = re.findall(r'''<a[^>]+data-block-id="([^"]+)"[^>]+data-parameters="([^"]*from[^"]*)"''', data)
-	if not links:
-		return None
 	current = pageOf(url)
+	# the last page number rides along as "maxpage" (KVS ignores it): some sites' ajax blocks carry no pager at
+	# all, and a page past the end would bring page 1 again
+	m = re.search(r'[?&]maxpage=([0-9]+)', url)
+	lastPage = int(m.group(1)) if m else 0
+	if not links:
+		if 'mode=async' not in url:
+			return None
+		if current < lastPage:
+			return str(current + 1), re.sub(r'([?&]from(?:_[a-z]+)?=)[0-9]+', r'\g<1>%02d' % (current + 1), url)
+		return '', ''
+	lastPage = max([lastPage] + [int(p) for p in re.findall(r'from[^:;]*:([0-9]+)', ';'.join(params for _block, params in links))])
 	for block, params in links:
 		page = re.search(r'from[^:;]*:([0-9]+)', params)
 		if page and int(page.group(1)) == current + 1:
@@ -691,7 +700,7 @@ def kvsNextPage(data, url):
 			for param in params.split(';'):
 				key, _sep, value = param.partition(':')
 				query.extend('%s=%s' % (k, value) for k in key.split('+'))
-			return str(current + 1), url.split('?')[0] + '?mode=async&function=get_block&block_id=' + block + '&' + '&'.join(query)
+			return str(current + 1), url.split('?')[0] + '?mode=async&function=get_block&block_id=' + block + '&' + '&'.join(query) + '&maxpage=%d' % lastPage
 	return '', ''
 
 
