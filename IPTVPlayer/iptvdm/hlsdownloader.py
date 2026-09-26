@@ -15,6 +15,7 @@ from Plugins.Extensions.IPTVPlayer.iptvdm.downloaderhelpers import ensureText, f
 # FOREIGN import
 ###################################################
 from Tools.BoundFunction import boundFunction
+from Components.config import config
 from enigma import eConsoleAppContainer
 from time import sleep
 import re
@@ -55,6 +56,11 @@ class HLSDownloader(BaseDownloader, SidecarMixin):
         self.downloadDuration = 0
         self.liveStream = False
         self.lastErrorCode = 0  # last non-zero "error_code" reported by hlsdl (e.g. expired/blocked CDN token)
+
+        # both are set by the download manager (allowFinalRename: a real download, not buffered
+        # playback; resumeExisting: "Continue downloading" on an interrupted item)
+        self.allowFinalRename = False
+        self.resumeExisting = False
 
         # ffmpeg postprocess support
         self.ffmpegPostEnabled = False
@@ -210,6 +216,33 @@ class HLSDownloader(BaseDownloader, SidecarMixin):
         self._finishDownloadFlow()
         return True
 
+    def _getResumeParams(self):
+        # Download manager downloads only. -R makes hlsdl keep a resume sidecar while it runs;
+        # without it an interrupted run would have nothing to continue from.
+        if not DMHelper.hlsdlSupportsResume():
+            self.resumeExisting = False
+            return ''
+        if self.resumeExisting and DMHelper.hasHlsdlResumeFile(self.filePath) and os.path.isfile(fsPath(self.filePath)):
+            printDBG("HLSDownloader resume existing file[%s]" % self.filePath)
+        else:
+            # a fresh start, also "Download again": a sidecar left by an earlier run must not
+            # turn it into a resume
+            self.resumeExisting = False
+            DMHelper.removeHlsdlResumeFiles(self.filePath)
+        return ' -R '
+
+    def _getLiveStartParams(self):
+        # Buffered playback: start a live stream this many seconds behind the live edge (hlsdl -s).
+        # "default" leaves hlsdl's own value (2 minutes); it has no effect on a VOD. Download
+        # manager recordings keep the default, the earlier part is wanted there.
+        try:
+            offset = str(config.plugins.iptvplayer.hlsdlLiveStartOffset.value)
+            if offset.isdigit():
+                return ' -s %s ' % offset
+        except Exception:
+            printExc()
+        return ''
+
     def start(self, url, filePath, params={}):
         """
         Owervrite start from BaseDownloader
@@ -240,6 +273,11 @@ class HLSDownloader(BaseDownloader, SidecarMixin):
 
         if 'iptv_m3u8_seg_download_retry' in meta:
             addParams += ' -w %s ' % shellQuote(meta['iptv_m3u8_seg_download_retry'])
+
+        if self.allowFinalRename:
+            addParams += self._getResumeParams()
+        else:
+            addParams += self._getLiveStartParams()
 
         if self.url.startswith("merge://"):
             try:
