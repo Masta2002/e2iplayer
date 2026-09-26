@@ -6182,6 +6182,16 @@ class XXXParser:
 					if not isinstance(fileName, str):
 						fileName = fileName.encode('utf-8')  # Python 2: quote() needs bytes
 					videoUrl = m.group(1) + '/video/' + quote(fileName)
+					# that file is AV1, which most receivers cannot decode (sound only); the site's "Universal Mirror"
+					# is an H.264 copy at w1/w2 .../video/h264/<file name> - use it when it exists, like the site does
+					header = {'User-Agent': self.HTTP_HEADER.get('User-Agent', ''), 'Referer': embedUrl, 'Range': 'bytes=0-0'}
+					for host in ('https://w1.hentaiocean.com', 'https://w2.hentaiocean.com'):
+						h264Url = host + '/video/h264/' + quote(fileName)
+						sts, response = self.cm.getPage(h264Url, {'header': header, 'return_data': False})
+						if sts and response is not None:
+							response.close()
+							videoUrl = h264Url
+							break
 					return urlparser.decorateUrl(videoUrl, {'Referer': embedUrl, 'User-Agent': self.HTTP_HEADER.get('User-Agent', '')})
 			return ''
 
