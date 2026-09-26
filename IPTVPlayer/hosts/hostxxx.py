@@ -11850,7 +11850,8 @@ class Host(CBaseHostClass, XXXParser):
 			for item in data:
 				phTitle = self.cm.ph.getSearchGroups(item, '''title"[>]([^ß]+?)[<]''', 1, True)[0].upper()
 				phUrl = self.cm.ph.getSearchGroups(item, '''href=['"]([^"^#]+?)['"]''', 1, True)[0]
-				phImage = self.cm.ph.getSearchGroups(item, '''src=['"]([^"^#]+?)['"]''', 1, True)[0].replace(' ', '%20')
+				# names like "Latina vs BBC" carry no-break spaces - Python 2 refuses non-ASCII in a request path
+				phImage = quote(self.cm.ph.getSearchGroups(item, '''src=['"]([^"^#]+?)['"]''', 1, True)[0], safe=':/?&=%')
 				phVideo = self.cm.ph.getSearchGroups(item, '''svg[>]([\0-9]+?)[<]/''', 1, True)[0].strip()
 				phViews = self.cm.ph.getSearchGroups(item, '''[>]([0-9.MK]{,5})[<]''', 1, True)[0]
 				phRate = self.cm.ph.getSearchGroups(item, '''span[>]([.0-9]+?)[<]''', 1, True)[0]
