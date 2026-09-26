@@ -6332,7 +6332,9 @@ class XXXParser:
 			videoUrl = self.cm.ph.getSearchGroups(data, r'''(https?://[^"'<>\s]+\.m3u8[^"'<>\s]*)''', 1, True)[0] or self.cm.ph.getSearchGroups(data, r'''(?:urlPlay|file)\s*[:=]\s*["'](https?://[^"']+\.mp4[^"']*)["']''', 1, True)[0]
 			if not videoUrl:
 				return ''
-			meta = {'Referer': embedUrl, 'User-Agent': self.HTTP_HEADER.get('User-Agent', '')}
+			# no Referer: the turbovidhls player page is "no-referrer", and Google's image CDN answers 429 to segment
+			# requests that carry the turbovidhls Referer (200 without it)
+			meta = {'User-Agent': self.HTTP_HEADER.get('User-Agent', '')}
 			if '.m3u8' in videoUrl:
 				# the segments sit on Google's image CDN with a PNG header in front of the TS data: exteplayer3/gstplayer
 				# find no tracks in them, hlsdl just fetches the bytes -> only playable through the buffer
