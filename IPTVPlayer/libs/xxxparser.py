@@ -129,6 +129,24 @@ class XXXParser:
 			candidates = [c for c in candidates if c[0] <= 1080] or candidates[-1:]
 		return candidates[0][1]
 
+	def _bestFromQualityList(self, url, handler, maxHeight=0):
+		# "use the best quality": build the list the host's quality menu (handler) would show and take the
+		# best entry (label '1080p' / '4K Ultra HD' / '1920x1080'); maxHeight skips entries the site locks
+		try:
+			items = self.listsItems(-1, url, handler) or []
+		except Exception:
+			printExc()
+			return ''
+		candidates = []
+		for item in items:
+			if item.type != 'VIDEO' or not item.urlItems:
+				continue
+			height = self._labelHeight(item.name) or int(self.cm.ph.getSearchGroups(item.name, r'[0-9]{3,4}x([0-9]{3,4})', 1, True)[0] or 0)
+			if maxHeight and height > maxHeight:
+				continue
+			candidates.append((height, item.urlItems[0].url))
+		return self._pickByHeight(candidates)
+
 	def _bestM3U8Variant(self, videoUrl, **kwargs):
 		# best variant (bitrate) of an HLS master, >1080p variants skipped when UHD playback is off; '' if none
 		kwargs.setdefault('checkContent', True)
@@ -5487,10 +5505,20 @@ class XXXParser:
 			return ''
 
 		if parser == 'https://hqporner.com':
+			if '/hdporn/' in url:
+				# video page: list item with "use the best quality" on
+				url = self._bestFromQualityList(url, 'hqporner-serwer')
+				if not url:
+					return ''
 			videoUrl = urlparser.decorateUrl(url, {'Referer': url})
 			return videoUrl if videoUrl else ''
 
 		if parser == 'https://www.eporner.com':
+			if '/dload/' not in url:
+				# video page: list item with "use the best quality" on; downloads from 1080p on need a login
+				url = self._bestFromQualityList(url, 'eporner-serwer', 720)
+				if not url:
+					return ''
 			printDBG('Selected Resolution: ' + url)
 			if url.startswith('http'):
 				videoUrl = url
@@ -5501,6 +5529,11 @@ class XXXParser:
 			return videoUrl if videoUrl else ''
 
 		if parser == 'https://hello.porn':
+			if '.m3u8' not in url:
+				# video page: list item with "use the best quality" on
+				url = self._bestFromQualityList(url, 'HELLOPORN-serwer')
+				if not url:
+					return ''
 			printDBG('Selected Resolution: ' + url)
 			# url is a variant line picked in hostxxx HELLOPORN-serwer
 			videoUrl = urlparser.decorateUrl(url, {'Referer': url, 'iptv_proto': 'm3u8'})

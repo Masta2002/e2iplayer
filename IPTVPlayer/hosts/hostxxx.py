@@ -1805,7 +1805,10 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = self.cm.ph.getSearchGroups(item, '''data-src=["](.+?)["].''', 1, True)[0].replace('webp', 'jpg')
 				phImage = checkhttps(phImage)
 				phTime = self.cm.ph.getSearchGroups(item, '''duration.+[>]([^>]+?)[<]/p''', 1, True)[0].strip()
-				valTab.append(CDisplayListItem(phTitle, '[' + phTime + '] ' + phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'HELLOPORN-serwer', phImage, phImage))
+				if self.formatbest:
+					valTab.append(CDisplayListItem(phTitle, '[' + phTime + '] ' + phTitle, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', phUrl, 1)], 0, phImage, None))
+				else:
+					valTab.append(CDisplayListItem(phTitle, '[' + phTime + '] ' + phTitle, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'HELLOPORN-serwer', phImage, phImage))
 			if next:
 				valTab.append(self.getNextItem(next, next, name, "next"))
 			return valTab
@@ -3635,7 +3638,10 @@ class Host(CBaseHostClass, XXXParser):
 				if phUrl.startswith('/'):
 					phUrl = self.MAIN_URL + phUrl
 				phImage = checkhttp(phImage)
-				valTab.append(CDisplayListItem(decodeHtml(phTitle) + '  ' + size, '[' + phRuntime + '] ' + decodeHtml(phTitle) + '  ' + size + '\n' + mbrate + mbvie, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'eporner-serwer', phImage, phImage))
+				if self.formatbest:
+					valTab.append(CDisplayListItem(decodeHtml(phTitle) + '  ' + size, '[' + phRuntime + '] ' + decodeHtml(phTitle) + '  ' + size + '\n' + mbrate + mbvie, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', phUrl, 1)], 0, phImage, None))
+				else:
+					valTab.append(CDisplayListItem(decodeHtml(phTitle) + '  ' + size, '[' + phRuntime + '] ' + decodeHtml(phTitle) + '  ' + size + '\n' + mbrate + mbvie, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'eporner-serwer', phImage, phImage))
 			if next:
 				if next.startswith('/'):
 					next = self.MAIN_URL + next
@@ -16353,7 +16359,10 @@ class Host(CBaseHostClass, XXXParser):
 				except Exception:
 					pass
 				if phTitle:
-					valTab.append(CDisplayListItem(decodeHtml(phTitle), '[' + Time + '] ' + decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'hqporner-serwer', phImage, phImage))
+					if self.formatbest:
+						valTab.append(CDisplayListItem(decodeHtml(phTitle), '[' + Time + '] ' + decodeHtml(phTitle), CDisplayListItem.TYPE_VIDEO, [CUrlItem('', phUrl, 1)], 0, phImage, None))
+					else:
+						valTab.append(CDisplayListItem(decodeHtml(phTitle), '[' + Time + '] ' + decodeHtml(phTitle), CDisplayListItem.TYPE_CATEGORY, [phUrl], 'hqporner-serwer', phImage, phImage))
 			if next:
 				next = self.RE_HREF_QUOTED.findall(next)[-1]
 				next = next.replace('&amp;', '&')
