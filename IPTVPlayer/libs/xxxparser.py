@@ -108,6 +108,42 @@ def fix_escaped_url(text):
 
 class XXXParser:
 
+	def _uhdAllowed(self):
+		# config xxx4k "Playback UHD", set by Host.__init__ / listsItems / IPTVHost.getResolvedURL
+		return getattr(self, 'format4k', True)
+
+	def _labelHeight(self, text):
+		# '2160p 4K', '1080p FHD', '..._720p.mp4', '4K Ultra HD' -> 2160 / 1080 / 720 / 2160; 0 if unknown
+		height = int(self.cm.ph.getSearchGroups(text, r'([0-9]{3,4})[pP]', 1, True)[0] or 0)
+		if not height and re.search(r'(?i)(?:^|[^0-9a-z])4k(?:$|[^0-9a-z])', text):
+			height = 2160
+		return height
+
+	def _pickByHeight(self, candidates):
+		# candidates: [(height, url)]; the highest one, above 1080p only when UHD playback is on
+		# (equal heights keep their order, the first one wins)
+		if not candidates:
+			return ''
+		candidates = sorted(candidates, key=lambda c: c[0], reverse=True)
+		if not self._uhdAllowed():
+			candidates = [c for c in candidates if c[0] <= 1080] or candidates[-1:]
+		return candidates[0][1]
+
+	def _bestM3U8Variant(self, videoUrl, **kwargs):
+		# best variant (bitrate) of an HLS master, >1080p variants skipped when UHD playback is off; '' if none
+		kwargs.setdefault('checkContent', True)
+		try:
+			variants = getDirectM3U8Playlist(videoUrl, sortWithMaxBitrate=999999999, **kwargs)
+		except Exception:
+			printExc()
+			return ''
+		if not self._uhdAllowed():
+			variants = [v for v in variants if int(v.get('height') or 0) <= 1080] or variants[-1:]
+		for v in variants:
+			if v.get('url'):
+				return v['url']
+		return ''
+
 	def getLinksForVideo(self, url):
 		printDBG("Urllist.getLinksForVideo url[%s]" % url)
 		videoUrls = []
@@ -931,30 +967,15 @@ class XXXParser:
 			if 'video is a private' in data:
 				SetIPTVPlayerLastHostError(_('This video is a private.'))
 				return []
-			if self.format4k:
-				videoPage = self.cm.ph.getSearchGroups(data, '''video_alt_url5: ['"]([^"^']+?)['"]''')[0]
-				if videoPage:
-					printDBG('Host videoPage video_alt_url5 4k: ' + videoPage)
-					return strwithmeta(videoPage, {'Referer': url})
-				videoPage = self.cm.ph.getSearchGroups(data, '''video_alt_url4: ['"]([^"^']+?)['"]''')[0]
-				if videoPage:
-					printDBG('Host videoPage video_alt_url4 High HD: ' + videoPage)
-					return strwithmeta(videoPage, {'Referer': url})
-				videoPage = self.cm.ph.getSearchGroups(data, '''video_alt_url3: ['"]([^"^']+?)['"]''')[0]
-				if videoPage:
-					printDBG('Host videoPage video_alt_url3 Full High: ' + videoPage)
-					return strwithmeta(videoPage, {'Referer': url})
-			videoPage = self.cm.ph.getSearchGroups(data, '''video_alt_url2: ['"]([^"^']+?)['"]''')[0]
+			# video_url / video_alt_urlN (+ _text labels): the slots shift per video (alt_url3 is 2160p on one, 1080p on another)
+			texts = dict(re.findall(r"(video_url|video_alt_url[0-9]*)_text\s*:\s*['\"]([^'\"]*)['\"]", data))
+			candidates = []
+			for key, value in re.findall(r"(video_url|video_alt_url[0-9]*)\s*:\s*['\"]([^'\"]+)['\"]", data):
+				if value.startswith('http'):
+					candidates.append((self._labelHeight(texts.get(key, '') + ' ' + value), value))
+			videoPage = self._pickByHeight(candidates)
 			if videoPage:
-				printDBG('Host videoPage video_alt_url2 HD: ' + videoPage)
-				return strwithmeta(videoPage, {'Referer': url})
-			videoPage = self.cm.ph.getSearchGroups(data, '''video_alt_url: ['"]([^"^']+?)['"]''')[0]
-			if videoPage:
-				printDBG('Host videoPage video_alt_url Medium: ' + videoPage)
-				return strwithmeta(videoPage, {'Referer': url})
-			videoPage = self.cm.ph.getSearchGroups(data, '''video_url: ['"]([^"^']+?)['"]''')[0]
-			if videoPage:
-				printDBG('Host videoPage video_url Low: ' + videoPage)
+				printDBG('Host videoPage: ' + videoPage)
 				return strwithmeta(videoPage, {'Referer': url})
 			return ''
 
@@ -3435,12 +3456,12 @@ class XXXParser:
 					SetIPTVPlayerLastHostError(_('THIS VIDEO IS UNAVAILABLE.\nTRY AGAIN LATER!'))
 					return []
 				data2 = data2 + '#'
-				videoUrls = data2.split('X-STREAM-INF')
+				videoUrls = data2.split('X-STREAM-INF')[1:]
 				printDBG('Video links: ' + str(videoUrls))
-				lastUrl = videoUrls[-1]
-				printDBG('Last video link: ' + lastUrl)
-				videoUrl = self.cm.ph.getSearchGroups(lastUrl, '["]([^"]+?)[#]', 1, True)[0].strip()
-				printDBG('Last URL: ' + str(videoUrl))
+				# variants are listed low to high; reversed, so the last one wins among equal (unknown) heights
+				candidates = [(int(self.cm.ph.getSearchGroups(item, r'RESOLUTION=[0-9]+x([0-9]+)', 1, True)[0] or 0), self.cm.ph.getSearchGroups(item, '["]([^"]+?)[#]', 1, True)[0].strip()) for item in reversed(videoUrls)]
+				videoUrl = self._pickByHeight([c for c in candidates if c[1]])
+				printDBG('Selected URL: ' + str(videoUrl))
 				return strwithmeta(videoUrl, {'iptv_proto': 'm3u8'})  # variant line of the master playlist
 			else:
 				printDBG('SELECTED RESOLUTION:\n' + url)
@@ -4029,7 +4050,8 @@ class XXXParser:
 			stream_url = self.cm.ph.getSearchGroups(data, r'source\ssrc=["]([^"]+?)["]')[0]
 			if not stream_url:
 				links = [v.replace('\\u002F', '/') for v in re.findall(r'"(https:\\u002F\\u002Fvcdn[^"]+?\.mp4)"', data) if 'media=hls' not in v]
-				links = [v for v in links if not v.endswith('_2160.mp4')] or links
+				if not self._uhdAllowed():
+					links = [v for v in links if not v.endswith('_2160.mp4')] or links
 				stream_url = links[-1] if links else ''
 			HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
 			HTTP_HEADER['Referer'] = url
@@ -4053,7 +4075,8 @@ class XXXParser:
 			stream_url = self.cm.ph.getSearchGroups(data, r'source\ssrc=["]([^"]+?)["]')[0]
 			if not stream_url:
 				links = [v.replace('\\u002F', '/') for v in re.findall(r'"(https:\\u002F\\u002Fvcdn[^"]+?\.mp4)"', data) if 'media=hls' not in v]
-				links = [v for v in links if not v.endswith('_2160.mp4')] or links
+				if not self._uhdAllowed():
+					links = [v for v in links if not v.endswith('_2160.mp4')] or links
 				stream_url = links[-1] if links else ''
 			if stream_url.startswith('/'):
 				stream_url = 'https://eboblack.com' + stream_url
@@ -6101,12 +6124,7 @@ class XXXParser:
 			if videoUrl:
 				# the master playlist is sometimes AV1 only, the same path serves H.264 too
 				videoUrl = re.sub(r'\.av1\.mp4\.m3u8', '.h264.mp4.m3u8', videoUrl)
-				try:
-					for item in getDirectM3U8Playlist(videoUrl, checkContent=True, sortWithMaxBitrate=999999999):
-						videoUrl = item['url']
-						break
-				except Exception:
-					printExc()
+				videoUrl = self._bestM3U8Variant(videoUrl) or videoUrl  # the masters list up to 2160p
 			else:
 				videoUrl = self.cm.ph.getSearchGroups(data, r'''<noscript>.*?<video[^>]+src="([^"]+\.mp4[^"]*)"''', 1, True)[0]
 			if not videoUrl:
@@ -6370,10 +6388,7 @@ class XXXParser:
 					# some list entries are only an embedded clips4sale trailer for a paid clip
 					SetIPTVPlayerLastHostError(_('This is only an advert for a paid clip (clips4sale), there is no free video.'))
 				return ''
-			candidates.sort(reverse=True)
-			if not getattr(self, 'format4k', True):
-				candidates = [c for c in candidates if c[0] <= 1080] or candidates[-1:]
-			return urlparser.decorateUrl(candidates[0][1], {'Referer': url, 'User-Agent': self.HTTP_HEADER.get('User-Agent', '')})
+			return urlparser.decorateUrl(self._pickByHeight(candidates), {'Referer': url, 'User-Agent': self.HTTP_HEADER.get('User-Agent', '')})
 
 		if parser == 'https://alpenrammler.com':
 			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
@@ -6714,17 +6729,11 @@ class XXXParser:
 			meta = {'Referer': url, 'Origin': 'https://spankbang.com', 'User-Agent': self.HTTP_HEADER.get('User-Agent', USER_AGENT)}
 			if '.m3u8' in videoUrl.lower():
 				decorated = urlparser.decorateUrl(videoUrl, meta)
-				try:
-					playlist = getDirectM3U8Playlist(decorated, checkContent=True, sortWithMaxBitrate=999999999)
-					printDBG('SPANKBANG HLS variants: ' + str(playlist))
-					if playlist:
-						for item in playlist:
-							if item.get('url'):
-								finalUrl = urlparser.decorateUrl(item['url'], meta)
-								printDBG('SPANKBANG FINAL HLS URL: ' + finalUrl)
-								return finalUrl
-				except Exception:
-					printExc()
+				finalUrl = self._bestM3U8Variant(decorated)
+				if finalUrl:
+					finalUrl = urlparser.decorateUrl(finalUrl, meta)
+					printDBG('SPANKBANG FINAL HLS URL: ' + finalUrl)
+					return finalUrl
 			return urlparser.decorateUrl(videoUrl, meta)
 
 		query_data = {'url': url, 'use_host': False, 'use_cookie': False, 'use_post': False, 'return_data': True}
@@ -7335,16 +7344,16 @@ class XXXParser:
 			if url:
 				printDBG('XNXX PARSER LINK: ' + url)
 			if 'm3u8' in url:
-				tmp = getDirectM3U8Playlist(url, checkContent=True, sortWithMaxBitrate=999999999)
-				for item in tmp:
-					return item['url']
+				videoUrl = self._bestM3U8Variant(url)
+				if videoUrl:
+					return videoUrl
 			else:
 				COOKIEFILE = join(GetCookieDir(), 'xnxx.cookie')
 				self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE}
 				sts, data = self._getPage(url, self.defaultParams)
 				videoUrl = self.cm.ph.getSearchGroups(data, r'''VideoHLS\(['"]([^ ^#]+?)['"].;''', 1, True)[0]
 				printDBG('Videolink: ' + videoUrl)
-				url = videoUrl
+				url = (self._bestM3U8Variant(videoUrl) or videoUrl) if videoUrl else videoUrl
 			printDBG('Videolink: ' + url)
 			return unquote(url)
 

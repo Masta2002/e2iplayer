@@ -66,7 +66,7 @@ config.plugins.iptvplayer.xxxzbiornik = ConfigYesNo(default=True)
 config.plugins.iptvplayer.xxxsearchmode = ConfigSelection(default="0", choices=[("0", _("Global")), ("1", _("Selection"))])
 config.plugins.iptvplayer.best_quality = ConfigYesNo(default=True)
 config.plugins.iptvplayer.fotka = ConfigSelection(default="0", choices=[("0", _("https")), ("1", _("rtmp"))])
-config.plugins.iptvplayer.some = ConfigSelection(default="Best", choices=[("0", _("Best")), ("1", _("Latest")), ("2", _("Most Popular")), ("3", _("Longest"))])
+config.plugins.iptvplayer.some = ConfigSelection(default="0", choices=[("0", _("Best")), ("1", _("Latest")), ("2", _("Most Popular")), ("3", _("Longest"))])
 config.plugins.iptvplayer.fucker1 = ConfigSelection(default="0", choices=[("0", _("Relevance")), ("1", _("Date")), ("2", _("Duration"))])
 
 
@@ -782,6 +782,9 @@ class IPTVHost(IHost):
 	def getResolvedURL(self, url):
 		printDBG("getResolvedURL begin")
 		if url is not None and url != '':
+			# the quality switches may have changed since the list was built
+			self.host.format4k = config.plugins.iptvplayer.xxx4k.value
+			self.host.formatbest = config.plugins.iptvplayer.best_quality.value
 			ret = self.host.getResolvedURL(url)
 			# many parser branches return [] (not '') on failure - that is no link either
 			if ret:
@@ -837,6 +840,8 @@ class Host(CBaseHostClass, XXXParser):
 		self.currList = []
 		self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
 		self.defaultParams = {'header': self.HTTP_HEADER, 'use_cookie': True, 'load_cookie': True, 'save_cookie': True}
+		self.format4k = config.plugins.iptvplayer.xxx4k.value
+		self.formatbest = config.plugins.iptvplayer.best_quality.value
 		printDBG('Host __init__ end')
 
 	def setCurrList(self, list, root=False):
@@ -1319,7 +1324,10 @@ class Host(CBaseHostClass, XXXParser):
 				phTime = self.cm.ph.getSearchGroups(item, '''</span></span>([^>]+?)<''', 1, True)[0].strip()
 				if not phTime:
 					phTime = self.cm.ph.getSearchGroups(item, '''<p class="metadata">([^>]+?)-''', 1, True)[0].strip()
-				valTab.append(CDisplayListItem(phTitle, '[' + phTime + '] ' + phTitle, CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + phUrl], 'xnxx-serwer', phImage, phImage))
+				if self.formatbest:
+					valTab.append(CDisplayListItem(phTitle, '[' + phTime + '] ' + phTitle, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', self.MAIN_URL + phUrl, 1)], 0, phImage, None))
+				else:
+					valTab.append(CDisplayListItem(phTitle, '[' + phTime + '] ' + phTitle, CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + phUrl], 'xnxx-serwer', phImage, phImage))
 			if match:
 				match = re.findall('href="(.*?)"', match.group(1), re.S)
 			if match:
@@ -1606,7 +1614,7 @@ class Host(CBaseHostClass, XXXParser):
 				phUrl = self.cm.ph.getSearchGroups(item, '''href=['"]([^"^']+?)['"].title''', 1, True)[0]
 				Crypted = self.cm.ph.getSearchGroups(item, '''s.{5}[>]([^"^']+?)[<]/st''', 1, True)[0]
 				phTitle = self.cm.ph.getSearchGroups(item, '''alt=["](.+?)["]''', 1, True)[0]
-				phImage = self.cm.ph.getSearchGroups(item, '''img.src=["](.+?)["]''', 1, True)[0]
+				phImage = self.cm.ph.getSearchGroups(item, '''<img[^>]+?src=["'](http[^"^']+?)["']''', 1, True)[0]
 				phViews = self.cm.ph.getSearchGroups(item, '''<p[>]([^>]+?)[v]isuali''', 1, True)[0].strip()
 				if not Crypted:
 					valTab.append(CDisplayListItem(phTitle, phTitle + '\nViews: ' + phViews, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', phUrl, 1)], 0, phImage, None))
@@ -1714,6 +1722,8 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = self.cm.ph.getSearchGroups(item, '''img.{2}src=["](.+?)["].+thumb''', 1, True)[0].replace('webp', 'jpg')
 				if not phImage:
 					phImage = self.cm.ph.getSearchGroups(item, '''img.{16}src=["](.+?)["].+thumb''', 1, True)[0].replace('webp', 'jpg')
+				if not phImage:
+					phImage = self.cm.ph.getSearchGroups(item, '''<img[^>]+?class=["']thumb[^>]+?src=["']([^"^']+?)['"]''', 1, True)[0].replace('webp', 'jpg')
 				phImage = checkhttps(phImage)
 				phTime = self.cm.ph.getSearchGroups(item, '''video.+"[>]([^>]+?)[<]/span''', 1, True)[0].strip()
 				phViews = self.cm.ph.getSearchGroups(item, '''view.+"[>]([^>]+?)[<]/span''', 1, True)[0].strip()
@@ -2866,7 +2876,7 @@ class Host(CBaseHostClass, XXXParser):
 				phUrl = self.cm.ph.getSearchGroups(item, '''href=['"](/video[^"^']+?)['"]''', 1, True)[0]
 				if not phUrl:
 					phUrl = self.cm.ph.getSearchGroups(item, '''href=['"](/search-video[^"^']+?)['"]''', 1, True)[0]
-				phImage = self.cm.ph.getSearchGroups(item, '''data-src=['"]([^"^']+?)['"]''', 1, True)[0]
+				phImage = self.cm.ph.getSearchGroups(item, '''data-src=['"]([^"^']+?)['"]''', 1, True)[0].replace('THUMBNUM', '5')  # promoted cards: the page JS picks the frame number
 				phTime = self.cm.ph.getSearchGroups(item, '''duration">([^>]+?)<''', 1, True)[0]
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), '[' + phTime.strip() + ']  ' + decodeHtml(phTitle), CDisplayListItem.TYPE_VIDEO, [CUrlItem('', self.MAIN_URL + phUrl, 1)], 0, phImage, None))
 			if next:
@@ -3455,6 +3465,10 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = self.cm.ph.getSearchGroups(item, '''src=['"]([^"^']+?jpg)['"]''', 1, True)[0]
 				if not phImage:
 					phImage = self.cm.ph.getSearchGroups(item, '''data-original=['"]([^"^']+?)['"]''', 1, True)[0].replace("&amp;", "&")
+				if not phImage:
+					phImage = self.cm.ph.getSearchGroups(item, '''data-poster=['"](http[^"^']+?)['"]''', 1, True)[0].replace("&amp;", "&")
+				if phImage:
+					phImage = urlparser.decorateUrl(phImage, {'Referer': self.MAIN_URL + '/'})  # pix-cdn77 posters answer 403 without it
 				phUrl = self.cm.ph.getSearchGroups(item, '''href=['"]([^"^']+?)['"]''', 1, True)[0].replace("&amp;", "&")
 				phRuntime = self.cm.ph.getSearchGroups(item, r'<span>\s*([0-9]{1,2}:[0-9]{2})\s*</span>', 1, True)[0]
 				if phUrl.startswith('/'):
@@ -3693,7 +3707,9 @@ class Host(CBaseHostClass, XXXParser):
 			data = self.cm.ph.getAllItemsBeetwenMarkers(data, 'videoblock', '</li>')
 			for item in data:
 				phTitle = self.cm.ph.getSearchGroups(item, '''title=['"]([^"^']+?)['"]''', 1, True)[0].replace('&amp;', '&')
-				phImage = self.cm.ph.getSearchGroups(item, '''data-mediumthumb=['"]([^"^']+?)['"]''', 1, True)[0]
+				phImage = self.cm.ph.getSearchGroups(item, '''data-mediumthumb=['"]([^"^']+?)['"]''', 1, True)[0].replace('&amp;', '&')
+				if phImage:
+					phImage = urlparser.decorateUrl(phImage, {'Referer': self.MAIN_URL + '/'})  # pix-cdn77 thumbs answer 403 without it
 				phUrl = self.cm.ph.getSearchGroups(item, '''href=['"]([^"^']+?)['"]''', 1, True)[0]
 				phRuntime = self.cm.ph.getSearchGroups(item, '''uration">([^"^']+?)<''', 1, True)[0]
 				OldImage = self.cm.ph.getSearchGroups(item, '''data-image=['"]([^"^']+?)['"]''', 1, True)[0]
@@ -4704,6 +4720,8 @@ class Host(CBaseHostClass, XXXParser):
 				phTitle = self.cm.ph.getSearchGroups(item, '''alt=['"]([^"^']+?)['"]''', 1, True)[0]
 				phUrl = self.cm.ph.getSearchGroups(item, '''href=['"]([^"^']+?)['"]''', 1, True)[0]
 				phImage = self.cm.ph.getSearchGroups(item, '''data-original=['"]([^"^']+?)['"]''', 1, True)[0]
+				if not phImage:
+					phImage = self.cm.ph.getSearchGroups(item, '''<img[^>]+?src=['"]([^"^']+?)['"]''', 1, True)[0]
 				Runtime = self.cm.ph.getSearchGroups(item, '''duration"[>]([^"^']+?)[<]/span''', 1, True)[0]
 				if phUrl.startswith('/'):
 					phUrl = self.MAIN_URL + phUrl
@@ -6410,7 +6428,11 @@ class Host(CBaseHostClass, XXXParser):
 			data = self.cm.ph.getAllItemsBeetwenMarkers(data, 'class="thumb"', '</div>')
 			for item in data:
 				phUrl = self.cm.ph.getSearchGroups(item, '''href=['"]([^"^']+?)['"]''', 1, True)[0]
-				phImage = self.cm.ph.getSearchGroups(item, r'''img\ssrc=['"]([^"^']+?)['"]''', 1, True)[0]
+				phImage = self.cm.ph.getSearchGroups(item, '''data-poster=['"]([^"^']+?)['"]''', 1, True)[0]
+				if not phImage:
+					phImage = self.cm.ph.getSearchGroups(item, '''data-original=['"]([^"^']+?)['"]''', 1, True)[0]
+				if not phImage:
+					phImage = self.cm.ph.getSearchGroups(item, r'''img\ssrc=['"]([^"^']+?)['"]''', 1, True)[0]
 				phTitle = self.cm.ph.getSearchGroups(item, '''alt=['"]([^"]+?)["]''', 1, True)[0]
 				phTime = self.cm.ph.getSearchGroups(item, '''length">([0-9:]+?)[<]''', 1, True)[0]
 				Views = self.cm.ph.getSearchGroups(item, r'''views"[>]([0-9.KHM]+?)[\s]''', 1, True)[0]
@@ -6610,7 +6632,9 @@ class Host(CBaseHostClass, XXXParser):
 			data = self.cm.ph.getAllItemsBeetwenMarkers(data, '<a href', '</a>', True)
 			for item in data:
 				phUrl = self.cm.ph.getSearchGroups(item, '''href=['"]([^"^']+?)['"]''', 1, True)[0]
-				phImage = self.cm.ph.getSearchGroups(item, '''img.src=['"](h[^"^']+?)['"]''', 1, True)[0]
+				phImage = self.cm.ph.getSearchGroups(item, '''data-src=['"](http[^"^']+?)['"]''', 1, True)[0]
+				if not phImage:
+					phImage = self.cm.ph.getSearchGroups(item, '''img.src=['"](h[^"^']+?)['"]''', 1, True)[0]
 				phTitle = self.cm.ph.getSearchGroups(item, '''normal "[>]([^"^']+?)[<]/div''', 1, True)[0].replace("&apos;", "'").replace('&amp;', '&').replace('&Amp;', '&').title().replace('&lbrack;&num;', '').replace('&rsqb;', '').strip()
 				if not phTitle:
 					phTitle = self.cm.ph.getSearchGroups(item, '''.jpg.+?alt=["']([^"^']+?)["']''', 1, True)[0].replace("&apos;", "'").replace('&amp;', '&').replace('&Amp;', '&').title().replace('&lbrack;&num;', '').replace('&rsqb;', '').strip()
@@ -7462,7 +7486,9 @@ class Host(CBaseHostClass, XXXParser):
 				phUrl = self.cm.ph.getSearchGroups(item, r'''<a\shref=['"]([^"^']+?/video/[^"^']+?)['"]''', 1, True)[0]
 				if not phUrl:
 					continue
-				phImage = self.cm.ph.getSearchGroups(item, '''lazy-src=['"]([^"^']+?)['"].+data''', 1, True)[0]
+				phImage = self.cm.ph.getSearchGroups(item, '''data-lazy-src=['"](http[^"^']+?)['"]''', 1, True)[0]
+				if not phImage:
+					phImage = self.cm.ph.getSearchGroups(item, '''data-thumb_url=['"](http[^"^']+?)['"]''', 1, True)[0]
 				phTitle = self.cm.ph.getSearchGroups(item, '''title=['"]([^"^']+?)['"]''', 1, True)[0].replace('&#8211;', '-')
 				phTime = self.cm.ph.getSearchGroups(item, '''duration">([^>]+?)<''', 1, True)[0].strip()
 				if phUrl.startswith('/'):
@@ -8464,6 +8490,8 @@ class Host(CBaseHostClass, XXXParser):
 					phUrl = self.MAIN_URL + phUrl
 				phTitle = self.cm.ph.getSearchGroups(item, '''title=['"]([^@]+?)['"]''', 1, True)[0].replace("&#039;", "'").replace("_n_", " & ").title()
 				phImage = self.cm.ph.getSearchGroups(item, '''data.src=['"]([^"^']+?)['"]''', 1, True)[0]
+				if not phImage:
+					phImage = self.cm.ph.getSearchGroups(item, '''<img[^>]+?src=['"](http[^"^']+?)['"]''', 1, True)[0]
 				phImage = urlparser.decorateUrl(phImage, {'Referer': url})
 				phTime = self.cm.ph.getSearchGroups(item, '''duration.[>]([^"^']+?)[<]''', 1, True)[0].strip()
 				phViews = self.cm.ph.getSearchGroups(item, '''li[>]([^"^']+?)[<]/li''', 1, True)[0].strip()
@@ -10193,6 +10221,8 @@ class Host(CBaseHostClass, XXXParser):
 				phUrl = self.cm.ph.getSearchGroups(item, '''href=['"]([^"^']+?/video/[^"^']+?)['"]''', 1, True)[0]
 				phTitle = self.cm.ph.getSearchGroups(item, '''alt=["]([^"]+?)["]''', 1, True)[0]
 				phImage = self.cm.ph.getSearchGroups(item, '''src=["]([^"]+?)["]''', 1, True)[0]
+				if phImage.endswith('.svg'):
+					phImage = siteLogo  # the site has no preview for many videos and serves placeholder-video.svg
 				phTime = self.cm.ph.getSearchGroups(item, '''duration"[>]([0-9:]+?)[<]''', 1, True)[0]
 				phViews = self.cm.ph.getSearchGroups(item, r'''fa-eye[^>]*></i>\s*([0-9,]+)''', 1, True)[0].strip()
 				phRate = ''
@@ -11465,6 +11495,8 @@ class Host(CBaseHostClass, XXXParser):
 				phTitle = self.cm.ph.getSearchGroups(item, '''title"[>]([^>]+?)[<]''', 1, True)[0].title()
 				phImage = self.cm.ph.getSearchGroups(item, '''src=["]([^"^;]+?)["]>''', 1, True)[0]
 				phImage = checkhttps(phImage)
+				if phImage.startswith('/'):
+					phImage = self.MAIN_URL + phImage
 				phTime = self.cm.ph.getSearchGroups(item, '''dur"[>]([0-9:]+?)[<]''', 1, True)[0]
 				phStars = re.findall('tags.{,20}"[>]([A-Za-z .]+?)[<]/', item, re.S)
 				printDBG('All Actors: ' + str(phStars))
@@ -14162,7 +14194,9 @@ class Host(CBaseHostClass, XXXParser):
 			for item in data:
 				phUrl = self.cm.ph.getSearchGroups(item, '''href=['"]([^"^#]+?)['"]''', 1, True)[0]
 				phTitle = self.cm.ph.getSearchGroups(item, '''title=['"]([^>]+?)['"].>''', 1, True)[0].title()
-				phImage = self.cm.ph.getSearchGroups(item, '''src=['"]([^"^#]+?)['"]''', 1, True)[0]
+				phImage = self.cm.ph.getSearchGroups(item, '''data-original=['"](http[^"^#]+?)['"]''', 1, True)[0]
+				if not phImage:
+					phImage = self.cm.ph.getSearchGroups(item, '''src=['"](http[^"^#]+?)['"]''', 1, True)[0]
 				if not phImage:
 					phImage = hostImage() + 'xxbrits.png'
 				phImage = urlparser.decorateUrl(phImage, {'Referer': self.MAIN_URL})
@@ -15908,6 +15942,8 @@ class Host(CBaseHostClass, XXXParser):
 			for item in data:
 				phTitle = self.cm.ph.getSearchGroups(item, '''alt=['"]([^"^']+?)['"]''', 1, True)[0].replace('\n', '').strip()
 				phImage = self.cm.ph.getSearchGroups(item, '''data-original=['"]([^"^']+?)['"]''', 1, True)[0]
+				if not phImage:
+					phImage = self.cm.ph.getSearchGroups(item, r'''\ssrc=['"]?((?:https?:)?//[^"^'\s>]+)''', 1, True)[0]
 				phUrl = self.cm.ph.getSearchGroups(item, '''href=['"]([^"^']+?)['"]''', 1, True)[0]
 				Time = self.cm.ph.getSearchGroups(item, '''info">([^>]+?)<''', 1, True)[0].strip()
 				Added = self.cm.ph.getSearchGroups(item, '''date">([^>]+?)<''', 1, True)[0].strip()
@@ -16139,7 +16175,9 @@ class Host(CBaseHostClass, XXXParser):
 				del data[0]
 			for item in data:
 				phTitle = self.cm.ph.getSearchGroups(item, '''alt=['"]([^ß]+?)['"]''', 1, True)[0].replace('\n', '').strip()
-				phImage = self.cm.ph.getSearchGroups(item, '''src=['"]([^"^']+?)['"]''', 1, True)[0]
+				phImage = self.cm.ph.getSearchGroups(item, r'''<img[^>]+?src=['"]([^"^']+?\.(?:jpe?g|png|webp|gif)(?:\?[^"^']*)?)['"]''', 1, True)[0]  # skip the /star-com.svg, /thumbs-up.svg badges
+				if not phImage:
+					phImage = self.cm.ph.getSearchGroups(item, '''src=['"]([^"^']+?)['"]''', 1, True)[0]
 				phUrl = self.cm.ph.getSearchGroups(item, '''href=['"]([^"^']+?)['"]''', 1, True)[0].replace('..', '')
 				phTime = self.cm.ph.getSearchGroups(item, '''[>]([0-9:]+?)</div''', 1, True)[0]
 				phQuality = self.cm.ph.getSearchGroups(item, '''>([A-Z]+?)[ ]<''', 1, True)[0]
@@ -16679,7 +16717,9 @@ class Host(CBaseHostClass, XXXParser):
 			for item in data:
 				phUrl = self.cm.ph.getSearchGroups(item, '''a href=['"]([^"^']+?)['"]''', 1, True)[0]
 				phTitle = self.cm.ph.getSearchGroups(item, '''alt=['"]([^"^']+?)['"]''', 1, True)[0]
-				phImage = self.cm.ph.getSearchGroups(item, '''src=['"]([^"^']+?)['"] a''', 1, True)[0]
+				phImage = self.cm.ph.getSearchGroups(item, '''data-src=['"]([^"^']+?)['"]''', 1, True)[0]
+				if not phImage:
+					phImage = self.cm.ph.getSearchGroups(item, '''<img[^>]+?src=['"](http[^"^']+?)['"]''', 1, True)[0]
 				phTime = self.cm.ph.getSearchGroups(item, '''ion-video">([^>]+?)<''', 1, True)[0].strip()
 				Views = self.cm.ph.getSearchGroups(item, '''li>([^/]+?)[ ]v''', 1, True)[0].strip()
 				phImage = checkhttp(phImage)
@@ -18311,6 +18351,8 @@ class Host(CBaseHostClass, XXXParser):
 				if not phTitle:
 					phTitle = self.cm.ph.getSearchGroups(item, '''title=["]([^"]+?)["]''', 1, True)[0]
 				phImage = self.cm.ph.getSearchGroups(item, '''inal=['"]([^"]+?)['"]''', 1, True)[0]
+				if not phImage:
+					phImage = self.cm.ph.getSearchGroups(item, '''<img[^>]+?src=['"](http[^"^']+?)['"]''', 1, True)[0]
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle), CDisplayListItem.TYPE_VIDEO, [CUrlItem('', phUrl, 1)], '', phImage, None))
 			if next:
 				next = baseUrl + str(next) + '/'
@@ -20085,7 +20127,9 @@ class Host(CBaseHostClass, XXXParser):
 				phImage = self.cm.ph.getSearchGroups(item, r'data-poster="([^"]+)"', 1, True)[0] or self.cm.ph.getSearchGroups(item, r'data-src="([^"]+)"', 1, True)[0]
 				phTime = re.search(r'(?s)<div class="video-duration[^"]*">\s*<span>\s*([^<]+?)\s*</span>', item)
 				phTime = phTime.group(1) if phTime else ''
-				valTab.append(CDisplayListItem(phTitle, ('[' + phTime + '] ' if phTime else '') + phTitle, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', self.MAIN_URL + phUrl, 1)], 0, checkhttps(decodeHtml(phImage)), None))
+				if phImage:
+					phImage = urlparser.decorateUrl(checkhttps(decodeHtml(phImage)), {'Referer': self.MAIN_URL + '/'})  # pix-cdn77 posters answer 403 without it
+				valTab.append(CDisplayListItem(phTitle, ('[' + phTime + '] ' if phTime else '') + phTitle, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', self.MAIN_URL + phUrl, 1)], 0, phImage, None))
 			nextUrl = self.cm.ph.getSearchGroups(data, r'rel="next"\s+href="([^"]+)"', 1, True)[0]
 			if nextUrl:
 				nextPage = self.cm.ph.getSearchGroups(nextUrl, r'page=([0-9]+)', 1, True)[0]
@@ -21823,6 +21867,8 @@ class Host(CBaseHostClass, XXXParser):
 				if phUrl.startswith('/'):
 					phUrl = self.MAIN_URL + phUrl
 				phTitle = self.cm.ph.getSearchGroups(item, 'alt=["]([^"]+?)["]', 1, True)[0]
+				if '/video/' not in phUrl or not phTitle:
+					continue  # data-video-id also marks the watch-later/options buttons of each card
 				phImage = self.cm.ph.getSearchGroups(item, 'srcset=["]([^"]+?jpg)["]', 1, True)[0]
 				phImage = phImage.replace(' ', '%20')
 				Time = self.cm.ph.getSearchGroups(item, '[>]([0-9:]+?)[<]', 1, True)[0]
@@ -23143,6 +23189,10 @@ class Host(CBaseHostClass, XXXParser):
 				phTitle = self.cm.ph.getSearchGroups(item, "alt=[']([^']+?)[']", 1, True)[0]
 				phImage = self.cm.ph.getSearchGroups(item, "src=[']([^ß]+?jpg)[']", 1, True)[0]
 				phImage = phImage.replace("/../", "/")
+				if phImage.startswith('../'):
+					phImage = phImage.lstrip('./')  # '../img2/x.jpg' on /newest/, /popullar/ = site root
+				if phImage and not phImage.startswith('http'):
+					phImage = self.MAIN_URL + '/' + phImage.lstrip('/')
 				Time = self.cm.ph.getSearchGroups(item, "right'[>]([0-9:]+?)[<]", 1, True)[0]
 				Views = self.cm.ph.getSearchGroups(item, r"[>]([0-9.,]+?\sviews)[<]", 1, True)[0]
 				Added = self.cm.ph.getSearchGroups(item, "span[>]([^']+?ago)[<]/span", 1, True)[0]
@@ -25111,9 +25161,12 @@ class Host(CBaseHostClass, XXXParser):
 			for item in data:
 				phUrl = self.cm.ph.getSearchGroups(item, '''a.href=["]([^"^#]+?)["]''', 1, True)[0]
 				phTitle = self.cm.ph.getSearchGroups(item, '''alt=["]([^"]+?)["]''', 1, True)[0]
+				if '/videos/' not in phUrl:
+					continue  # the filter bar ("toggle filters" -> google.com) also sits in a class="content" block
 				phImage = self.cm.ph.getSearchGroups(item, '''-src=['"]([^"]+?)['"].d''', 1, True)[0]
 				if '%20' in phImage:
 					phImage = catImage
+				phImage = phImage.replace('//cdn2-thumbs.', '//cdn1-thumbs.')  # cdn2 always answers Content-Encoding: gzip, the urllib icon download keeps it raw; cdn1 serves the same path plain
 				Time = self.cm.ph.getSearchGroups(item, '''cTime">([0-9:]+?)<''', 1, True)[0]
 				valTab.append(CDisplayListItem(decodeHtml(phTitle), '[' + Time + '] ' + decodeHtml(phTitle), CDisplayListItem.TYPE_VIDEO, [CUrlItem('', phUrl, 1)], '', phImage, None))
 			if next:
