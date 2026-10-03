@@ -104,7 +104,8 @@
   "tvrepublika",
   "tbngopl",
   "pzpnpluspl",
-  "drdk"
+  "drdk",
+  "xtream"
  ],
  "documentary": [
   "dokumentalnenet",
