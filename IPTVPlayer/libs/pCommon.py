@@ -20,10 +20,10 @@ from Components.config import config, configfile, ConfigText
 
 from Plugins.Extensions.IPTVPlayer.components.asynccall import iptv_execute, IsMainThread, IsThreadTerminated, SetThreadKillable
 from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import GetIPTVNotify, TranslateTXT as _
-from Plugins.Extensions.IPTVPlayer.libs import ph
+from Plugins.Extensions.IPTVPlayer.libs import curlimpersonate, ph
 from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads
 from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import ensure_binary, ensure_str, strDecode
-from Plugins.Extensions.IPTVPlayer.tools.iptvtools import GetDefaultLang, iptv_system, IsExecutable, IsHttpsCertValidationEnabled, printDBG, printExc, rm, UsePyCurl
+from Plugins.Extensions.IPTVPlayer.tools.iptvtools import GetDefaultLang, GetTmpDir, iptv_system, IsExecutable, IsHttpsCertValidationEnabled, printDBG, printExc, rm, UsePyCurl
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 
 try:
@@ -40,6 +40,20 @@ except Exception:
 # DeathByCaptcha "password"). Their values never go into the debug log - users post it.
 _SECRET_FIELDS = ('key', 'apikey', 'api_key', 'password', 'passwd')
 _SECRET_FIELD_RE = re.compile(r'(?<![A-Za-z0-9_])(%s)=[^&\s\'"]+' % '|'.join(_SECRET_FIELDS), re.IGNORECASE)
+
+
+# curl-impersonate (libs/curlimpersonate.py): hosts whose Cloudflare let a request with Chrome's
+# TLS/HTTP2 fingerprint through (found by getPageCFProtection) - every later getPage() to them
+# goes that way for the rest of the session
+_impersonateDomains = set()
+_impersonateMissingLogged = [False]
+
+
+def _impersonateDomain(url):
+    try:
+        return (urlparse(url).hostname or '').lower()
+    except Exception:
+        return ''
 
 
 def maskSecrets(value):
@@ -1115,8 +1129,170 @@ class common:
             printDBG("common._readHttpResponse: IncompleteRead, using partial data (%d bytes)" % len(e.partial or b''))
             return e.partial
 
+    def _useImpersonate(self, url, params):
+        wanted = params.get('impersonate', None)
+        if wanted is None:
+            return _impersonateDomain(url) in _impersonateDomains
+        return bool(wanted)
+
+    def getPageImpersonate(self, url, params={}, post_data=None):
+        '''getPage() through curl-impersonate (Chrome's TLS/HTTP2 fingerprint and its own User-Agent /
+        Accept* / sec-ch-ua headers, the host's other headers are sent as given). Same (sts, data) and
+        metadata convention as the urllib path. Returns None when the binary is missing or cannot run,
+        the caller then uses the normal path.'''
+        binary = curlimpersonate.getImpersonateBinary()
+        if not binary:
+            if not _impersonateMissingLogged[0]:
+                _impersonateMissingLogged[0] = True
+                printDBG('pCommon - getPageImpersonate() curl-impersonate is not installed, using the normal HTTP path')
+            return None
+
+        if IsMainThread():
+            msg1 = _('It is not allowed to call getURLRequestData from main thread.')
+            msg2 = _('You should never perform block I/O operations in the __init__.')
+            GetIPTVNotify().push(r'\s'.join([msg1, msg2]), 'error', 40)
+            return False, None
+
+        params = dict(params)
+        params['return_data'] = True
+
+        if 'header' in params:
+            headers = params['header']
+        elif None is not self.HEADER:
+            headers = self.HEADER
+        else:
+            headers = {}
+
+        if 'use_cookie' not in params and 'cookiefile' in params and ('load_cookie' in params or 'save_cookie' in params):
+            params['use_cookie'] = True
+        useCookie = params.get('use_cookie', False)
+        cookieFile = params.get('cookiefile', '') if useCookie else ''
+
+        postBody = None
+        if None is not post_data:
+            printDBG('pCommon - getPageImpersonate() -> post data: ' + str(maskSecrets(post_data)))
+            if params.get('raw_post_data', False):
+                postBody = ensure_binary(post_data)
+            else:
+                postBody = ensure_binary(urlencode(post_data))
+
+        http_proxy = self.proxyURL if self.useProxy else ''
+        if 'http_proxy' in params:
+            http_proxy = params['http_proxy']
+
+        pageUrl = url
+        proxy_gateway = params.get('proxy_gateway', '')
+        if proxy_gateway != '':
+            pageUrl = proxy_gateway.format(quote_plus(pageUrl, ''))
+        if '","' in pageUrl:  # see getURLRequestData
+            pageUrl = pageUrl.split('"', 1)[0]
+        pageUrl = self.iriToUri(pageUrl)
+
+        printDBG('pCommon - getPageImpersonate() -> params: ' + str(maskSecrets(params)))
+        printDBG('pCommon - getPageImpersonate() -> headers: ' + str(headers))
+        printDBG("pageUrl: [%s]" % maskSecrets(pageUrl))
+
+        self.meta = {}
+        metadata = self.meta
+        try:
+            res = curlimpersonate.fetch(binary, pageUrl, GetTmpDir(), headers=headers, cookieFile=cookieFile,
+                                        loadCookie=params.get('load_cookie', False), saveCookie=params.get('save_cookie', False),
+                                        cookieItems=params.get('cookie_items') if useCookie else None, postBody=postBody,
+                                        noRedirection=params.get('no_redirection', False), timeout=params.get('timeout', None),
+                                        proxy=http_proxy, insecure=not IsHttpsCertValidationEnabled(), ipv4Only=params.get('ipv4_only', False),
+                                        maxDataSize=params.get('max_data_size', -1), shouldAbort=IsThreadTerminated,
+                                        log=lambda msg: printDBG(maskSecrets(msg)))
+        except curlimpersonate.ImpersonateUnavailable as e:
+            printDBG('pCommon - getPageImpersonate() %s - using the normal HTTP path from now on' % e)
+            curlimpersonate.markBinaryUnusable()
+            return None
+        except Exception:
+            printExc()
+            return False, None
+
+        status = res['status']
+        if res['aborted'] or res['exitcode'] != 0 or not status:
+            metadata['curl_error'] = (res['exitcode'], res['error'])
+            printDBG('pCommon - getPageImpersonate() failed: curl exit %s [%s] HTTP %s' % (res['exitcode'], res['error'], status))
+            return False, None
+
+        metadata['url'] = res['url']
+        metadata['status_code'] = status
+        metadata['impersonate'] = res['profile']
+        # an error answer keeps every header (like the urllib 403 path) - botprotection.detect() needs them
+        self.fillHeaderItems(metadata, res['headers'], collectAllHeaders=params.get('collect_all_headers') or status >= 400)
+
+        if 200 <= status < 400:
+            sts = True  # 3xx only arrives with no_redirection - like urllib's NoRedirection
+        else:
+            sts = False
+            for ignoreCodeRange in params.get('ignore_http_code_ranges', [(404, 404), (500, 500)]):
+                if ignoreCodeRange[0] <= status <= ignoreCodeRange[1]:
+                    sts = True
+                    break
+
+        body = res['body']
+        if status == 403:
+            metadata['body_head'] = body[:65536].decode('utf-8', 'ignore')
+        data, metadata = self.handleCharset(params, body, metadata)
+        if isinstance(data, bytes):
+            data = strDecode(data, 'ignore')
+
+        printDBG('pCommon - getPageImpersonate() return -> sts: %s, HTTP %s, url: %s' % (sts, status, maskSecrets(metadata['url'])))
+        if params.get('with_metadata', False) or not sts:
+            data = strwithmeta(data, metadata)
+        return sts, data
+
+    def _retryImpersonate(self, baseUrl, params, post_data, data):
+        '''getPageCFProtection: the answer is a Cloudflare challenge - ask again as Chrome (curl-impersonate).
+        Returns (sts, data) when that got a normal answer (the domain then keeps using it), else None.'''
+        if params.get('impersonate', None) is not None:
+            return None  # the host asked for it (already tried) or switched it off
+        domain = _impersonateDomain(baseUrl)
+        if domain in _impersonateDomains:
+            # the remembered domain asks again: a cf_clearance from MyE2i only works with the solving
+            # browser's User-Agent, which the impersonated request would not send
+            printDBG('PROTECTION: %s challenges curl-impersonate now as well, back to the normal path' % domain)
+            _impersonateDomains.discard(domain)
+            return None
+        if not curlimpersonate.getImpersonateBinary():
+            return None
+        try:
+            from Plugins.Extensions.IPTVPlayer.libs.botprotection import detect as detectProtection, KIND_CLOUDFLARE
+            failMeta = getattr(data, 'meta', None) or {}
+            found = detectProtection(failMeta.get('status_code', 0), failMeta, failMeta.get('body_head') or (data if isinstance(data, str) else ''), failMeta.get('url', baseUrl))
+            if found is None or found.kind != KIND_CLOUDFLARE:
+                return None
+            printDBG('PROTECTION: %s - retrying with curl-impersonate' % found.describe())
+            newParams = dict(params)
+            newParams['impersonate'] = True
+            sts2, data2 = self.getPage(baseUrl, newParams, post_data)
+            meta2 = getattr(data2, 'meta', None) or {}
+            if data2 is None or not meta2.get('impersonate'):
+                printDBG('PROTECTION: curl-impersonate gave no answer')
+                return None
+            if not sts2:
+                found2 = detectProtection(meta2.get('status_code', 0), meta2, meta2.get('body_head') or data2, meta2.get('url', baseUrl))
+                if found2 is not None:
+                    printDBG('PROTECTION: curl-impersonate stopped too: %s' % found2.describe())
+                    return None
+            _impersonateDomains.add(domain)
+            printDBG('impersonate: %s passes as Chrome (%s)' % (domain, meta2.get('impersonate')))
+            return sts2, data2
+        except Exception:
+            printExc()
+        return None
+
     def getPage(self, url, addParams={}, post_data=None):
         ''' wraps getURLRequestData '''
+
+        # impersonate: Chrome's TLS/HTTP2 fingerprint through curl-impersonate (True from the host, or a
+        # domain getPageCFProtection found to need it; False keeps the normal path). Without the binary,
+        # return_data False or multipart data the normal path below is used.
+        if self._useImpersonate(url, addParams) and addParams.get('return_data', True) and not addParams.get('multipart_post_data', False):
+            result = self.getPageImpersonate(url, addParams, post_data)
+            if result is not None:
+                return result
 
         # if curl should be used and can be used
         if addParams.get('return_data', True) and not addParams.get('CFProtection', False) and self.usePyCurl():
@@ -1216,7 +1392,15 @@ class common:
         start_time = time.time()
         sts, data = self.getPage(baseUrl, params, post_data)
 
+        impersonated = False
         if not sts and data is not None:
+            # a Cloudflare challenge may only look at the TLS fingerprint - try once as Chrome first
+            retried = self._retryImpersonate(baseUrl, params, post_data, data)
+            if retried is not None:
+                sts, data = retried
+                impersonated = True
+
+        if not impersonated and not sts and data is not None:
             solveMode = 'CF'
             try:
                 from Plugins.Extensions.IPTVPlayer.libs.botprotection import detect as detectProtection, KIND_BLOCK, KIND_CAPTCHA, KIND_COOKIE_GATE
