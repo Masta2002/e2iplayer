@@ -89,7 +89,12 @@ class ShahiidAnime(GenericFolderWatchedScraperMixin, CBaseHostClass):
     ###################################################
     def _getWatchedKeyForItem(self, cItem):
         try:
-            if not isinstance(cItem, dict) or not cItem.get("kind"):
+            if not isinstance(cItem, dict):
+                return ""
+            if cItem.get("wf_key"):
+                # "Next page" of a season / series: same key as its first page
+                return cItem["wf_key"]
+            if not cItem.get("kind"):
                 return ""
             url = str(cItem.get("url", "") or "").strip()
             if not url:
@@ -236,7 +241,7 @@ class ShahiidAnime(GenericFolderWatchedScraperMixin, CBaseHostClass):
             desc = " | ".join([x for x in (ptype, ("MAL %s" % rating) if rating else "") if x])
             utype = self._urlType(url)
             params = dict(cItem)
-            for key in ("page", "f_key", "s_title", "season"):
+            for key in ("page", "wf_key", "f_key", "s_title", "season"):
                 params.pop(key, None)
             params.update({"good_for_fav": True, "url": url, "icon": icon, "desc": desc, "raw_title": raw,
                            "is_dub": self._isDub(raw, url), "meta_title": self._showName(raw)[1], "meta_year": ""})
@@ -265,7 +270,7 @@ class ShahiidAnime(GenericFolderWatchedScraperMixin, CBaseHostClass):
         for key in ("kind", "raw_title"):
             params.pop(key, None)
         params.update(extra)
-        params.update({"good_for_fav": False, "title": _("Next page"), "page": page})
+        params.update({"good_for_fav": False, "title": _("Next page"), "page": page, "wf_key": self._getWatchedKeyForItem(cItem)})
         self.addDir(params)
 
     def _pageUrl(self, url, page):
@@ -362,6 +367,7 @@ class ShahiidAnime(GenericFolderWatchedScraperMixin, CBaseHostClass):
             raw = self.cleanHtmlStr(raw)
             params = dict(cItem)
             params.pop("page", None)
+            params.pop("wf_key", None)
             params.update({"good_for_fav": True, "category": "video", "kind": "episode", "url": epUrl, "raw_title": raw,
                            "title": self._episodeTitle(raw, epUrl, showTitle, season), "meta_type": "tv", "meta_title": showTitle})
             self.addVideo(params)

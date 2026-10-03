@@ -20,7 +20,7 @@ from Plugins.Extensions.IPTVPlayer.libs.moviemeta import getMeta
 from Plugins.Extensions.IPTVPlayer.libs.urlmetahelper import buildSidecarFromItem, applySidecarToLinks, sidecarFromUrlMeta, decorateResolvedLinkItems
 from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote, urllib_quote_plus, urllib_unquote
 from Plugins.Extensions.IPTVPlayer.tools.iptvnaming import formatSxxExx
-from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc
+from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, E2ColoR
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.tools.iptvwatchedhelper import IPTVWatchedHelper
 from Plugins.Extensions.IPTVPlayer.tools.iptvwatchedfoldermixin import GenericFolderWatchedScraperMixin, GenericFolderWatchedHostMixin
@@ -32,6 +32,14 @@ def GetConfigList():
 
 def gettytul():
     return "https://akwam.ss/"
+
+
+# Enigma2 colour codes ("\c00RRGGBB") - only for the list description, never in sidecar / INFO text
+COLOR_CODE_RE = re.compile(r"\\c[0-9A-Fa-f]{8}")
+
+
+def _stripColors(text):
+    return COLOR_CODE_RE.sub("", text or "")
 
 
 # Arabic ordinals used in season labels ("الموسم الثاني"), compound ones first
@@ -181,7 +189,8 @@ class Akoam(GenericFolderWatchedScraperMixin, CBaseHostClass):
             quality = self.cleanHtmlStr(self.cm.ph.getSearchGroups(item, r'(?s)<span class="label quality">(.*?)</span>')[0])
             year = self.cm.ph.getSearchGroups(item, r'badge-secondary[^>]*>\s*(\d{4})\s*<')[0]
             genres = [self.cleanHtmlStr(g) for g in re.findall(r'badge-light[^>]*>([^<]+)<', item)]
-            desc = " | ".join([x for x in (("%s: %s" % (_("Rating"), rating)) if rating else "", quality, year, ", ".join(genres)) if x])
+            fields = ((_("Rating"), rating, "green"), (_("Quality"), quality, "yellow"), (_("Year"), year, "cyan"), (_("Genres"), ", ".join(genres), "magenta"))
+            desc = " | ".join(["%s%s:%s %s" % (E2ColoR(color), label, E2ColoR("white"), value) for label, value, color in fields if value])
 
             params = {"name": "category", "good_for_fav": True, "url": url, "icon": self.getFullIconUrl(icon), "desc": desc}
             if kind == "series":
@@ -311,7 +320,7 @@ class Akoam(GenericFolderWatchedScraperMixin, CBaseHostClass):
         for key in sorted(sources, key=lambda k: int(k) if k.isdigit() else 0, reverse=True):
             name = ("Akwam %sp" % key) if key.isdigit() else ("Akwam %s" % key)
             urltab.append({"name": name, "url": strwithmeta(sources[key], dict(meta)), "need_resolve": 0})
-        return applySidecarToLinks(urltab, buildSidecarFromItem(cItem, IsSidecarEnabled(), story))
+        return applySidecarToLinks(urltab, buildSidecarFromItem(dict(cItem, desc=_stripColors(cItem.get("desc", ""))), IsSidecarEnabled(), story))
 
     def getVideoLinks(self, videoUrl):
         printDBG("Akoam.getVideoLinks [%s]" % videoUrl)
@@ -344,7 +353,7 @@ class Akoam(GenericFolderWatchedScraperMixin, CBaseHostClass):
                 info["genres"] = ", ".join(genres[:6])
         info.update(meta.get("info", {}))
         plot = meta.get("plot", "")
-        text = plot or story or cItem.get("desc", "")
+        text = plot or story or _stripColors(cItem.get("desc", ""))
         if plot and story and story != plot:
             text = "%s[/br][/br]%s" % (plot, story)
         icon = meta.get("poster") or poster or cItem.get("icon", "")
