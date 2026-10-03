@@ -104,6 +104,12 @@ class FakeCurl(object):
         bodyPath = str(self.tmp_path / ("body%d" % len(self.calls)))
         with open(bodyPath, "wb") as f:
             f.write(ans.get("body", b""))
+        outFile = self.opt(args, "-o")
+        if outFile != "-":  # download: curl writes the body (what arrived of it) to the file itself
+            with open(outFile, "wb") as f:
+                f.write(ans.get("body", b""))
+            with open(bodyPath, "wb"):
+                pass  # nothing on stdout
         return FakeProc(ans.get("returncode", 0), bodyPath)
 
 
@@ -250,6 +256,19 @@ def test_fetch_max_data_size(ci, tmp_path, monkeypatch):
     assert len(fake.calls) == 2
 
 
+def test_fetch_to_file(ci, tmp_path, monkeypatch):
+    fake = _fake(ci, tmp_path, monkeypatch, lambda args, info: {"status": 200, "headers": [("content-type", "image/jpeg")],
+                                                                "body": b"\xff\xd8jpegdata"})
+    target = str(tmp_path / "cover.jpg")
+    res = ci.fetch("/bin/ci", "https://a.example/_pu/1.jpg", str(tmp_path), outFile=target, maxDataSize=3)
+    assert res["status"] == 200 and res["body"] == b"" and res["size"] == 10 and res["exitcode"] == 0
+    assert fake.calls[0][0][fake.calls[0][0].index("-o") + 1] == target
+    with open(target, "rb") as f:
+        assert f.read() == b"\xff\xd8jpegdata"  # maxDataSize is not used for files
+    args = ci.buildArgs("b", "p", "http://a/", headerFile="h", outFile="/x/f")
+    assert args[args.index("-o") + 1] == "/x/f"
+
+
 # --- pCommon -----------------------------------------------------------------------------------
 
 class _Cfg(object):
@@ -265,8 +284,9 @@ def pc(tmp_path, monkeypatch):
     _module("Plugins", "")
     _module("Plugins.Extensions", "")
     _module(PKG, ROOT)
-    for sub in ("libs", "p2p3", "tools", "components"):
+    for sub in ("libs", "p2p3", "tools", "components", "iptvdm"):
         _module(PKG + "." + sub, os.path.join(ROOT, sub))
+    _module(PKG + ".iptvdm.iptvdh", DMHelper=types.SimpleNamespace(HANDLED_HTTP_HEADER_PARAMS=["Host", "User-Agent", "Referer", "Cookie", "Accept", "Range"]))
     _module(PKG + ".components.asynccall", iptv_execute=None, IsMainThread=lambda: False, IsThreadTerminated=lambda: False,
             SetThreadKillable=lambda v: None)
     _module(PKG + ".components.iptvplayerinit", GetIPTVNotify=None, TranslateTXT=lambda t: t)
@@ -463,3 +483,116 @@ def test_cfprotection_no_retry_without_binary_or_when_asked(pc, tmp_path, monkey
     monkeypatch.setattr(pc.ci, "_isExecutable", lambda p: True)
     cm.getPageCFProtection("https://a.example/", {"impersonate": False})
     assert len(calls) == 2  # switched off by the host: no retry
+
+
+# --- file downloads (covers, subtitles) and domain registration ------------------------------------
+
+JPEG = b"\xff\xd8\xff\xe0jpegdata"
+ICON_PARAMS = {"check_first_bytes": [b"\xFF\xD8", b"\x89\x50\x4E\x47", b"GIF89a"]}
+
+
+def _normalPath(pc, monkeypatch):
+    calls = []
+
+    def normal(self, params, post_data=None):
+        calls.append(params["url"])
+        raise pc.URLError("normal path")
+    monkeypatch.setattr(pc.common, "getURLRequestData", normal)
+    return calls
+
+
+def test_save_web_file_registered_domain_uses_impersonate(pc, tmp_path, monkeypatch):
+    normal = _normalPath(pc, monkeypatch)
+    fake = _withBinary(pc, tmp_path, monkeypatch, lambda args, info: {
+        "status": 200, "headers": [("Content-Type", "image/jpeg")], "body": JPEG})
+    pc._impersonateDomains.add("mlb.example")
+    target = str(tmp_path / "cover.jpg")
+    cm = pc.common()
+    # IconMenager: no host params, a CDN subdomain of the registered site
+    ret = cm.saveWebFile(target, "https://img.mlb.example/_pu/1.jpg", dict(ICON_PARAMS))
+    assert ret == {"sts": True, "fsize": len(JPEG), "reason": ""}
+    with open(target, "rb") as f:
+        assert f.read() == JPEG
+    args = fake.calls[0][0]
+    assert args[args.index("-o") + 1] == target and args[-1] == "https://img.mlb.example/_pu/1.jpg"
+    assert cm.meta["status_code"] == 200 and cm.meta["size_download"] == len(JPEG)
+    assert normal == []
+    assert sorted(f for f in os.listdir(str(tmp_path)) if f.startswith("e2i_imp")) == []  # temp files removed
+
+
+def test_save_web_file_other_domain_normal_path(pc, tmp_path, monkeypatch):
+    normal = _normalPath(pc, monkeypatch)
+    fake = _withBinary(pc, tmp_path, monkeypatch, lambda args, info: {"status": 200, "body": JPEG})
+    pc._impersonateDomains.add("mlb.example")
+    cm = pc.common()
+    ret = cm.saveWebFile(str(tmp_path / "c.jpg"), "https://notmlb.example/c.jpg", dict(ICON_PARAMS))
+    assert ret["sts"] is False and normal == ["https://notmlb.example/c.jpg"] and fake.calls == []
+    ret = cm.saveWebFile(str(tmp_path / "c.jpg"), "https://mlb.example/c.jpg", dict(ICON_PARAMS, impersonate=False))
+    assert ret["sts"] is False and len(normal) == 2 and fake.calls == []
+
+
+def test_save_web_file_failures_remove_the_file(pc, tmp_path, monkeypatch):
+    answers = {"404": {"status": 404, "body": b"<html>not found</html>"},
+               "html": {"status": 200, "headers": [("Content-Type", "text/html")], "body": b"<html>Just a moment</html>"},
+               "partial": {"status": 200, "headers": [("Content-Type", "image/jpeg")], "body": JPEG[:6], "returncode": 18,
+                           "error": "(18) transfer closed with 100 bytes remaining to read"},
+               "empty": {"status": 200, "body": b""},
+               "type": {"status": 200, "headers": [("Content-Type", "text/html")], "body": JPEG}}
+    _withBinary(pc, tmp_path, monkeypatch, lambda args, info: answers[args[-1].rsplit("/", 1)[-1]])
+    cm = pc.common()
+    target = str(tmp_path / "cover.jpg")
+    reasons = {}
+    for name in ("404", "html", "partial", "empty"):
+        ret = cm.saveWebFile(target, "https://a.example/" + name, dict(ICON_PARAMS, impersonate=True))
+        assert ret["sts"] is False and ret["fsize"] == 0 and not os.path.exists(target), name
+        reasons[name] = ret["reason"]
+    assert reasons["404"] == "HTTP 404" and reasons["html"].startswith("not a picture")
+    assert reasons["partial"].startswith("curl error (18") and reasons["empty"] == "empty answer"
+    ret = cm.saveWebFile(target, "https://a.example/type", {"impersonate": True, "maintype": "image"})
+    assert ret["sts"] is False and ret["reason"] == "wrong content-type text/html" and not os.path.exists(target)
+    assert "a.example" in pc._impersonateDomains  # the 200 answers registered it (explicit impersonate)
+
+
+def test_explicit_impersonate_registers_domain_on_success_only(pc, tmp_path, monkeypatch):
+    answers = {"/ok": {"status": 200, "body": b"ok"}, "/cf": {"status": 403, "body": CHALLENGE},
+               "/dns": {"status": None, "returncode": 6, "error": "(6) Could not resolve host"}}
+    _withBinary(pc, tmp_path, monkeypatch, lambda args, info: answers["/" + args[-1].rsplit("/", 1)[-1]])
+    cm = pc.common()
+    cm.getPage("https://blocked.example/cf", {"impersonate": True})
+    cm.getPage("https://gone.example/dns", {"impersonate": True})
+    assert pc._impersonateDomains == set()
+    assert cm.getPage("https://www.mlb.example/ok", {"impersonate": True}) == (True, "ok")
+    assert pc._impersonateDomains == {"mlb.example"}  # stored without www.
+    # a registered domain covers itself, www. and subdomains - not look-alikes or the parent zone
+    assert cm._useImpersonate("https://mlb.example/_pu/a.jpg", {})
+    assert cm._useImpersonate("https://cdn.img.mlb.example/a.jpg", {})
+    assert not cm._useImpersonate("https://notmlb.example/a.jpg", {})
+    assert not cm._useImpersonate("https://example/a.jpg", {})
+    assert not cm._useImpersonate("https://mlb.example.org/a.jpg", {})
+    # a registered (not host-asked) request does not register anything new
+    cm.getPage("https://sub.mlb.example/ok", {})
+    assert pc._impersonateDomains == {"mlb.example"}
+
+
+def test_getpage_return_data_false_impersonate(pc, tmp_path, monkeypatch):
+    answers = {"/v": {"status": 200, "headers": [("Content-Type", "video/mp4"), ("Content-Length", "6")], "body": b"012345",
+                      "url": "https://cdn.mlb.example/v.mp4"},
+               "/missing": {"status": 404, "body": b"nope"},
+               "/cf": {"status": 403, "headers": [("server", "cloudflare")], "body": CHALLENGE}}
+    _withBinary(pc, tmp_path, monkeypatch, lambda args, info: answers["/" + args[-1].rsplit("/", 1)[-1]])
+    pc._impersonateDomains.add("mlb.example")
+    cm = pc.common()
+    sts, resp = cm.getPage("https://mlb.example/v", {"return_data": False})
+    assert sts is True and resp.geturl() == "https://cdn.mlb.example/v.mp4" and resp.getcode() == 200
+    assert resp.info().get("Content-Type") == "video/mp4" and resp.info().get("content-length") == "6"
+    assert resp.read(2) == b"01" and resp.read() == b"2345"
+    tmpFiles = [f for f in os.listdir(str(tmp_path)) if f.startswith("e2i_impdl_")]
+    assert len(tmpFiles) == 1
+    resp.close()
+    assert [f for f in os.listdir(str(tmp_path)) if f.startswith("e2i_impdl_")] == []
+    sts, resp = cm.getPage("https://mlb.example/missing", {"return_data": False})
+    assert sts is False and resp.code == 404 and resp.read() == b"nope"  # like urllib's HTTPError
+    resp.close()
+    sts, data = cm.getPage("https://mlb.example/cf", {"return_data": False})
+    assert sts is False and data == "Access Forbidden" and "Just a moment" in data.meta["body_head"]
+    assert [f for f in os.listdir(str(tmp_path)) if f.startswith("e2i_impdl_")] == []

@@ -140,12 +140,14 @@ def prepareCookieFile(src, dst):
 
 
 def buildArgs(binary, profile, url, headers=None, cookieIn='', cookieOut='', cookieString='', dataFile='',
-              noRedirection=False, timeout=None, proxy='', insecure=False, cacert='', ipv4Only=False, headerFile=''):
+              noRedirection=False, timeout=None, proxy='', insecure=False, cacert='', ipv4Only=False, headerFile='',
+              outFile=''):
+    """outFile: write the body to this file (downloads) instead of stdout"""
     timeout = timeout or DEFAULT_TIMEOUT
     args = [binary, '--impersonate', profile, '-s', '-S',
             '--connect-timeout', str(timeout), '--speed-time', str(timeout), '--speed-limit', '10',
             '--max-time', str(max(MAX_TIME, timeout)),
-            '-D', headerFile, '-o', '-', '-w', WRITEOUT]
+            '-D', headerFile, '-o', outFile or '-', '-w', WRITEOUT]
     if not noRedirection:
         args.extend(['-L', '--max-redirs', str(MAX_REDIRECTS)])
     for line in filterHeaders(headers):
@@ -233,6 +235,13 @@ def _readFile(path):
         return ''
 
 
+def _fileSize(path):
+    try:
+        return os.path.getsize(path)
+    except (IOError, OSError):
+        return 0
+
+
 def _remove(path):
     try:
         if path and os.path.exists(path):
@@ -258,6 +267,31 @@ def _waitAfterClose(proc, seconds=5.0):
             break
         time.sleep(0.05)
     return proc.wait()
+
+
+def _runToFile(args, shouldAbort=None, stderrPath=''):
+    """run curl that writes the body to a file itself (-o file). Returns (returncode, b'', stop),
+    stop is None or 'abort' (shouldAbort())"""
+    devnull = open(os.devnull, 'rb')
+    outNull = open(os.devnull, 'wb')
+    errFile = open(stderrPath, 'wb')
+    try:
+        try:
+            proc = subprocess.Popen(args, stdin=devnull, stdout=outNull, stderr=errFile, close_fds=(os.name != 'nt'))
+        except OSError as e:
+            raise ImpersonateUnavailable('%s: %s' % (args[0], e))
+        stop = None
+        while proc.poll() is None:
+            if shouldAbort is not None and shouldAbort():
+                stop = 'abort'
+                _kill(proc)
+                break
+            time.sleep(0.1)
+        return proc.wait(), b'', stop
+    finally:
+        devnull.close()
+        outNull.close()
+        errFile.close()
 
 
 def _run(args, maxDataSize=-1, shouldAbort=None, stderrPath=''):
@@ -311,10 +345,12 @@ def _run(args, maxDataSize=-1, shouldAbort=None, stderrPath=''):
 
 def fetch(binary, url, tmpDir, headers=None, cookieFile='', loadCookie=False, saveCookie=False, cookieItems=None,
           postBody=None, noRedirection=False, timeout=None, proxy='', insecure=False, cacert=None, ipv4Only=False,
-          maxDataSize=-1, shouldAbort=None, log=None):
+          maxDataSize=-1, shouldAbort=None, log=None, outFile=''):
     """one request through curl-impersonate. Returns a dict:
     status (int, 0 = no answer), url (final URL), headers ({lower name: value} of the last response),
-    body (bytes), exitcode, error (curl's message), profile.
+    body (bytes), exitcode, error (curl's message), profile, size (bytes in outFile).
+    outFile: curl writes the body to this file (body is then b'', maxDataSize is not used); the
+    caller removes it when the answer is not wanted.
     Raises ImpersonateUnavailable when the binary cannot run at all."""
     if cacert is None:
         cacert = CA_BUNDLE if os.path.isfile(CA_BUNDLE) else ''
@@ -337,10 +373,15 @@ def fetch(binary, url, tmpDir, headers=None, cookieFile='', loadCookie=False, sa
             _remove(headerFile)
             args = buildArgs(binary, profile, url, headers, cookieIn=cookieIn, cookieOut=cookieFile if (cookieFile and saveCookie) else '',
                              cookieString=cookieItemsString(cookieItems), dataFile=dataFile, noRedirection=noRedirection,
-                             timeout=timeout, proxy=proxy, insecure=insecure, cacert=cacert, ipv4Only=ipv4Only, headerFile=headerFile)
+                             timeout=timeout, proxy=proxy, insecure=insecure, cacert=cacert, ipv4Only=ipv4Only, headerFile=headerFile,
+                             outFile=outFile)
             if log is not None:
                 log('curl-impersonate: %s' % ' '.join(args[1:-1]))
-            returncode, body, stop = _run(args, maxDataSize, shouldAbort, stderrFile)
+            if outFile:
+                _remove(outFile)  # nothing of an earlier profile's attempt
+                returncode, body, stop = _runToFile(args, shouldAbort, stderrFile)
+            else:
+                returncode, body, stop = _run(args, maxDataSize, shouldAbort, stderrFile)
             code, effective, error = parseWriteOut(_readFile(stderrFile))
             blocks = parseHeaderFile(_readFile(headerFile))
             status, respHeaders, derivedUrl = finalResponse(blocks, url)
@@ -356,7 +397,7 @@ def fetch(binary, url, tmpDir, headers=None, cookieFile='', loadCookie=False, sa
             # 'limit': we closed the pipe on purpose, curl's write error (23) is no failure
             result = {'status': status, 'url': effective or derivedUrl, 'headers': respHeaders, 'body': body,
                       'exitcode': 0 if stop == 'limit' else returncode, 'error': error, 'profile': profile,
-                      'aborted': stop == 'abort'}
+                      'aborted': stop == 'abort', 'size': _fileSize(outFile) if outFile else len(body)}
             _state['profile'] = profile
             break
         if result is None:
