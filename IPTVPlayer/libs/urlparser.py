@@ -9,6 +9,7 @@ import re
 import string
 import struct
 import time
+import zlib
 from os import urandom
 from Components.config import config
 from Screens.MessageBox import MessageBox
@@ -291,6 +292,7 @@ class urlparser:
             "doodstream.com": self.pp.parserDOOD,
             "dooodster.com": self.pp.parserDOOD,
             "dooood.com": self.pp.parserDOOD,
+            "doplay.store": self.pp.parserHQQ,
             "doply.net": self.pp.parserDOOD,
             "dpstream.fyi": self.pp.parserJWPLAYER,
             "dr0pstream.com": self.pp.parserJWPLAYER,
@@ -367,6 +369,9 @@ class urlparser:
             "hlsflast.com": self.pp.parserJWPLAYER,
             "hlsplayer.org": self.pp.parserJWPLAYER,
             "hlswish.com": self.pp.parserJWPLAYER,
+            "hqq.ac": self.pp.parserHQQ,
+            "hqq.to": self.pp.parserHQQ,
+            "hqq.tv": self.pp.parserHQQ,
             "hydraxcdn.biz": self.pp.parserABYSS,
             # i
             "iplayerhls.com": self.pp.parserJWPLAYER,
@@ -449,6 +454,10 @@ class urlparser:
             "mysportzfy.com": self.pp.parserJWPLAYER,
             "myvidplay.com": self.pp.parserDOOD,
             # n
+            "netu.ac": self.pp.parserHQQ,
+            "netu.filmoviplex.com": self.pp.parserHQQ,
+            "netu.to": self.pp.parserHQQ,
+            "netu.tv": self.pp.parserHQQ,
             "nova.upn.one": self.pp.parserSBS,
             # o
             "obeywish.com": self.pp.parserJWPLAYER,
@@ -491,6 +500,7 @@ class urlparser:
             "sportsonline.to": self.pp.parserJWPLAYER,
             "ss.hd-vk.com": self.pp.parserJWPLAYER,
             "stape.fun": self.pp.parserSTREAMTAPE,
+            "stbnetu.xyz": self.pp.parserHQQ,
             "stmix.io": self.pp.parserSTREAMUP,
             "strcloud.club": self.pp.parserSTREAMTAPE,
             "strcloud.link": self.pp.parserSTREAMTAPE,
@@ -646,6 +656,9 @@ class urlparser:
             "vtube.to": self.pp.parserJWPLAYER,
             "vvide0.com": self.pp.parserDOOD,
             # w
+            "waaw.ac": self.pp.parserHQQ,
+            "waaw.to": self.pp.parserHQQ,
+            "waaw.tv": self.pp.parserHQQ,
             "wasuytm.store": self.pp.parserSBS,
             "watch.ezplayer.me": self.pp.parserSBS,
             "watch.gxplayer.xyz": self.pp.parserSTREAMEMBED,
@@ -660,6 +673,7 @@ class urlparser:
             "xcoic.com": self.pp.parserBYSE,
             # y
             "yadi.sk": self.pp.parserYANDEXDISK,
+            "younetu.com": self.pp.parserHQQ,
             "yourupload.com": self.pp.parserJWPLAYER,
             "youtu.be": self.pp.parserYOUTUBE,
             "youtube-nocookie.com": self.pp.parserYOUTUBE,
@@ -3501,6 +3515,159 @@ class pageParser(CaptchaHelper):
             if isinstance(hls.get(key), basestring) and hls[key]:
                 urltab.extend(getDirectM3U8Playlist(urlparser.decorateUrl(hls[key].replace("\\/", "/"), cdnHeader), checkContent=True))
                 break
+        return urltab
+
+    def parserHQQ(self, baseUrl):  # add 031026 - netu/hqq/waaw (netu.filmoviplex.com, hqq.to, waaw.to)
+        printDBG("parserHQQ baseUrl[%s]" % baseUrl)
+
+        def clickPoint(png):
+            # centre of the opaque pixels of the 8-bit, non-interlaced PNG the player shows (palette+tRNS seen;
+            # RGBA/GA/RGB/grey handled too)
+            try:
+                if png[:8] != b"\x89PNG\r\n\x1a\n":
+                    return None
+                pos, idat, trns, ihdr = 8, b"", b"", None
+                while pos + 8 <= len(png):
+                    ln, typ = struct.unpack(">I4s", png[pos:pos + 8])
+                    chunk = png[pos + 8:pos + 8 + ln]
+                    if typ == b"IHDR":
+                        ihdr = struct.unpack(">IIBBBBB", chunk)
+                    elif typ == b"tRNS":
+                        trns = bytearray(chunk)
+                    elif typ == b"IDAT":
+                        idat += chunk
+                    elif typ == b"IEND":
+                        break
+                    pos += 12 + ln
+                w, h, depth, ctype, _, _, interlace = ihdr
+                bpp = {0: 1, 2: 3, 3: 1, 4: 2, 6: 4}.get(ctype)
+                if depth != 8 or interlace or not bpp:
+                    return None
+                raw = bytearray(zlib.decompress(idat))
+                stride = w * bpp
+                prev = bytearray(stride)
+                xs = ys = n = 0
+                bg = None
+                for y in range(h):
+                    f = raw[y * (stride + 1)]
+                    line = raw[y * (stride + 1) + 1:(y + 1) * (stride + 1)]
+                    for i in range(stride):
+                        a = line[i - bpp] if i >= bpp else 0
+                        if f == 1:
+                            line[i] = (line[i] + a) & 0xFF
+                        elif f == 2:
+                            line[i] = (line[i] + prev[i]) & 0xFF
+                        elif f == 3:
+                            line[i] = (line[i] + ((a + prev[i]) >> 1)) & 0xFF
+                        elif f == 4:
+                            b, c = prev[i], prev[i - bpp] if i >= bpp else 0
+                            p = a + b - c
+                            pa, pb, pc = abs(p - a), abs(p - b), abs(p - c)
+                            line[i] = (line[i] + (a if pa <= pb and pa <= pc else (b if pb <= pc else c))) & 0xFF
+                    prev = line
+                    for x in range(w):
+                        px = line[x * bpp:(x + 1) * bpp]
+                        if ctype == 3:
+                            ink = (trns[px[0]] if px[0] < len(trns) else 255) >= 30
+                        elif ctype in (4, 6):
+                            ink = px[-1] >= 30
+                        else:  # no alpha: anything that differs from the top-left background pixel
+                            if bg is None:
+                                bg = px
+                            ink = sum(abs(px[k] - bg[k]) for k in range(bpp)) > 40
+                        if ink:
+                            xs += x
+                            ys += y
+                            n += 1
+                if not n:
+                    return None
+                return xs // n, ys // n
+            except Exception:
+                printExc()
+                return None
+
+        baseUrl = strwithmeta(baseUrl)
+        m = re.search(r'''/(?:[efv]/|watch_video\.php\?v=|embed_player\.php\?vid=)([A-Za-z0-9=+/_-]+)''', baseUrl) or \
+            re.search(r'''[?&](?:v|vid)=([^&#]+)''', baseUrl)
+        if not m:
+            return []
+        origin = urljoin(baseUrl, "/")[:-1]
+        embedUrl = "%s/e/%s" % (origin, m.group(1))
+        HTTP_HEADER = self.cm.getDefaultHeader("chrome")
+        if baseUrl.meta.get("Referer"):
+            HTTP_HEADER["Referer"] = baseUrl.meta["Referer"]
+        COOKIE_FILE = GetCookieDir("hqq.cookie")
+        params = {"header": HTTP_HEADER, "ipv4_only": True, "use_cookie": True, "save_cookie": True, "load_cookie": False, "cookiefile": COOKIE_FILE}
+        sts, data = self.cm.getPage(embedUrl, params)
+        if not sts:
+            return []
+        videoId = self.cm.ph.getSearchGroups(data, r"""['"]videoid['"]\s*:\s*['"]([^'"]+)""")[0]
+        videoKey = self.cm.ph.getSearchGroups(data, r"""['"]videokey['"]\s*:\s*['"]([^'"]+)""")[0]
+        adbn = self.cm.ph.getSearchGroups(data, r"""adbn\s*=\s*['"]([^'"]*)""")[0]
+        keyOrig = self.cm.ph.getSearchGroups(data, r"""videokeyorig\s*=\s*['"]([^'"]+)""")[0] or m.group(1)
+        if not videoId or not videoKey:
+            printDBG("parserHQQ: no videoid/videokey (removed video?)")
+            return []
+        subTracks = []
+        for subUrl, subLabel in re.findall(r'''file2sub\(\s*["']([^"']+)["']\s*,\s*["'][^"']*["']\s*,\s*["']([^"']*)["']''', data):
+            if subUrl.startswith("//"):
+                subUrl = "https:" + subUrl
+            subTracks.append({"title": subLabel, "url": subUrl, "lang": subLabel, "format": subUrl.rsplit(".", 1)[-1].lower() if "." in subUrl[-5:] else "srt"})
+
+        ajaxParams = dict(params)
+        ajaxParams["load_cookie"] = True
+        ajaxParams["raw_post_data"] = True
+        ajaxParams["header"] = dict(HTTP_HEADER)
+        ajaxParams["header"].update({"Referer": embedUrl, "Origin": origin, "X-Requested-With": "XMLHttpRequest",
+                                     "Content-Type": "application/json", "Accept": "application/json, text/javascript, */*; q=0.01"})
+        link = ""
+        for attempt in range(3):
+            sts, data = self.cm.getPage(origin + "/player/get_player_image.php", ajaxParams,
+                                        json_dumps({"videoid": videoId, "videokey": videoKey, "width": 400, "height": 400}))
+            if not sts or "Video not found" in data:
+                return []
+            try:
+                img = json_loads(data)
+            except Exception:
+                printExc()
+                return []
+            if img.get("try_again") == "1" or not img.get("image"):
+                GetIPTVSleep().Sleep(min(10, int(img.get("isec") or 5)))
+                continue
+            point = clickPoint(base64.b64decode(re.sub(r"^data:image/[a-z]+;base64,", "", img["image"])))
+            printDBG("parserHQQ: click point %s" % (point,))
+            x, y = point or (200, 200)
+            GetIPTVSleep().Sleep(3)  # faster "clicks" are answered with try_again=1
+            post = {"htoken": "", "sh": "".join(random_choice("0123456789abcdef") for _ in range(40)), "ver": "4", "secure": "0",
+                    "adb": adbn, "v": urllib_quote(keyOrig, safe=""), "token": "", "gt": "", "embed_from": "0", "wasmcheck": 1,
+                    "adscore": "", "click_hash": urllib_quote(img.get("hash_image", ""), safe=""), "clickx": x, "clicky": y}
+            sts, data = self.cm.getPage(origin + "/player/get_md5.php", ajaxParams, json_dumps(post))
+            if not sts:
+                return []
+            try:
+                ret = json_loads(data)
+            except Exception:
+                printExc()
+                return []
+            obf = (ret.get("obf_link") or "#")[1:]
+            if ret.get("try_again") == "1" or not obf:
+                printDBG("parserHQQ: get_md5 try_again (attempt %d)" % attempt)
+                continue
+            link = "".join(chr(int(obf[i:i + 3], 16)) for i in range(0, len(obf) - 2, 3))
+            break
+        if not link:
+            SetIPTVPlayerLastHostError(_("netu/hqq: the player check failed, try again later."))
+            return []
+        url = ("https:" + link) if link.startswith("//") else link
+        if ".m3u8" not in url:
+            url += ".mp4.m3u8"
+        meta = {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": embedUrl, "Origin": origin}
+        if subTracks:
+            meta["external_sub_tracks"] = subTracks
+        url = urlparser.decorateUrl(url, meta)
+        urltab = getDirectM3U8Playlist(url, checkExt=False, checkContent=True, sortWithMaxBitrate=999999999)
+        if not urltab:
+            urltab = [{"name": "netu/hqq", "url": urlparser.decorateUrl(url, {"iptv_proto": "m3u8"})}]
         return urltab
 
     def parserANONMP4(self, baseUrl):  # fix 050626
