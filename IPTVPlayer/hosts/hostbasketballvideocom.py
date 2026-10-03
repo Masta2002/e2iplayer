@@ -54,7 +54,7 @@ class BasketballVideo(CBaseHostClass):
         sts, data = self.getPage(url)
         if not sts:
             return []
-        nextPage = self.cm.ph.getSearchGroups(data, 'swchItem" href="([^"]+)')[0]
+        nextPage = self.cm.ph.getSearchGroups(data, r'swchItem-next"\s+href="([^"]+)')[0]
         data = self.cm.ph.getAllItemsBeetwenMarkers(data, 'class="poster">', 'block_elem"')
         for item in data:
             url = self.getFullUrl(self.cm.ph.getSearchGroups(item, r'href="([^"]+)')[0])
@@ -66,7 +66,7 @@ class BasketballVideo(CBaseHostClass):
             self.addVideo(params)
         if nextPage:
             params = dict(cItem)
-            params.update({'title': _("Next page"), 'url': self.MAIN_URL[:-1] + nextPage})
+            params.update({'title': _("Next page"), 'url': self.getFullUrl(nextPage)})
             self.addDir(params)
 
     def getLinksForVideo(self, cItem):
