@@ -51,63 +51,6 @@ def generate_vrf(movie_id, user_id):
     return url_safe
 
 
-def crsdiv(a, dec_id):
-    def b64dec(t):
-        return base64.b64decode(t).decode("latin1")
-
-    def dec(a, shift):
-        b64 = a[::-1].replace("-", "+").replace("_", "/")
-        return "".join([chr(ord(ch) - shift) for ch in b64dec(b64)])
-
-    if dec_id == "sXnL9MQIry":
-        b = [ord(ch) for ch in "pWB9V)[*4I`nJpp?ozyB~dbr9yt!_n4u"]
-        d = [int(x, 16) for x in re.findall(r".{2}", a)]
-        decrypted = [(v ^ b[i % len(b)]) - 3 for i, v in enumerate(d)]
-        return b64dec("".join(chr(v) for v in decrypted))
-    if dec_id == "IhWrImMIGL":
-        d = []
-        for ch in a:
-            if "a" <= ch <= "m" or "A" <= ch <= "M":
-                d.append(chr(ord(ch) + 13))
-            elif "n" <= ch <= "z" or "N" <= ch <= "Z":
-                d.append(chr(ord(ch) - 13))
-            else:
-                d.append(ch)
-        return b64dec("".join(d))
-    if dec_id == "xTyBxQyGTA":
-        b = a[::-1]
-        c = "".join([b[i] for i in range(0, len(b), 2)])
-        return b64dec(c)
-    if dec_id == "ux8qjPHC66":
-        rev = a[::-1]
-        data = "".join([chr(int(rev[i: i + 2], 16)) for i in range(0, len(rev), 2)])
-        key = "X9a(O;FMV2-7VO5x;Ao\x05:dN1NoFs?j,"
-        res = []
-        for i, ch in enumerate(data):
-            res.append(chr(ord(ch) ^ ord(key[i % len(key)])))
-        return "".join(res)
-    if dec_id == "eSfH1IRMyL":
-        rev = [ord(ch) - 1 for ch in reversed(a)]
-        chunks = []
-        i = 0
-        while i < len(rev):
-            val = int("".join([chr(rev[i]), chr(rev[i + 1])]), 16)
-            chunks.append(val)
-            i += 2
-        return "".join(chr(v) for v in chunks)
-    if dec_id == "KJHidj7det":
-        c = [ord(ch) for ch in '3SAY~#%Y(V%>5d/Yg"$G[Lh1rK4a;7ok']
-        decrypted = [v ^ c[i % len(c)] for i, v in enumerate([ord(ch) for ch in b64dec(a[10:-16])])]
-        return "".join(chr(v) for v in decrypted)
-    if dec_id == "o2VSUnjnZl":
-        mapping = {"x": "a", "y": "b", "z": "c", "a": "d", "b": "e", "c": "f", "d": "g", "e": "h", "f": "i", "g": "j", "h": "k", "i": "l", "j": "m", "k": "n", "l": "o", "m": "p", "n": "q", "o": "r", "p": "s", "q": "t", "r": "u", "s": "v", "t": "w", "u": "x", "v": "y", "w": "z", "X": "A", "Y": "B", "Z": "C", "A": "D", "B": "E", "C": "F", "D": "G", "E": "H", "F": "I", "G": "J", "H": "K", "I": "L", "J": "M", "K": "N", "L": "O", "M": "P", "N": "Q", "O": "R", "P": "S", "Q": "T", "R": "U", "S": "V", "T": "W", "U": "X", "V": "Y", "W": "Z"}
-        return "".join(mapping.get(ch, ch) for ch in a)
-    if dec_id in ("JoAHUMCLXV", "Oi3v1dAlaM", "TsA2KGDGux"):
-        shifts = {"JoAHUMCLXV": 3, "Oi3v1dAlaM": 5, "TsA2KGDGux": 7}
-        return dec(a, shifts[dec_id])
-    return ""
-
-
 def rc4(cipher_text, key):
     def compat_ord(c):
         return ord(c) if isinstance(c, str) else c
@@ -249,6 +192,7 @@ class urlparser:
             "chuckle-tube.com": self.pp.parserVOESX,
             "cinegrab.com": self.pp.parserBYSE,
             "cloud.mail.ru": self.pp.parserCOUDMAILRU,
+            "cloudorchestranova.com": self.pp.parserVIDSRC,
             "coflix.upn.one": self.pp.parserSBS,
             "coverapi.store": self.pp.parserCOVERAPI,
             "csst.online": self.pp.parserSST,
@@ -624,6 +568,8 @@ class urlparser:
             "vidsrc.mov": self.pp.parserVIDSRCMOV,
             "vidsrc.net": self.pp.parserVIDSRC,
             "vidsrc.pm": self.pp.parserVIDSRC,
+            "vidsrc.sh": self.pp.parserVIDSRC,
+            "vidsrc.to": self.pp.parserVIDSRC,
             "vidsrc.tw": self.pp.parserVIDSRC,
             "vidsrc.vc": self.pp.parserVIDSRC,
             "vidsrc.xyz": self.pp.parserVIDSRC,
@@ -3084,40 +3030,294 @@ class pageParser(CaptchaHelper):
                 urltab.extend(getDirectM3U8Playlist(url, sortWithMaxBitrate=99999999))
         return urltab
 
-    def parserVIDSRC(self, baseUrl):  # add 171225
+    def parserVIDSRC(self, baseUrl):  # update 031026 - vsembed/vidsrc -> cloudorchestranova -> data.vidsrc.sh (ChaCha20 wasm)
         printDBG("parserVIDSRC baseUrl[%s]" % baseUrl)
-        HTTP_HEADER = self.cm.getDefaultHeader()
+        HTTP_HEADER = self.cm.getDefaultHeader(browser="chrome")
+        referer = baseUrl.meta.get("Referer", "") if isinstance(baseUrl, strwithmeta) else ""
+        baseUrl = str(baseUrl)
+        if baseUrl.startswith("//"):
+            baseUrl = "https:" + baseUrl
+
+        def leb(b, p, signed=False):
+            r = s = 0
+            while True:
+                x = b[p]
+                p += 1
+                r |= (x & 0x7F) << s
+                s += 7
+                if not x & 0x80:
+                    break
+            if signed and (x & 0x40):
+                r -= 1 << s
+            return r, p
+
+        def wasmDecrypt(wasm, encB64):
+            # vsdec wasm = ChaCha20(key = mem32[a_i] ^ mem32[b_i], nonce = enc[:12], counter from 0)
+            wasm = bytearray(wasm)
+            if wasm[:4] != bytearray(b"\x00asm"):
+                return ""
+            secs = {}
+            p = 8
+            while p < len(wasm):
+                sid = wasm[p]
+                sz, p = leb(wasm, p + 1)
+                secs.setdefault(sid, []).append(wasm[p:p + sz])
+                p += sz
+            if 10 not in secs or 11 not in secs:
+                return ""
+            mem = bytearray(65536)
+            data = secs[11][0]
+            n, p = leb(data, 0)
+            for _seg in range(n):
+                flag, p = leb(data, p)
+                if flag != 0 or data[p] != 0x41:
+                    return ""
+                off, p = leb(data, p + 1, True)
+                sz, p = leb(data, p + 1)
+                mem[off:off + sz] = data[p:p + sz]
+                p += sz
+            code = secs[10][0]
+            n, p = leb(code, 0)
+            body = bytearray()
+            for _fn in range(n):
+                sz, p = leb(code, p)
+                if sz > len(body):
+                    body = code[p:p + sz]  # the ChaCha block function is by far the largest body
+                p += sz
+            body = bytes(body)
+            # i32.const A ; i32.load ; i32.const B ; i32.load ; i32.xor
+            pairs = re.findall(b"\\x41([\\x00-\\x7f]|[\\x80-\\xff]+[\\x00-\\x7f])\\x28\\x02\\x00\\x41([\\x00-\\x7f]|[\\x80-\\xff]+[\\x00-\\x7f])\\x28\\x02\\x00\\x73", body)
+            if len(pairs) < 8:
+                return ""
+            key = []
+            for a, b in pairs[:8]:
+                a = leb(bytearray(a), 0, True)[0]
+                b = leb(bytearray(b), 0, True)[0]
+                key.append(struct.unpack("<I", bytes(mem[a:a + 4]))[0] ^ struct.unpack("<I", bytes(mem[b:b + 4]))[0])
+            rounds = body.count(b"\x77") // 16  # 4 quarter rounds x 4 i32.rotl per round
+            if rounds not in (8, 12, 20):
+                rounds = 20
+            enc = bytearray(base64.b64decode(encB64))
+            if len(enc) < 13:
+                return ""
+            nonce = list(struct.unpack("<3I", bytes(enc[:12])))
+            enc = enc[12:]
+            M = 0xFFFFFFFF
+
+            def qr(x, a, b, c, d):
+                x[a] = (x[a] + x[b]) & M
+                v = x[d] ^ x[a]
+                x[d] = ((v << 16) & M) | (v >> 16)
+                x[c] = (x[c] + x[d]) & M
+                v = x[b] ^ x[c]
+                x[b] = ((v << 12) & M) | (v >> 20)
+                x[a] = (x[a] + x[b]) & M
+                v = x[d] ^ x[a]
+                x[d] = ((v << 8) & M) | (v >> 24)
+                x[c] = (x[c] + x[d]) & M
+                v = x[b] ^ x[c]
+                x[b] = ((v << 7) & M) | (v >> 25)
+
+            out = bytearray()
+            for ctr, i in enumerate(range(0, len(enc), 64)):
+                st = [0x61707865, 0x3320646E, 0x79622D32, 0x6B206574] + key + [ctr] + nonce
+                x = list(st)
+                for _round in range(rounds // 2):
+                    qr(x, 0, 4, 8, 12)
+                    qr(x, 1, 5, 9, 13)
+                    qr(x, 2, 6, 10, 14)
+                    qr(x, 3, 7, 11, 15)
+                    qr(x, 0, 5, 10, 15)
+                    qr(x, 1, 6, 11, 12)
+                    qr(x, 2, 7, 8, 13)
+                    qr(x, 3, 4, 9, 14)
+                ks = bytearray(struct.pack("<16I", *[(x[k] + st[k]) & M for k in range(16)]))
+                blk = enc[i:i + 64]
+                out.extend(bytearray([blk[k] ^ ks[k] for k in range(len(blk))]))
+            return out.decode("utf-8", "ignore")
+
+        def getJson(url, hdr):
+            sts, data = self.cm.getPage(url, {"header": hdr})
+            if not sts:
+                return {}
+            try:
+                data = json_loads(data)
+            except Exception:
+                return {}
+            return data if isinstance(data, dict) else {}
+
+        # 1-4: embed page -> vs_src.php -> cloudorchestranova embed -> player page -> CONFIG.api
+        api = ""
+        url = baseUrl
+        ref = referer
+        for _hop in range(6):
+            hdr = dict(HTTP_HEADER)
+            if ref:
+                hdr["Referer"] = ref
+            sts, data = self.cm.getPage(url, {"header": hdr})
+            if not sts:
+                break
+            url = self.cm.meta.get("url", url)
+            m = re.search(r"window\.CONFIG\s*=\s*(\{.+?\});", data)
+            if m:
+                try:
+                    cfg = json_loads(m.group(1))
+                except Exception:
+                    cfg = {}
+                api = cfg.get("api", "")
+                if not api and cfg.get("streamBase"):
+                    api = "%s&season=%s&episode=%s&stream_urls" % (cfg["streamBase"], cfg.get("season") or 1, cfg.get("episode") or 1)
+                break
+            nextUrl = ""
+            m = re.search(r"window\.CFG\s*=\s*(\{.+?\});", data)
+            if m:
+                try:
+                    nextUrl = json_loads(m.group(1)).get("playerUrl", "")
+                except Exception:
+                    nextUrl = ""
+            if not nextUrl:
+                m = re.search(r"""data-api=['"]([^'"]+)""", data)
+                if m:
+                    jhdr = dict(HTTP_HEADER)
+                    jhdr.update({"Referer": url, "Accept": "application/json"})
+                    nextUrl = getJson(urljoin(url, m.group(1).replace("&amp;", "&")), jhdr).get("src", "")
+            if not nextUrl:
+                m = re.search(r"""<iframe[^>]+?src=['"]([^'"]+/embed/[^'"]+)""", data)
+                if m:
+                    nextUrl = m.group(1)
+            if not nextUrl:
+                break
+            ref = url
+            url = urljoin(url, nextUrl.replace("&amp;", "&"))
+            printDBG("parserVIDSRC next[%s]" % url)
+
+        if not api:
+            # fallback: build the API URL from the id in the embed URL
+            m = re.search(r"/(?:embed/)?(?:player/)?(movie|tv)?/?(tt\d+|\d+)(?:/(\d+)[/-](\d+))?", baseUrl.split("?")[0])
+            q = re.search(r"[?&](imdb|tmdb)=([^&]+)", baseUrl)
+            if q:
+                mid = q.group(2)
+                kind = "tv" if "/tv" in baseUrl else "movie"
+                season = re.search(r"[?&]season=(\d+)", baseUrl)
+                episode = re.search(r"[?&]episode=(\d+)", baseUrl)
+                season = season.group(1) if season else ""
+                episode = episode.group(1) if episode else ""
+            elif m:
+                mid = m.group(2)
+                season, episode = m.group(3) or "", m.group(4) or ""
+                kind = m.group(1) or ("tv" if season else "movie")
+            else:
+                return []
+            api = "https://data.vidsrc.sh/api.php?type=%s&%s=%s" % (kind, "imdb" if mid.startswith("tt") else "tmdb", mid)
+            if kind == "tv":
+                api += "&season=%s&episode=%s" % (season or 1, episode or 1)
+            api += "&stream_urls"
+        printDBG("parserVIDSRC api[%s]" % api)
+
+        # 5: stream data (+ decryption of the stream_urls envelope)
+        jhdr = dict(HTTP_HEADER)
+        jhdr.update({"Referer": "https://cloudorchestranova.com/", "Origin": "https://cloudorchestranova.com", "Accept": "application/json"})
+        js = getJson(api, jhdr)
+        jdata = js.get("data") or {}
+        if not isinstance(jdata, dict):
+            return []
+        streams = jdata.get("stream_urls") or []
+        if not isinstance(streams, list):
+            vs = js.get("vs") or {}
+            text = ""
+            try:
+                if vs.get("wasm_url"):
+                    # binary body -> raw response object (getPage would utf-8 decode it)
+                    whdr = {"User-Agent": HTTP_HEADER["User-Agent"], "Accept": "*/*", "Referer": "https://cloudorchestranova.com/", "Origin": "https://cloudorchestranova.com"}
+                    sts, resp = self.cm.getPage(vs["wasm_url"], {"header": whdr, "return_data": False})
+                    wasm = b""
+                    if sts and resp is not None:
+                        try:
+                            wasm = resp.read()
+                        finally:
+                            resp.close()
+                    if wasm[:2] == b"\x1f\x8b":
+                        wasm = zlib.decompress(wasm, 16 + zlib.MAX_WBITS)
+                elif vs.get("wasm"):
+                    wasm = base64.b64decode(vs["wasm"])
+                else:
+                    wasm = b""
+                if wasm:
+                    text = wasmDecrypt(wasm, streams)
+            except Exception:
+                printExc()
+            streams = [x.strip() for x in text.split("\n") if x.strip().startswith("http")]
+        printDBG("parserVIDSRC streams %s" % streams)
+        if not streams:
+            return []
+
+        subTracks = []
+        for sub in (js.get("default_subs") or jdata.get("default_subs") or []):
+            if isinstance(sub, dict) and sub.get("url"):
+                lang = sub.get("code") or sub.get("lang") or sub.get("label") or "und"
+                subTracks.append({"title": sub.get("label") or sub.get("lang") or lang, "url": sub["url"], "lang": lang[:3].lower(), "format": "vtt" if ".vtt" in sub["url"] else "srt"})
+
+        # 6: playback token. <cdn>/generate.php -> JWT bound to the client IP (/64), valid 4 h, accepted by every CDN host
+        #    of this network; generate.php is rate limited per host (429) -> cache it and try the other hosts.
+        def tokenExp(tk):
+            try:
+                pl = tk.split(".")[1]
+                return int(json_loads(base64.urlsafe_b64decode(pl + "=" * (-len(pl) % 4))).get("exp", 0))
+            except Exception:
+                return 0
+
+        origins = []
+        for surl in streams:
+            origin = re.match(r"(https?://[^/]+)", surl)
+            if origin and origin.group(1) not in origins:
+                origins.append(origin.group(1))
+
+        def getToken():
+            for attempt in range(3):  # ~1 request / 20 s / host is allowed
+                if attempt:
+                    GetIPTVSleep().Sleep(6 * attempt)
+                for origin in origins:
+                    sts, data = self.cm.getPage(origin + "/generate.php", {"header": HTTP_HEADER})
+                    data = data.strip() if sts else ""
+                    if data[:1] in ("{", "["):
+                        try:
+                            tj = json_loads(data)
+                            data = tj if not isinstance(tj, dict) else (tj.get("token") or tj.get("data") or tj.get("string") or tj.get("result") or "")
+                        except Exception:
+                            data = ""
+                    if data and re.match(r"^[\w\-]+\.[\w\-]+\.[\w\-]+$", data):
+                        self.__class__._vidsrcToken = (data, tokenExp(data) or time.time() + 3600)
+                        return data
+            return ""
+
+        cached = getattr(self.__class__, "_vidsrcToken", None)
+        tk = cached[0] if cached and cached[1] > time.time() + 600 else ""
+        fromCache = bool(tk)
         urltab = []
-        baseUrl = baseUrl.replace("vidsrc.to", "vidsrc.xyz").replace("vidsrc.pm", "vidsrc.xyz").replace("moviesapi.club/movie", "cdn.moviesapi.to/embed/movie").replace("moviesapi.to/movie", "cdn.moviesapi.to/embed/movie")
-        sts, data = self.cm.getPage(baseUrl, {"header": HTTP_HEADER})
-        if not sts:
-            return []
-        url = re.search(r"""src=['"]([^"]+)['"] f""", data)
-        if not url:
-            return []
-        url = url.group(1)
-        url = "https:" + url if url.startswith("//") else url
-        host = urlparser.getDomain(url, False)
-        sts, data = self.cm.getPage(url, {"header": HTTP_HEADER})
-        if not sts:
-            return []
-        HTTP_HEADER["Referer"] = url
-        url = re.search(r""" src: ['"]([^'"]+)""", data)
-        if not url:
-            return []
-        url = host[:-1] + url.group(1)
-        sts, data = self.cm.getPage(url, {"header": HTTP_HEADER})
-        if not sts:
-            return []
-        match = re.findall(r'id="([^"]+)" style="display:none;">([^<]+)', data)
-        if match:
-            a, b = match[0]
-            d = crsdiv(b, a)
-            if d:
-                url = d.split(" ")[0].replace("{v1}", "thrumbleandjaxon.com")
-                url = urlparser.decorateUrl(url, {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": host, "Origin": host[:-1]})
-                if ".m3u8" in url:
-                    urltab.extend(getDirectM3U8Playlist(url, sortWithMaxBitrate=99999999))
+        for _attempt in range(2):
+            if not tk:
+                tk = getToken()
+            printDBG("parserVIDSRC token[%s] cached[%s]" % (tk[:16], fromCache))
+            for surl in streams:
+                if tk:
+                    surl = surl.replace("__TOKEN__", tk) if "__TOKEN__" in surl else surl + ("&" if "?" in surl else "?") + "token=" + tk
+                meta = {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": "https://cloudorchestranova.com/", "Origin": "https://cloudorchestranova.com"}
+                if subTracks:
+                    meta["external_sub_tracks"] = subTracks
+                surl = urlparser.decorateUrl(surl, meta)
+                if ".m3u8" in surl:
+                    links = getDirectM3U8Playlist(surl, checkContent=True, sortWithMaxBitrate=99999999)
+                    if links:
+                        urltab.extend(links)
+                        break  # the urls are mirrors of the same file; one working master is enough
+                else:
+                    urltab.append({"name": "vidsrc mp4", "url": surl})
+            if urltab or not fromCache:
+                break
+            # cached token rejected (IP changed / revoked) -> fetch a fresh one once
+            self.__class__._vidsrcToken = None
+            tk = ""
+            fromCache = False
         return urltab
 
     def parserVIDSRCMOV(self, baseUrl):  # add 240826
@@ -3663,7 +3863,7 @@ class pageParser(CaptchaHelper):
             printDBG("parserHQQ: click point %s" % (point,))
             x, y = point or (200, 200)
             GetIPTVSleep().Sleep(3)  # faster "clicks" are answered with try_again=1
-            post = {"htoken": "", "sh": "".join(random_choice("0123456789abcdef") for _ in range(40)), "ver": "4", "secure": "0",
+            post = {"htoken": "", "sh": "".join(random_choice("0123456789abcdef") for _i in range(40)), "ver": "4", "secure": "0",
                     "adb": adbn, "v": urllib_quote(keyOrig, safe=""), "token": "", "gt": "", "embed_from": "0", "wasmcheck": 1,
                     "adscore": "", "click_hash": urllib_quote(img.get("hash_image", ""), safe=""), "clickx": x, "clicky": y}
             sts, data = self.cm.getPage(origin + "/player/get_md5.php", ajaxParams, json_dumps(post))
