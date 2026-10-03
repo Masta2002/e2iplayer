@@ -46,7 +46,10 @@
   "moviebox",
   "akoam",
   "filmoviplex",
-  "dmdamedia"
+  "dmdamedia",
+  "shoofmax",
+  "taxielcima",
+  "fenixsite"
  ],
  "cartoonsandanime": [
   "aniworld",
@@ -56,7 +59,8 @@
   "animeodcinki",
   "shahiidanimenet",
   "bajeczkiorg",
-  "watchcartoononline"
+  "watchcartoononline",
+  "stardima"
  ],
  "sport": [
   "webstream",
@@ -73,7 +77,9 @@
   "twitchtv",
   "eurosportplayer",
   "ritsatv",
-  "aljazeera"
+  "aljazeera",
+  "asharq",
+  "svtplayse"
  ],
  "documentary": [
   "dokumentalnenet",
@@ -81,14 +87,17 @@
   "orthobulletscom",
   "vumedicom",
   "aljazeera",
-  "arabsciences"
+  "arabsciences",
+  "asharq",
+  "ted"
  ],
  "science": [
   "dailymotion",
   "dokumentalnenet",
   "orthobulletscom",
   "vumedicom",
-  "arabsciences"
+  "arabsciences",
+  "ted"
  ],
  "polish": [
   "youtube",
@@ -143,7 +152,8 @@
   "orthobulletscom",
   "vumedicom",
   "watchcartoononline",
-  "aljazeera"
+  "aljazeera",
+  "ted"
  ],
  "german": [
   "youtube",
@@ -245,7 +255,11 @@
   "aljazeera",
   "mp3quran",
   "assabile",
-  "arabsciences"
+  "arabsciences",
+  "shoofmax",
+  "taxielcima",
+  "stardima",
+  "asharq"
  ],
  "greek": [
   "youtube",
@@ -270,7 +284,8 @@
  ],
  "swedish": [
   "youtube",
-  "dailymotion"
+  "dailymotion",
+  "svtplayse"
  ],
  "balkans": [
   "youtube",
@@ -278,7 +293,8 @@
   "filma365",
   "filmaon",
   "dailymotion",
-  "filmoviplex"
+  "filmoviplex",
+  "fenixsite"
  ],
  "music": [
   "youtube",

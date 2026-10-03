@@ -183,6 +183,7 @@ class urlparser:
         self.hostMap = {
             "1azayf9w.xyz": self.pp.parserBYSE,
             "1fichier.com": self.pp.parser1FICHIERCOM,
+            "1vid.xyz": self.pp.parserJWPLAYER,
             "222i8x.lol": self.pp.parserBYSE,
             "26efp.com": self.pp.parserJWPLAYER,
             "360.yandex.ru": self.pp.parserYANDEXDISK,
@@ -225,6 +226,7 @@ class urlparser:
             "bysekoze.com": self.pp.parserBYSE,
             "byselapuix.com": self.pp.parserBYSE,
             "byseqekaho.com": self.pp.parserBYSE,
+            "byseraguci.com": self.pp.parserBYSE,
             "bysesayeveum.com": self.pp.parserBYSE,
             "bysesukior.com": self.pp.parserBYSE,
             "bysetayico.com": self.pp.parserBYSE,
@@ -234,6 +236,7 @@ class urlparser:
             "bysezoxexe.com": self.pp.parserBYSE,
             # c
             "c1z39.com": self.pp.parserBYSE,
+            "callistanise.com": self.pp.parserJWPLAYER,
             "cavanhabg.com": self.pp.parserJWPLAYER,
             "cda.pl": self.pp.parserCDA,
             "cdn1.site": self.pp.parserJWPLAYER,
@@ -354,6 +357,7 @@ class urlparser:
             "hdbestvd.online": self.pp.parserJWPLAYER,
             "hexload.com": self.pp.parserHEXLOAD,
             "hexupload.net": self.pp.parserHEXLOAD,
+            "hgcloud.to": self.pp.parserJWPLAYER,
             "hglink.to": self.pp.parserJWPLAYER,
             "hgplaycdn.com": self.pp.parserJWPLAYER,
             "hlsflast.com": self.pp.parserJWPLAYER,
@@ -377,6 +381,7 @@ class urlparser:
             "kravaxxa.com": self.pp.parserJWPLAYER,
             # l
             "l1afav.net": self.pp.parserBYSE,
+            "lolololu.website": self.pp.parserJWPLAYER,
             "lulu.st": self.pp.parserJWPLAYER,
             "lulust.com": self.pp.parserJWPLAYER,
             "lulustream.com": self.pp.parserJWPLAYER,
@@ -424,14 +429,17 @@ class urlparser:
             "moflix.rpmplay.xyz": self.pp.parserSBS,
             "moflix.upns.xyz": self.pp.parserSBS,
             "moonmov.pro": self.pp.parserBYSE,
+            "morencius.com": self.pp.parserJWPLAYER,
             "movearnpre.com": self.pp.parserJWPLAYER,
             "moviesapi.club": self.pp.parserVIDSRC,
             "moviesapi.to": self.pp.parserVIDSRC,
             "mp4player.site": self.pp.parserSTREAMEMBED,
             "mp4plus.cyou": self.pp.parserJWPLAYER,
+            "mp4plus.org": self.pp.parserJWPLAYER,
             "mp4upload.com": self.pp.parserJWPLAYER,
             "mxdrop.sx": self.pp.parserJWPLAYER,
             "mxdrop.to": self.pp.parserJWPLAYER,
+            "mxdrop.top": self.pp.parserJWPLAYER,
             "mysportzfy.com": self.pp.parserJWPLAYER,
             "myvidplay.com": self.pp.parserDOOD,
             # n
@@ -482,6 +490,7 @@ class urlparser:
             "streamadblocker.xyz": self.pp.parserSTREAMTAPE,
             "streamable.com": self.pp.parserSTREAMABLE,
             "streamadblockplus.com": self.pp.parserSTREAMTAPE,
+            "streamcash.to": self.pp.parserSTREAMCASH,
             "streamhihi.com": self.pp.parserJWPLAYER,
             "streamhls.to": self.pp.parserJWPLAYER,
             "streamlyplayer.online": self.pp.parserBYSE,
@@ -517,6 +526,7 @@ class urlparser:
             "tapeblocker.com": self.pp.parserSTREAMTAPE,
             "tapewithadblock.org": self.pp.parserSTREAMTAPE,
             "tenstream.net": self.pp.parserJWPLAYER,
+            "tuktuk.upns.one": self.pp.parserSBS,
             "turboviplay.com": self.pp.parserJWPLAYER,
             "tusfiles.com": self.pp.parserUSERSCLOUDCOM,
             "tusfiles.net": self.pp.parserUSERSCLOUDCOM,
@@ -531,6 +541,7 @@ class urlparser:
             "uqload.com": self.pp.parserJWPLAYER,
             "uqload.cx": self.pp.parserJWPLAYER,
             "uqload.io": self.pp.parserJWPLAYER,
+            "uqload.net": self.pp.parserJWPLAYER,
             "uqload.vc": self.pp.parserJWPLAYER,
             "uqload.ws": self.pp.parserJWPLAYER,
             "uqloads.xyz": self.pp.parserJWPLAYER,
@@ -539,6 +550,8 @@ class urlparser:
             "v.turkvearab.com": self.pp.parserJWPLAYER,
             "veev.to": self.pp.parserVEEV,
             "vide0.net": self.pp.parserDOOD,
+            "vidhideplus.com": self.pp.parserJWPLAYER,
+            "vidoba.org": self.pp.parserJWPLAYER,
             "vidply.com": self.pp.parserDOOD,
             "vidcore.io": self.pp.parserVIDCORE,
             "vidcore.net": self.pp.parserVIDCORE,
@@ -552,6 +565,7 @@ class urlparser:
             "vidaraa.cc": self.pp.parserSTREAMUP,
             "vidarax.cc": self.pp.parserSTREAMUP,
             "vidavaca.net": self.pp.parserSTREAMUP,
+            "vidspeed.org": self.pp.parserJWPLAYER,
             "vidvara.biz": self.pp.parserSTREAMUP,
             "vidara.so": self.pp.parserSTREAMUP,
             "vidara.to": self.pp.parserSTREAMUP,
@@ -604,6 +618,7 @@ class urlparser:
             "vidup.to": self.pp.parserVIDCORE,
             "vixeo.io": self.pp.parserVIXEO,
             "vixsrc.to": self.pp.parserVIXSRC,
+            "vk.ru": self.pp.parserVK,
             "vsrc.su": self.pp.parserVIDSRC,
             "vsembed.ru": self.pp.parserVIDSRC,
             "vsembed.su": self.pp.parserVIDSRC,
@@ -2862,8 +2877,8 @@ class pageParser(CaptchaHelper):
         if "mxdrop" in baseUrl or "mixdro" in baseUrl or "mixdrp" in baseUrl or "m1xdrop" in baseUrl:
             baseUrl = baseUrl.replace(".co/", ".ag/").replace(".club/", ".ag/")
             baseUrl = "/".join(baseUrl.split("/")[:5]).replace("/f/", "/e/") if "/f/" in baseUrl else baseUrl
-        if "hglink.to" in baseUrl:
-            baseUrl = baseUrl.replace("hglink.to", "dumbalag.com")
+        if "hglink.to" in baseUrl or "hgcloud.to" in baseUrl:
+            baseUrl = baseUrl.replace("hglink.to", "hglamioz.com").replace("hgcloud.to", "hglamioz.com")
         if "cybervynx.com" in baseUrl:
             baseUrl = baseUrl.replace("cybervynx.com", "guxhag.com")
         if "savefiles.com/" in baseUrl:
@@ -3025,6 +3040,40 @@ class pageParser(CaptchaHelper):
             if url:
                 url = urlparser.decorateUrl(url, {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": host, "Origin": host[:-1]})
                 urltab.extend(getDirectM3U8Playlist(url, sortWithMaxBitrate=99999999))
+        return urltab
+
+    def parserSTREAMCASH(self, baseUrl):  # add 031026 - streamcash.to /watch/<id> (fenixsite)
+        printDBG("parserSTREAMCASH baseUrl[%s]" % baseUrl)
+        urltab = []
+        subTracks = []
+        host = urlparser.getDomain(baseUrl, False)
+        HTTP_HEADER = self.cm.getDefaultHeader()
+        HTTP_HEADER["Referer"] = strwithmeta(baseUrl).meta.get("Referer", host)
+        sts, data = self.cm.getPage(baseUrl, {"header": HTTP_HEADER})
+        if not sts:
+            return []
+        # window.__PCr = base64 JSON {"src": ".../index.m3u8", "subs": [{"src", "srclang", "label", "default"}], ...}
+        match = re.search(r"""window\.__PCr\s*=\s*['"]([A-Za-z0-9+/=]+)['"]""", data)
+        if not match:
+            return []
+        try:
+            cfg = json_loads(ensure_str(base64.b64decode(match.group(1))))
+        except Exception:
+            printExc()
+            return []
+        url = cfg.get("src", "")
+        if not url:
+            return []
+        url = urljoin(host, url)
+        # Serbian/Croatian/Bosnian first, then the default track (sometimes a mislabelled Serbian one)
+        for sub in sorted(cfg.get("subs", []) or [], key=lambda s: 0 if s.get("srclang", "") in ("rs", "sr", "hr", "bs") else (1 if s.get("default") else 2)):
+            src = sub.get("src", "")
+            if not src:
+                continue
+            lang = sub.get("srclang", "") or "und"
+            subTracks.append({"title": lang.upper() if lang != "und" else sub.get("label", ""), "url": urljoin(host, src), "lang": lang, "format": "vtt"})
+        url = urlparser.decorateUrl(url, {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": host, "Origin": host[:-1], "external_sub_tracks": subTracks})
+        urltab.extend(getDirectM3U8Playlist(url, checkContent=True, sortWithMaxBitrate=99999999))
         return urltab
 
     def parserVIDSONIC(self, baseUrl):
