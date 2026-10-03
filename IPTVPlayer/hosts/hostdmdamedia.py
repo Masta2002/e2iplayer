@@ -45,7 +45,7 @@ class Dmdamedia(GenericFolderWatchedScraperMixin, CBaseHostClass):
         self.MENU = [{"category": "list_items", "title": _("Movies") + " - Legnézettebb", "url": self.getFullUrl("filmek?orderby=legnezettebb"), "kind": "movie"},
                      {"category": "list_items", "title": _("Movies") + " - Legújabb", "url": self.getFullUrl("filmek?orderby=feltoltes"), "kind": "movie"},
                      {"category": "list_items", "title": _("Movies") + " - Legfrissebb", "url": self.getFullUrl("filmek?orderby=friss"), "kind": "movie"},
-                     {"category": "list_items", "title": _("Series") + " - Új részek", "url": self.getFullUrl("sorozatok?orderby=friss"), "kind": "series"},
+                     {"category": "list_items", "title": _("Series") + " - Legfrissebb", "url": self.getFullUrl("sorozatok?orderby=friss"), "kind": "series"},
                      {"category": "list_items", "title": _("Series") + " - Legnézettebb", "url": self.getFullUrl("sorozatok?orderby=legnezettebb"), "kind": "series"},
                      {"category": "list_items", "title": _("Series") + " - Legújabb", "url": self.getFullUrl("sorozatok?orderby=feltoltes"), "kind": "series"},
                      {"category": "list_cats", "title": _("Categories"), "url": self.MAIN_URL}] + self.searchItems()
@@ -155,7 +155,7 @@ class Dmdamedia(GenericFolderWatchedScraperMixin, CBaseHostClass):
             if rating:
                 desc.append("IMDb %s" % rating)
             params = dict(cItem)
-            params.pop("page", None)
+            params.pop("search_pattern", None)
             params.update({"good_for_fav": True, "url": url, "icon": icon, "desc": " | ".join(desc)})
             epMatch = EPISODE_RE.search(url)
             if epMatch:
@@ -193,7 +193,7 @@ class Dmdamedia(GenericFolderWatchedScraperMixin, CBaseHostClass):
             nextUrl = self.getFullUrl(nextPage.replace("&amp;", "&"), url)
             if nextUrl != url:
                 params = dict(cItem)
-                params.update({"good_for_fav": False, "title": _("Next page"), "url": nextUrl, "page": cItem.get("page", 1) + 1})
+                params.update({"good_for_fav": False, "title": _("Next page"), "url": nextUrl})
                 self.addDir(params)
 
     def listSeasons(self, cItem):

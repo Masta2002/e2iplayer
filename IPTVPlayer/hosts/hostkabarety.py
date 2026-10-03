@@ -9,17 +9,13 @@ import re
 import unicodedata
 
 from Plugins.Extensions.IPTVPlayer.components.ihost import CBaseHostClass, CHostBase
+from Plugins.Extensions.IPTVPlayer.libs.e2ijson import dumps as json_dumps
 from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT as _, SetIPTVPlayerLastHostError
 from Plugins.Extensions.IPTVPlayer.components.iptvconfigmenu import IsSidecarEnabled, IsMediaNamingNormalized
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc
 from Plugins.Extensions.IPTVPlayer.tools.iptvwatchedhelper import IPTVWatchedHelper
 from Plugins.Extensions.IPTVPlayer.tools.iptvwatchedfoldermixin import GenericFolderWatchedScraperMixin, GenericFolderWatchedHostMixin
 from Plugins.Extensions.IPTVPlayer.libs.urlmetahelper import buildSidecarFromItem, applySidecarToLinks, sidecarFromUrlMeta, decorateResolvedLinkItems
-
-try:
-    import json
-except Exception:
-    import simplejson as json
 
 
 def GetConfigList():
@@ -47,6 +43,9 @@ class Kabarety(GenericFolderWatchedScraperMixin, CBaseHostClass):
         self.MENU = [{'category': 'k_nos', 'title': 'Lista NOS (%s)' % _('Most watched'), 'url': self.getFullUrl('/nos')},
                      {'category': 'k_cabarets', 'title': _('Popular'), 'k_block': 'popular', 'url': self.getFullUrl('/kabarety/')},
                      {'category': 'k_cabarets', 'title': _('All'), 'k_block': 'all', 'url': self.getFullUrl('/kabarety/')}] + self.searchItems()
+
+        # cabaret page url -> the site's cabaret id for load.php
+        self.catCache = {}
 
         self.watchedHelper = IPTVWatchedHelper('kabarety')
         self.wfInitFolderCache()
@@ -160,21 +159,30 @@ class Kabarety(GenericFolderWatchedScraperMixin, CBaseHostClass):
         return ret
 
     def _loadSketches(self, cItem, typ, limit, count):
-        # the list is session based: the cabaret page has to be opened first and then be the Referer
-        sts, data = self.getPage(cItem['url'])
-        if not sts:
-            return None
-        cat = self.cm.ph.getSearchGroups(data, r'<div class="load"[^>]+?name="([^"]*)"')[0]
-        if not cat:
-            return None
+        # the list is session based: it needs the PHP session cookie and a site page as Referer. The
+        # cabaret page (it carries the cabaret id) is opened once; when the session has expired meanwhile
+        # (no list marker in the answer, an empty list still has it) the page is opened again
+        pageUrl = cItem['url']
         params = dict(self.defaultParams)
         params['header'] = dict(self.HEADER)
-        params['header'].update({'Referer': cItem['url'], 'X-Requested-With': 'XMLHttpRequest'})
-        url = self.getFullUrl('/index/exec/load.php?tod=skecze_lista&cat=%s&typ=%s&title=&sort=id&order=desc&limit=%d&count=%d' % (cat, typ, limit, count))
-        sts, data = self.getPage(url, params)
-        if not sts or 'div_szukaj_video' not in data:
-            return None
-        return data
+        params['header'].update({'Referer': pageUrl, 'X-Requested-With': 'XMLHttpRequest'})
+        cat = self.catCache.get(pageUrl, '')
+        for fromCache in (bool(cat), False):
+            if not fromCache:
+                sts, data = self.getPage(pageUrl)
+                if not sts:
+                    return None
+                cat = self.cm.ph.getSearchGroups(data, r'<div class="load"[^>]+?name="([^"]*)"')[0]
+                if not cat:
+                    return None
+                self.catCache[pageUrl] = cat
+            url = self.getFullUrl('/index/exec/load.php?tod=skecze_lista&cat=%s&typ=%s&title=&sort=id&order=desc&limit=%d&count=%d' % (cat, typ, limit, count))
+            sts, data = self.getPage(url, params)
+            if sts and 'div_szukaj_video' in data:
+                return data
+            if not fromCache:
+                break
+        return None
 
     ###################################################
     # watched flag
@@ -209,7 +217,7 @@ class Kabarety(GenericFolderWatchedScraperMixin, CBaseHostClass):
                 title = self._videoTitle(cabaret, re.sub(r'^.*?</b>\s*-?\s*', '', raw))
             pos = self.cm.ph.getSearchGroups(item, r'nos_pozycja_nr"><span>(\d+)<')[0]
             icon = self.cm.ph.getSearchGroups(item, r'<img src="([^"]+)" class="image_')[0]
-            desc = ('Lista NOS %s: #%s' % (week, pos)) if pos else ''
+            desc = ('Lista NOS%s: #%s' % ((' ' + week) if week else '', pos)) if pos else ''
             params = {'name': 'category', 'category': 'k_video', 'good_for_fav': True, 'title': title, 'url': self._absUrl(url),
                       'icon': self._absUrl(icon) if icon else '', 'desc': desc, 'k_cabaret': cabaret}
             self.addVideo(params)
@@ -413,7 +421,7 @@ class Kabarety(GenericFolderWatchedScraperMixin, CBaseHostClass):
 
     def getFavouriteData(self, cItem):
         try:
-            return json.dumps(dict((key, cItem[key]) for key in self.FAV_FIELDS if key in cItem))
+            return json_dumps(dict((key, cItem[key]) for key in self.FAV_FIELDS if key in cItem))
         except Exception:
             printExc()
         return CBaseHostClass.getFavouriteData(self, cItem)

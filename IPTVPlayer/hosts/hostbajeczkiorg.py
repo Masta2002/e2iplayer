@@ -5,19 +5,18 @@
 #   players are plain <iframe>s in the post (flyf.lat -> flyfile.app, cloud.strp2p.site, ebd.cda.pl)
 #   plus goodstream.vip, resolved here (base64 player config -> HLS);
 #   + watched flag / sidecar / name normalisation (SxxExx, "Title (Year)") / moviemeta INFO.
-import base64
-import json
 import re
 
 from Plugins.Extensions.IPTVPlayer.components.ihost import CBaseHostClass, CHostBase
 from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT as _, SetIPTVPlayerLastHostError
 from Plugins.Extensions.IPTVPlayer.components.iptvconfigmenu import IsSidecarEnabled, IsMediaNamingNormalized
+from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads
 from Plugins.Extensions.IPTVPlayer.libs.moviemeta import getMeta
 from Plugins.Extensions.IPTVPlayer.libs.urlmetahelper import buildSidecarFromItem, applySidecarToLinks, sidecarFromUrlMeta, decorateResolvedLinkItems
 from Plugins.Extensions.IPTVPlayer.libs.urlparserhelper import getDirectM3U8Playlist
 from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote_plus
 from Plugins.Extensions.IPTVPlayer.tools.iptvnaming import formatSxxExx
-from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc
+from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, b64Decode
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.tools.iptvwatchedhelper import IPTVWatchedHelper
 from Plugins.Extensions.IPTVPlayer.tools.iptvwatchedfoldermixin import GenericFolderWatchedScraperMixin, GenericFolderWatchedHostMixin
@@ -58,6 +57,7 @@ class BajeczkiOrg(GenericFolderWatchedScraperMixin, CBaseHostClass):
         self.MAIN_URL = gettytul()
         self.DEFAULT_ICON_URL = self.getFullUrl("/wp-content/uploads/2026/06/logo.png")
         self.allCats = []
+        self.postCache = ("", "")
 
         self.watchedHelper = IPTVWatchedHelper("bajeczkiorg")
         self.wfInitFolderCache()
@@ -86,6 +86,15 @@ class BajeczkiOrg(GenericFolderWatchedScraperMixin, CBaseHostClass):
         addParams["cloudflare_params"] = {"cookie_file": self.COOKIE_FILE, "User-Agent": self.HEADER.get("User-Agent")}
         return self.cm.getPageCFProtection(baseUrl, addParams, post_data)
 
+    def _getPostPage(self, url):
+        # INFO and the link list read the same post page - fetch it once
+        if self.postCache[0] == url:
+            return True, self.postCache[1]
+        sts, data = self.getPage(url)
+        if sts and data:
+            self.postCache = (url, data)
+        return sts, data
+
     def getFullIconUrl(self, url, currUrl=None):
         if DEFAULT_THUMB in url:
             return ""
@@ -104,7 +113,8 @@ class BajeczkiOrg(GenericFolderWatchedScraperMixin, CBaseHostClass):
 
     def _parseMovieTitle(self, raw):
         # "Psi Patrol: Film / Paw Patrol: The Movie [2021 PLDUB]", "Ratter (2015) Lektor PL" -> (title, year, lang)
-        year = self.cm.ph.getSearchGroups(raw, YEAR_TAG_RE.pattern)[0]
+        m = YEAR_TAG_RE.search(raw)
+        year = m.group(1) if m else ""
         low = raw.lower()
         lang = ""
         if "dub" in low:
@@ -137,10 +147,9 @@ class BajeczkiOrg(GenericFolderWatchedScraperMixin, CBaseHostClass):
                 raw = "%s (%s)" % (title, year) if year else title
         elif "/zwiastun/" not in url:
             show = self._showName(catName) if catName else ""
-            m = sxe
-            if m:
-                show = self._stripJunk(m.group(1)) or show
-                season, episode, epName = m.group(2), m.group(3), self._stripJunk(m.group(4))
+            if sxe:
+                show = self._stripJunk(sxe.group(1)) or show
+                season, episode, epName = sxe.group(2), sxe.group(3), self._stripJunk(sxe.group(4))
                 params.update({"season": season, "episode": episode})
                 if normalize:
                     raw = "%s - %s" % (show, formatSxxExx(season, episode))
@@ -158,7 +167,7 @@ class BajeczkiOrg(GenericFolderWatchedScraperMixin, CBaseHostClass):
     ###################################################
     def listMainMenu(self, cItem):
         menu = [{"category": "list_items", "title": _("Latest"), "url": self.getFullUrl("/?s=")},
-                {"category": "list_letters", "title": "Bajki i seriale", "url": self.getFullUrl("/all-categories/")},
+                {"category": "list_letters", "title": _("Cartoons and series"),"url": self.getFullUrl("/all-categories/")},
                 {"category": "list_items", "title": _("Movies"), "url": self.getFullUrl("/pelnometrazowe/")},
                 {"category": "list_items", "title": "%s (A-Z)" % _("Movies"), "url": self.getFullUrl("/pelnometrazowe/?orderby=name&order=asc")},
                 {"category": "list_genres", "title": _("Genres"), "url": self.getFullUrl("/pelnometrazowe/")}] + self.searchItems()
@@ -297,12 +306,13 @@ class BajeczkiOrg(GenericFolderWatchedScraperMixin, CBaseHostClass):
     def getLinksForVideo(self, cItem):
         printDBG("BajeczkiOrg.getLinksForVideo [%s]" % cItem["url"])
         urlTab = []
-        sts, data = self.getPage(cItem["url"])
+        sts, data = self._getPostPage(cItem["url"])
         if not sts:
             return []
         content = self._postContent(data)
         referer = cItem["url"]
         seen = set()
+        unsupported = []
         frames = re.findall(r'<iframe[^>]+?(?:data-src|src)="([^"]+)"', content, re.I)
         frames.extend(re.findall(r'<source[^>]+src="([^"]+)"', content, re.I))
         frames.extend(re.findall(r'(https?://(?:www\.)?(?:youtube\.com/watch\?v=|youtu\.be/)[^"\'<\s]+)', content))
@@ -332,12 +342,20 @@ class BajeczkiOrg(GenericFolderWatchedScraperMixin, CBaseHostClass):
             else:
                 name = self.up.getHostName(url, True).capitalize()
                 if self.up.checkHostSupport(url) != 1:
+                    # no resolver - the row could only fail on play
                     printDBG("BajeczkiOrg: unsupported hoster [%s]" % url)
+                    if host not in unsupported:
+                        unsupported.append(host)
+                    continue
             urlTab.append({"name": name, "url": strwithmeta(url, meta), "need_resolve": 1})
 
         if not urlTab:
-            # many older posts lost their player (removed embeds, commented-out dead hosters)
-            SetIPTVPlayerLastHostError(_("No player found for this title."))
+            if unsupported:
+                SetIPTVPlayerLastHostError(_("Only unsupported hosters available: %s") % ", ".join(unsupported))
+            else:
+                # many older posts lost their player (removed embeds, commented-out dead hosters)
+                SetIPTVPlayerLastHostError(_("No player found for this title."))
+            return []
         sidecarTxt = self.cleanHtmlStr(content) or cItem.get("desc", "")
         return applySidecarToLinks(urlTab, buildSidecarFromItem(cItem, IsSidecarEnabled(), sidecarTxt))
 
@@ -352,11 +370,11 @@ class BajeczkiOrg(GenericFolderWatchedScraperMixin, CBaseHostClass):
         if not cfg:
             return []
         try:
-            cfg = json.loads(base64.b64decode(cfg + "=" * (-len(cfg) % 4)).decode("utf-8"))
+            cfg = json_loads(b64Decode(cfg))
         except Exception:
             printExc()
             return []
-        src = cfg.get("src") or ""
+        src = (cfg.get("src") or "") if isinstance(cfg, dict) else ""
         if not self.cm.isValidUrl(src):
             return []
         origin = "https://%s" % self.up.getHostName(url)
@@ -387,7 +405,7 @@ class BajeczkiOrg(GenericFolderWatchedScraperMixin, CBaseHostClass):
         text = cItem.get("site_desc", "")
         other = {}
         if cItem.get("type") == "video" and cItem.get("url"):
-            sts, data = self.getPage(cItem["url"])
+            sts, data = self._getPostPage(cItem["url"])
             if sts:
                 text = self.cleanHtmlStr(self._postContent(data)) or text
                 tags = self.cm.ph.getDataBeetwenNodes(data, ("<div", ">", "entry-tags"), ("</div", ">"), False)[1]

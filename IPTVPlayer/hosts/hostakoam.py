@@ -11,8 +11,6 @@
 #   - watched flag (stable movie:/series:/episode:/shows: ids), downloaded flag (canonical
 #     percent-encoded page url), name normalisation ("Title (Year)", "Show - SxxExx"),
 #     sidecar, INFO via moviemeta + the site's own story/poster/fields, favourites
-#   - removed: colour codes in titles, f-strings, time.sleep retry loop, the three-step
-#     quality/temp_page/explore_item menu chain
 import re
 
 from Plugins.Extensions.IPTVPlayer.components.ihost import CBaseHostClass, CHostBase
@@ -63,7 +61,7 @@ class Akoam(GenericFolderWatchedScraperMixin, CBaseHostClass):
         self.MENU = [
             {"category": "ak_section", "title": _("Movies"), "url": self.getFullUrl("movies")},
             {"category": "ak_section", "title": _("Series"), "url": self.getFullUrl("series")},
-            {"category": "ak_section", "title": _("TV shows"), "url": self.getFullUrl("shows")},
+            {"category": "ak_section", "title": _("TV Shows"), "url": self.getFullUrl("shows")},
             {"category": "list_items", "title": _("Recently added"), "url": self.getFullUrl("recent")},
         ] + self.searchItems()
         self.watchedHelper = IPTVWatchedHelper("akoam")
@@ -206,7 +204,8 @@ class Akoam(GenericFolderWatchedScraperMixin, CBaseHostClass):
         nextPage = self.cm.ph.getSearchGroups(data, r'<a[^>]+href="([^"]+)"[^>]*rel="next"')[0]
         if nextPage and seen:
             params = dict(cItem)
-            params.update({"good_for_fav": False, "title": _("Next page"), "url": self._canonUrl(nextPage)})
+            # list_items, not the copied "search": that would rebuild page 1 from the search pattern
+            params.update({"good_for_fav": False, "category": "list_items", "title": _("Next page"), "url": self._canonUrl(nextPage)})
             self.addDir(params)
 
     def listEpisodes(self, cItem):
@@ -295,7 +294,7 @@ class Akoam(GenericFolderWatchedScraperMixin, CBaseHostClass):
                 url = self.cm.ph.getSearchGroups(src, r'src="([^"]+)"')[0].strip()
                 if not self.cm.isValidUrl(url):
                     continue
-                key = self.cm.ph.getSearchGroups(src, r'size="(\d+)"')[0] or size or str(len(sources))
+                key = self.cm.ph.getSearchGroups(src, r'size="(\d+)"')[0] or size or "#%d" % (len(sources) + 1)
                 if key not in sources:
                     sources[key] = url
             for trk in re.findall(r"<track[^>]+>", video):
@@ -310,7 +309,7 @@ class Akoam(GenericFolderWatchedScraperMixin, CBaseHostClass):
         if subtitles:
             meta["external_sub_tracks"] = subtitles
         for key in sorted(sources, key=lambda k: int(k) if k.isdigit() else 0, reverse=True):
-            name = ("Akwam %sp" % key) if key.isdigit() else "Akwam"
+            name = ("Akwam %sp" % key) if key.isdigit() else ("Akwam %s" % key)
             urltab.append({"name": name, "url": strwithmeta(sources[key], dict(meta)), "need_resolve": 0})
         return applySidecarToLinks(urltab, buildSidecarFromItem(cItem, IsSidecarEnabled(), story))
 
@@ -343,9 +342,6 @@ class Akoam(GenericFolderWatchedScraperMixin, CBaseHostClass):
             genres = [self.cleanHtmlStr(g) for g in re.findall(r'<a href="[^"]+/(?:movies|series|shows)\?category=\d+"[^>]*>([^<]+)<', data)]
             if genres:
                 info["genres"] = ", ".join(genres[:6])
-        if cItem.get("s_episode"):
-            info["seasons"] = str(cItem.get("s_season", ""))
-            info["episodes"] = str(cItem["s_episode"])
         info.update(meta.get("info", {}))
         plot = meta.get("plot", "")
         text = plot or story or cItem.get("desc", "")

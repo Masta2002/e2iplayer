@@ -10,6 +10,7 @@ import re
 from Plugins.Extensions.IPTVPlayer.components.ihost import CBaseHostClass, CHostBase
 from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT as _, SetIPTVPlayerLastHostError
 from Plugins.Extensions.IPTVPlayer.components.iptvconfigmenu import IsSidecarEnabled, IsMediaNamingNormalized
+from Plugins.Extensions.IPTVPlayer.libs.e2ijson import dumps as json_dumps
 from Plugins.Extensions.IPTVPlayer.libs.moviemeta import getMeta
 from Plugins.Extensions.IPTVPlayer.libs.urlmetahelper import buildSidecarFromItem, applySidecarToLinks, sidecarFromUrlMeta, decorateResolvedLinkItems
 from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import ensure_str
@@ -19,11 +20,6 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.tools.iptvwatchedhelper import IPTVWatchedHelper
 from Plugins.Extensions.IPTVPlayer.tools.iptvwatchedfoldermixin import GenericFolderWatchedScraperMixin, GenericFolderWatchedHostMixin
-
-try:
-    import json
-except Exception:
-    import simplejson as json
 
 
 def GetConfigList():
@@ -113,7 +109,7 @@ class ShahiidAnime(GenericFolderWatchedScraperMixin, CBaseHostClass):
         # only what identifies the row: the same title comes with other desc / titles from the different lists
         try:
             if cItem.get("kind"):
-                return json.dumps(dict((key, cItem[key]) for key in self.FAV_FIELDS if key in cItem))
+                return json_dumps(dict((key, cItem[key]) for key in self.FAV_FIELDS if key in cItem))
         except Exception:
             printExc()
         return CBaseHostClass.getFavouriteData(self, cItem)
@@ -249,7 +245,7 @@ class ShahiidAnime(GenericFolderWatchedScraperMixin, CBaseHostClass):
                 self.addDir(params)
             elif utype in SEASON_TYPES:
                 params.update({"category": "list_episodes", "kind": "season", "meta_type": "tv", "season": self._seasonFromLabel(raw)[0],
-                               "s_title": self._showName(raw)[1], "title": self._titleFor(raw, url, "season")})
+                               "s_title": params["meta_title"], "title": self._titleFor(raw, url, "season")})
                 self.addDir(params)
             elif utype in MOVIE_TYPES:
                 params.update({"category": "video", "kind": "movie", "meta_type": "movie", "meta_title": self._latinTitle(raw),
@@ -330,9 +326,11 @@ class ShahiidAnime(GenericFolderWatchedScraperMixin, CBaseHostClass):
                 if not sts:
                     return
         cards = []
+        seen = set()
         for item in re.findall(r'<div class="one-poster[^"]*">(.*?)</h2>', data, re.DOTALL):
             url = self.getFullUrl(self.cm.ph.getSearchGroups(item, r'<h2><a href="([^"]+)"')[0])
-            if url and self._urlType(url) in SEASON_TYPES and url not in [x[0] for x in cards]:
+            if url and self._urlType(url) in SEASON_TYPES and url not in seen:
+                seen.add(url)
                 cards.append((url, item))
         if len(cards) == 1:
             # a single season: its episodes right away
@@ -440,6 +438,8 @@ class ShahiidAnime(GenericFolderWatchedScraperMixin, CBaseHostClass):
                 continue
             name = self.cleanHtmlStr(label) or self.up.getHostName(url)
             urltab.append({"name": name, "url": strwithmeta(url, {"Referer": self.MAIN_URL}), "need_resolve": 1})
+        if not urltab:
+            SetIPTVPlayerLastHostError(_("No supported video hoster found."))
         return applySidecarToLinks(urltab, buildSidecarFromItem(cItem, IsSidecarEnabled(), sidecarTxt))
 
     def getVideoLinks(self, videoUrl):

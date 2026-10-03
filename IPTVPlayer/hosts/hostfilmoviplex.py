@@ -207,7 +207,6 @@ class Filmoviplex(GenericFolderWatchedScraperMixin, CBaseHostClass):
             else:
                 title = label
             params = dict(cItem)
-            params.pop("page", None)
             params.update({"good_for_fav": True, "title": title, "url": url, "icon": icon,
                            "desc": "%s%s" % (_("Series") if isSeries else _("Movie"), (" | %s" % year) if year else ""),
                            "meta_type": "tv" if isSeries else "movie", "meta_title": self._metaTitle(base), "meta_year": year})
@@ -222,7 +221,7 @@ class Filmoviplex(GenericFolderWatchedScraperMixin, CBaseHostClass):
         if nextPage and self.currList:
             params = dict(cItem)
             params.update({"good_for_fav": False, "category": "list_items", "title": _("Next page"),
-                           "url": self.getFullUrl(nextPage.replace("&amp;", "&")), "page": cItem.get("page", 1) + 1})
+                           "url": self.getFullUrl(nextPage.replace("&amp;", "&"))})
             self.addDir(params)
 
     def _getEpisodes(self, data):

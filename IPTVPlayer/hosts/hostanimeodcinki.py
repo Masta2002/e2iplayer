@@ -54,6 +54,8 @@ class AnimeOdcinkiPL(GenericFolderWatchedScraperMixin, CBaseHostClass):
     HOST_ALIASES = {"vidmoly.org": "vidmoly.to", "lulust.com": "lulustream.com", "uqload.vc": "uqload.com"}
 
     LATEST_LIMIT = 24
+    # a film page with up to this many episodes is one film in parts (one link list), more is a collection (folder)
+    MAX_FILM_PARTS = 3
 
     def __init__(self):
         CBaseHostClass.__init__(self, {"history": "AnimeOdcinki.pl", "cookie": "animeodcinkipl.cookie"})
@@ -191,7 +193,7 @@ class AnimeOdcinkiPL(GenericFolderWatchedScraperMixin, CBaseHostClass):
                     continue
                 catalog.append({"url": url, "t": title, "l": ensure_str(item.get("l", "") or "#"), "img": ensure_str(item.get("img", "") or ""),
                                 "y": ensure_str(item.get("y", "") or ""), "mv": item.get("mv", 0) == 1, "air": item.get("air", 0) == 1,
-                                "ep": item.get("ep", 0), "rt": ensure_str(item.get("rt", "") or "")})
+                                "ep": int(item.get("ep", 0) or 0), "rt": ensure_str(item.get("rt", "") or "")})
             except Exception:
                 printExc()
         catalog.sort(key=lambda x: x["t"].lower())
@@ -202,7 +204,7 @@ class AnimeOdcinkiPL(GenericFolderWatchedScraperMixin, CBaseHostClass):
         desc = []
         if item["y"]:
             desc.append("%s: %s" % (_("Year"), item["y"]))
-        if item["ep"] and not item["mv"]:
+        if item["ep"] > 1 or (item["ep"] and not item["mv"]):
             desc.append("%s: %s" % (_("Episodes"), item["ep"]))
         if item["rt"] and item["rt"] not in ("0", "0.00"):
             desc.append("%s: %s/10" % (_("Rating"), item["rt"]))
@@ -237,7 +239,8 @@ class AnimeOdcinkiPL(GenericFolderWatchedScraperMixin, CBaseHostClass):
                 continue
             if letter is not None and item["l"] != letter:
                 continue
-            self._addSeries(self._seriesParams(item["url"], item["t"], self._icon(item["img"]), item["y"], self._catalogDesc(item), item["mv"]))
+            isFilm = item["mv"] and item["ep"] <= self.MAX_FILM_PARTS
+            self._addSeries(self._seriesParams(item["url"], item["t"], self._icon(item["img"]), item["y"], self._catalogDesc(item), isFilm))
 
     ###################################################
     # lists
@@ -265,9 +268,7 @@ class AnimeOdcinkiPL(GenericFolderWatchedScraperMixin, CBaseHostClass):
             icon = self._icon(self.cm.ph.getSearchGroups(body, r'src="([^"]+)"')[0])
             epNum = self.cm.ph.getSearchGroups(url, r"/anime/[^/]+/(\d+)/?$")[0] or self.cm.ph.getSearchGroups(badge, r"(\d+)")[0]
             seriesUrl = self._seriesUrl(url)
-            if fmt in ("MOVIE", "FILM") and seriesUrl != url:
-                if seriesUrl in seen:
-                    continue
+            if fmt in ("MOVIE", "FILM"):
                 params = self._seriesParams(seriesUrl, sTitle, icon, "", badge, True)
             else:
                 params = {"good_for_fav": True, "category": "episode", "url": url, "s_title": sTitle, "icon": icon,
@@ -481,13 +482,13 @@ class AnimeOdcinkiPL(GenericFolderWatchedScraperMixin, CBaseHostClass):
                 SetIPTVPlayerLastHostError(_("anime-odcinki.pl shows this title only to logged-in users."))
                 return []
             sidecarTxt = series["desc"] or sidecarTxt
-            episodes = series["episodes"][:3]
+            episodes = series["episodes"][:self.MAX_FILM_PARTS]
             for ep in episodes:
                 urltab.extend(self._getEpisodeLinks(ep["url"], ep["label"] if len(episodes) > 1 else ""))
         else:
             urltab = self._getEpisodeLinks(url)
         if not urltab:
-            SetIPTVPlayerLastHostError(_("No supported video hoster found for this episode."))
+            SetIPTVPlayerLastHostError(_("No supported video hoster found."))
         return applySidecarToLinks(urltab, buildSidecarFromItem(cItem, IsSidecarEnabled(), sidecarTxt))
 
     def getVideoLinks(self, videoUrl):

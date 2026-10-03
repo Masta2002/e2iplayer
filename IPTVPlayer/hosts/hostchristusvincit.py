@@ -69,7 +69,6 @@ TITLES_MAP = {
     'intronizacja': 'Intronizacja-może się zegną',
     'quito_nowe': 'Objawienia Matki Bożej z Quito',
     'bogmowi': 'Bóg mówi do swego kapłana',
-    'kazanieslowa1': 'Słowa ks.P.Natanka do ks.kard.S.Dziwisza',
     'rekolekcje': 'Rekolekcje o Mszy św.',
     'glebiamodlitwy': 'Głębia modlitwy Ojcze nasz',
     'tatojestem': 'Tato jestem',
@@ -82,11 +81,7 @@ TITLES_MAP = {
     'tajemnice_glowny': 'Tajemnica różańca świętego',
     'bog_umacnia': 'Bóg umacnia',
     'bajka_sprawozdanie_komisarzy': 'Bajka sprawozdanie komisarzy',
-    'dlaczego_rok_1960': 'Dlaczego rok 1960? Żądania Matki Bożej Fatimskiej',
-    'Polsko_Bog_jeszcze_czeka_na_Ciebie': 'Polsko, Bóg jeszcze czeka na Ciebie',
     'istota_ojcostwa_boga': 'Istota Ojcostwa Boga',
-    'polsko_ciebie_maryja_uratuje': 'Polsko,Ciebie tylko Maryja uratuje',
-    'katechezy_boga': 'Katechezy Boga Ojca',
     'potega_slowa': 'Potęga Słowa Bożego',
     'rozwazania_drogi_krzyzowej': 'Rozważania drogi krzyżowej',
     'uczynmnieniewolnikiemtwojejmilosci': 'Uczyń Mnie niewolnikiem Twojej miłości',
@@ -95,27 +90,15 @@ TITLES_MAP = {
     'kazaniapogrzebowe': 'Kazania pogrzebowe',
     'czysciec': 'Tajemnica czyśćca',
     'cierpienieboga': 'Cierpienie Boga',
-    'czynie': 'Czynię nieprzyjaźń między żywiołami',
     'swiatduchaiswiatciala': 'Świat ducha i świat ciała',
-    'medalik_benedykta': 'Medalik św. Benedykta',
     'triduum2012': 'Święte Triduum',
-    'grzechy': 'Cztery grzechy główne ks. Piotra Natanka',
     'plomien': 'Kościół płonie',
-    'pokuta': 'Sakrament pokuty - niezmierzona Miłość Boga',
-    'droga2': 'Droga Czasów Ostatecznych',
     'niebianskie': 'Bóg powala z nóg - katechezy niebiańskie',
-    'objawienia': 'Objawienia w Montichiari - Godzina Łaski',
     'zertka': 'Polacy, Bóg chce się podeprzeć o Waszą ofiarę',
     'krol_b': 'Polsko, oto Król nadchodzi!',
     'kaplani1': 'Kapłani Chrystusowi czemu śpicie?',
     'polska1': 'Kocham Polskę',
-    'modernizm': 'Rozsadzenie Kościoła od wewnątrz',
-    'msza_sw': 'O Mszy Świętej',
     'encykliki': 'Encykliki papieskie',
-    'kaplan': 'Tylko kapłan katolicki uratuje świat',
-    'dollar_s': 'Lucyferyczny plan zniszczenia Kościoła Świętego',
-    'list_kaplani': 'List Otwarty do Kapłanów Kościoła Katolickiego',
-    'gietrzwald': 'Katechezy gietrzwałdzkie',
     'kongresmaryjny': 'Kongres Maryjny',
     'czestochowa_kategoria': 'Pielgrzymki do Częstochowy',
     'czest102015': 'Częstochowa 2015',
@@ -168,31 +151,20 @@ TITLES_MAP = {
     'kazania_nabozenstwa_patriotyczne': 'Kazania i nabożeństwa patriotyczne',
     'w_obronie_garabandal': 'W obronie Garabandal',
     'nabozenstwouzdrawianiaiuwalniania': 'Nabożeństwa uzdrawiania i uwalniania',
-    'tajemnicamszywgojcapio': 'Tajemnica Mszy Św. wg św. Ojca Pio',
     '25lecie_pustelni': '25-lecie Pustelni',
     'ratujcie_dusze': 'Ratujcie dusze',
-    'bog_trwa_zawsze': 'Bóg trwa zawsze. Czas który jest przeminie',
     'quovadis': 'Quo Vadis',
     'bitwa_pod_wiedniem': 'Bitwa pod Wiedniem',
-    'detronizacjakrola': 'Detronizacja Króla. Oni Mnie nie chcą',
     'kosciele': 'Kościele obudź się!',
-    'czestochowa06102012': 'Częstochowa - 06.10.2012r Rok Wiary',
     'bruksela': 'Bruksela - współczesny Jeroboam',
     'wykrot': 'Słowa do pielgrzymów z Wykrotu',
     'galeria_bobola_prawy': 'Rotunda św.Boboli',
-    'kimnaprawdejesteskaplanie': 'Kim naprawdę jesteś kapłanie?',
     'objawienia_prywatne': 'Objawienia prywatne',
     'przebaczenie': 'O naturze przebaczenia',
     'ktokrolem': 'Kogo wybierzemy Królem - 01.04.2012r.',
     'droga': 'Droga którą idę, jest...',
-    'swjan': 'Wspomnienie św. Jana Ewangelisty',
-    'przyspiesze': 'Przyśpieszę Dzień Mojego Przyjścia',
-    'hold1': 'Rocznica Hołdu Ruskiego - Msza święta z 5.11.2011r.',
-    'uwiedzony': 'Uwiedzony świat i ludzkość - kazanie z 2 października 2011r.',
     'oni_nie_zrobia': 'Oni nie zrobią Intronizacji',
-    'heretyk': 'Prawdziwe oblicze HERETYKÓW i SEKCIARZY w Kościele',
     'baal': "Wzywam proroków Baal'a na konfrontację",
-    'natanek1': 'ks.Natanek nieposłuszny?',
     'katechezy': 'Katechezy czasów ostatecznych',
     'ogloszenia_biezace': 'Ogłoszenia bieżące',
     'slowodorycerzy1': 'Pilne! Słowa do Rycerzy Chrystusa Króla',
@@ -221,7 +193,6 @@ TITLES_MAP = {
     'bogojciec2015': 'Uroczystość Boga Ojca 2015',
     'bogojciec2014': 'Uroczystość Boga Ojca 2014',
     'ojcostwoboga2014': 'Ojcostwo Boga 2014',
-    'boga_ojca_04082013': 'Uroczystość Boga Ojca 2013',
     'bogaojca2012': 'Uroczystość Boga Ojca 2012',
     '20110807': 'Uroczystość Boga Ojca 2011',
     'milosc_boga': 'Miłość Boga',
@@ -247,6 +218,7 @@ TITLES_MAP = {
     'chrystuskrol2018': 'Uroczystość Jezusa Chrystusa Króla Polski 2018',
     'podmianka': 'Podmianka - Atrapa Kościoła',
 }
+TITLES_MAP_LOWER = dict((key.lower(), value) for key, value in TITLES_MAP.items())
 
 
 def _fixRun(m):
@@ -305,7 +277,8 @@ class Christusvincit(GenericFolderWatchedScraperMixin, CBaseHostClass):
                 return ''
             category = cItem.get('category', '')
             url = str(cItem.get('url', '') or '').strip()
-            if url and category in ('list_page', 'vimeo_list') and not cItem.get('page'):
+            # page 2+ of a Vimeo list keys like page 1, so its clips propagate to the same folder
+            if url and category in ('list_page', 'vimeo_list'):
                 return 'folder:%s' % self.wfNormalizeUrlKey(url)
         except Exception:
             printExc()
@@ -363,11 +336,8 @@ class Christusvincit(GenericFolderWatchedScraperMixin, CBaseHostClass):
 
     def imageTitle(self, icon):
         base = icon.rsplit('/', 1)[-1].rsplit('.', 1)[0]
-        if base in TITLES_MAP:
-            return TITLES_MAP[base]
-        for key, value in TITLES_MAP.items():
-            if key.lower() == base.lower():
-                return value
+        if base.lower() in TITLES_MAP_LOWER:
+            return TITLES_MAP_LOWER[base.lower()]
         base = re.sub(r'[_\-]+', ' ', base).strip()
         return base[:1].upper() + base[1:] if base else ''
 
@@ -652,8 +622,8 @@ class Christusvincit(GenericFolderWatchedScraperMixin, CBaseHostClass):
                            'icon': icon, 'duration': duration, 'plays': clip.get('plays', ''), 'playlist': plTitle,
                            'is_live': bool(clip.get('is_live')), 'desc': ' | '.join([d for d in desc if d])})
             self.addVideo(params)
-        if not clips and listType != 'event':
-            SetIPTVPlayerLastHostError(_("This Vimeo playlist is empty."))
+        if not clips:
+            SetIPTVPlayerLastHostError(_("There is no live transmission at the moment.") if listType == 'event' else _("This Vimeo playlist is empty."))
         if len(clips) > start + PER_PAGE:
             params = dict(cItem)
             params.update({'good_for_fav': False, 'title': _('Next page'), 'page': page + 1,
@@ -722,10 +692,9 @@ class Christusvincit(GenericFolderWatchedScraperMixin, CBaseHostClass):
     def getLinksForVideo(self, cItem):
         printDBG("Christusvincit.getLinksForVideo [%s]" % cItem.get('url'))
         urlsTab = []
-        sidecarTxt = cItem.get('desc', '')
         if cItem.get('yt_id'):
             urlsTab.append({'name': 'YouTube', 'url': cItem['url'], 'need_resolve': 1})
-            return applySidecarToLinks(urlsTab, buildSidecarFromItem(cItem, IsSidecarEnabled(), sidecarTxt))
+            return applySidecarToLinks(urlsTab, buildSidecarFromItem(cItem, IsSidecarEnabled()))
 
         configUrl = self.getVimeoConfigUrl(cItem)
         if not configUrl:
@@ -757,7 +726,7 @@ class Christusvincit(GenericFolderWatchedScraperMixin, CBaseHostClass):
             item['name'] = 'Vimeo %s' % item.get('name', '')
             item['need_resolve'] = 0
             urlsTab.append(item)
-        return applySidecarToLinks(urlsTab, buildSidecarFromItem(cItem, IsSidecarEnabled(), sidecarTxt))
+        return applySidecarToLinks(urlsTab, buildSidecarFromItem(cItem, IsSidecarEnabled()))
 
     def getVideoLinks(self, videoUrl):
         printDBG("Christusvincit.getVideoLinks [%s]" % videoUrl)
@@ -785,7 +754,12 @@ class Christusvincit(GenericFolderWatchedScraperMixin, CBaseHostClass):
                     body = re.sub(r'(?is)<(script|style|iframe)[^>]*>.*?</\1>', ' ', body)
                     body = re.sub(r'(?i)<br\s*/?>|</p>|</div>|</tr>', '[/br]', body)
                     lines = [self.cleanHtmlStr(line) for line in body.split('[/br]')]
-                    text = '\n'.join([line for line in lines if line])[:3000]
+                    text = '\n'.join([line for line in lines if line])
+                    if isPY2():
+                        # py2 byte str: cut on characters, not inside a UTF-8 sequence
+                        text = text.decode('utf-8', 'ignore')[:3000].encode('utf-8')
+                    else:
+                        text = text[:3000]
                     img = self.cm.ph.getSearchGroups(center[0][1], r'''<img[^>]+?src=['"]([^'"]+)['"]''')[0]
                     if img and (not icon or icon == self.DEFAULT_ICON_URL):
                         icon = self.getFullUrl(img)

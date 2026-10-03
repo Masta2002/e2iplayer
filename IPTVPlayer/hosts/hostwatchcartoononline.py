@@ -14,6 +14,7 @@ from Plugins.Extensions.IPTVPlayer.components.iptvconfigmenu import IsSidecarEna
 from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads, dumps as json_dumps
 from Plugins.Extensions.IPTVPlayer.libs.moviemeta import getMeta
 from Plugins.Extensions.IPTVPlayer.libs.urlmetahelper import buildSidecarFromItem, applySidecarToLinks, sidecarFromUrlMeta, decorateResolvedLinkItems
+from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import ensure_str
 from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote, urllib_quote_plus
 from Plugins.Extensions.IPTVPlayer.tools.iptvnaming import formatSxxExx
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc
@@ -41,6 +42,12 @@ def gettytul():
 EPISODE_RE = re.compile(r'^(.*?)\s+(?:Season\s+(\d+)\s+)?Episode\s+(\d+(?:\.\d+)?)\b\s*(.*)$', re.I)
 LANG_SUFFIX_RE = re.compile(r'\s*\(?\bEnglish\s+(?:Dubbed|Subbed|Sub|Dub)\b\)?\s*$', re.I)
 CHUNK_SIZE = 100
+
+
+def _str(value):
+    # json values as native str on py2 too (unicode -> utf-8; str() would fail on non-ASCII)
+    value = ensure_str(value)
+    return value if isinstance(value, str) else str(value)
 
 
 class WatchCartoonOnline(GenericFolderWatchedScraperMixin, CBaseHostClass):
@@ -159,8 +166,8 @@ class WatchCartoonOnline(GenericFolderWatchedScraperMixin, CBaseHostClass):
         if m:
             try:
                 for entry in json_loads(m.group(1)):
-                    if isinstance(entry, list) and len(entry) >= 3 and str(entry[1]).strip() and str(entry[2]).strip():
-                        ret.append({'label': str(entry[0]), 'termid': str(entry[1]).strip(), 'embed': str(entry[2]).strip()})
+                    if isinstance(entry, list) and len(entry) >= 3 and _str(entry[1]).strip() and _str(entry[2]).strip():
+                        ret.append({'label': _str(entry[0]), 'termid': _str(entry[1]).strip(), 'embed': _str(entry[2]).strip()})
             except Exception:
                 printExc()
         if not ret:
@@ -177,7 +184,8 @@ class WatchCartoonOnline(GenericFolderWatchedScraperMixin, CBaseHostClass):
 
     def _infoField(self, data, label):
         # raw text of "<span class="text-orange">Label:</span> value" up to the next list entry
-        raw = self.cm.ph.getSearchGroups(data, r'<span class="text-orange">\s*%s:?\s*</span>(.*?)(?:</li>|<li)' % re.escape(label), 1, True)[0]
+        # (?s): Studio and Genre spread their values over several lines
+        raw = self.cm.ph.getSearchGroups(data, r'(?s)<span class="text-orange">\s*%s:?\s*</span>(.*?)(?:</li>|<li)' % re.escape(label), 1, True)[0]
         raw = re.sub(r'<[^>]+>', '  ', raw)
         return [self.cleanHtmlStr(x) for x in re.split(r'\s{2,}', raw) if self.cleanHtmlStr(x)]
 
@@ -294,12 +302,12 @@ class WatchCartoonOnline(GenericFolderWatchedScraperMixin, CBaseHostClass):
 
     def listGenre(self, cItem):
         printDBG('WatchCartoonOnline.listGenre [%s]' % cItem['url'])
-        items = sorted(self._getSeriesIndex(cItem['url']), key=lambda x: x['title'].lower())
+        items = self._getSeriesIndex(cItem['url'])
         if len(items) > 300:
             # the big genres hold thousands of titles - split them A-Z like the full lists
             self.listABC(cItem)
             return
-        for item in items:
+        for item in sorted(items, key=lambda x: x['title'].lower()):
             self._addSeries(cItem, item['id'], item['title'])
 
     def listSeries(self, cItem):
@@ -344,11 +352,14 @@ class WatchCartoonOnline(GenericFolderWatchedScraperMixin, CBaseHostClass):
                 groups[gkey] = []
                 groupOrder.append(gkey)
             groups[gkey].append(entry)
-        firstSeen = list(groupOrder)
+        # other shows in site order, every show's seasons in number order
+        showFirst = {}
+        for gkey in groupOrder:
+            showFirst.setdefault(gkey.split('|', 1)[0], len(showFirst))
 
         def _sortGroup(gkey):
             showKey, season = gkey.split('|', 1)
-            return (gkey == 'other|', showKey != mainKey, firstSeen.index(gkey) if showKey != mainKey else 0, int(season or 0))
+            return (gkey == 'other|', showKey != mainKey, showFirst[showKey], int(season or 0))
         groupOrder.sort(key=_sortGroup)
 
         wanted = cItem.get('grp', '')
@@ -433,8 +444,8 @@ class WatchCartoonOnline(GenericFolderWatchedScraperMixin, CBaseHostClass):
                 desc.append('%s/10' % item.get('rating'))
             desc = ' | '.join(desc)
             if item.get('short_description'):
-                desc += '[/br]' + self.cleanHtmlStr(str(item.get('short_description')))
-            self._addSeries(cItem, str(item.get('url', '')), str(item.get('title', '')), desc, year)
+                desc += '[/br]' + self.cleanHtmlStr(_str(item.get('short_description')))
+            self._addSeries(cItem, _str(item.get('url', '')), _str(item.get('title', '')), desc, year)
 
     ###################################################
     # links
