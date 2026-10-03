@@ -16,7 +16,6 @@
   "zerioncc",
   "guardaserie",
   "retroflix",
-  "egybest",
   "filmpalast",
   "serienstreamto",
   "hdfilmetv",
@@ -43,20 +42,52 @@
   "appletrailers",
   "cineb",
   "sevenreels",
-  "moviebox"
+  "moviebox",
+  "akoam",
+  "filmoviplex",
+  "dmdamedia",
+  "shoofmax",
+  "taxielcima",
+  "fenixsite",
+  "goojara",
+  "lookmovie",
+  "noxx",
+  "virpe",
+  "dramaqueen",
+  "uaserials",
+  "eneyida",
+  "ninateka",
+  "drdk"
  ],
  "cartoonsandanime": [
   "aniworld",
   "9anime",
   "kissanimeto",
-  "otakufr"
+  "otakufr",
+  "animeodcinki",
+  "shahiidanimenet",
+  "bajeczkiorg",
+  "watchcartoononline",
+  "stardima",
+  "hianime"
  ],
  "sport": [
   "webstream",
   "footyroom",
   "goals",
   "basketballvideocom",
-  "eurosportplayer"
+  "eurosportplayer",
+  "allgoals",
+  "nflvideo",
+  "watchwrestlinguno",
+  "sportdeutschland",
+  "laczynaspilka",
+  "futsalekstraklasa",
+  "pzpnpluspl",
+  "meczykipl",
+  "mlblive",
+  "fullraces",
+  "pinkbike"
  ],
  "live": [
   "webstream",
@@ -65,19 +96,46 @@
   "dailymotion",
   "twitchtv",
   "eurosportplayer",
-  "ritsatv"
+  "ritsatv",
+  "aljazeera",
+  "asharq",
+  "svtplayse",
+  "vavooto",
+  "nasaplus",
+  "wpolscepl",
+  "tvrepublika",
+  "tbngopl",
+  "pzpnpluspl",
+  "drdk",
+  "xtream",
+  "alarabiya"
  ],
  "documentary": [
   "dokumentalnenet",
   "dailymotion",
   "orthobulletscom",
-  "vumedicom"
+  "vumedicom",
+  "aljazeera",
+  "arabsciences",
+  "asharq",
+  "ted",
+  "documentaryarea",
+  "nasaplus",
+  "ororotv",
+  "ninateka",
+  "drdk",
+  "ihavenotv",
+  "alarabiya"
  ],
  "science": [
   "dailymotion",
   "dokumentalnenet",
   "orthobulletscom",
-  "vumedicom"
+  "vumedicom",
+  "arabsciences",
+  "ted",
+  "nasaplus",
+  "ihavenotv"
  ],
  "polish": [
   "youtube",
@@ -103,7 +161,29 @@
   "nuteczki",
   "luxveritatis",
   "joemonsterorg",
-  "premiumsmarteu"
+  "premiumsmarteu",
+  "animeodcinki",
+  "bajeczkiorg",
+  "kabarety",
+  "christusvincit",
+  "virpe",
+  "dramaqueen",
+  "allgoals",
+  "banbye",
+  "laczynaspilka",
+  "futsalekstraklasa",
+  "pzpnpluspl",
+  "meczykipl",
+  "tvrepublika",
+  "tvn24",
+  "wptv",
+  "tbngopl",
+  "mediatekapl",
+  "ninateka",
+  "tvproart",
+  "spryciarze",
+  "wolnelekturypl",
+  "polskieradio"
  ],
  "english": [
   "youtube",
@@ -126,7 +206,24 @@
   "sevenreels",
   "moviebox",
   "orthobulletscom",
-  "vumedicom"
+  "vumedicom",
+  "watchcartoononline",
+  "aljazeera",
+  "ted",
+  "goojara",
+  "lookmovie",
+  "noxx",
+  "hianime",
+  "nflvideo",
+  "watchwrestlinguno",
+  "documentaryarea",
+  "nasaplus",
+  "ororotv",
+  "vimeo",
+  "ihavenotv",
+  "mlblive",
+  "fullraces",
+  "pinkbike"
  ],
  "german": [
   "youtube",
@@ -156,7 +253,9 @@
   "topstreamfilm",
   "hdfilme",
   "movie2kch",
-  "movie2kcx"
+  "movie2kcx",
+  "sportdeutschland",
+  "vavooto"
  ],
  "french": [
   "youtube",
@@ -171,7 +270,9 @@
  "russian": [
   "youtube",
   "dailymotion",
-  "ritsatv"
+  "ritsatv",
+  "uaserials",
+  "eneyida"
  ],
  "hungarian": [
   "youtube",
@@ -187,7 +288,8 @@
   "streamstat",
   "idokep",
   "rtlmost",
-  "dailymotion"
+  "dailymotion",
+  "dmdamedia"
  ],
  "arabic": [
   "youtube",
@@ -197,12 +299,9 @@
   "cimanow",
   "cinemana",
   "arabseed",
-  "egybest",
   "egydead",
   "movizhome",
-  "tvfun",
   "hwnaturkya",
-  "arablionz",
   "lodynet",
   "ifilm",
   "asi1tv",
@@ -211,7 +310,6 @@
   "aradrama",
   "botolat",
   "cimalina",
-  "wecima",
   "mycima",
   "q3isk",
   "topcinema",
@@ -221,7 +319,18 @@
   "dailymotion",
   "wikicourses",
   "faselhdcom",
-  "cimaclub"
+  "cimaclub",
+  "akoam",
+  "shahiidanimenet",
+  "aljazeera",
+  "mp3quran",
+  "assabile",
+  "arabsciences",
+  "shoofmax",
+  "taxielcima",
+  "stardima",
+  "asharq",
+  "alarabiya"
  ],
  "greek": [
   "youtube",
@@ -246,14 +355,17 @@
  ],
  "swedish": [
   "youtube",
-  "dailymotion"
+  "dailymotion",
+  "svtplayse"
  ],
  "balkans": [
   "youtube",
   "filmehdnet",
   "filma365",
   "filmaon",
-  "dailymotion"
+  "dailymotion",
+  "filmoviplex",
+  "fenixsite"
  ],
  "music": [
   "youtube",
@@ -263,7 +375,14 @@
   "shoutcast",
   "radioe",
   "radiostacja",
-  "nuteczki"
+  "nuteczki",
+  "mytuner",
+  "hotmixradio",
+  "polskieradio",
+  "mixcloud",
+  "lastfm",
+  "philizznl",
+  "mediatekapl"
  ],
  "others": [
   "e2iplayerinfo",
@@ -276,6 +395,13 @@
   "tvjworg",
   "kijknl",
   "rtbfbe",
-  "playrtsiw"
+  "playrtsiw",
+  "kabarety",
+  "banbye",
+  "tvproart",
+  "spryciarze",
+  "wolnelekturypl",
+  "vimeo",
+  "drdk"
  ]
 }
