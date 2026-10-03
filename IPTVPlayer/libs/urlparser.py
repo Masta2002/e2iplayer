@@ -144,6 +144,7 @@ class urlparser:
             "aliez.me": self.pp.parserJWPLAYER,
             "all3do.com": self.pp.parserDOOD,
             "anafast.cyou": self.pp.parserJWPLAYER,
+            "anaplayer.online": self.pp.parserALBAPLAYER,  # add 031026 (w.anaplayer.online/albaplayer/<slug>/)
             "anime4low.sbs": self.pp.parserJWPLAYER,
             "anonmp4.help": self.pp.parserANONMP4,
             "antiadtape.com": self.pp.parserSTREAMTAPE,
@@ -188,6 +189,7 @@ class urlparser:
             "cavanhabg.com": self.pp.parserJWPLAYER,
             "cda.pl": self.pp.parserCDA,
             "cdn1.site": self.pp.parserJWPLAYER,
+            "cdnplus.sbs": self.pp.parserJWPLAYER,  # add 031026
             "cdnplus.space": self.pp.parserJWPLAYER,
             "cdnwish.com": self.pp.parserJWPLAYER,
             "chuckle-tube.com": self.pp.parserVOESX,
@@ -251,6 +253,7 @@ class urlparser:
             "dsvplay.com": self.pp.parserDOOD,
             "dumbalag.com": self.pp.parserJWPLAYER,
             # e
+            "earnvids.xyz": self.pp.parserJWPLAYER,  # add 031026
             "eb8gfmjn71.sbs": self.pp.parserJWPLAYER,
             "ebd.cda.pl": self.pp.parserCDA,
             "edbrdl7pab.sbs": self.pp.parserJWPLAYER,
@@ -299,6 +302,7 @@ class urlparser:
             "goodstream.vip": self.pp.parserSTREAMCASH,
             "goofy-banana.com": self.pp.parserVOESX,
             "google.com": self.pp.parserGOOGLE,
+            "govid.live": self.pp.parserGOVID,  # add 031026
             "govid.site": self.pp.parserJWPLAYER,
             "gscdn.cam": self.pp.parserJWPLAYER,
             "gsfqzmqu.sbs": self.pp.parserJWPLAYER,
@@ -307,6 +311,7 @@ class urlparser:
             "haxloppd.com": self.pp.parserJWPLAYER,
             "hd1.hdup20.com": self.pp.parserJWPLAYER,
             "hdbestvd.online": self.pp.parserJWPLAYER,
+            "hdup400.com": self.pp.parserJWPLAYER,  # add 031026 (s1.hdup400.com via the parent domain)
             "hexload.com": self.pp.parserHEXLOAD,
             "hexupload.net": self.pp.parserHEXLOAD,
             "hgcloud.to": self.pp.parserJWPLAYER,
@@ -337,6 +342,7 @@ class urlparser:
             "kravaxxa.com": self.pp.parserJWPLAYER,
             # l
             "l1afav.net": self.pp.parserBYSE,
+            "lolololo.store": self.pp.parserSBS,  # add 031026 (Streamp2p "#id" player, not the earnvids lolololu.website)
             "lolololu.website": self.pp.parserJWPLAYER,
             "lulu.st": self.pp.parserJWPLAYER,
             "lulust.com": self.pp.parserJWPLAYER,
@@ -354,6 +360,9 @@ class urlparser:
             "mdy48tn97.com": self.pp.parserJWPLAYER,
             "mdzsmutpcvykb.net": self.pp.parserJWPLAYER,
             "mediafire.com": self.pp.parserMEDIAFIRECOM,
+            "megamax.cam": self.pp.parserMEGAMAX,  # add 031026
+            "megamax.me": self.pp.parserMEGAMAX,  # add 031026
+            "megatuktuk.store": self.pp.parserMEGAMAX,  # add 031026
             "meinecloud.click": self.pp.parserMEINECLOUD,
             "mediasetplay.mediaset.it": self.pp.parserMEDIASET,
             "mfw09.org": self.pp.parserBYSE,
@@ -411,6 +420,7 @@ class urlparser:
             "odysee.com": self.pp.parserJWPLAYER,
             "odysseusa.cc": self.pp.parserSTREAMUP,
             "ok.ru": self.pp.parserOKRU,
+            "okhd.site": self.pp.parserJWPLAYER,  # add 031026 (mp4./mp5.okhd.site via the parent domain)
             # p
             "peachify.top": self.pp.parserPEACHIFY,
             "peytonepre.com": self.pp.parserJWPLAYER,
@@ -435,6 +445,7 @@ class urlparser:
             "seekplayer.vip": self.pp.parserSBS,
             "sendvid.com": self.pp.parserJWPLAYER,
             "sfastwish.com": self.pp.parserJWPLAYER,
+            "share4max.com": self.pp.parserMEGAMAX,  # add 031026
             "sharevideo.pl": self.pp.parserSHAREVIDEO,
             "shavetape.cash": self.pp.parserSTREAMTAPE,
             "shiid4u.upn.one": self.pp.parserSBS,
@@ -500,11 +511,14 @@ class urlparser:
             "up4fun.top": self.pp.parserJWPLAYER,
             "up4stream.com": self.pp.parserJWPLAYER,
             "updown.icu": self.pp.parserJWPLAYER,
+            "upn.one": self.pp.parserSBS,  # add 031026 (lodynet.upn.one and other subdomains via the parent domain)
+            "upns.live": self.pp.parserSBS,  # add 031026 (lodynet.upns.live)
             "upzone.cc": self.pp.parserUPZONECC,
             "uqload.bz": self.pp.parserJWPLAYER,
             "uqload.com": self.pp.parserJWPLAYER,
             "uqload.cx": self.pp.parserJWPLAYER,
             "uqload.io": self.pp.parserJWPLAYER,
+            "uqload.is": self.pp.parserJWPLAYER,  # add 031026
             "uqload.net": self.pp.parserJWPLAYER,
             "uqload.vc": self.pp.parserJWPLAYER,
             "uqload.ws": self.pp.parserJWPLAYER,
@@ -515,6 +529,7 @@ class urlparser:
             "veev.to": self.pp.parserVEEV,
             "vide0.net": self.pp.parserDOOD,
             "vidhideplus.com": self.pp.parserJWPLAYER,
+            "vidhidevip.com": self.pp.parserJWPLAYER,  # add 031026
             "vidoba.org": self.pp.parserJWPLAYER,
             "vidply.com": self.pp.parserDOOD,
             "vidcore.io": self.pp.parserVIDCORE,
@@ -2971,6 +2986,9 @@ class pageParser(CaptchaHelper):
         if "dropload." in baseUrl:
             baseUrl = re.sub(r"dropload\.co/embed-([^./]+)\.html", r"dr0pstream.com/e/\1", baseUrl)
             baseUrl = baseUrl.replace("dropload.tv", "dr0pstream.com").replace("dropload.io", "dr0pstream.com")
+        if "uqload." in baseUrl and "/e/" in baseUrl:
+            # add 031026: uqload /e/<id> is only a click-to-play form (its POST answers with the site's demo clip)
+            baseUrl = re.sub(r"(uqload\.[a-z]+)/e/([0-9a-zA-Z]+).*", r"\1/embed-\2.html", baseUrl)
         sts, data = self.cm.getPage(baseUrl, urlParams)
         if not sts:
             return []
@@ -3355,6 +3373,159 @@ class pageParser(CaptchaHelper):
             hoster = up.getHostName(embed, True)
             for item in up.getVideoLinkExt(strwithmeta(embed, {"Referer": MC_URL})):
                 item["name"] = "%s %s" % (hoster, item.get("name", ""))
+                urltab.append(item)
+        return urltab
+
+    def parserMEGAMAX(self, baseUrl):  # add 031026
+        # Megamax mirror page (megamax.me / share4max.com / megatuktuk.store, Laravel + Inertia.js): the page JSON
+        # gives the Inertia version, a partial Inertia request for the "streams" prop gives the hoster mirrors per
+        # quality -> each mirror resolved through urlparser, the mirror name goes into the link name
+        printDBG("parserMEGAMAX baseUrl[%s]" % baseUrl)
+        baseUrl = strwithmeta(baseUrl)
+        referer = baseUrl.meta.get("Referer", "")
+        url = str(baseUrl).replace("/download/", "/iframe/")
+        if url.startswith("//"):
+            url = "https:" + url
+        origin = urlparser.getDomain(url, False)
+        HTTP_HEADER = self.cm.getDefaultHeader(browser="chrome")
+        urlParams = {"header": dict(HTTP_HEADER), "use_cookie": True, "load_cookie": True, "save_cookie": True, "cookiefile": GetCookieDir("megamax.cookie")}
+        sts, data = False, ""
+        if referer:
+            # a Referer outside the video's allow_domain list is answered with 403, none at all always passes
+            urlParams["header"]["Referer"] = referer
+            sts, data = self.cm.getPage(url, urlParams)
+        if not sts:
+            urlParams["header"] = dict(HTTP_HEADER)
+            sts, data = self.cm.getPage(url, urlParams)
+        if not sts or not data:
+            return []
+        data = data.replace("&quot;", '"').replace("\\/", "/")
+        version = self.cm.ph.getSearchGroups(data, r'"version"\s*:\s*"([^"]+)"')[0]
+        header = dict(HTTP_HEADER)
+        header.update({"Referer": url, "Accept": "text/html, application/xhtml+xml", "X-Requested-With": "XMLHttpRequest", "X-Inertia": "true",
+                       "X-Inertia-Partial-Component": "files/mirror/video", "X-Inertia-Partial-Data": "streams"})
+        if version:
+            header["X-Inertia-Version"] = version
+        sts, data = self.cm.getPage(url, dict(urlParams, header=header))
+        if not sts or not data:
+            return []
+        try:
+            streams = json_loads(data).get("props", {}).get("streams") or {}
+        except Exception:
+            printExc()
+            return []
+        if streams.get("status", "success") != "success":
+            SetIPTVPlayerLastHostError(streams.get("msg", "") or _("Video not available"))
+            return []
+        up = urlparser()
+        urltab = []
+        tried = 0
+        for quality in streams.get("data") or []:
+            label = str(quality.get("label") or quality.get("resolution") or "").replace(" (source)", "").strip()
+            found = 0
+            for mirror in quality.get("mirrors") or []:
+                if found >= 3 or tried >= 12:
+                    break  # every mirror costs requests: three working hosters per quality are plenty
+                link = str(mirror.get("link") or "").strip()
+                if link.startswith("//"):
+                    link = "https:" + link
+                if not self.cm.isValidUrl(link) or up.checkHostSupport(link) != 1 or up.getParser(link) == up.pp.parserMEGAMAX:
+                    continue
+                tried += 1
+                driver = str(mirror.get("driver") or "").strip() or up.getHostName(link, True)
+                links = up.getVideoLinkExt(strwithmeta(link, {"Referer": origin}))
+                if links:
+                    found += 1
+                for item in links:
+                    item["name"] = ("%s %s %s" % (label, driver, item.get("name", ""))).strip()
+                    urltab.append(item)
+        return urltab
+
+    def parserGOVID(self, baseUrl):  # add 031026
+        # govid.live: /play/<token> is a gate page with the player in an iframe (govid.live/e/<id>/ or a foreign
+        # hoster: voe, uqload, vinovo, vidara ...); /e/<id>/ keeps the HLS url hex-encoded in a JS constant
+        printDBG("parserGOVID baseUrl[%s]" % baseUrl)
+        baseUrl = strwithmeta(baseUrl)
+        HTTP_HEADER = self.cm.getDefaultHeader(browser="chrome")
+        if baseUrl.meta.get("Referer"):
+            HTTP_HEADER["Referer"] = baseUrl.meta["Referer"]
+        sts, data = self.cm.getPage(baseUrl, {"header": HTTP_HEADER})
+        if not sts or not data:
+            return []
+        if "/play/" in baseUrl:
+            frame = ""
+            for src in re.findall(r"""<iframe[^>]+src=["']([^"']+)["']""", data):
+                src = "https:" + src if src.startswith("//") else src
+                if self.cm.isValidUrl(src) and ("/e/" in src or "embed" in src):
+                    frame = src
+                    break
+            if not frame:
+                return []
+            if "govid." not in urlparser.getDomain(frame):
+                return urlparser().getVideoLinkExt(strwithmeta(frame, {"Referer": urlparser.getDomain(baseUrl, False)}))
+            HTTP_HEADER["Referer"] = str(baseUrl)
+            baseUrl = strwithmeta(frame, baseUrl.meta)
+            sts, data = self.cm.getPage(baseUrl, {"header": HTTP_HEADER})
+            if not sts or not data:
+                return []
+        url = ""
+        for hexUrl in re.findall(r"""["']((?:[0-9a-fA-F]{2}){20,})["']""", data):
+            try:
+                txt = ensure_str(unhexlify(hexUrl))
+            except Exception:
+                continue
+            if txt.startswith("http"):
+                url = txt
+                break
+        if not url:
+            url = self.cm.ph.getSearchGroups(data, r"""["']((?:https?:)?//[^"']+?\.(?:m3u8|mp4)(?:\?[^"']*)?)["']""")[0]
+            url = "https:" + url if url.startswith("//") else url
+        if not self.cm.isValidUrl(url):
+            return []
+        host = urlparser.getDomain(baseUrl, False)
+        # playlist and segments answer 404 without the player's Referer
+        url = urlparser.decorateUrl(url, {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": host, "Origin": host[:-1]})
+        if ".m3u8" not in url:
+            return [{"name": "MP4", "url": url}]
+        url.meta["iptv_proto"] = "m3u8"
+        return getDirectM3U8Playlist(url, checkExt=False, sortWithMaxBitrate=99999999) or [{"name": "HLS", "url": url}]
+
+    def parserALBAPLAYER(self, baseUrl):  # add 031026
+        # AlbaPlayer server picker (w.anaplayer.online/albaplayer/<slug>/): every "?serv=N" tab carries one hoster
+        # iframe (cdnplus, mp4plus, anafast, vidoba, vidspeed, ok.ru ...) -> the first working ones through urlparser
+        printDBG("parserALBAPLAYER baseUrl[%s]" % baseUrl)
+        baseUrl = strwithmeta(baseUrl)
+        HTTP_HEADER = self.cm.getDefaultHeader(browser="chrome")
+        if baseUrl.meta.get("Referer"):
+            HTTP_HEADER["Referer"] = baseUrl.meta["Referer"]
+        pageUrl = str(baseUrl).split("?", 1)[0]
+        sts, data = self.cm.getPage(pageUrl, {"header": HTTP_HEADER})
+        if not sts or not data:
+            return []
+        tabs = []
+        for tab, name in re.findall(r"""<a[^>]+href=["']([^"']+?\?serv=\d+)["'][^>]*>([^<]*)</a>""", data):
+            tabs.append((tab.replace("&amp;", "&"), name.strip()))
+        if not tabs:
+            tabs = [(pageUrl, "")]
+        up = urlparser()
+        urltab = []
+        found = 0
+        for tab, name in tabs:
+            if found >= 3:
+                break
+            if tab != pageUrl:
+                sts, data = self.cm.getPage(tab, {"header": HTTP_HEADER})
+                if not sts or not data:
+                    continue
+            frame = self.cm.ph.getSearchGroups(data, r"""<iframe[^>]+src=["']([^"']+)["']""")[0].replace("&amp;", "&")
+            frame = "https:" + frame if frame.startswith("//") else frame
+            if not self.cm.isValidUrl(frame) or up.checkHostSupport(frame) != 1 or up.getParser(frame) == up.pp.parserALBAPLAYER:
+                continue
+            links = up.getVideoLinkExt(strwithmeta(frame, {"Referer": urlparser.getDomain(pageUrl, False)}))
+            if links:
+                found += 1
+            for item in links:
+                item["name"] = ("%s %s" % (name or up.getHostName(frame, True), item.get("name", ""))).strip()
                 urltab.append(item)
         return urltab
 
