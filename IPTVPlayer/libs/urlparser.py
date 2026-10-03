@@ -2249,31 +2249,56 @@ class pageParser(CaptchaHelper):
             urltab.extend(getDirectM3U8Playlist(hls, checkContent=True, sortWithMaxBitrate=999999999))
         return urltab
 
-    def parserVINOVO(self, baseUrl):  # fix 15.06.25
+    def parserVINOVO(self, baseUrl):  # fix 15.06.25, update 031026
         printDBG("parserVINOVO baseUrl[%s]" % baseUrl)
         COOKIE_FILE = self.COOKIE_PATH + "vinovo.cookie"
-        HTTP_HEADER = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:139.0) Gecko/20100101 Firefox/139.0"}
-        sts, data = self.cm.getPage(baseUrl.replace("/d/", "/e/"), {"header": HTTP_HEADER, "use_cookie": True, "save_cookie": True, "load_cookie": False, "cookiefile": COOKIE_FILE})
+        HTTP_HEADER = self.cm.getDefaultHeader(browser="chrome")
+        params = {"header": HTTP_HEADER, "use_cookie": True, "save_cookie": True, "load_cookie": False, "cookiefile": COOKIE_FILE}
+        pageUrl = re.sub(r"/(?:d|v|f)/", "/e/", baseUrl.split("?")[0], 1)
+        sts, data = self.cm.getPage(pageUrl, params)
         if not sts:
             return []
+        # vinovo.si redirects to vinovo.to - take the domain we really landed on
+        finalUrl = self.cm.meta.get("url", "") or pageUrl
+        if self.cm.isValidUrl(finalUrl):
+            pageUrl = finalUrl
         token = re.search(r'name="token"\s*content="([^"]+)', data)
-        video_data = re.search(r'data-base="([^"]+)', data)
-        filecode = re.search(r'file_code"\s*(?:content="([^"]*)"|\s*="([^"]*)")>', data)
-        if token and video_data and filecode:
-            rurl = urljoin(baseUrl, "/")
-            recaptcha = girc(data, rurl)
-            HTTP_HEADER.update({"Origin": rurl[:-1], "Referer": baseUrl, "X-Requested-With": "XMLHttpRequest"})
-            post_data = {"token": token.group(1), "recaptcha": recaptcha}
-            api_url = "https://vinovo.to/api/file/url/{0}".format(filecode.group(1))
-            sts, data = self.cm.getPage(api_url, {"header": HTTP_HEADER, "use_cookie": True, "save_cookie": False, "load_cookie": True, "cookiefile": COOKIE_FILE}, post_data)
+        videoBase = re.search(r'data-base="([^"]+)', data)
+        fileCode = re.search(r'name="file_code"\s*content="([^"]+)', data) or re.search(r'file_code"\s*(?:content)?="([^"]+)', data)
+        if not (token and videoBase and fileCode):
+            printDBG("parserVINOVO: player data not found")
+            return []
+        rurl = urljoin(pageUrl, "/")
+        apiUrl = "%sapi/file/url/%s" % (rurl, fileCode.group(1))
+        apiHeader = dict(HTTP_HEADER)
+        apiHeader.update({"Origin": rurl[:-1], "Referer": pageUrl, "X-Requested-With": "XMLHttpRequest", "Accept": "application/json, text/javascript, */*; q=0.01"})
+        apiParams = {"header": apiHeader, "use_cookie": True, "save_cookie": True, "load_cookie": True, "cookiefile": COOKIE_FILE}
+
+        # reCAPTCHA v3 (invisible) token; the player itself posts an empty one when grecaptcha fails, so retry with ""
+        recaptcha = ""
+        try:
+            recaptcha = girc(data, rurl) or ""
+        except Exception:
+            printExc()
+        streamToken = ""
+        for rc in ([recaptcha, ""] if recaptcha else [""]):
+            sts, resp = self.cm.getPage(apiUrl, apiParams, {"token": token.group(1), "recaptcha": rc})
             if not sts:
-                return []
-            resp_json = json_loads(data)
-            if resp_json.get("status") == "ok":
-                HTTP_HEADER.pop("X-Requested-With")
-                vid_src = "{0}/stream/{1}".format(video_data.group(1), resp_json.get("token"))
-                return [{"name": "MP4", "url": urlparser.decorateUrl(vid_src, dict(HTTP_HEADER, iptv_format="mp4"))}]
-        return []
+                continue
+            try:
+                resp = json_loads(resp)
+            except Exception:
+                printExc()
+                continue
+            printDBG("parserVINOVO api status[%s]" % resp.get("status"))
+            if resp.get("status") == "ok" and resp.get("token"):
+                streamToken = resp["token"]
+                break
+        if not streamToken:
+            return []
+        vidUrl = "%s/stream/%s" % (videoBase.group(1).rstrip("/"), streamToken)
+        meta = {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": pageUrl, "Origin": rurl[:-1], "iptv_format": "mp4"}
+        return [{"name": "vinovo MP4", "url": urlparser.decorateUrl(vidUrl, meta)}]
 
     def parserSTREAMEMBED(self, baseUrl):  # fix 191025
         urltab = []
