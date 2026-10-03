@@ -43,13 +43,20 @@
   "appletrailers",
   "cineb",
   "sevenreels",
-  "moviebox"
+  "moviebox",
+  "akoam",
+  "filmoviplex",
+  "dmdamedia"
  ],
  "cartoonsandanime": [
   "aniworld",
   "9anime",
   "kissanimeto",
-  "otakufr"
+  "otakufr",
+  "animeodcinki",
+  "shahiidanimenet",
+  "bajeczkiorg",
+  "watchcartoononline"
  ],
  "sport": [
   "webstream",
@@ -103,7 +110,11 @@
   "nuteczki",
   "luxveritatis",
   "joemonsterorg",
-  "premiumsmarteu"
+  "premiumsmarteu",
+  "animeodcinki",
+  "bajeczkiorg",
+  "kabarety",
+  "christusvincit"
  ],
  "english": [
   "youtube",
@@ -126,7 +137,8 @@
   "sevenreels",
   "moviebox",
   "orthobulletscom",
-  "vumedicom"
+  "vumedicom",
+  "watchcartoononline"
  ],
  "german": [
   "youtube",
@@ -187,7 +199,8 @@
   "streamstat",
   "idokep",
   "rtlmost",
-  "dailymotion"
+  "dailymotion",
+  "dmdamedia"
  ],
  "arabic": [
   "youtube",
@@ -221,7 +234,9 @@
   "dailymotion",
   "wikicourses",
   "faselhdcom",
-  "cimaclub"
+  "cimaclub",
+  "akoam",
+  "shahiidanimenet"
  ],
  "greek": [
   "youtube",
@@ -253,7 +268,8 @@
   "filmehdnet",
   "filma365",
   "filmaon",
-  "dailymotion"
+  "dailymotion",
+  "filmoviplex"
  ],
  "music": [
   "youtube",
@@ -276,6 +292,7 @@
   "tvjworg",
   "kijknl",
   "rtbfbe",
-  "playrtsiw"
+  "playrtsiw",
+  "kabarety"
  ]
 }
