@@ -344,7 +344,7 @@ class urlparser:
             "ghbrisk.com": self.pp.parserJWPLAYER,
             "goodstream.one": self.pp.parserJWPLAYER,
             "goodstream.uno": self.pp.parserJWPLAYER,
-            "goodstream.vip": self.pp.parserGOODSTREAM,
+            "goodstream.vip": self.pp.parserSTREAMCASH,
             "goofy-banana.com": self.pp.parserVOESX,
             "google.com": self.pp.parserGOOGLE,
             "govid.site": self.pp.parserJWPLAYER,
@@ -3042,7 +3042,7 @@ class pageParser(CaptchaHelper):
                 urltab.extend(getDirectM3U8Playlist(url, sortWithMaxBitrate=99999999))
         return urltab
 
-    def parserSTREAMCASH(self, baseUrl):  # add 031026 - streamcash.to /watch/<id> (fenixsite)
+    def parserSTREAMCASH(self, baseUrl):  # add 031026 - streamcash.to /watch/<id> (fenixsite), goodstream.vip/embed/<id> (bajeczki): same player
         printDBG("parserSTREAMCASH baseUrl[%s]" % baseUrl)
         urltab = []
         subTracks = []
@@ -3057,11 +3057,12 @@ class pageParser(CaptchaHelper):
         if not match:
             return []
         try:
-            cfg = json_loads(ensure_str(base64.b64decode(match.group(1))))
+            cfg = match.group(1)
+            cfg = json_loads(ensure_str(base64.b64decode(cfg + "=" * (-len(cfg) % 4))))
         except Exception:
             printExc()
             return []
-        url = cfg.get("src", "")
+        url = (cfg.get("src") or "") if isinstance(cfg, dict) else ""
         if not url:
             return []
         url = urljoin(host, url)
@@ -3072,8 +3073,12 @@ class pageParser(CaptchaHelper):
                 continue
             lang = sub.get("srclang", "") or "und"
             subTracks.append({"title": lang.upper() if lang != "und" else sub.get("label", ""), "url": urljoin(host, src), "lang": lang, "format": "vtt"})
+        isHls = ".m3u8" in url
         url = urlparser.decorateUrl(url, {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": host, "Origin": host[:-1], "external_sub_tracks": subTracks})
-        urltab.extend(getDirectM3U8Playlist(url, checkContent=True, sortWithMaxBitrate=99999999))
+        if isHls:
+            urltab.extend(getDirectM3U8Playlist(url, checkContent=True, sortWithMaxBitrate=99999999))
+        else:
+            urltab.append({"name": urlparser.getDomain(baseUrl), "url": url})
         return urltab
 
     def parserVIDSONIC(self, baseUrl):
@@ -3272,32 +3277,6 @@ class pageParser(CaptchaHelper):
             url = urlparser.decorateUrl(url, {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": host, "Origin": host[:-1]})
             urltab.extend(getDirectM3U8Playlist(url))
         return urltab
-
-    def parserGOODSTREAM(self, baseUrl):  # add 031026 - goodstream.vip: window.__PCr = base64 JSON {"src": ".../index.m3u8", ...}
-        printDBG("parserGOODSTREAM baseUrl[%s]" % baseUrl)
-        baseUrl = strwithmeta(baseUrl)
-        HTTP_HEADER = self.cm.getDefaultHeader()
-        if baseUrl.meta.get("Referer"):
-            HTTP_HEADER["Referer"] = baseUrl.meta["Referer"]
-        sts, data = self.cm.getPage(baseUrl, {"header": HTTP_HEADER})
-        if not sts:
-            return []
-        cfg = ph.search(data, r"__PCr\s*=\s*['\"]([^'\"]+)['\"]")[0]
-        if not cfg:
-            return []
-        try:
-            cfg = json_loads(ensure_str(base64.b64decode(cfg + "=" * (-len(cfg) % 4))))
-        except Exception:
-            printExc()
-            return []
-        src = (cfg.get("src") or "") if isinstance(cfg, dict) else ""
-        if not self.cm.isValidUrl(src):
-            return []
-        origin = urlparser.getDomain(baseUrl, False).rstrip("/")
-        url = urlparser.decorateUrl(src, {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": origin + "/", "Origin": origin})
-        if ".m3u8" in src:
-            return getDirectM3U8Playlist(url, checkContent=True, sortWithMaxBitrate=999999999)
-        return [{"name": "Goodstream", "url": url}]
 
     def parserANONMP4(self, baseUrl):  # fix 050626
         printDBG("parserANONMP4 baseUrl[%s]" % baseUrl)
