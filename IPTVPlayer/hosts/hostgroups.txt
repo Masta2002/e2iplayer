@@ -119,7 +119,8 @@
   "nasaplus",
   "ororotv",
   "ninateka",
-  "drdk"
+  "drdk",
+  "ihavenotv"
  ],
  "science": [
   "dailymotion",
@@ -128,7 +129,8 @@
   "vumedicom",
   "arabsciences",
   "ted",
-  "nasaplus"
+  "nasaplus",
+  "ihavenotv"
  ],
  "polish": [
   "youtube",
@@ -212,7 +214,8 @@
   "documentaryarea",
   "nasaplus",
   "ororotv",
-  "vimeo"
+  "vimeo",
+  "ihavenotv"
  ],
  "german": [
   "youtube",
