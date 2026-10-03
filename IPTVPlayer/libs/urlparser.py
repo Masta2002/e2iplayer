@@ -139,6 +139,7 @@ class urlparser:
             "abysscdn.com": self.pp.parserABYSS,
             "abyssplayer.com": self.pp.parserABYSS,
             "adblocktape.wiki": self.pp.parserSTREAMTAPE,
+            "agbsb.com": self.pp.parserSTREAMUP,
             "aiavh.com": self.pp.parserJWPLAYER,
             "aliez.me": self.pp.parserJWPLAYER,
             "all3do.com": self.pp.parserDOOD,
@@ -291,6 +292,7 @@ class urlparser:
             "fsst.online": self.pp.parserSST,
             "furher.in": self.pp.parserBYSE,
             # g
+            "gbsagbo.com": self.pp.parserSTREAMUP,
             "ghbrisk.com": self.pp.parserJWPLAYER,
             "goodstream.one": self.pp.parserJWPLAYER,
             "goodstream.uno": self.pp.parserJWPLAYER,

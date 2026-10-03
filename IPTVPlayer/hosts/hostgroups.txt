@@ -85,7 +85,10 @@
   "laczynaspilka",
   "futsalekstraklasa",
   "pzpnpluspl",
-  "meczykipl"
+  "meczykipl",
+  "mlblive",
+  "fullraces",
+  "pinkbike"
  ],
  "live": [
   "webstream",
@@ -105,7 +108,8 @@
   "tbngopl",
   "pzpnpluspl",
   "drdk",
-  "xtream"
+  "xtream",
+  "alarabiya"
  ],
  "documentary": [
   "dokumentalnenet",
@@ -121,7 +125,8 @@
   "ororotv",
   "ninateka",
   "drdk",
-  "ihavenotv"
+  "ihavenotv",
+  "alarabiya"
  ],
  "science": [
   "dailymotion",
@@ -216,7 +221,10 @@
   "nasaplus",
   "ororotv",
   "vimeo",
-  "ihavenotv"
+  "ihavenotv",
+  "mlblive",
+  "fullraces",
+  "pinkbike"
  ],
  "german": [
   "youtube",
@@ -326,7 +334,8 @@
   "shoofmax",
   "taxielcima",
   "stardima",
-  "asharq"
+  "asharq",
+  "alarabiya"
  ],
  "greek": [
   "youtube",
