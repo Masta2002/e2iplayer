@@ -185,6 +185,7 @@ class urlparser:
             "1fichier.com": self.pp.parser1FICHIERCOM,
             "222i8x.lol": self.pp.parserBYSE,
             "26efp.com": self.pp.parserJWPLAYER,
+            "360.yandex.ru": self.pp.parserYANDEXDISK,
             "4yftwvrdz7.sbs": self.pp.parserJWPLAYER,
             "81u6xl9d.xyz": self.pp.parserBYSE,
             "8mhlloqo.fun": self.pp.parserBYSE,
@@ -259,6 +260,8 @@ class urlparser:
             "dhtpre.com": self.pp.parserJWPLAYER,
             "dingtezuni.com": self.pp.parserJWPLAYER,
             "dintezuvio.com": self.pp.parserJWPLAYER,
+            "disk.yandex.com": self.pp.parserYANDEXDISK,
+            "disk.yandex.ru": self.pp.parserYANDEXDISK,
             "do0od.com": self.pp.parserDOOD,
             "do7go.com": self.pp.parserDOOD,
             "dood.cx": self.pp.parserDOOD,
@@ -473,6 +476,7 @@ class urlparser:
             "strcloud.club": self.pp.parserSTREAMTAPE,
             "strcloud.link": self.pp.parserSTREAMTAPE,
             "streamadblocker.xyz": self.pp.parserSTREAMTAPE,
+            "streamable.com": self.pp.parserSTREAMABLE,
             "streamadblockplus.com": self.pp.parserSTREAMTAPE,
             "streamhihi.com": self.pp.parserJWPLAYER,
             "streamhls.to": self.pp.parserJWPLAYER,
@@ -567,6 +571,9 @@ class urlparser:
             "vids.st": self.pp.parserVIDSST,
             "vidsonic.net": self.pp.parserVIDSONIC,
             "vidspeed.space": self.pp.parserJWPLAYER,
+            "vidtube.cam": self.pp.parserJWPLAYER,
+            "vidtube.one": self.pp.parserJWPLAYER,
+            "vidtube.pro": self.pp.parserJWPLAYER,
             "vidsrc.bz": self.pp.parserVIDSRC,
             "vidsrc.cc": self.pp.parserMEGAFILES,
             "vidsrc.do": self.pp.parserVIDSRC,
@@ -622,6 +629,7 @@ class urlparser:
             # x
             "xcoic.com": self.pp.parserBYSE,
             # y
+            "yadi.sk": self.pp.parserYANDEXDISK,
             "yourupload.com": self.pp.parserJWPLAYER,
             "youtu.be": self.pp.parserYOUTUBE,
             "youtube-nocookie.com": self.pp.parserYOUTUBE,
@@ -3749,3 +3757,65 @@ class pageParser(CaptchaHelper):
         if not urltab:
             urltab.append({"name": "vids.st", "url": url, "need_resolve": 0})
         return urltab
+
+    def parserYANDEXDISK(self, baseUrl):  # add 031026 - yadi.sk / disk.yandex.* / disk.360.yandex.ru public links, official public API
+        printDBG("parserYANDEXDISK baseUrl[%s]" % baseUrl)
+        HTTP_HEADER = self.cm.getDefaultHeader()
+        api = "https://cloud-api.yandex.net/v1/disk/public/resources"
+        publicKey = urllib_quote(strwithmeta(baseUrl).split("?")[0].split("#")[0], safe="")
+        sts, data = self.cm.getPage("%s?public_key=%s&limit=200" % (api, publicKey), {"header": HTTP_HEADER})
+        if not sts:
+            return []
+        try:
+            data = json_loads(data)
+        except Exception:
+            printExc()
+            return []
+        # a shared file, or a shared folder: then every video file in it
+        files = [("", data)] if data.get("type") == "file" else \
+            [(item.get("path", ""), item) for item in (data.get("_embedded") or {}).get("items", []) if item.get("type") == "file"]
+        urltab = []
+        for path, item in files:
+            if not (item.get("mime_type") or "").startswith(("video/", "audio/")):
+                continue
+            url = "%s/download?public_key=%s" % (api, publicKey)
+            if path:
+                url += "&path=" + urllib_quote(path, safe="")
+            sts, link = self.cm.getPage(url, {"header": HTTP_HEADER})
+            if not sts:
+                continue
+            try:
+                href = json_loads(link).get("href", "")
+            except Exception:
+                printExc()
+                continue
+            if href:
+                urltab.append({"name": "Yandex Disk %s" % item.get("name", ""), "url": urlparser.decorateUrl(href, {"User-Agent": HTTP_HEADER["User-Agent"]})})
+        return urltab
+
+    def parserSTREAMABLE(self, baseUrl):  # add 031026 - streamable.com, public video API (the page's videoObject json is gone)
+        printDBG("parserSTREAMABLE baseUrl[%s]" % baseUrl)
+        HTTP_HEADER = self.cm.getDefaultHeader()
+        videoId = ph.search(baseUrl, r"streamable\.com/(?:[eos]/)?([A-Za-z0-9]+)")[0]
+        if not videoId:
+            return []
+        sts, data = self.cm.getPage("https://api.streamable.com/videos/%s" % videoId, {"header": HTTP_HEADER})
+        if not sts:
+            return []
+        try:
+            data = json_loads(data)
+        except Exception:
+            printExc()
+            return []
+        urltab = []
+        for key, stream in (data.get("files") or {}).items():
+            url = (stream or {}).get("url") or ""
+            # the API sometimes answers "https:https://..." or a scheme-less "//..."
+            url = re.sub(r"^(?:https?:)+(?=//)", "", url)
+            if url.startswith("//"):
+                url = "https:" + url
+            if url.startswith("http"):
+                height = stream.get("height") or 0
+                urltab.append((height, {"name": "%sp %s" % (height, key) if height else key, "url": urlparser.decorateUrl(url, {"User-Agent": HTTP_HEADER["User-Agent"]})}))
+        urltab.sort(key=lambda x: x[0], reverse=True)
+        return [x[1] for x in urltab]

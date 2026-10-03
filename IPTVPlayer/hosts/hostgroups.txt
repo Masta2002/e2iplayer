@@ -72,19 +72,23 @@
   "dailymotion",
   "twitchtv",
   "eurosportplayer",
-  "ritsatv"
+  "ritsatv",
+  "aljazeera"
  ],
  "documentary": [
   "dokumentalnenet",
   "dailymotion",
   "orthobulletscom",
-  "vumedicom"
+  "vumedicom",
+  "aljazeera",
+  "arabsciences"
  ],
  "science": [
   "dailymotion",
   "dokumentalnenet",
   "orthobulletscom",
-  "vumedicom"
+  "vumedicom",
+  "arabsciences"
  ],
  "polish": [
   "youtube",
@@ -138,7 +142,8 @@
   "moviebox",
   "orthobulletscom",
   "vumedicom",
-  "watchcartoononline"
+  "watchcartoononline",
+  "aljazeera"
  ],
  "german": [
   "youtube",
@@ -236,7 +241,11 @@
   "faselhdcom",
   "cimaclub",
   "akoam",
-  "shahiidanimenet"
+  "shahiidanimenet",
+  "aljazeera",
+  "mp3quran",
+  "assabile",
+  "arabsciences"
  ],
  "greek": [
   "youtube",
