@@ -330,6 +330,7 @@ class urlparser:
             "filma365.strp2p.site": self.pp.parserSBS,
             "firestream.to": self.pp.parserFIRESTREAM,
             "flaswish.com": self.pp.parserJWPLAYER,
+            "flyf.lat": self.pp.parserFLYFILE,
             "flyfile.app": self.pp.parserFLYFILE,
             "forafile.com": self.pp.parserJWPLAYER,
             "freedisc.pl": self.pp.parserFREEDISC,
@@ -340,6 +341,7 @@ class urlparser:
             "ghbrisk.com": self.pp.parserJWPLAYER,
             "goodstream.one": self.pp.parserJWPLAYER,
             "goodstream.uno": self.pp.parserJWPLAYER,
+            "goodstream.vip": self.pp.parserGOODSTREAM,
             "goofy-banana.com": self.pp.parserVOESX,
             "google.com": self.pp.parserGOOGLE,
             "govid.site": self.pp.parserJWPLAYER,
@@ -376,6 +378,7 @@ class urlparser:
             # l
             "l1afav.net": self.pp.parserBYSE,
             "lulu.st": self.pp.parserJWPLAYER,
+            "lulust.com": self.pp.parserJWPLAYER,
             "lulustream.com": self.pp.parserJWPLAYER,
             "luluvid.com": self.pp.parserJWPLAYER,
             "luluvdo.com": self.pp.parserJWPLAYER,
@@ -475,6 +478,7 @@ class urlparser:
             "stmix.io": self.pp.parserSTREAMUP,
             "strcloud.club": self.pp.parserSTREAMTAPE,
             "strcloud.link": self.pp.parserSTREAMTAPE,
+            "strp2p.site": self.pp.parserSBS,
             "streamadblocker.xyz": self.pp.parserSTREAMTAPE,
             "streamable.com": self.pp.parserSTREAMABLE,
             "streamadblockplus.com": self.pp.parserSTREAMTAPE,
@@ -527,6 +531,7 @@ class urlparser:
             "uqload.com": self.pp.parserJWPLAYER,
             "uqload.cx": self.pp.parserJWPLAYER,
             "uqload.io": self.pp.parserJWPLAYER,
+            "uqload.vc": self.pp.parserJWPLAYER,
             "uqload.ws": self.pp.parserJWPLAYER,
             "uqloads.xyz": self.pp.parserJWPLAYER,
             "userscloud.com": self.pp.parserUSERSCLOUDCOM,
@@ -559,6 +564,7 @@ class urlparser:
             "vidmoly.biz": self.pp.parserVIDMOLYME,
             "vidmoly.me": self.pp.parserVIDMOLYME,
             "vidmoly.net": self.pp.parserVIDMOLYME,
+            "vidmoly.org": self.pp.parserVIDMOLYME,
             "vidmoly.to": self.pp.parserVIDMOLYME,
             "vidneo.cc": self.pp.parserVIDNEO,
             "vidnest.fun": self.pp.parserVIDNEST,
@@ -2052,35 +2058,74 @@ class pageParser(CaptchaHelper):
             urltab.append({"name": q, "url": urlparser.decorateUrl(fileUrl, dict(meta))})
         return urltab
 
-    def parserSBS(self, baseUrl):  # update 020126
+    def parserSBS(self, baseUrl):  # update 031026
         printDBG("parserSBS baseUrl[%s]" % baseUrl)
+        # strp2p / upn / rpmplay player family: <domain>/#<id> -> api/v1/video (hex, AES-128-CBC)
+        # key/iv are still built in the player JS (kiemtienmua911ca / 1234567890oiuytr);
+        # a deleted video answers 404 {"message": "Video not found or deleted"}
+        baseUrl = strwithmeta(baseUrl)
         HTTP_HEADER = self.cm.getDefaultHeader()
-        referer = baseUrl.meta.get("Referer")
-        HTTP_HEADER["Referer"] = "https://%s/" % baseUrl.split("/")[2]
-        urlParams = {"header": HTTP_HEADER}
-        if "#" in baseUrl and referer:
-            host = referer.split("/")[2]
-            url = urlparser.getDomain(baseUrl, False)
-            baseUrl = "%sapi/v1/video?id=%s&w=1904&h=969&r=%s" % (url, baseUrl.split("#")[1], host)
-        sts, data = self.cm.getPage(baseUrl, urlParams)
-        if not sts:
+        referer = baseUrl.meta.get("Referer", "")
+        url = urlparser.getDomain(baseUrl, False)
+        HTTP_HEADER["Referer"] = url
+        urlParams = {"header": HTTP_HEADER, "ignore_http_code_ranges": [(400, 599)]}
+        apiUrl = baseUrl
+        if "#" in baseUrl:
+            videoId = baseUrl.split("#", 1)[1].split("&", 1)[0]
+            host = referer.split("/")[2] if self.cm.isValidUrl(referer) else ""
+            if host.startswith("www."):
+                host = host[4:]
+            apiUrl = "%sapi/v1/video?id=%s&w=1920&h=1080&r=%s" % (url, videoId, host)
+
+        def _getVideo(addParams=""):
+            sts, data = self.cm.getPage(apiUrl + addParams, urlParams)
+            if not sts or not data:
+                return None, _("Video not available")
+            data = data.strip()
+            if not re.match(r"^[0-9a-fA-F]+$", data):
+                msg = ""
+                try:
+                    msg = json_loads(data).get("message", "")
+                except Exception:
+                    printExc()
+                return None, msg or _("Video not available")
+            try:
+                decrypter = pyaes.Decrypter(pyaes.AESModeOfOperationCBC(b"kiemtienmua911ca", b"1234567890oiuytr"))
+                data = decrypter.feed(unhexlify(data))
+                data += decrypter.feed()
+                return json_loads(data.decode("utf-8")), ""
+            except Exception:
+                printExc()
+            return None, _("Video not available")
+
+        data, msg = _getVideo()
+        if data and not data.get("source"):
+            # in-house streaming saturated -> the player retries with a capacity token
+            delivery = data.get("delivery") or {}
+            if delivery.get("capacityToken") and delivery.get("capacityTokenExpire"):
+                GetIPTVSleep().Sleep(min(15, max(2, int(delivery.get("retryAfter") or 3))))
+                data, msg = _getVideo("&capacityToken=%s&capacityTokenExpire=%s" % (urllib_quote(str(delivery["capacityToken"])), urllib_quote(str(delivery["capacityTokenExpire"]))))
+        if not data:
+            SetIPTVPlayerLastHostError(msg)
             return []
-        data = unhexlify(data[:-1])
-        decrypter = pyaes.Decrypter(pyaes.AESModeOfOperationCBC(b"\x6b\x69\x65\x6d\x74\x69\x65\x6e\x6d\x75\x61\x39\x31\x31\x63\x61", b"\x31\x32\x33\x34\x35\x36\x37\x38\x39\x30\x6f\x69\x75\x79\x74\x72"))
-        data = decrypter.feed(data)
-        data += decrypter.feed()
-        data = data.decode("utf-8")
-        data = json_loads(data)
-        hls = data.get("source")
+
         subTracks = []
-        for lang, src in data.get("subtitle", {}).items():
-            if src.startswith("/"):
-                src = url[:-1] + src.split("#")[0]
-            subTracks.append({"title": "", "url": src, "lang": lang})
+        subtitle = data.get("subtitle") or {}
+        if isinstance(subtitle, dict):
+            for lang, src in subtitle.items():
+                if src.startswith("/"):
+                    src = url[:-1] + src.split("#")[0]
+                subTracks.append({"title": lang, "url": src, "lang": lang})
+
         urltab = []
+        hls = data.get("source")
         if hls:
+            # source (in-house, fMP4 HLS) needs Referer + Origin of the player domain, 403 without
             hls = urlparser.decorateUrl(hls, {"iptv_proto": "m3u8", "User-Agent": HTTP_HEADER["User-Agent"], "Referer": url, "Origin": url[:-1], "external_sub_tracks": subTracks})
-            urltab.extend(getDirectM3U8Playlist(hls))
+            urltab.extend(getDirectM3U8Playlist(hls, checkContent=True, sortWithMaxBitrate=999999999))
+        if not urltab and data.get("cfNative"):
+            hls = urlparser.decorateUrl(data["cfNative"], {"iptv_proto": "m3u8", "User-Agent": HTTP_HEADER["User-Agent"], "Referer": url, "Origin": url[:-1], "external_sub_tracks": subTracks})
+            urltab.extend(getDirectM3U8Playlist(hls, checkContent=True, sortWithMaxBitrate=999999999))
         return urltab
 
     def parserVINOVO(self, baseUrl):  # fix 15.06.25
@@ -3159,8 +3204,10 @@ class pageParser(CaptchaHelper):
         urltab.extend(getDirectM3U8Playlist(url, checkExt=False, variantCheck=False, sortWithMaxBitrate=99999999))
         return urltab
 
-    def parserFLYFILE(self, baseUrl):  # add 030626
+    def parserFLYFILE(self, baseUrl):  # add 030626, update 031026 - flyf.lat is the same player, its API is on flyfile.app
         printDBG("parserFLYFILE baseUrl[%s]" % baseUrl)
+        if "flyf.lat/" in baseUrl:
+            baseUrl = strwithmeta("https://flyfile.app/embed/%s" % baseUrl.split("?")[0].rstrip("/").split("/")[-1], strwithmeta(baseUrl).meta)
         host = urlparser.getDomain(baseUrl, False)
         HTTP_HEADER = self.cm.getDefaultHeader()
         HTTP_HEADER['Referer'] = baseUrl  # FIX: Added
@@ -3176,6 +3223,32 @@ class pageParser(CaptchaHelper):
             url = urlparser.decorateUrl(url, {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": host, "Origin": host[:-1]})
             urltab.extend(getDirectM3U8Playlist(url))
         return urltab
+
+    def parserGOODSTREAM(self, baseUrl):  # add 031026 - goodstream.vip: window.__PCr = base64 JSON {"src": ".../index.m3u8", ...}
+        printDBG("parserGOODSTREAM baseUrl[%s]" % baseUrl)
+        baseUrl = strwithmeta(baseUrl)
+        HTTP_HEADER = self.cm.getDefaultHeader()
+        if baseUrl.meta.get("Referer"):
+            HTTP_HEADER["Referer"] = baseUrl.meta["Referer"]
+        sts, data = self.cm.getPage(baseUrl, {"header": HTTP_HEADER})
+        if not sts:
+            return []
+        cfg = ph.search(data, r"__PCr\s*=\s*['\"]([^'\"]+)['\"]")[0]
+        if not cfg:
+            return []
+        try:
+            cfg = json_loads(ensure_str(base64.b64decode(cfg + "=" * (-len(cfg) % 4))))
+        except Exception:
+            printExc()
+            return []
+        src = (cfg.get("src") or "") if isinstance(cfg, dict) else ""
+        if not self.cm.isValidUrl(src):
+            return []
+        origin = urlparser.getDomain(baseUrl, False).rstrip("/")
+        url = urlparser.decorateUrl(src, {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": origin + "/", "Origin": origin})
+        if ".m3u8" in src:
+            return getDirectM3U8Playlist(url, checkContent=True, sortWithMaxBitrate=999999999)
+        return [{"name": "Goodstream", "url": url}]
 
     def parserANONMP4(self, baseUrl):  # fix 050626
         printDBG("parserANONMP4 baseUrl[%s]" % baseUrl)

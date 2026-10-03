@@ -418,8 +418,6 @@ class ShahiidAnime(GenericFolderWatchedScraperMixin, CBaseHostClass):
         src = src.strip()
         if src.startswith("//"):
             src = "https:" + src
-        # turbovidhls.com is another front of turboviplay (same /t/<id> player)
-        src = re.sub(r"^https?://(?:www\.)?turbovidhls\.com/", "https://turboviplay.com/", src)
         return src if self.cm.isValidUrl(src) else ""
 
     def _story(self, data):

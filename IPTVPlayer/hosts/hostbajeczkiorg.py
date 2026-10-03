@@ -2,21 +2,19 @@
 # Last Modified: 03.10.2026 - revival of the back online bajeczki.org (WordPress "videonow" theme, https):
 #   latest posts, films (+ genres, A-Z), all cartoons/series grouped by first letter (the site lists
 #   1200+ categories on one page), category listings sorted by name (episodes in order), search;
-#   players are plain <iframe>s in the post (flyf.lat -> flyfile.app, cloud.strp2p.site, ebd.cda.pl)
-#   plus goodstream.vip, resolved here (base64 player config -> HLS);
+#   players are plain <iframe>s in the post (flyf.lat, goodstream.vip, cloud.strp2p.site, ebd.cda.pl)
+#   resolved by urlparser;
 #   + watched flag / sidecar / name normalisation (SxxExx, "Title (Year)") / moviemeta INFO.
 import re
 
 from Plugins.Extensions.IPTVPlayer.components.ihost import CBaseHostClass, CHostBase
 from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT as _, SetIPTVPlayerLastHostError
 from Plugins.Extensions.IPTVPlayer.components.iptvconfigmenu import IsSidecarEnabled, IsMediaNamingNormalized
-from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads
 from Plugins.Extensions.IPTVPlayer.libs.moviemeta import getMeta
 from Plugins.Extensions.IPTVPlayer.libs.urlmetahelper import buildSidecarFromItem, applySidecarToLinks, sidecarFromUrlMeta, decorateResolvedLinkItems
-from Plugins.Extensions.IPTVPlayer.libs.urlparserhelper import getDirectM3U8Playlist
 from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote_plus
 from Plugins.Extensions.IPTVPlayer.tools.iptvnaming import formatSxxExx
-from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, b64Decode
+from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.tools.iptvwatchedhelper import IPTVWatchedHelper
 from Plugins.Extensions.IPTVPlayer.tools.iptvwatchedfoldermixin import GenericFolderWatchedScraperMixin, GenericFolderWatchedHostMixin
@@ -325,17 +323,10 @@ class BajeczkiOrg(GenericFolderWatchedScraperMixin, CBaseHostClass):
             seen.add(url)
             host = self.up.getHostName(url)
             meta = {"Referer": referer}
-            if host == "flyf.lat":
-                # FlyF is the flyfile.app player under a short domain: same ids, same API
-                url = "https://flyfile.app/embed/%s" % url.split("?", 1)[0].rstrip("/").rsplit("/", 1)[-1]
-                name = "FlyFile"
-            elif host.endswith("strp2p.site"):
-                # same player (api/v1/video + AES) urlparser knows as filma365.strp2p.site
-                meta.update({"host_name": "filma365.strp2p.site", "Referer": self.MAIN_URL})
+            if host.endswith("strp2p.site"):
+                # the API wants the embedding site as r= (urlparser parserSBS reads it from the Referer)
+                meta["Referer"] = self.MAIN_URL
                 name = "Strp2p"
-            elif "goodstream." in host:
-                meta["goodstream"] = True
-                name = "Goodstream"
             elif re.search(r"\.(?:mp4|m3u8)(?:\?|$)", url):
                 meta["direct_link"] = True
                 name = "Direct"
@@ -359,36 +350,10 @@ class BajeczkiOrg(GenericFolderWatchedScraperMixin, CBaseHostClass):
         sidecarTxt = self.cleanHtmlStr(content) or cItem.get("desc", "")
         return applySidecarToLinks(urlTab, buildSidecarFromItem(cItem, IsSidecarEnabled(), sidecarTxt))
 
-    def _resolveGoodstream(self, url):
-        # goodstream.vip embed: window.__PCr = base64 JSON {"src": ".../index.m3u8", "subs": ...}
-        params = dict(self.defaultParams)
-        params["header"] = dict(self.HEADER, Referer=self.MAIN_URL)
-        sts, data = self.cm.getPage(url, params)
-        if not sts:
-            return []
-        cfg = self.cm.ph.getSearchGroups(data, r"__PCr\s*=\s*['\"]([^'\"]+)['\"]")[0]
-        if not cfg:
-            return []
-        try:
-            cfg = json_loads(b64Decode(cfg))
-        except Exception:
-            printExc()
-            return []
-        src = (cfg.get("src") or "") if isinstance(cfg, dict) else ""
-        if not self.cm.isValidUrl(src):
-            return []
-        origin = "https://%s" % self.up.getHostName(url)
-        hlsMeta = {"User-Agent": self.HEADER["User-Agent"], "Referer": origin + "/", "Origin": origin}
-        if ".m3u8" in src:
-            return getDirectM3U8Playlist(strwithmeta(src, hlsMeta), checkContent=True, sortWithMaxBitrate=999999999)
-        return [{"name": "Goodstream", "url": strwithmeta(src, hlsMeta)}]
-
     def getVideoLinks(self, videoUrl):
         printDBG("BajeczkiOrg.getVideoLinks [%s]" % videoUrl)
         videoUrl = strwithmeta(videoUrl)
         sidecar = sidecarFromUrlMeta(videoUrl, IsSidecarEnabled())
-        if videoUrl.meta.get("goodstream"):
-            return decorateResolvedLinkItems(self._resolveGoodstream(videoUrl), sidecar)
         if videoUrl.meta.get("direct_link"):
             return decorateResolvedLinkItems([{"name": "direct", "url": videoUrl}], sidecar)
         if self.cm.isValidUrl(videoUrl):

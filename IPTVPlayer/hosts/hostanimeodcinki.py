@@ -50,9 +50,6 @@ class AnimeOdcinkiPL(GenericFolderWatchedScraperMixin, CBaseHostClass):
 
     SEASONS = (("jesien", "Jesień", 10), ("lato", "Lato", 7), ("wiosna", "Wiosna", 4), ("zima", "Zima", 1))
 
-    # hoster domains the site uses under a name urlparser knows the same service by
-    HOST_ALIASES = {"vidmoly.org": "vidmoly.to", "lulust.com": "lulustream.com", "uqload.vc": "uqload.com"}
-
     LATEST_LIMIT = 24
     # a film page with up to this many episodes is one film in parts (one link list), more is a collection (folder)
     MAX_FILM_PARTS = 3
@@ -457,11 +454,7 @@ class AnimeOdcinkiPL(GenericFolderWatchedScraperMixin, CBaseHostClass):
             if re.search(r"\.(?:mp4|m3u8)(?:$|\?)", link):
                 urltab.append({"name": name, "url": strwithmeta(link, {"User-Agent": self.HEADER["User-Agent"], "Referer": self.MAIN_URL}), "need_resolve": 0})
                 continue
-            host = self.up.getHostName(link)
-            meta = {"Referer": self.MAIN_URL}
-            if host in self.HOST_ALIASES:
-                meta["host_name"] = self.HOST_ALIASES[host]
-            link = strwithmeta(link, meta)
+            link = strwithmeta(link, {"Referer": self.MAIN_URL})
             if self.up.checkHostSupport(link) != 1:
                 printDBG("AnimeOdcinkiPL: hoster not supported by urlparser [%s]" % link)
                 continue
