@@ -59,10 +59,19 @@ def checkhttps(url):
 TXXX_NETWORK_SITES = ('https://upornia.com', 'https://hdzog.com', 'https://vxxx.com')
 
 # plain KVS sites (hostxxx.py KVS_NETWORK), resolved by the shared KVS branch
-KVS_SITES = ('https://freshporno.org', 'https://www.freepornvideos.xxx', 'https://www.fpo.xxx', 'https://heroero.com', 'https://porndd.com', 'https://amateurporn.me')
+KVS_SITES = ('https://freshporno.org', 'https://www.freepornvideos.xxx', 'https://www.fpo.xxx', 'https://heroero.com', 'https://porndd.com', 'https://amateurporn.me', 'https://allclassic.porn', 'https://celebsroulette.com', 'https://watcherotic.com', 'https://www.vipporns.com')
 
 # WordPress tube theme sites (hostxxx.py WPTUBE_NETWORK): own player page or a file hoster iframe
 WPTUBE_SITES = ('https://pornmz.com', 'https://www.hitprn.net', 'https://pornobae.com')
+
+# movie and full-scene sites (hostxxx.py MOVIE_NETWORK): own video file or file hoster mirrors, see _pageMirrors
+MOVIE_SITES = ()
+
+# links that are never a mirror of the video on the page (share buttons, trailers, the big tubes in the footer)
+MIRROR_SKIP = re.compile(r'(?:^|\.)(?:facebook|twitter|x|t|telegram|reddit|pinterest|whatsapp|google|googleapis|gstatic|youtube|youtu|instagram|tiktok|vk|ok|xvideos|xnxx|pornhub|xhamster|redtube|youporn|tube8|spankbang|eporner|dailymotion|vimeo|imdb|wikipedia)\.[a-z.]+$')
+
+# foreign player pages that list the video files themselves: host -> the Referer they want
+MIRROR_PLAYER_PAGES = {'mydaddy.cc': 'https://hqporner.com/'}
 
 # live cam sites (hostxxx.py SITEDATA_CAMS), the stream is looked up when it is played
 LIVECAM_SITES = ('https://www.cam4.com', 'https://www.camsoda.com', 'https://www.myfreecams.com', 'https://streamate.com', 'https://www.xlovecam.com', 'https://api.sinparty.com', 'https://stripchat.com')
@@ -194,7 +203,8 @@ class XXXParser:
 				videoUrl = decryptHash(videoUrl, licenseCode, '16')
 			if videoUrl.startswith('//'):
 				videoUrl = 'https:' + videoUrl
-			if videoUrl in seen or (not videoUrl.startswith('http') and not videoUrl.startswith('/')):
+			# KVS sends guests to its login page for the members-only qualities ('https://site/?login')
+			if videoUrl in seen or (not videoUrl.startswith('http') and not videoUrl.startswith('/')) or re.search(r'[/?]login/?$', videoUrl):
 				continue
 			seen.add(videoUrl)
 			height = self._labelHeight(label) or self._labelHeight(videoUrl.split('?')[0])
@@ -218,6 +228,132 @@ class XXXParser:
 		for v in variants:
 			if v.get('url'):
 				return v['url']
+		return ''
+
+	def _pageMirrors(self, data, pageUrl, depth=1):
+		# [(label, url)] of a movie/scene page (MOVIE_NETWORK): the site's own video file first, then every file
+		# hoster urlparser can play - iframes, mirror buttons/links, base64-wrapped links; a player page on the
+		# same site is opened once
+		site = '/'.join(pageUrl.split('/')[:3])
+		siteHost = site.split('//')[-1].replace('www.', '')
+		mirrors, seen = [], set()
+
+		def isOwn(link):
+			return link.split('/')[2].replace('www.', '') == siteHost
+
+		def add(label, link):
+			key = link.rstrip('/')
+			if label != 'xtremestream' and not label.startswith(_('Direct')):
+				# one file under several paths or mirror domains of its hoster (/e/<id>, /d/<id>, /f/<id>, #<id>): once
+				fileId = re.sub(r'\.html?$', '', re.split(r'[/#]', key.split('?')[0])[-1])
+				key = fileId if re.match(r'^[A-Za-z0-9_-]{6,}$', fileId) else (label, key)
+			if key not in seen:
+				seen.add(key)
+				mirrors.append((label, link))
+
+		# (links also sit in JSON strings: <iframe src=\"https:\/\/...\">)
+		data = data.replace('\\/', '/').replace('\\"', '"')
+		# link-checker plugin attributes (API addresses with keys, "deleted" replacements) are no mirrors
+		data = re.sub(r'''\sdata-fl-(?:api|replace|header|source|patterns)=(?:"[^"]*"|'[^']*')''', '', data)
+		media = self._mediaCandidates(data)
+		media += [(self._labelHeight(m.split('?')[0]), m) for m in re.findall(r'''(?:file|contentUrl|src)["']?\s*[:=]\s*["'](https?://[^"']+\.(?:m3u8|mp4)(?:\?[^"']*)?)["']''', data)]
+		media += [(self._labelHeight(m.split('?')[0]), m) for m in re.findall(r'''itemprop=["']contentUrl["'][^>]*?content=["'](https?://[^"']+\.(?:mp4|m3u8)(?:\?[^"']*)?)["']''', data)]
+		# pinthis theme (netfapx): an empty <source>, the file comes from admin-ajax.php
+		ajax = re.search(r'''"ajax_url":"([^"]+/admin-ajax\.php)","post_id":"([0-9]+)"''', data)
+		if ajax and '<source src=""' in data:
+			header = dict(self.cm.getDefaultHeader(browser='chrome'), Referer=pageUrl)
+			header['X-Requested-With'] = 'XMLHttpRequest'
+			sts, link = self.cm.getPage(ajax.group(1), {'header': header, 'return_data': True}, {'action': 'get_video_url', 'idpost': ajax.group(2)})
+			link = (link or '').strip() if sts else ''
+			if link.startswith('http'):
+				media.append((self._labelHeight(link.split('?')[0]), link))
+		# the best quality first, above 1080p only when UHD playback is on
+		media.sort(key=lambda m: (m[0] <= 1080 or self._uhdAllowed(), m[0]), reverse=True)
+		for height, link in media:
+			link = urljoin(pageUrl, decodeHtml(link))
+			if link.startswith('http') and not re.search(r'(?i)preview|trailer|teaser|/thumbs?/', link):
+				add(_('Direct') + (' %dp' % height if height else ''), link)
+		links = [decodeHtml(f) for f in re.findall(r'''<iframe[^>]+?(?:data-lazy-src|data-src|src)=["']([^"']+)["']''', data, re.I)]
+		for encoded in re.findall(r'''["'>=]\s*(aHR0c[A-Za-z0-9+/=]{12,})''', data):
+			try:
+				links.append(base64.b64decode(encoded + '=' * (-len(encoded) % 4)).decode('utf-8', 'ignore'))
+			except Exception:
+				pass
+		links += [decodeHtml(u) for u in re.findall(r'''["'=(]\s*(https?://[^"'<>\s)]+)''', data)]
+		for link in links:
+			link = urljoin(pageUrl, link.strip())
+			if not link.startswith('http') or re.search(r'(?i)\.(?:js|css|jpe?g|png|webp|gif|svg|ico|woff2?|xml)(?:[?#]|$)', link):
+				continue
+			host = link.split('/')[2].lower()
+			if isOwn(link):
+				if depth and re.search(r'(?i)/(?:embed|player|play|stream|video-?player|iframe)[/.?]', link) and '/wp-json/' not in link and link.split('#')[0] != pageUrl.split('#')[0]:
+					# the site's own player page
+					header = dict(self.cm.getDefaultHeader(browser='chrome'), Referer=pageUrl)
+					sts, player = self.cm.getPage(link, {'header': header, 'return_data': True, 'timeout': 15})
+					if sts:
+						for label, sub in self._pageMirrors(player, link, depth - 1):
+							add(label, sub)
+				continue
+			if depth and host in MIRROR_PLAYER_PAGES:
+				# a foreign player page that lists the files itself (once: every visit hands out new file links)
+				player = re.split(r'[&\\]', link)[0]
+				if player in seen:
+					continue
+				seen.add(player)
+				header = dict(self.cm.getDefaultHeader(browser='chrome'), Referer=MIRROR_PLAYER_PAGES[host])
+				sts, playerData = self.cm.getPage(player, {'header': header, 'return_data': True, 'timeout': 15})
+				if sts:
+					for label, sub in self._pageMirrors(playerData, player, depth - 1):
+						add(label, sub)
+				continue
+			if re.match(r'https?://(?:www\.)?pornhoarder\.net/player\.php\?video=', link):
+				# pornhoarder: the player answers a POST "play" with the hoster's iframe
+				if link in seen:
+					continue
+				seen.add(link)
+				header = dict(self.cm.getDefaultHeader(browser='chrome'), Referer=pageUrl)
+				header['X-Requested-With'] = 'XMLHttpRequest'
+				sts, player = self.cm.getPage(link, {'header': header, 'return_data': True, 'timeout': 15}, {'play': ''})
+				link = decodeHtml(self.cm.ph.getSearchGroups(player, r'''<iframe[^>]+src=["']([^"']+)["']''', 1, True)[0]) if sts else ''
+				if not link.startswith('http'):
+					continue
+				host = link.split('/')[2].lower()
+			if re.search(r'\.xtremestream\.xyz/player/index\.php\?data=', link):
+				# XtremeStream player (perverzija), played in _playMirror
+				add('xtremestream', link)
+				continue
+			# lulust.com is the same service as luluvdo.com, morencius.com (VidHide) serves its files also as
+			# smoothpre.com - both known to urlparser
+			link = re.sub(r'^https?://(?:www\.)?lulust\.com/', 'https://luluvdo.com/', link)
+			link = re.sub(r'^https?://(?:www\.)?morencius\.com/', 'https://smoothpre.com/', link)
+			if MIRROR_SKIP.search(host) or re.search(r'(?i)^https?://[^/]+/api/', link) or 1 != self.up.checkHostSupport(link):
+				continue
+			add(link.split('/')[2].lower().replace('www.', ''), link)
+		if depth and siteHost == 'pornhoarder.tv':
+			# the same video on other hosters: own pages, each with its player
+			for alt in re.findall(r'''<a href=["'](/pornvideo/[^"']+)["'][^>]*title=["']Watch this video on''', data):
+				header = dict(self.cm.getDefaultHeader(browser='chrome'), Referer=pageUrl)
+				sts, altData = self.cm.getPage(urljoin(pageUrl, alt), {'header': header, 'return_data': True, 'timeout': 15})
+				if sts:
+					for label, sub in self._pageMirrors(altData, urljoin(pageUrl, alt), depth - 1):
+						add(label, sub)
+		return mirrors
+
+	def _playMirror(self, link, referer):
+		# a link from _pageMirrors: the site's own file directly, a file hoster through urlparser
+		userAgent = self.cm.getDefaultHeader(browser='chrome')['User-Agent']
+		m = re.match(r'(https?://[a-z0-9-]+\.xtremestream\.xyz)/player/index\.php\?data=([0-9a-f]+)', link)
+		if m:
+			# the HLS master of the player page (variants &q=480..2160); it wants the player as Referer
+			return urlparser.decorateUrl(m.group(1) + '/player/xs1.php?data=' + m.group(2), {'Referer': link, 'User-Agent': userAgent, 'iptv_proto': 'm3u8'})
+		if re.search(r'\.(?:mp4|m3u8)(?:[?#]|$)', link):
+			return urlparser.decorateUrl(link, {'Referer': referer, 'User-Agent': userAgent})
+		try:
+			for item in self.up.getVideoLinkExt(urlparser.decorateUrl(link, {'Referer': referer})) or []:
+				if isinstance(item, dict) and item.get('url'):
+					return item['url']
+		except Exception:
+			printExc()
 		return ''
 
 	def getLinksForVideo(self, url):
@@ -870,7 +1006,7 @@ class XXXParser:
 				return site
 		if re.match(r'https://v[0-9]+\.erome\.com/', url):
 			return 'https://www.erome.com'
-		for site in LIVECAM_SITES + KVS_SITES + WPTUBE_SITES + ('https://en.luxuretv.com', 'https://beta.xfreehd.com', 'https://321tube.com', 'https://alpenrammler.com'):
+		for site in LIVECAM_SITES + KVS_SITES + WPTUBE_SITES + MOVIE_SITES + ('https://en.luxuretv.com', 'https://beta.xfreehd.com', 'https://321tube.com', 'https://alpenrammler.com'):
 			if url.startswith(site + '/'):
 				return site
 		return self.MAIN_URL
@@ -6558,6 +6694,74 @@ class XXXParser:
 				# User-Agent (the TLS handshake gives it away); a player User-Agent passes, as for CAMSODA
 				userAgent = 'VLC/3.0.20 LibVLC/3.0.20'
 			return urlparser.decorateUrl(videoUrl, {'Referer': url, 'User-Agent': userAgent})
+
+		if parser == 'https://fullvideosporn.com':
+			# sextu player: embed.php lists the files as JSON in the txxx network's look-alike base64 (guests: _lq/_hq)
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = url
+			videoId = self.cm.ph.getSearchGroups(url, r'/video/([0-9]+)/', 1, True)[0]
+			sts, data = self.cm.getPage('%s/embed.php?id=%s' % (parser, videoId), {'header': self.HTTP_HEADER, 'return_data': True})
+			blob = self.cm.ph.getSearchGroups(data, r"""'(W3si[^']+)'""", 1, True)[0] if sts else ''
+			try:
+				files = json.loads(unquote(decodeTxxxUrl(blob)))
+				ranks = {'_vhq.mp4': 3, '_hq.mp4': 2, '_lq.mp4': 1}
+				best = max([f for f in files if f.get('video_url')], key=lambda f: ranks.get(f.get('format'), 0))
+				videoUrl = urljoin(parser + '/', unquote(decodeTxxxUrl(best['video_url'])))
+			except Exception:
+				printExc()
+				return ''
+			return urlparser.decorateUrl(videoUrl, {'Referer': parser + '/', 'User-Agent': self.HTTP_HEADER.get('User-Agent', '')})
+
+		if parser == 'https://www9.pornhd3x.tv':
+			# EXPERIMENTAL: /ajax/get_sources signed like the site's fix.js (cookie + md5 of id and a random token);
+			# the HLS segments are TS behind a PNG header on an image CDN, as with turbovidhls
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = url
+			sts, data = self.cm.getPage(url, {'header': self.HTTP_HEADER, 'return_data': True})
+			episodeId = self.cm.ph.getSearchGroups(data, r'episode-id="([^"]+)"', 1, True)[0] if sts else ''
+			if not episodeId:
+				return ''
+			thfq = 'n1sqcua67bcq9826avrbi6m49vd7shxkn985mhodk06twz87wwxtp3dqiicks2dfyud213k6ygiomq01s94e4tr9v0k887bkyud213k6ygiomq01s94e4tr9v0k887bkqocxzw39esdyfhvtkpzq9n4e7at4kc6k8sxom08bl4dukp16h09oplu7zov4m5f8'
+			token = ''.join(random.choice('abcdefghijklmnopqrstuvwxyz0123456789') for _i in range(6))
+			header = dict(self.HTTP_HEADER, Cookie='%s%s%s=%s' % (thfq[13:37], episodeId, thfq[40:64], token))
+			header['X-Requested-With'] = 'XMLHttpRequest'
+			sign = hashlib.md5((episodeId + token + '98126avrbi6m49vd7shxkn985').encode('utf-8')).hexdigest()
+			sts, data = self.cm.getPage('%s/ajax/get_sources/%s/%s?count=1&mobile=false' % (parser, episodeId, sign), {'header': header, 'return_data': True})
+			try:
+				sources = json.loads(data)['playlist'][0]['sources'] if sts else []
+				sources = [(self._labelHeight(s.get('label', '')), s['file']) for s in sources if s.get('file')]
+			except Exception:
+				printExc()
+				return ''
+			videoUrl = self._pickByHeight(sources)
+			if not videoUrl:
+				return ''
+			return urlparser.decorateUrl(videoUrl, {'User-Agent': self.HTTP_HEADER.get('User-Agent', ''), 'iptv_buffering': 'required'})
+
+		if parser in MOVIE_SITES:
+			# a movie/scene page, "#mirror=<n>:<hoster>" from the mirror menu picks one of its mirrors
+			pageUrl, _sep, wanted = url.partition('#mirror=')
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
+			self.HTTP_HEADER['Referer'] = parser + '/'
+			sts, data = self.cm.getPage(pageUrl, {'header': self.HTTP_HEADER, 'return_data': True})
+			if not sts:
+				return ''
+			mirrors = self._pageMirrors(data, pageUrl)
+			if wanted:
+				# the same position when it is still that hoster (several scenes can share one), else that hoster
+				index, _sep, hoster = wanted.partition(':')
+				index = int(index) if index.isdigit() else -1
+				if 0 <= index < len(mirrors) and mirrors[index][0] == hoster:
+					mirrors = [mirrors[index]]
+				else:
+					mirrors = [m for m in mirrors if m[0] == hoster][:1]
+			for _label, link in mirrors:
+				videoUrl = self._playMirror(link, pageUrl)
+				if videoUrl:
+					return videoUrl
+			if not mirrors:
+				SetIPTVPlayerLastHostError(_('This video is only on hosters E2iPlayer cannot play.'))
+			return ''
 
 		if parser in WPTUBE_SITES:
 			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
