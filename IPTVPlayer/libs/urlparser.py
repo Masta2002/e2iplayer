@@ -405,6 +405,7 @@ class urlparser:
             "mediafire.com": self.pp.parserMEDIAFIRECOM,
             "meinecloud.click": self.pp.parserMEINECLOUD,
             "mediasetplay.mediaset.it": self.pp.parserMEDIASET,
+            "mfw09.org": self.pp.parserBYSE,
             "minochinos.com": self.pp.parserJWPLAYER,
             "mivalyo.com": self.pp.parserJWPLAYER,
             "mixdrp.click": self.pp.parserJWPLAYER,
@@ -476,6 +477,7 @@ class urlparser:
             "savefiles.com": self.pp.parserJWPLAYER,
             "sb1254w9megshle.org": self.pp.parserBYSE,
             "scloud.online": self.pp.parserSTREAMTAPE,
+            "seekplayer.vip": self.pp.parserSBS,
             "sendvid.com": self.pp.parserJWPLAYER,
             "sfastwish.com": self.pp.parserJWPLAYER,
             "sharevideo.pl": self.pp.parserSHAREVIDEO,
@@ -622,6 +624,7 @@ class urlparser:
             "vidsrcme.ru": self.pp.parserVIDSRC,
             "vidsrcme.su": self.pp.parserVIDSRC,
             "vidup.to": self.pp.parserVIDCORE,
+            "vimeo.com": self.pp.parserVIMEO,
             "vixeo.io": self.pp.parserVIXEO,
             "vixsrc.to": self.pp.parserVIXSRC,
             "vk.ru": self.pp.parserVK,
@@ -1175,6 +1178,89 @@ class pageParser(CaptchaHelper):
             except Exception:
                 printExc()
         return urlsTab
+
+    def parserVIMEO(self, baseUrl):  # add 031026 (ResolveURL vimeo.py: player config JSON)
+        # vimeo.com/<id>[/<hash>], vimeo.com/channels|groups|showcase/.../<id>, player.vimeo.com/video/<id>[?h=<hash>]
+        printDBG("parserVIMEO baseUrl[%s]" % baseUrl)
+        baseUrl = strwithmeta(baseUrl)
+        match = re.search(r"/videos?/(\d{5,})(?:/([0-9a-f]{6,}))?(?:[/?#]|$)", baseUrl)
+        if not match:
+            match = re.search(r"vimeo\.com/(?:[^/?#]+/)*?(\d{5,})(?:/([0-9a-f]{6,}))?(?:[/?#]|$)", baseUrl)
+        if not match:
+            return []
+        videoId = match.group(1)
+        videoHash = match.group(2) or self.cm.ph.getSearchGroups(baseUrl, r"[?&]h=([0-9a-f]+)")[0]
+        HTTP_HEADER = self.cm.getDefaultHeader(browser="chrome")
+        HTTP_HEADER["Referer"] = baseUrl.meta.get("Referer", "") or "https://vimeo.com/"
+        query = ("?h=%s" % videoHash) if videoHash else ""
+        playerUrl = "https://player.vimeo.com/video/%s%s" % (videoId, query)
+
+        config = None
+        sts, data = self.cm.getPage(playerUrl, {"header": HTTP_HEADER})
+        if sts:
+            start = data.find("window.playerConfig")
+            start = data.find("{", start) if start > -1 else -1
+            if start > -1:
+                try:
+                    from json import JSONDecoder
+                    end = JSONDecoder().raw_decode(data, start)[1]
+                    config = json_loads(data[start:end])
+                except Exception:
+                    printExc()
+        if not isinstance(config, dict):
+            sts, data = self.cm.getPage("https://player.vimeo.com/video/%s/config%s" % (videoId, query), {"header": HTTP_HEADER})
+            try:
+                config = json_loads(data) if sts else None
+            except Exception:
+                config = None
+        if not isinstance(config, dict) or not isinstance(config.get("request"), dict):
+            SetIPTVPlayerLastHostError(_("Vimeo: this video is private, removed or may only be played on the site that embeds it."))
+            return []
+
+        playerHeader = {"Referer": "https://player.vimeo.com/", "Origin": "https://player.vimeo.com", "User-Agent": HTTP_HEADER["User-Agent"]}
+        subTracks = []
+        for track in config["request"].get("text_tracks") or []:
+            subUrl = track.get("url", "")
+            if subUrl.startswith("/"):
+                subUrl = "https://player.vimeo.com" + subUrl
+            if self.cm.isValidUrl(subUrl):
+                subTracks.append({"title": track.get("label") or track.get("lang", ""), "url": subUrl, "lang": track.get("lang", ""), "format": "vtt"})
+
+        urlTab = []
+        files = config["request"].get("files") or {}
+        for item in sorted(files.get("progressive") or [], key=lambda x: int(x.get("height", 0) or 0), reverse=True):
+            if item.get("url"):
+                meta = dict(playerHeader)
+                if subTracks:
+                    meta["external_sub_tracks"] = subTracks
+                urlTab.append({"name": "vimeo.com: %s mp4" % item.get("quality", ""), "url": urlparser.decorateUrl(item["url"], meta)})
+
+        hls = files.get("hls") or {}
+        cdns = hls.get("cdns") or {}
+        cdnOrder = [hls.get("default_cdn")] + sorted([key for key in cdns if key != hls.get("default_cdn")])
+        hlsUrl = ""
+        drm = False
+        for cdn in cdnOrder:
+            for key in ("avc_url", "url"):
+                url = (cdns.get(cdn) or {}).get(key, "")
+                if not url:
+                    continue
+                if "/drm/" in url:
+                    drm = True
+                    continue
+                hlsUrl = url
+                break
+            if hlsUrl:
+                break
+        if hlsUrl:
+            meta = dict(playerHeader)
+            meta["iptv_proto"] = "m3u8"
+            if subTracks:
+                meta["external_sub_tracks"] = subTracks
+            urlTab.extend(getDirectM3U8Playlist(urlparser.decorateUrl(hlsUrl, meta), checkExt=False, checkContent=True, sortWithMaxBitrate=99999999))
+        if not urlTab and drm:
+            SetIPTVPlayerLastHostError(_("Vimeo: this video is DRM protected."))
+        return urlTab
 
     def parserVK(self, baseUrl):  # Partly work, Login not work
         printDBG("parserVK url[%s]" % baseUrl)

@@ -49,7 +49,16 @@
   "dmdamedia",
   "shoofmax",
   "taxielcima",
-  "fenixsite"
+  "fenixsite",
+  "goojara",
+  "lookmovie",
+  "noxx",
+  "virpe",
+  "dramaqueen",
+  "uaserials",
+  "eneyida",
+  "ninateka",
+  "drdk"
  ],
  "cartoonsandanime": [
   "aniworld",
@@ -60,14 +69,23 @@
   "shahiidanimenet",
   "bajeczkiorg",
   "watchcartoononline",
-  "stardima"
+  "stardima",
+  "hianime"
  ],
  "sport": [
   "webstream",
   "footyroom",
   "goals",
   "basketballvideocom",
-  "eurosportplayer"
+  "eurosportplayer",
+  "allgoals",
+  "nflvideo",
+  "watchwrestlinguno",
+  "sportdeutschland",
+  "laczynaspilka",
+  "futsalekstraklasa",
+  "pzpnpluspl",
+  "meczykipl"
  ],
  "live": [
   "webstream",
@@ -79,7 +97,14 @@
   "ritsatv",
   "aljazeera",
   "asharq",
-  "svtplayse"
+  "svtplayse",
+  "vavooto",
+  "nasaplus",
+  "wpolscepl",
+  "tvrepublika",
+  "tbngopl",
+  "pzpnpluspl",
+  "drdk"
  ],
  "documentary": [
   "dokumentalnenet",
@@ -89,7 +114,12 @@
   "aljazeera",
   "arabsciences",
   "asharq",
-  "ted"
+  "ted",
+  "documentaryarea",
+  "nasaplus",
+  "ororotv",
+  "ninateka",
+  "drdk"
  ],
  "science": [
   "dailymotion",
@@ -97,7 +127,8 @@
   "orthobulletscom",
   "vumedicom",
   "arabsciences",
-  "ted"
+  "ted",
+  "nasaplus"
  ],
  "polish": [
   "youtube",
@@ -127,7 +158,25 @@
   "animeodcinki",
   "bajeczkiorg",
   "kabarety",
-  "christusvincit"
+  "christusvincit",
+  "virpe",
+  "dramaqueen",
+  "allgoals",
+  "banbye",
+  "laczynaspilka",
+  "futsalekstraklasa",
+  "pzpnpluspl",
+  "meczykipl",
+  "tvrepublika",
+  "tvn24",
+  "wptv",
+  "tbngopl",
+  "mediatekapl",
+  "ninateka",
+  "tvproart",
+  "spryciarze",
+  "wolnelekturypl",
+  "polskieradio"
  ],
  "english": [
   "youtube",
@@ -153,7 +202,17 @@
   "vumedicom",
   "watchcartoononline",
   "aljazeera",
-  "ted"
+  "ted",
+  "goojara",
+  "lookmovie",
+  "noxx",
+  "hianime",
+  "nflvideo",
+  "watchwrestlinguno",
+  "documentaryarea",
+  "nasaplus",
+  "ororotv",
+  "vimeo"
  ],
  "german": [
   "youtube",
@@ -183,7 +242,9 @@
   "topstreamfilm",
   "hdfilme",
   "movie2kch",
-  "movie2kcx"
+  "movie2kcx",
+  "sportdeutschland",
+  "vavooto"
  ],
  "french": [
   "youtube",
@@ -198,7 +259,9 @@
  "russian": [
   "youtube",
   "dailymotion",
-  "ritsatv"
+  "ritsatv",
+  "uaserials",
+  "eneyida"
  ],
  "hungarian": [
   "youtube",
@@ -304,7 +367,14 @@
   "shoutcast",
   "radioe",
   "radiostacja",
-  "nuteczki"
+  "nuteczki",
+  "mytuner",
+  "hotmixradio",
+  "polskieradio",
+  "mixcloud",
+  "lastfm",
+  "philizznl",
+  "mediatekapl"
  ],
  "others": [
   "e2iplayerinfo",
@@ -318,6 +388,12 @@
   "kijknl",
   "rtbfbe",
   "playrtsiw",
-  "kabarety"
+  "kabarety",
+  "banbye",
+  "tvproart",
+  "spryciarze",
+  "wolnelekturypl",
+  "vimeo",
+  "drdk"
  ]
 }
