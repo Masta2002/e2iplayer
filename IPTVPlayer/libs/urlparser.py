@@ -3,7 +3,7 @@ from ast import literal_eval
 import base64
 from binascii import hexlify, unhexlify
 import codecs
-from hashlib import sha256
+from hashlib import md5, sha256
 from random import choice as random_choice, randint, uniform
 import re
 import string
@@ -192,6 +192,8 @@ class urlparser:
             "8mhlloqo.fun": self.pp.parserBYSE,
             "96ar.com": self.pp.parserBYSE,
             # a
+            "abysscdn.com": self.pp.parserABYSS,
+            "abyssplayer.com": self.pp.parserABYSS,
             "adblocktape.wiki": self.pp.parserSTREAMTAPE,
             "aiavh.com": self.pp.parserJWPLAYER,
             "aliez.me": self.pp.parserJWPLAYER,
@@ -218,6 +220,7 @@ class urlparser:
             "bigwings.io": self.pp.parserJWPLAYER,
             "bingezove.com": self.pp.parserJWPLAYER,
             "boosteradx.online": self.pp.parserBYSE,
+            "btg549.filmoviplex.com": self.pp.parserABYSS,
             "byse.sx": self.pp.parserBYSE,
             "bysebuho.com": self.pp.parserBYSE,
             "bysedikamoum.com": self.pp.parserBYSE,
@@ -305,6 +308,7 @@ class urlparser:
             "ebd.cda.pl": self.pp.parserCDA,
             "edbrdl7pab.sbs": self.pp.parserJWPLAYER,
             "egtpgrvh.sbs": self.pp.parserJWPLAYER,
+            "embedplayabyss.top": self.pp.parserABYSS,
             "embedplaybyse.top": self.pp.parserBYSE,
             "embedwish.com": self.pp.parserJWPLAYER,
             "emturbovid.com": self.pp.parserJWPLAYER,
@@ -363,6 +367,7 @@ class urlparser:
             "hlsflast.com": self.pp.parserJWPLAYER,
             "hlsplayer.org": self.pp.parserJWPLAYER,
             "hlswish.com": self.pp.parserJWPLAYER,
+            "hydraxcdn.biz": self.pp.parserABYSS,
             # i
             "iplayerhls.com": self.pp.parserJWPLAYER,
             # j
@@ -476,6 +481,7 @@ class urlparser:
             "sharevideo.pl": self.pp.parserSHAREVIDEO,
             "shavetape.cash": self.pp.parserSTREAMTAPE,
             "shiid4u.upn.one": self.pp.parserSBS,
+            "short.icu": self.pp.parserABYSS,
             "smdfs40r.skin": self.pp.parserBYSE,
             "smoothpre.com": self.pp.parserJWPLAYER,
             "soundcloud.com": self.pp.parserSOUNDCLOUDCOM,
@@ -3326,6 +3332,89 @@ class pageParser(CaptchaHelper):
                 urltab.append({"name": "FlyFile %s" % q, "url": urlparser.decorateUrl("merge://audio_url|video_url", meta)})
             else:
                 urltab.append({"name": "FlyFile %s" % q, "url": videoUrl})
+        return urltab
+
+    def parserABYSS(self, baseUrl):  # add 031026 - Abyss/SoTrym player (abyssplayer.com, abysscdn.com, btg549.filmoviplex.com)
+        printDBG("parserABYSS baseUrl[%s]" % baseUrl)
+        import json  # stdlib on purpose: py2 e2ijson (utf8=True) would byte-encode the binary "media" string
+
+        def ctr(data, seed):
+            key = ensure_binary(md5(seed).hexdigest())
+            counter = pyaes.Counter(initial_value=int(hexlify(key[:16]), 16))
+            return pyaes.AESModeOfOperationCTR(key, counter=counter).encrypt(data)
+
+        def numSeed(value):  # md5 input the player uses for numbers: every digit as its byte value
+            return bytes(bytearray(int(c) if c.isdigit() else ord(c) & 0xFF for c in str(value)))
+
+        baseUrl = strwithmeta(baseUrl)
+        HTTP_HEADER = self.cm.getDefaultHeader("chrome")
+        HTTP_HEADER["Referer"] = baseUrl.meta.get("Referer", urljoin(baseUrl, "/"))
+        sts, data = self.cm.getPage(baseUrl, {"header": HTTP_HEADER})
+        if not sts:
+            return []
+        playerOrigin = urljoin(self.cm.meta.get("url", baseUrl), "/")
+        m = re.search(r'''(?:const|var|let)\s+datas\s*=\s*["']([^"']+)["']''', data)
+        if not m:
+            printDBG("parserABYSS: no datas blob")
+            return []
+        try:
+            # atob() gives one char per byte, JSON.parse then resolves the \uXXXX escapes inside "media"
+            datas = json.loads(base64.b64decode(m.group(1)).decode("latin-1"))
+        except Exception:
+            printExc()
+            return []
+        slug, md5Id, userId = datas.get("slug"), datas.get("md5_id"), datas.get("user_id")
+        media = datas.get("media")
+        if not isinstance(media, dict):
+            if not (media and slug and md5Id and userId):
+                return []
+            enc = bytes(bytearray(ord(c) & 0xFF for c in media))
+            seed = "%s:%s:%s" % (userId, slug, md5Id)
+            media = None
+            for s in (ensure_binary(seed), numSeed(seed)):
+                try:
+                    media = json.loads(ctr(enc, s).decode("utf-8"))
+                    break
+                except Exception:
+                    media = None
+            if not isinstance(media, dict):
+                printDBG("parserABYSS: media decrypt failed")
+                return []
+
+        cdnHeader = {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": playerOrigin}
+        subTracks = []
+        for sub in ((datas.get("config") or {}).get("subtitles") or []):
+            if isinstance(sub, dict) and sub.get("slug"):
+                lang = urllib_unquote(sub.get("lang") or "")
+                subTracks.append({"title": lang, "url": "https://cdn.iamcdn.net/subtitle/%s/%s.%s" % (md5Id, sub["slug"], sub.get("type") or "srt"), "lang": lang, "format": sub.get("type") or "srt"})
+        if subTracks:
+            cdnHeader["external_sub_tracks"] = subTracks
+
+        urltab = []
+        mp4 = media.get("mp4") or {}
+        domains = [d for d in (mp4.get("domains") or []) if d]
+        sources = [s for s in (mp4.get("sources") or []) if isinstance(s, dict) and s.get("status") is not False]
+        sources.sort(key=lambda s: int(s.get("size") or 0), reverse=True)
+        for src in sources:
+            label = "%s" % (src.get("label") or src.get("res_id") or "mp4")
+            if src.get("file"):  # older payloads carry a plain link
+                urltab.append({"name": "abyss %s" % label, "url": urlparser.decorateUrl(src["file"].replace("\\/", "/"), cdnHeader)})
+                continue
+            size, resId, sub = src.get("size"), src.get("res_id"), src.get("sub") or ""
+            if not (size and resId and domains):
+                continue
+            domain = ([d for d in domains if sub and sub in d] or [domains[int(size) % len(domains)]])[0]
+            path = "/mp4/%s/%s/%s?v=%s" % (md5Id, resId, size, slug)
+            token = base64.b64encode(ctr(ensure_binary(path), numSeed(size))).replace(b"=", b"")
+            token = ensure_str(base64.b64encode(token).replace(b"=", b""))
+            url = "%s/sora/%s/%s" % (domain if domain.startswith("http") else "https://" + domain, size, token)
+            urltab.append({"name": "abyss %s" % label, "url": urlparser.decorateUrl(url, dict(cdnHeader, iptv_format="mp4"))})
+
+        hls = media.get("hls") or {}
+        for key in ("file", "url", "master", "src", "source"):
+            if isinstance(hls.get(key), basestring) and hls[key]:
+                urltab.extend(getDirectM3U8Playlist(urlparser.decorateUrl(hls[key].replace("\\/", "/"), cdnHeader), checkContent=True))
+                break
         return urltab
 
     def parserANONMP4(self, baseUrl):  # fix 050626
