@@ -3258,24 +3258,74 @@ class pageParser(CaptchaHelper):
         urltab.extend(getDirectM3U8Playlist(url, checkExt=False, variantCheck=False, sortWithMaxBitrate=99999999))
         return urltab
 
-    def parserFLYFILE(self, baseUrl):  # add 030626, update 031026 - flyf.lat is the same player, its API is on flyfile.app
+    def parserFLYFILE(self, baseUrl):  # add 030626, update 031026 - flyf.lat is the same player, its API is on flyfile.app; fallback for files without master.m3u8
         printDBG("parserFLYFILE baseUrl[%s]" % baseUrl)
+        baseUrl = strwithmeta(baseUrl)
+        mid = baseUrl.split("?")[0].rstrip("/").split("/")[-1]
         if "flyf.lat/" in baseUrl:
-            baseUrl = strwithmeta("https://flyfile.app/embed/%s" % baseUrl.split("?")[0].rstrip("/").split("/")[-1], strwithmeta(baseUrl).meta)
-        host = urlparser.getDomain(baseUrl, False)
+            baseUrl = strwithmeta("https://flyfile.app/embed/%s" % mid, baseUrl.meta)
+        origin = urlparser.getDomain(baseUrl, False).rstrip("/")
+        api = "https://api.%s/api/" % urlparser.getDomain(baseUrl)
         HTTP_HEADER = self.cm.getDefaultHeader()
-        HTTP_HEADER['Referer'] = baseUrl  # FIX: Added
-        HTTP_HEADER['Origin'] = host[:-1] if host.endswith('/') else host  # FIX: Added
-        mid = baseUrl.split("?")[0].split("/")[-1]
-        sts, data = self.cm.getPage("https://api.%s/api/streaming/assign/%s" % (urlparser.getDomain(baseUrl), mid), {"header": HTTP_HEADER})
+        HTTP_HEADER.update({"Referer": baseUrl, "Origin": origin, "Accept": "application/json, text/plain, */*",
+                            "X-FlyFile-View": "embed", "x-flyfile-host": urlparser.getDomain(baseUrl),
+                            "X-Embed-Referrer": baseUrl.meta.get("Referer", "")})
+
+        # file info: internal fileId, qualities and audio tracks (needed when the node has no master.m3u8)
+        info = {}
+        sts, data = self.cm.getPage(api + "public/file/%s" % mid, {"header": HTTP_HEADER})
+        if sts:
+            try:
+                info = json_loads(data)
+            except Exception:
+                printExc()
+        fileId = info.get("id") or mid
+        asset = info.get("videoAsset") or {}
+
+        assignHeader = dict(HTTP_HEADER)
+        assignHeader["X-Adblock-Detected"] = "0"
+        sts, data = self.cm.getPage(api + "streaming/assign/%s" % mid, {"header": assignHeader})
         if not sts:
             return []
-        data = json_loads(data)
-        urltab = []
-        if data.get("url") and data.get("token"):
-            url = "%s/hls/%s/master.m3u8" % (data["url"].rstrip("/"), data["token"])
-            url = urlparser.decorateUrl(url, {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": host, "Origin": host[:-1]})
-            urltab.extend(getDirectM3U8Playlist(url))
+        try:
+            data = json_loads(data)
+        except Exception:
+            printExc()
+            return []
+        if not data.get("url") or not data.get("token"):
+            return []
+        hlsBase = "%s/hls/%s/" % (data["url"].rstrip("/"), data["token"])
+        streamHeader = {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": origin + "/", "Origin": origin}
+        urltab = getDirectM3U8Playlist(urlparser.decorateUrl(hlsBase + "master.m3u8", streamHeader), checkContent=True, sortWithMaxBitrate=999999999)
+        if urltab:
+            return urltab
+
+        # some files have no master.m3u8 on the node (404), but <quality>/index.m3u8 and audio_<lang>_<n>/index.m3u8 exist
+        qualities = asset.get("qualities") or []
+        if not isinstance(qualities, list):
+            try:
+                qualities = json_loads(qualities)
+            except Exception:
+                qualities = []
+        audioUrl = ""
+        for idx, track in enumerate(asset.get("audioTracks") or [{}]):
+            url = "%saudio_%s_%d/index.m3u8" % (hlsBase, track.get("lang") or "und", idx)
+            params = {"header": streamHeader}
+            sts, data = self.cm.getPage(url, params)
+            if sts and "#EXTINF" in data:
+                audioUrl = url
+                break
+        for q in qualities:
+            q = q.get("quality", "") if isinstance(q, dict) else str(q)
+            if not q:
+                continue
+            videoUrl = urlparser.decorateUrl(hlsBase + q + "/index.m3u8", streamHeader)
+            if audioUrl:
+                meta = dict(videoUrl.meta)
+                meta.update({"audio_url": urlparser.decorateUrl(audioUrl, streamHeader), "video_url": videoUrl, "ff_out_container": "mpegts"})
+                urltab.append({"name": "FlyFile %s" % q, "url": urlparser.decorateUrl("merge://audio_url|video_url", meta)})
+            else:
+                urltab.append({"name": "FlyFile %s" % q, "url": videoUrl})
         return urltab
 
     def parserANONMP4(self, baseUrl):  # fix 050626
