@@ -46,6 +46,7 @@ def batchPauseLeft(lastLookup, now, pause):
         return 0
     return max(0, int(round(lastLookup + pause - now)))
 
+
 # what a title must not contain to be a file name - the same characters playVideo() always replaced
 FILE_NAME_FORBIDDEN = '/:*?"<>|'
 
