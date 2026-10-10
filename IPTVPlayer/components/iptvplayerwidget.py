@@ -4028,7 +4028,7 @@ class E2iPlayerWidget(Screen):
     # or remove from the favourites the marked rows), shuffle / reverse. Each action takes the marked rows it can handle.
     ###################################################
     LIST_FUNCTION_IDS = ('PLAY_FROM_HERE', 'SELECT_START', 'SELECT_ALL', 'SELECT_CLEAR', 'PLAY_MARKED', 'BATCH_MARKED',
-                         'FAV_MARKED', 'FAV_REMOVE_MARKED', 'BATCH_ALL','RandomizePlayableItems', 'ReversePlayableItems', 'UndoRandomize',
+                         'FAV_MARKED', 'FAV_REMOVE_MARKED', 'BATCH_ALL', 'RandomizePlayableItems', 'ReversePlayableItems', 'UndoRandomize',
                          'UndoReverse')
     # rows the selection mode marks: what the sequencer plays
     SELECTABLE_TYPES = (CDisplayListItem.TYPE_VIDEO, CDisplayListItem.TYPE_AUDIO, CDisplayListItem.TYPE_PICTURE)
