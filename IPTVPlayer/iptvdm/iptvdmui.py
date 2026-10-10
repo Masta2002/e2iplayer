@@ -74,7 +74,8 @@ def ltrDisplayText(text):
 
 class IPTVDMWidget(Screen):
 
-    VIDEO_FILE_EXTENSIONS = ('.flv', '.mp4', '.mkv', '.avi', '.mov', '.ts', '.m2ts', '.wmv', '.mpeg', '.mpg', '.m4v', '.webm')
+    # also the audio downloads: .mp3 (the download manager's default for audio items), .aac (radio HLS)
+    VIDEO_FILE_EXTENSIONS = ('.flv', '.mp4', '.mkv', '.avi', '.mov', '.ts', '.m2ts', '.wmv', '.mpeg', '.mpg', '.m4v', '.webm', '.mp3', '.aac')
     ICONS_FILESNAMES = {DMHelper.STS.WAITING: 'iconwait1.png',
                         DMHelper.STS.DOWNLOADING: 'iconwait2.png',
                         DMHelper.STS.DOWNLOADED: 'icondone.png',
@@ -332,7 +333,7 @@ class IPTVDMWidget(Screen):
         removed = False
         baseName = os_path.splitext(fileName)[0]
         candidates = [fileName]
-        for ext in ['.mp4', '.mkv', '.flv', '.avi', '.ts', '.mov', '.wmv', '.txt', '.jpg', '.jpeg']:
+        for ext in ['.mp4', '.mkv', '.flv', '.avi', '.ts', '.mov', '.wmv', '.aac', '.txt', '.jpg', '.jpeg']:
             candidate = baseName + ext
             if candidate not in candidates:
                 candidates.append(candidate)

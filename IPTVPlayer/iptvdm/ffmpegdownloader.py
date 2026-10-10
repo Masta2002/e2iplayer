@@ -4,7 +4,10 @@
 #
 #  $Id$
 #
-#  Last Modified: 31.08.2026
+#  Last Modified: 10.10.2026
+#   - _dataAvail(): ffmpeg's lines before the stream mapping and its error lines go to the debug log
+#     (each distinct error line once, capped, per-packet warnings left out).
+#  Earlier: 31.08.2026
 #   - _getDownloadSpeed()/_getDuration()/_getStartTime() null-guard their regex
 #     matches (ffmpeg emits "N/A" progress fields that used to raise -> printExc
 #     spam on nearly every line).
@@ -59,6 +62,13 @@ class FFMPEGDownloader(BaseDownloader, SidecarMixin):
     # by a segment, so an exact match must not be required
     DURATION_COMPLETE_RATIO = 0.97
 
+    # ffmpeg output lines written to the debug log after the stream mapping (before it every line is logged);
+    # ERROR_SPAM lines repeat per packet or per retry and are never logged, each distinct error line is logged
+    # once and at most MAX_ERROR_LINES per download
+    ERROR_LINE = re.compile(r'(?i)\b(?:error|failed|invalid|forbidden|denied|not found|server returned|unauthorized|timed out|refused|unable to|reset by peer)\b')
+    ERROR_SPAM = re.compile(r'(?i)invalid dts|non-monotonous|will reconnect at')
+    MAX_ERROR_LINES = 20
+
     # extra input options for HTTP(S) sources: recover from dropped connections
     # and give up on a stalled socket instead of hanging forever (rw_timeout is in
     # microseconds)
@@ -69,6 +79,9 @@ class FFMPEGDownloader(BaseDownloader, SidecarMixin):
     CONTAINER_EXT = {'matroska': '.mkv', 'webm': '.webm', 'mpegts': '.ts',
                      'mp4': '.mp4', 'mov': '.mp4', 'flv': '.flv'}
     KNOWN_EXT = ('.mp4', '.mkv', '.ts', '.webm', '.mov', '.flv', '.avi', '.m4v')
+    # file extension of a source -> its container (the "auto" output format)
+    SOURCE_CONTAINER = (('.mp4', 'mp4'), ('.m4v', 'mp4'), ('.mov', 'mp4'), ('.webm', 'webm'),
+                        ('.flv', 'flv'), ('.ts', 'mpegts'), ('.mkv', 'matroska'))
 
     def __init__(self):
         printDBG('FFMPEGDownloader.__init__ ----------------------------------')
@@ -82,6 +95,7 @@ class FFMPEGDownloader(BaseDownloader, SidecarMixin):
         self.downloadDuration = 0
         self.liveStream = False
         self.headerReceived = False
+        self.loggedErrors = set()
         self.parseReObj = {}
         self.parseReObj['start_time'] = re.compile(r'\sstart\:\s*?([0-9]+?)\.')
         self.parseReObj['duration'] = re.compile(r'[\s=]([0-9]+?)\:([0-9]+?)\:([0-9]+?)\.')
@@ -261,6 +275,22 @@ class FFMPEGDownloader(BaseDownloader, SidecarMixin):
             printExc()
         return 0
 
+    def _logOutputLine(self, item):
+        if self.ERROR_SPAM.search(item):
+            return
+        if self.ERROR_LINE.search(item):
+            # error lines often start with a long signed URL - keep head and tail so the reason at the end survives
+            if item in self.loggedErrors or len(self.loggedErrors) >= self.MAX_ERROR_LINES:
+                return
+            self.loggedErrors.add(item)
+            if len(item) > 400:
+                item = item[:150] + ' ... ' + item[-150:]
+        elif self.headerReceived:
+            return
+        else:
+            item = item[:300]
+        printDBG('FFMPEGDownloader ffmpeg: %s' % item)
+
     def _dataAvail(self, data):
         if None is data:
             return
@@ -273,8 +303,10 @@ class FFMPEGDownloader(BaseDownloader, SidecarMixin):
         self.outData = data.pop()
 
         for item in data:
-            # printDBG("---")
-            # printDBG(item)
+            # what ffmpeg says before the stream mapping and every error line go to the log (the progress lines stay
+            # silent) - without them a failed download left no reason behind
+            if item.strip() and 'frame=' not in item and not item.lstrip().startswith('size='):
+                self._logOutputLine(item)
             if not self.headerReceived:
                 if 'Duration:' in item:
                     duration = self._getDuration(item) - self._getStartTime(item)
@@ -368,18 +400,57 @@ class FFMPEGDownloader(BaseDownloader, SidecarMixin):
     def _outContainer(self):
         # the container passed to ffmpeg's -f; it also drives the final file
         # extension (_fixFileExtension), so both must read it the same way.
-        # A host's ff_out_container wins; a DASH download in the download
-        # manager uses the configured format; everything else (also buffered
-        # playback, whose file the player holds under its name) Matroska
+        # A host's ff_out_container wins; a download in the download manager
+        # uses the setting of its source (DASH, HLS or a single file; "auto" =
+        # the container of the source); buffered playback, whose file the
+        # player holds under its name, Matroska
         meta = strwithmeta(self.url).meta
         if 'ff_out_container' in meta:
             return str(meta['ff_out_container']).lower()
-        if self.allowFinalRename and self._isDashSource(meta):
+        if not self.allowFinalRename:
+            return self.ffmpegOutputContener
+        if self._isDashSource(meta):
             try:
                 return str(config.plugins.iptvplayer.dash_out_container.value).lower()
             except Exception:
                 printExc()
+            return self.ffmpegOutputContener
+        try:
+            setting = config.plugins.iptvplayer.hls_out_container if self._isHlsSource(meta) else config.plugins.iptvplayer.file_out_container
+            choice = str(setting.value).lower()
+        except Exception:
+            printExc()
+            choice = 'auto'
+        return self._sourceContainer(meta) if choice == 'auto' else choice
+
+    def _sourceContainer(self, meta):
+        # "auto": the container the site delivers - one MP4/WebM/FLV file stays
+        # one, HLS (MPEG-TS segments) becomes .ts, also as a live recording. A
+        # merge:// of separate audio/video parts, a live recording of a single
+        # file (an MP4 stopped without its index does not play) and anything
+        # unknown stay Matroska
+        url = str(self.url)
+        if url.startswith('merge://'):
+            return self.ffmpegOutputContener
+        if str(meta.get('iptv_proto', '')).lower() == 'm3u8' or '.m3u8' in url.lower():
+            return 'mpegts'
+        if meta.get('iptv_livestream'):
+            return self.ffmpegOutputContener
+        path = url.split('?', 1)[0].split('#', 1)[0].rstrip('/').lower()
+        for ext, container in self.SOURCE_CONTAINER:
+            if path.endswith(ext):
+                return container
         return self.ffmpegOutputContener
+
+    def _isHlsSource(self, meta):
+        # M3U8 by proto or URL, also a merge:// whose audio/video parts are M3U8s
+        if str(meta.get('iptv_proto', '')).lower() == 'm3u8' or '.m3u8' in str(self.url).lower():
+            return True
+        if str(self.url).startswith('merge://'):
+            for key in str(self.url).split('merge://', 1)[1].split('|'):
+                if '.m3u8' in str(meta.get(key, '')).lower():
+                    return True
+        return False
 
     def _isDashSource(self, meta):
         # MPD by proto or URL, also a merge:// whose audio/video parts are MPDs

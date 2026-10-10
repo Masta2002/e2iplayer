@@ -390,6 +390,8 @@ class ConfigMenu(ConfigBaseWidget):
         list.append(getConfigListEntry("    " + _("Pause between the batch lookups of one host [s]"), config.plugins.iptvplayer.IPTVDMBatchPause))
         list.append(getConfigListEntry("    " + _("Program for file downloads (HTTP/FTP)"), config.plugins.iptvplayer.http_downloader))
         list.append(getConfigListEntry("    " + _("File format of DASH (MPD) downloads"), config.plugins.iptvplayer.dash_out_container))
+        list.append(getConfigListEntry("    " + _("File format of HLS (M3U8) downloads"), config.plugins.iptvplayer.hls_out_container))
+        list.append(getConfigListEntry("    " + _("File format of single video files (FFmpeg)"), config.plugins.iptvplayer.file_out_container))
         list.append(getConfigListEntry("    " + _("Show download notification"), config.plugins.iptvplayer.IPTVDMShowNotification))
         if config.plugins.iptvplayer.IPTVDMShowNotification.value:
             list.append(getConfigListEntry("        " + _("Download notification duration"), config.plugins.iptvplayer.IPTVDMNotificationDuration))

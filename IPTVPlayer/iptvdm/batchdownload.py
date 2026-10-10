@@ -109,6 +109,14 @@ def isLiveRow(rawItem):
     return isinstance(rawItem, dict) and bool(rawItem.get('live') or rawItem.get('is_live'))
 
 
+def recordingMarkerKey(rawItem, urlMeta, itemKey):
+    # the downloaded-marker key a recording (GREEN) gets: none for a live stream (the row of a live channel would
+    # show "downloaded" for good, its next broadcast is a new one) - the recording itself is saved as before
+    if isLiveRow(rawItem) or (isinstance(urlMeta, dict) and urlMeta.get('iptv_livestream')):
+        return ''
+    return itemKey
+
+
 def selectBatchRows(rows, activeKeys, isDownloaded):
     # rows: [{'title', 'key', 'source', 'pin', 'live', ...}] in list order -> (rows to queue, number skipped).
     # Skipped: no download marker key (the item can not be told apart), no way to reopen it, a PIN that is
