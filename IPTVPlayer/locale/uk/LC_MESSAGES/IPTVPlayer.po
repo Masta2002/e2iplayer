@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: IPTVPlayer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-09 20:23+0000\n"
+"POT-Creation-Date: 2026-10-10 23:37+0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: vovan43 <yuozyo@ukr.net>\n"
 "Language-Team: IPTVPlayer\n"
@@ -74,12 +74,24 @@ msgid "\"Web\" streams player"
 msgstr "Плеєр \"веб\"-потоків"
 
 #, python-format
+msgid "%d added, %d skipped."
+msgstr ""
+
+#, python-format
 msgid "%d duplicate entries removed."
 msgstr "Видалено дублікатів записів: %d."
 
 #, python-format
 msgid "%d duplicate entry removed."
 msgstr "Видалено дублікат запису: %d."
+
+#, python-format
+msgid "%d items added to the download queue, %d skipped."
+msgstr ""
+
+#, python-format
+msgid "%d of %d downloaded"
+msgstr ""
 
 #, python-format
 msgid "%d parts"
@@ -92,6 +104,10 @@ msgstr "%d програм"
 #, python-format
 msgid "%d recitations"
 msgstr "%d читань"
+
+#, python-format
+msgid "%d removed, %d skipped."
+msgstr ""
 
 #, python-format
 msgid "%d videos"
@@ -162,10 +178,6 @@ msgid "%s posts"
 msgstr "%s дописів"
 
 #, python-format
-msgid "%s recitations"
-msgstr "%s читань"
-
-#, python-format
 msgid "%s refused the download. Please set your login and password in the configuration."
 msgstr "%s відхилив завантаження. Будь ласка, вкажіть логін і пароль у налаштуваннях."
 
@@ -212,6 +224,10 @@ msgstr "%s глядачів"
 #, python-format
 msgid "%s views"
 msgstr "%s переглядів"
+
+#, python-format
+msgid "%s: decrypting the stream, this can take a while (%d s)"
+msgstr ""
 
 #, python-format
 msgid "(%d YouTube channel(s) could not be read)"
@@ -451,6 +467,10 @@ msgstr "Актори"
 msgid "Actors:"
 msgstr "Актори:"
 
+#, python-format
+msgid "Add %d items to the download queue?"
+msgstr ""
+
 msgid "Add channel name to downloaded file"
 msgstr "Додавати назву каналу до завантаженого файлу"
 
@@ -463,6 +483,10 @@ msgstr "Додати елемент до обраного"
 
 msgid "Add item to group"
 msgstr "Додати елемент до групи"
+
+#, python-format
+msgid "Add marked items to favourites (%d)"
+msgstr ""
 
 msgid "Add new entry"
 msgstr "Додати новий запис"
@@ -1182,9 +1206,6 @@ msgstr "Підтвердіть назву фільму"
 msgid "Confirmation error."
 msgstr "Помилка підтвердження."
 
-msgid "Connection to server failed!"
-msgstr "Не вдалося підключитися до сервера!"
-
 msgid "Connection to the weeb.tv server failed."
 msgstr "Не вдалося підключитися до сервера weeb.tv."
 
@@ -1583,6 +1604,9 @@ msgstr "Завантажити (готово через %d секунд)"
 msgid "Download again"
 msgstr "Завантажити ще раз"
 
+msgid "Download all items of this page"
+msgstr ""
+
 msgid "Download already exists"
 msgstr "Завантаження вже існує"
 
@@ -1617,6 +1641,10 @@ msgstr "Менеджер завантажень"
 
 msgid "Download manager is not initialized"
 msgstr "Менеджер завантажень не ініціалізовано"
+
+#, python-format
+msgid "Download marked items (%d)"
+msgstr ""
 
 msgid "Download new version"
 msgstr "Завантажити нову версію"
@@ -1911,9 +1939,6 @@ msgstr "Введіть текст"
 msgid "Entertainment"
 msgstr "Розваги"
 
-msgid "Entitlement parsing error."
-msgstr "Помилка розбору прав доступу."
-
 #, python-format
 msgid "Entries: %d | Sort: %s | Status: %s | Jump target: %s"
 msgstr "Записів: %d | Сортування: %s | Стан: %s | Ціль переходу: %s"
@@ -2202,6 +2227,12 @@ msgstr "Файл неможливо завантажити. Протокол [%s
 
 msgid "File format of DASH (MPD) downloads"
 msgstr "Формат файлів для завантажень DASH (MPD)"
+
+msgid "File format of HLS (M3U8) downloads"
+msgstr ""
+
+msgid "File format of single video files (FFmpeg)"
+msgstr ""
 
 #, python-format
 msgid "File might be corrupted (size: %d bytes)."
@@ -2916,9 +2947,6 @@ msgstr "Користувача Last.fm \"%s\" не знайдено."
 msgid "Last.fm user name:"
 msgstr "Ім'я користувача Last.fm:"
 
-msgid "Lastest"
-msgstr "Найновіші"
-
 msgid "Latest"
 msgstr "Найновіші"
 
@@ -3199,9 +3227,6 @@ msgstr "MP3Quran радіо наживо"
 msgid "Main"
 msgstr "Головна"
 
-msgid "Main menu"
-msgstr "Головне меню"
-
 #, python-format
 msgid "Make directory [%s]"
 msgstr "Створити каталог [%s]"
@@ -3262,9 +3287,6 @@ msgstr "Військові"
 
 msgid "Mini series"
 msgstr "Мінісеріали"
-
-msgid "Missed"
-msgstr "Пропущене"
 
 msgid "Missed the show?"
 msgstr "Пропустили передачу?"
@@ -3708,6 +3730,9 @@ msgstr "ОФЛАЙН"
 msgid "OK"
 msgstr "OK"
 
+msgid "OK marks an item, BLUE shows what can be done with the marked items."
+msgstr ""
+
 msgid "OMDb API key (free at omdbapi.com)"
 msgstr "Ключ API OMDb (безкоштовно на omdbapi.com)"
 
@@ -3900,6 +3925,9 @@ msgstr "Патологічні розбори"
 msgid "Patriotism"
 msgstr "Патріотизм"
 
+msgid "Pause between the batch lookups of one host [s]"
+msgstr ""
+
 #, python-format
 msgid "Peak: %s"
 msgstr ""
@@ -3934,6 +3962,13 @@ msgstr "Захист плагіна PIN-кодом"
 msgid "Pin protection for this host"
 msgstr "Захист PIN-кодом для цього хоста"
 
+msgid "Play all from here"
+msgstr ""
+
+#, python-format
+msgid "Play marked items (%d)"
+msgstr ""
+
 msgid "Play torrents with TorrServer"
 msgstr ""
 
@@ -3944,19 +3979,8 @@ msgstr "Відтворити плеєром [%s]"
 msgid "Playback UHD :"
 msgstr "Відтворення UHD :"
 
-#, python-format
-msgid "Player %s"
-msgstr "Плеєр %s"
-
-#, python-format
-msgid "Player %s: %s"
-msgstr "Плеєр %s: %s"
-
 msgid "Player Skin"
 msgstr "Скін плеєра"
-
-msgid "Player data parsing error."
-msgstr "Помилка розбору даних плеєра."
 
 msgid "Playing on the TV is not possible (no enigma2 session)."
 msgstr "Відтворення на телевізорі неможливе (немає сеансу enigma2)."
@@ -4370,6 +4394,10 @@ msgstr "Видалити"
 msgid "Remove \"%s\" item"
 msgstr "Видалити елемент \"%s\""
 
+#, python-format
+msgid "Remove %d items from the favourites?"
+msgstr ""
+
 msgid "Remove file"
 msgstr "Видалити файл"
 
@@ -4381,6 +4409,10 @@ msgstr "Видалити групу"
 
 msgid "Remove item"
 msgstr "Видалити елемент"
+
+#, python-format
+msgid "Remove marked items from favourites (%d)"
+msgstr ""
 
 msgid "Remove thumbnails"
 msgstr "Видалити мініатюри"
@@ -4635,12 +4667,18 @@ msgstr "Розділ"
 msgid "Sections"
 msgstr "Розділи"
 
+msgid "Select"
+msgstr ""
+
 #, python-format
 msgid "Select %s"
 msgstr "Виберіть %s"
 
 msgid "Select action"
 msgstr "Виберіть дію"
+
+msgid "Select all"
+msgstr ""
 
 msgid "Select audio track"
 msgstr "Виберіть аудіодоріжку"
@@ -4882,6 +4920,9 @@ msgstr "Показувати лише аудіо вибраною мовою:"
 
 msgid "Show only best quality of streams:"
 msgstr "Показувати лише найкращу якість потоків:"
+
+msgid "Show playlist"
+msgstr ""
 
 msgid "Show results"
 msgstr "Показати результати"
@@ -6043,6 +6084,12 @@ msgstr "Розмонтувати файл iso"
 msgid "Unable to comply. Search History is empty."
 msgstr "Неможливо виконати. Історія пошуку порожня."
 
+msgid "Undo reverse"
+msgstr ""
+
+msgid "Undo shuffle"
+msgstr ""
+
 msgid "Unfix jump target"
 msgstr "Відкріпити ціль переходу"
 
@@ -6069,6 +6116,9 @@ msgstr "Невідомий парсер субтитрів для формату
 #, python-format
 msgid "Unrar error code[%s]."
 msgstr "Код помилки Unrar[%s]."
+
+msgid "Unselect all"
+msgstr ""
 
 msgid "Unset watched"
 msgstr "Зняти позначку переглянутого"
@@ -6534,9 +6584,6 @@ msgstr "[HLS/M3U8] пряма трансляція починається із �
 msgid "[HTTP] buffering"
 msgstr "[HTTP] буферизація"
 
-msgid "[Logged-in-only]"
-msgstr "[Лише після входу]"
-
 msgid "[RTMP] buffering (rtmpdump required)"
 msgstr "[RTMP] буферизація (потрібен rtmpdump)"
 
@@ -6797,6 +6844,9 @@ msgstr "головне"
 msgid "manual"
 msgstr "вручну"
 
+msgid "marked"
+msgstr ""
+
 msgid "maroon"
 msgstr "темно-бордовий"
 
@@ -6914,6 +6964,9 @@ msgstr "червоний"
 msgid "refresh the current list"
 msgstr "оновити поточний список"
 
+msgid "reversed"
+msgstr ""
+
 msgid "rootfs"
 msgstr "rootfs"
 
@@ -6977,6 +7030,9 @@ msgstr "показати більше відомостей про вибрани
 
 msgid "show this help"
 msgstr "показати цю довідку"
+
+msgid "shuffled"
+msgstr ""
 
 msgid "sign in (subscriptions, playlists, age-restricted videos)"
 msgstr "увійти (підписки, плейлисти, відео з віковими обмеженнями)"

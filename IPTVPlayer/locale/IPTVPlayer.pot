@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-09 20:23+0000\n"
+"POT-Creation-Date: 2026-10-10 23:37+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -67,11 +67,23 @@ msgid "\"Web\" streams player"
 msgstr ""
 
 #, python-format
+msgid "%d added, %d skipped."
+msgstr ""
+
+#, python-format
 msgid "%d duplicate entries removed."
 msgstr ""
 
 #, python-format
 msgid "%d duplicate entry removed."
+msgstr ""
+
+#, python-format
+msgid "%d items added to the download queue, %d skipped."
+msgstr ""
+
+#, python-format
+msgid "%d of %d downloaded"
 msgstr ""
 
 #, python-format
@@ -84,6 +96,10 @@ msgstr ""
 
 #, python-format
 msgid "%d recitations"
+msgstr ""
+
+#, python-format
+msgid "%d removed, %d skipped."
 msgstr ""
 
 #, python-format
@@ -155,10 +171,6 @@ msgid "%s posts"
 msgstr ""
 
 #, python-format
-msgid "%s recitations"
-msgstr ""
-
-#, python-format
 msgid "%s refused the download. Please set your login and password in the configuration."
 msgstr ""
 
@@ -202,6 +214,10 @@ msgstr ""
 
 #, python-format
 msgid "%s views"
+msgstr ""
+
+#, python-format
+msgid "%s: decrypting the stream, this can take a while (%d s)"
 msgstr ""
 
 #, python-format
@@ -440,6 +456,10 @@ msgstr ""
 msgid "Actors:"
 msgstr ""
 
+#, python-format
+msgid "Add %d items to the download queue?"
+msgstr ""
+
 msgid "Add channel name to downloaded file"
 msgstr ""
 
@@ -451,6 +471,10 @@ msgid "Add item to favorites"
 msgstr ""
 
 msgid "Add item to group"
+msgstr ""
+
+#, python-format
+msgid "Add marked items to favourites (%d)"
 msgstr ""
 
 msgid "Add new entry"
@@ -1164,9 +1188,6 @@ msgstr ""
 msgid "Confirmation error."
 msgstr ""
 
-msgid "Connection to server failed!"
-msgstr ""
-
 msgid "Connection to the weeb.tv server failed."
 msgstr ""
 
@@ -1565,6 +1586,9 @@ msgstr ""
 msgid "Download again"
 msgstr ""
 
+msgid "Download all items of this page"
+msgstr ""
+
 msgid "Download already exists"
 msgstr ""
 
@@ -1591,6 +1615,10 @@ msgid "Download manager"
 msgstr ""
 
 msgid "Download manager is not initialized"
+msgstr ""
+
+#, python-format
+msgid "Download marked items (%d)"
 msgstr ""
 
 msgid "Download new version"
@@ -1866,9 +1894,6 @@ msgid "Enter the text"
 msgstr ""
 
 msgid "Entertainment"
-msgstr ""
-
-msgid "Entitlement parsing error."
 msgstr ""
 
 #, python-format
@@ -2154,6 +2179,12 @@ msgid "File can not be downloaded. Protocol [%s] is unsupported"
 msgstr ""
 
 msgid "File format of DASH (MPD) downloads"
+msgstr ""
+
+msgid "File format of HLS (M3U8) downloads"
+msgstr ""
+
+msgid "File format of single video files (FFmpeg)"
 msgstr ""
 
 #, python-format
@@ -2861,9 +2892,6 @@ msgstr ""
 msgid "Last.fm user name:"
 msgstr ""
 
-msgid "Lastest"
-msgstr ""
-
 msgid "Latest"
 msgstr ""
 
@@ -3142,9 +3170,6 @@ msgstr ""
 msgid "Main"
 msgstr ""
 
-msgid "Main menu"
-msgstr ""
-
 #, python-format
 msgid "Make directory [%s]"
 msgstr ""
@@ -3204,9 +3229,6 @@ msgid "Military"
 msgstr ""
 
 msgid "Mini series"
-msgstr ""
-
-msgid "Missed"
 msgstr ""
 
 msgid "Missed the show?"
@@ -3640,6 +3662,9 @@ msgstr ""
 msgid "OK"
 msgstr ""
 
+msgid "OK marks an item, BLUE shows what can be done with the marked items."
+msgstr ""
+
 msgid "OMDb API key (free at omdbapi.com)"
 msgstr ""
 
@@ -3832,6 +3857,9 @@ msgstr ""
 msgid "Patriotism"
 msgstr ""
 
+msgid "Pause between the batch lookups of one host [s]"
+msgstr ""
+
 #, python-format
 msgid "Peak: %s"
 msgstr ""
@@ -3866,6 +3894,13 @@ msgstr ""
 msgid "Pin protection for this host"
 msgstr ""
 
+msgid "Play all from here"
+msgstr ""
+
+#, python-format
+msgid "Play marked items (%d)"
+msgstr ""
+
 msgid "Play torrents with TorrServer"
 msgstr ""
 
@@ -3876,18 +3911,7 @@ msgstr ""
 msgid "Playback UHD :"
 msgstr ""
 
-#, python-format
-msgid "Player %s"
-msgstr ""
-
-#, python-format
-msgid "Player %s: %s"
-msgstr ""
-
 msgid "Player Skin"
-msgstr ""
-
-msgid "Player data parsing error."
 msgstr ""
 
 msgid "Playing on the TV is not possible (no enigma2 session)."
@@ -4299,6 +4323,10 @@ msgstr ""
 msgid "Remove \"%s\" item"
 msgstr ""
 
+#, python-format
+msgid "Remove %d items from the favourites?"
+msgstr ""
+
 msgid "Remove file"
 msgstr ""
 
@@ -4309,6 +4337,10 @@ msgid "Remove group"
 msgstr ""
 
 msgid "Remove item"
+msgstr ""
+
+#, python-format
+msgid "Remove marked items from favourites (%d)"
 msgstr ""
 
 msgid "Remove thumbnails"
@@ -4556,11 +4588,17 @@ msgstr ""
 msgid "Sections"
 msgstr ""
 
+msgid "Select"
+msgstr ""
+
 #, python-format
 msgid "Select %s"
 msgstr ""
 
 msgid "Select action"
+msgstr ""
+
+msgid "Select all"
 msgstr ""
 
 msgid "Select audio track"
@@ -4800,6 +4838,9 @@ msgid "Show only audio in selected language:"
 msgstr ""
 
 msgid "Show only best quality of streams:"
+msgstr ""
+
+msgid "Show playlist"
 msgstr ""
 
 msgid "Show results"
@@ -5924,6 +5965,12 @@ msgstr ""
 msgid "Unable to comply. Search History is empty."
 msgstr ""
 
+msgid "Undo reverse"
+msgstr ""
+
+msgid "Undo shuffle"
+msgstr ""
+
 msgid "Unfix jump target"
 msgstr ""
 
@@ -5949,6 +5996,9 @@ msgstr ""
 
 #, python-format
 msgid "Unrar error code[%s]."
+msgstr ""
+
+msgid "Unselect all"
 msgstr ""
 
 msgid "Unset watched"
@@ -6415,9 +6465,6 @@ msgstr ""
 msgid "[HTTP] buffering"
 msgstr ""
 
-msgid "[Logged-in-only]"
-msgstr ""
-
 msgid "[RTMP] buffering (rtmpdump required)"
 msgstr ""
 
@@ -6678,6 +6725,9 @@ msgstr ""
 msgid "manual"
 msgstr ""
 
+msgid "marked"
+msgstr ""
+
 msgid "maroon"
 msgstr ""
 
@@ -6795,6 +6845,9 @@ msgstr ""
 msgid "refresh the current list"
 msgstr ""
 
+msgid "reversed"
+msgstr ""
+
 msgid "rootfs"
 msgstr ""
 
@@ -6857,6 +6910,9 @@ msgid "show more details about the selected item"
 msgstr ""
 
 msgid "show this help"
+msgstr ""
+
+msgid "shuffled"
 msgstr ""
 
 msgid "sign in (subscriptions, playlists, age-restricted videos)"

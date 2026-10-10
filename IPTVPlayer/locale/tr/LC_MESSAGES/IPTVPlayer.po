@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: IPTVPlayer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-09 20:23+0000\n"
+"POT-Creation-Date: 2026-10-10 23:37+0000\n"
 "PO-Revision-Date: 2026-03-13 15:06+0300\n"
 "Last-Translator: audi06_19 <audi06_19@hotmail.com>\n"
 "Language-Team: Turkish\n"
@@ -72,12 +72,24 @@ msgid "\"Web\" streams player"
 msgstr "\"Web\" yayın oynatıcısı"
 
 #, python-format
+msgid "%d added, %d skipped."
+msgstr ""
+
+#, python-format
 msgid "%d duplicate entries removed."
 msgstr "%d yinelenen giriş kaldırıldı."
 
 #, python-format
 msgid "%d duplicate entry removed."
 msgstr "%d yinelenen giriş kaldırıldı."
+
+#, python-format
+msgid "%d items added to the download queue, %d skipped."
+msgstr ""
+
+#, python-format
+msgid "%d of %d downloaded"
+msgstr ""
 
 #, python-format
 msgid "%d parts"
@@ -90,6 +102,10 @@ msgstr "%d program"
 #, python-format
 msgid "%d recitations"
 msgstr "%d tilavet"
+
+#, python-format
+msgid "%d removed, %d skipped."
+msgstr ""
 
 #, python-format
 msgid "%d videos"
@@ -160,10 +176,6 @@ msgid "%s posts"
 msgstr "%s gönderi"
 
 #, python-format
-msgid "%s recitations"
-msgstr "%s tilavet"
-
-#, python-format
 msgid "%s refused the download. Please set your login and password in the configuration."
 msgstr "%s indirmeyi reddetti. Lütfen yapılandırmada kullanıcı adınızı ve şifrenizi ayarlayın."
 
@@ -210,6 +222,10 @@ msgstr "%s izleyici"
 #, python-format
 msgid "%s views"
 msgstr "%s görüntülenme"
+
+#, python-format
+msgid "%s: decrypting the stream, this can take a while (%d s)"
+msgstr ""
 
 #, python-format
 msgid "(%d YouTube channel(s) could not be read)"
@@ -449,6 +465,10 @@ msgstr "Oyuncular"
 msgid "Actors:"
 msgstr "Oyuncular:"
 
+#, python-format
+msgid "Add %d items to the download queue?"
+msgstr ""
+
 msgid "Add channel name to downloaded file"
 msgstr "İndirilen dosyaya kanal adını ekle"
 
@@ -461,6 +481,10 @@ msgstr "Öğeyi favorilere ekle"
 
 msgid "Add item to group"
 msgstr "Öğeyi gruba ekle"
+
+#, python-format
+msgid "Add marked items to favourites (%d)"
+msgstr ""
 
 msgid "Add new entry"
 msgstr "Yeni giriş ekle"
@@ -1180,9 +1204,6 @@ msgstr "Filmin başlığını onaylayın"
 msgid "Confirmation error."
 msgstr "Onay hatası."
 
-msgid "Connection to server failed!"
-msgstr "Sunucu bağlantısı başarısız oldu!"
-
 msgid "Connection to the weeb.tv server failed."
 msgstr "weeb.tv sunucusuna bağlantı başarısız oldu."
 
@@ -1581,6 +1602,9 @@ msgstr "İndir (%d saniye içinde hazır)"
 msgid "Download again"
 msgstr "Tekrar indir"
 
+msgid "Download all items of this page"
+msgstr ""
+
 msgid "Download already exists"
 msgstr "İndirme zaten mevcut"
 
@@ -1615,6 +1639,10 @@ msgstr "İndirme yöneticisi"
 
 msgid "Download manager is not initialized"
 msgstr "İndirme yöneticisi başlatılmadı"
+
+#, python-format
+msgid "Download marked items (%d)"
+msgstr ""
 
 msgid "Download new version"
 msgstr "Yeni sürümü indir"
@@ -1909,9 +1937,6 @@ msgstr "Metni girin"
 msgid "Entertainment"
 msgstr "Eğlence"
 
-msgid "Entitlement parsing error."
-msgstr "Yetki ayrıştırma hatası."
-
 #, python-format
 msgid "Entries: %d | Sort: %s | Status: %s | Jump target: %s"
 msgstr "Girişler: %d | Sıralama: %s | Durum: %s | Atlama hedefi: %s"
@@ -2200,6 +2225,12 @@ msgstr "Dosya indirilemiyor. [%s] protokolü desteklenmiyor"
 
 msgid "File format of DASH (MPD) downloads"
 msgstr "DASH (MPD) indirmelerinin dosya biçimi"
+
+msgid "File format of HLS (M3U8) downloads"
+msgstr ""
+
+msgid "File format of single video files (FFmpeg)"
+msgstr ""
 
 #, python-format
 msgid "File might be corrupted (size: %d bytes)."
@@ -2914,9 +2945,6 @@ msgstr "Last.fm kullanıcısı \"%s\" bulunamadı."
 msgid "Last.fm user name:"
 msgstr "Last.fm kullanıcı adı:"
 
-msgid "Lastest"
-msgstr "En yeniler"
-
 msgid "Latest"
 msgstr "En son"
 
@@ -3197,9 +3225,6 @@ msgstr "MP3Quran canlı radyo"
 msgid "Main"
 msgstr "Ana sayfa"
 
-msgid "Main menu"
-msgstr "Ana menü"
-
 #, python-format
 msgid "Make directory [%s]"
 msgstr "[%s] klasörünü oluştur"
@@ -3260,9 +3285,6 @@ msgstr "Askeri"
 
 msgid "Mini series"
 msgstr "Mini diziler"
-
-msgid "Missed"
-msgstr "Kaçırılanlar"
 
 msgid "Missed the show?"
 msgstr "Programı kaçırdınız mı?"
@@ -3706,6 +3728,9 @@ msgstr "ÇEVRİMDIŞI"
 msgid "OK"
 msgstr "Tamam"
 
+msgid "OK marks an item, BLUE shows what can be done with the marked items."
+msgstr ""
+
 msgid "OMDb API key (free at omdbapi.com)"
 msgstr "OMDb API anahtarı (omdbapi.com'da ücretsiz)"
 
@@ -3898,6 +3923,9 @@ msgstr "Patoloji vizitleri"
 msgid "Patriotism"
 msgstr "Vatanseverlik"
 
+msgid "Pause between the batch lookups of one host [s]"
+msgstr ""
+
 #, python-format
 msgid "Peak: %s"
 msgstr ""
@@ -3932,6 +3960,13 @@ msgstr "Eklenti için PIN koruması"
 msgid "Pin protection for this host"
 msgstr "Bu host için PIN koruması"
 
+msgid "Play all from here"
+msgstr ""
+
+#, python-format
+msgid "Play marked items (%d)"
+msgstr ""
+
 msgid "Play torrents with TorrServer"
 msgstr ""
 
@@ -3942,19 +3977,8 @@ msgstr "[%s] oynatıcısıyla oynat"
 msgid "Playback UHD :"
 msgstr "UHD oynatma :"
 
-#, python-format
-msgid "Player %s"
-msgstr "Oynatıcı %s"
-
-#, python-format
-msgid "Player %s: %s"
-msgstr "Oynatıcı %s: %s"
-
 msgid "Player Skin"
 msgstr "Oynatıcı görünümü"
-
-msgid "Player data parsing error."
-msgstr "Oynatıcı verisi ayrıştırma hatası."
 
 msgid "Playing on the TV is not possible (no enigma2 session)."
 msgstr "TV'de oynatma mümkün değil (enigma2 oturumu yok)."
@@ -4368,6 +4392,10 @@ msgstr "Kaldır"
 msgid "Remove \"%s\" item"
 msgstr "\"%s\" öğesini kaldır"
 
+#, python-format
+msgid "Remove %d items from the favourites?"
+msgstr ""
+
 msgid "Remove file"
 msgstr "Dosyayı kaldır"
 
@@ -4379,6 +4407,10 @@ msgstr "Grubu kaldır"
 
 msgid "Remove item"
 msgstr "Öğeyi kaldır"
+
+#, python-format
+msgid "Remove marked items from favourites (%d)"
+msgstr ""
 
 msgid "Remove thumbnails"
 msgstr "Küçük resimleri kaldır"
@@ -4633,12 +4665,18 @@ msgstr "Bölüm"
 msgid "Sections"
 msgstr "Bölümler"
 
+msgid "Select"
+msgstr ""
+
 #, python-format
 msgid "Select %s"
 msgstr "%s seçin"
 
 msgid "Select action"
 msgstr "İşlem seç"
+
+msgid "Select all"
+msgstr ""
 
 msgid "Select audio track"
 msgstr "Ses parçası seç"
@@ -4880,6 +4918,9 @@ msgstr "Yalnızca seçilen dildeki sesi göster:"
 
 msgid "Show only best quality of streams:"
 msgstr "Yayınların yalnızca en iyi kalitesini göster:"
+
+msgid "Show playlist"
+msgstr ""
 
 msgid "Show results"
 msgstr "Sonuçları göster"
@@ -6041,6 +6082,12 @@ msgstr "ISO dosyasının bağlantısını kaldır"
 msgid "Unable to comply. Search History is empty."
 msgstr "İşlem yapılamıyor. Arama geçmişi boş."
 
+msgid "Undo reverse"
+msgstr ""
+
+msgid "Undo shuffle"
+msgstr ""
+
 msgid "Unfix jump target"
 msgstr "Atlama hedefinin sabitlemesini kaldır"
 
@@ -6067,6 +6114,9 @@ msgstr "\"%s\" biçimi için bilinmeyen altyazı ayrıştırıcısı."
 #, python-format
 msgid "Unrar error code[%s]."
 msgstr "Unrar hata kodu[%s]."
+
+msgid "Unselect all"
+msgstr ""
 
 msgid "Unset watched"
 msgstr "İzlendi işaretini kaldır"
@@ -6532,9 +6582,6 @@ msgstr "[HLS/M3U8] canlı yayın canlının gerisinden başlar"
 msgid "[HTTP] buffering"
 msgstr "[HTTP] arabelleğe alma"
 
-msgid "[Logged-in-only]"
-msgstr "[Yalnızca giriş yapanlar]"
-
 msgid "[RTMP] buffering (rtmpdump required)"
 msgstr "[RTMP] arabelleğe alma (rtmpdump gerekli)"
 
@@ -6795,6 +6842,9 @@ msgstr "ana"
 msgid "manual"
 msgstr "elle"
 
+msgid "marked"
+msgstr ""
+
 msgid "maroon"
 msgstr "bordo"
 
@@ -6912,6 +6962,9 @@ msgstr "kırmızı"
 msgid "refresh the current list"
 msgstr "geçerli listeyi yenile"
 
+msgid "reversed"
+msgstr ""
+
 msgid "rootfs"
 msgstr "rootfs"
 
@@ -6975,6 +7028,9 @@ msgstr "seçili öğe hakkında daha fazla ayrıntı göster"
 
 msgid "show this help"
 msgstr "bu yardımı göster"
+
+msgid "shuffled"
+msgstr ""
 
 msgid "sign in (subscriptions, playlists, age-restricted videos)"
 msgstr "oturum aç (abonelikler, oynatma listeleri, yaş kısıtlamalı videolar)"

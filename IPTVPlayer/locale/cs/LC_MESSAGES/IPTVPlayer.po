@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-09 20:23+0000\n"
+"POT-Creation-Date: 2026-10-10 23:37+0000\n"
 "PO-Revision-Date: 2026-07-27 16:39+0200\n"
 "Last-Translator: Warder <ciksa@seznam.cz>\n"
 "Language-Team: \n"
@@ -76,11 +76,23 @@ msgid "\"Web\" streams player"
 msgstr "Přehrávač \"webových\" streamů"
 
 #, python-format
+msgid "%d added, %d skipped."
+msgstr ""
+
+#, python-format
 msgid "%d duplicate entries removed."
 msgstr ""
 
 #, python-format
 msgid "%d duplicate entry removed."
+msgstr ""
+
+#, python-format
+msgid "%d items added to the download queue, %d skipped."
+msgstr ""
+
+#, python-format
+msgid "%d of %d downloaded"
 msgstr ""
 
 #, python-format
@@ -93,6 +105,10 @@ msgstr ""
 
 #, python-format
 msgid "%d recitations"
+msgstr ""
+
+#, python-format
+msgid "%d removed, %d skipped."
 msgstr ""
 
 #, fuzzy, python-format
@@ -164,10 +180,6 @@ msgid "%s posts"
 msgstr ""
 
 #, python-format
-msgid "%s recitations"
-msgstr ""
-
-#, python-format
 msgid "%s refused the download. Please set your login and password in the configuration."
 msgstr ""
 
@@ -214,6 +226,10 @@ msgstr "Nejvíce zobrazované"
 #, fuzzy, python-format
 msgid "%s views"
 msgstr "zobrazení"
+
+#, python-format
+msgid "%s: decrypting the stream, this can take a while (%d s)"
+msgstr ""
 
 #, python-format
 msgid "(%d YouTube channel(s) could not be read)"
@@ -460,6 +476,10 @@ msgstr "Herci"
 msgid "Actors:"
 msgstr "Herci:"
 
+#, python-format
+msgid "Add %d items to the download queue?"
+msgstr ""
+
 msgid "Add channel name to downloaded file"
 msgstr "Přidat název kanálu do staženého souboru"
 
@@ -472,6 +492,10 @@ msgstr "Přidat položku k oblíbeným"
 
 msgid "Add item to group"
 msgstr "Přidat položku do skupiny"
+
+#, python-format
+msgid "Add marked items to favourites (%d)"
+msgstr ""
 
 #, fuzzy
 msgid "Add new entry"
@@ -1209,9 +1233,6 @@ msgstr "Potvrďte název filmu"
 msgid "Confirmation error."
 msgstr "Chyba potvrzení."
 
-msgid "Connection to server failed!"
-msgstr "Připojení k serveru selhalo!"
-
 #, fuzzy
 msgid "Connection to the weeb.tv server failed."
 msgstr "Připojení k serveru selhalo!"
@@ -1633,6 +1654,9 @@ msgstr ""
 msgid "Download again"
 msgstr "Stáhnout znovu"
 
+msgid "Download all items of this page"
+msgstr ""
+
 msgid "Download already exists"
 msgstr "Stahování již existuje"
 
@@ -1667,6 +1691,10 @@ msgstr "Správce stahování"
 
 msgid "Download manager is not initialized"
 msgstr "Správce stahování není inicializován"
+
+#, python-format
+msgid "Download marked items (%d)"
+msgstr ""
 
 #, fuzzy
 msgid "Download new version"
@@ -1974,9 +2002,6 @@ msgstr "Zadejte text"
 msgid "Entertainment"
 msgstr ""
 
-msgid "Entitlement parsing error."
-msgstr "Chyba při analýze nároku."
-
 #, python-format
 msgid "Entries: %d | Sort: %s | Status: %s | Jump target: %s"
 msgstr ""
@@ -2275,6 +2300,12 @@ msgid "File can not be downloaded. Protocol [%s] is unsupported"
 msgstr "Soubor nelze stáhnout. Protokol [%s] není podporován"
 
 msgid "File format of DASH (MPD) downloads"
+msgstr ""
+
+msgid "File format of HLS (M3U8) downloads"
+msgstr ""
+
+msgid "File format of single video files (FFmpeg)"
 msgstr ""
 
 #, python-format
@@ -3009,9 +3040,6 @@ msgstr ""
 msgid "Last.fm user name:"
 msgstr ""
 
-msgid "Lastest"
-msgstr "Nejnovější"
-
 msgid "Latest"
 msgstr "Již používáte nejnovější verzi: %s"
 
@@ -3304,9 +3332,6 @@ msgstr ""
 msgid "Main"
 msgstr "Hlavní"
 
-msgid "Main menu"
-msgstr "Hlavní menu"
-
 #, python-format
 msgid "Make directory [%s]"
 msgstr "Vytvořit adresář [%s]"
@@ -3371,9 +3396,6 @@ msgstr ""
 
 msgid "Mini series"
 msgstr ""
-
-msgid "Missed"
-msgstr "Zmeškané"
 
 msgid "Missed the show?"
 msgstr "Zmeškali jste představení?"
@@ -3834,6 +3856,9 @@ msgstr ""
 msgid "OK"
 msgstr "OK"
 
+msgid "OK marks an item, BLUE shows what can be done with the marked items."
+msgstr ""
+
 msgid "OMDb API key (free at omdbapi.com)"
 msgstr ""
 
@@ -4034,6 +4059,9 @@ msgstr "Patologická kola"
 msgid "Patriotism"
 msgstr ""
 
+msgid "Pause between the batch lookups of one host [s]"
+msgstr ""
+
 #, python-format
 msgid "Peak: %s"
 msgstr ""
@@ -4068,6 +4096,13 @@ msgstr "Ochrana PINu pro plugin"
 msgid "Pin protection for this host"
 msgstr ""
 
+msgid "Play all from here"
+msgstr ""
+
+#, python-format
+msgid "Play marked items (%d)"
+msgstr ""
+
 msgid "Play torrents with TorrServer"
 msgstr ""
 
@@ -4078,19 +4113,8 @@ msgstr "Hrajte s hráčem [%s]"
 msgid "Playback UHD :"
 msgstr "Přehrávání v UHD:"
 
-#, python-format
-msgid "Player %s"
-msgstr "Hráč %s"
-
-#, python-format
-msgid "Player %s: %s"
-msgstr "Hráč %s: %s"
-
 msgid "Player Skin"
 msgstr "Skin hráče"
-
-msgid "Player data parsing error."
-msgstr "Chyba při analýze dat hráče."
 
 msgid "Playing on the TV is not possible (no enigma2 session)."
 msgstr ""
@@ -4517,6 +4541,10 @@ msgstr "Odstranit"
 msgid "Remove \"%s\" item"
 msgstr "Odebrat položku „%s“"
 
+#, python-format
+msgid "Remove %d items from the favourites?"
+msgstr ""
+
 msgid "Remove file"
 msgstr "Odstranit soubor"
 
@@ -4528,6 +4556,10 @@ msgstr "Odebrat skupinu"
 
 msgid "Remove item"
 msgstr "Odstranit položku"
+
+#, python-format
+msgid "Remove marked items from favourites (%d)"
+msgstr ""
 
 msgid "Remove thumbnails"
 msgstr "Odebrání miniatur"
@@ -4794,12 +4826,18 @@ msgstr "Výběr"
 msgid "Sections"
 msgstr ""
 
+msgid "Select"
+msgstr ""
+
 #, python-format
 msgid "Select %s"
 msgstr "Vybrat %s"
 
 msgid "Select action"
 msgstr "Vyberte akci"
+
+msgid "Select all"
+msgstr ""
 
 msgid "Select audio track"
 msgstr "Vyberte zvukovou stopu"
@@ -5051,6 +5089,9 @@ msgstr "Zobrazit pouze zvuk ve vybraném jazyce:"
 
 msgid "Show only best quality of streams:"
 msgstr "Zobrazit pouze streamy v nejlepší kvalitě:"
+
+msgid "Show playlist"
+msgstr ""
 
 #, fuzzy
 msgid "Show results"
@@ -6214,6 +6255,12 @@ msgstr "Odpojení ISO souboru"
 msgid "Unable to comply. Search History is empty."
 msgstr "Nelze vyhovět. Historie vyhledávání je prázdná."
 
+msgid "Undo reverse"
+msgstr ""
+
+msgid "Undo shuffle"
+msgstr ""
+
 msgid "Unfix jump target"
 msgstr ""
 
@@ -6242,6 +6289,9 @@ msgstr "Neznámý analyzátor titulků pro formát „%s“."
 #, python-format
 msgid "Unrar error code[%s]."
 msgstr "Kód chyby rozbalení souboru RAR[%s]."
+
+msgid "Unselect all"
+msgstr ""
 
 msgid "Unset watched"
 msgstr "Nenastaveno sledované"
@@ -6715,9 +6765,6 @@ msgstr ""
 msgid "[HTTP] buffering"
 msgstr "Ukládání do vyrovnávací paměti [HTTP]"
 
-msgid "[Logged-in-only]"
-msgstr "[Pouze přihlášeni]"
-
 msgid "[RTMP] buffering (rtmpdump required)"
 msgstr "Ukládání do vyrovnávací paměti [RTMP] (vyžadován rtmpdump)"
 
@@ -6987,6 +7034,9 @@ msgstr "hlavní"
 msgid "manual"
 msgstr ""
 
+msgid "marked"
+msgstr ""
+
 msgid "maroon"
 msgstr "kaštanově hnědá"
 
@@ -7113,6 +7163,9 @@ msgstr "červená"
 msgid "refresh the current list"
 msgstr ""
 
+msgid "reversed"
+msgstr ""
+
 msgid "rootfs"
 msgstr "kořenové soubory"
 
@@ -7182,6 +7235,9 @@ msgid "show more details about the selected item"
 msgstr ""
 
 msgid "show this help"
+msgstr ""
+
+msgid "shuffled"
 msgstr ""
 
 msgid "sign in (subscriptions, playlists, age-restricted videos)"

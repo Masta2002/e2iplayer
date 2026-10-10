@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-09 20:23+0000\n"
+"POT-Creation-Date: 2026-10-10 23:37+0000\n"
 "PO-Revision-Date: 2026-07-27 16:49+0200\n"
 "Last-Translator: Warder <ciksa@seznam.cz>\n"
 "Language-Team: \n"
@@ -76,11 +76,23 @@ msgid "\"Web\" streams player"
 msgstr "„Web” stream lejátszó"
 
 #, python-format
+msgid "%d added, %d skipped."
+msgstr ""
+
+#, python-format
 msgid "%d duplicate entries removed."
 msgstr ""
 
 #, python-format
 msgid "%d duplicate entry removed."
+msgstr ""
+
+#, python-format
+msgid "%d items added to the download queue, %d skipped."
+msgstr ""
+
+#, python-format
+msgid "%d of %d downloaded"
 msgstr ""
 
 #, python-format
@@ -93,6 +105,10 @@ msgstr ""
 
 #, python-format
 msgid "%d recitations"
+msgstr ""
+
+#, python-format
+msgid "%d removed, %d skipped."
 msgstr ""
 
 #, fuzzy, python-format
@@ -164,10 +180,6 @@ msgid "%s posts"
 msgstr ""
 
 #, python-format
-msgid "%s recitations"
-msgstr ""
-
-#, python-format
 msgid "%s refused the download. Please set your login and password in the configuration."
 msgstr ""
 
@@ -214,6 +226,10 @@ msgstr "Legnézettebb"
 #, fuzzy, python-format
 msgid "%s views"
 msgstr "nézetek"
+
+#, python-format
+msgid "%s: decrypting the stream, this can take a while (%d s)"
+msgstr ""
 
 #, python-format
 msgid "(%d YouTube channel(s) could not be read)"
@@ -460,6 +476,10 @@ msgstr "Színészek"
 msgid "Actors:"
 msgstr "Színészek:"
 
+#, python-format
+msgid "Add %d items to the download queue?"
+msgstr ""
+
 msgid "Add channel name to downloaded file"
 msgstr "Csatornanév hozzáadása a letöltött fájlhoz"
 
@@ -472,6 +492,10 @@ msgstr "Hozzáadás a kedvencekhez"
 
 msgid "Add item to group"
 msgstr "Elem hozzáadása a csoporthoz"
+
+#, python-format
+msgid "Add marked items to favourites (%d)"
+msgstr ""
 
 #, fuzzy
 msgid "Add new entry"
@@ -1211,9 +1235,6 @@ msgstr "Erősítsd meg a film címét"
 msgid "Confirmation error."
 msgstr "Érvényesítési hiba."
 
-msgid "Connection to server failed!"
-msgstr "Kapcsolódás a szerverhez sikertelen!"
-
 #, fuzzy
 msgid "Connection to the weeb.tv server failed."
 msgstr "Kapcsolódás a szerverhez sikertelen!"
@@ -1635,6 +1656,9 @@ msgstr ""
 msgid "Download again"
 msgstr "Töltse le újra"
 
+msgid "Download all items of this page"
+msgstr ""
+
 msgid "Download already exists"
 msgstr "A letöltés már létezik"
 
@@ -1669,6 +1693,10 @@ msgstr "Letöltéskezelő"
 
 msgid "Download manager is not initialized"
 msgstr "A letöltéskezelő nincs inicializálva"
+
+#, python-format
+msgid "Download marked items (%d)"
+msgstr ""
 
 #, fuzzy
 msgid "Download new version"
@@ -1976,9 +2004,6 @@ msgstr "Írja be a szöveget"
 msgid "Entertainment"
 msgstr ""
 
-msgid "Entitlement parsing error."
-msgstr "Jogosultságelemzési hiba."
-
 #, python-format
 msgid "Entries: %d | Sort: %s | Status: %s | Jump target: %s"
 msgstr ""
@@ -2272,6 +2297,12 @@ msgid "File can not be downloaded. Protocol [%s] is unsupported"
 msgstr "Letöltés sikertelen. A [%s] protokoll nem támogatott"
 
 msgid "File format of DASH (MPD) downloads"
+msgstr ""
+
+msgid "File format of HLS (M3U8) downloads"
+msgstr ""
+
+msgid "File format of single video files (FFmpeg)"
 msgstr ""
 
 #, python-format
@@ -3004,9 +3035,6 @@ msgstr ""
 msgid "Last.fm user name:"
 msgstr ""
 
-msgid "Lastest"
-msgstr "Legfrissebb"
-
 msgid "Latest"
 msgstr "Legutóbbi"
 
@@ -3299,9 +3327,6 @@ msgstr ""
 msgid "Main"
 msgstr "Fő"
 
-msgid "Main menu"
-msgstr "Főmenü"
-
 #, python-format
 msgid "Make directory [%s]"
 msgstr "[%s] mappa létrehozása"
@@ -3366,9 +3391,6 @@ msgstr ""
 
 msgid "Mini series"
 msgstr ""
-
-msgid "Missed"
-msgstr "Elmulasztott"
 
 msgid "Missed the show?"
 msgstr "Lemaradtál a műsorról?"
@@ -3831,6 +3853,9 @@ msgstr ""
 msgid "OK"
 msgstr "OK"
 
+msgid "OK marks an item, BLUE shows what can be done with the marked items."
+msgstr ""
+
 msgid "OMDb API key (free at omdbapi.com)"
 msgstr ""
 
@@ -4029,6 +4054,9 @@ msgstr "Patológiai körök"
 msgid "Patriotism"
 msgstr ""
 
+msgid "Pause between the batch lookups of one host [s]"
+msgstr ""
+
 #, python-format
 msgid "Peak: %s"
 msgstr ""
@@ -4063,6 +4091,13 @@ msgstr "Bővítmény PIN-védelme"
 msgid "Pin protection for this host"
 msgstr ""
 
+msgid "Play all from here"
+msgstr ""
+
+#, python-format
+msgid "Play marked items (%d)"
+msgstr ""
+
 msgid "Play torrents with TorrServer"
 msgstr ""
 
@@ -4073,19 +4108,8 @@ msgstr "Játssz [%s] játékossal"
 msgid "Playback UHD :"
 msgstr "UHD lejátszás:"
 
-#, python-format
-msgid "Player %s"
-msgstr "%s játékos"
-
-#, python-format
-msgid "Player %s: %s"
-msgstr "%s. játékos: %s"
-
 msgid "Player Skin"
 msgstr "Lejátszó bőr"
-
-msgid "Player data parsing error."
-msgstr "Játékosadatok elemzési hibája."
 
 msgid "Playing on the TV is not possible (no enigma2 session)."
 msgstr ""
@@ -4512,6 +4536,10 @@ msgstr "Eltávolítás"
 msgid "Remove \"%s\" item"
 msgstr "„%s” elem eltávolítása"
 
+#, python-format
+msgid "Remove %d items from the favourites?"
+msgstr ""
+
 msgid "Remove file"
 msgstr "Eltávolítás"
 
@@ -4523,6 +4551,10 @@ msgstr "Csoport eltávolítása"
 
 msgid "Remove item"
 msgstr "Cikk eltávolítása"
+
+#, python-format
+msgid "Remove marked items from favourites (%d)"
+msgstr ""
 
 msgid "Remove thumbnails"
 msgstr "Indexképek eltávolítása"
@@ -4785,12 +4817,18 @@ msgstr "Kiválasztás"
 msgid "Sections"
 msgstr ""
 
+msgid "Select"
+msgstr ""
+
 #, python-format
 msgid "Select %s"
 msgstr "%s kiválasztása"
 
 msgid "Select action"
 msgstr "Művelet kiválasztása"
+
+msgid "Select all"
+msgstr ""
 
 msgid "Select audio track"
 msgstr "Hangsáv kiválasztása"
@@ -5042,6 +5080,9 @@ msgstr "Csak a kiválasztott nyelvű hang megjelenítése:"
 
 msgid "Show only best quality of streams:"
 msgstr "Csak a legjobb minőségű streamek megjelenítése:"
+
+msgid "Show playlist"
+msgstr ""
 
 #, fuzzy
 msgid "Show results"
@@ -6208,6 +6249,12 @@ msgstr "Umount iso fájl"
 msgid "Unable to comply. Search History is empty."
 msgstr "Nem sikerült teljesíteni. A keresési előzmények üresek."
 
+msgid "Undo reverse"
+msgstr ""
+
+msgid "Undo shuffle"
+msgstr ""
+
 msgid "Unfix jump target"
 msgstr ""
 
@@ -6236,6 +6283,9 @@ msgstr "Ismeretlen felirat-elemző a(z) \"%s\" formátumhoz."
 #, python-format
 msgid "Unrar error code[%s]."
 msgstr "Kibontási hibakód[%s]."
+
+msgid "Unselect all"
+msgstr ""
 
 msgid "Unset watched"
 msgstr "Megfigyeltként beállított beállítás törlése"
@@ -6709,9 +6759,6 @@ msgstr ""
 msgid "[HTTP] buffering"
 msgstr "[HTTP] pufferelés"
 
-msgid "[Logged-in-only]"
-msgstr "[Csak bejelentkezve]"
-
 msgid "[RTMP] buffering (rtmpdump required)"
 msgstr "[RTMP] pufferelés (rtmpdump szükséges)"
 
@@ -6981,6 +7028,9 @@ msgstr "fő"
 msgid "manual"
 msgstr ""
 
+msgid "marked"
+msgstr ""
+
 msgid "maroon"
 msgstr "gesztenyebarna"
 
@@ -7107,6 +7157,9 @@ msgstr "vörös"
 msgid "refresh the current list"
 msgstr ""
 
+msgid "reversed"
+msgstr ""
+
 msgid "rootfs"
 msgstr "rootfs"
 
@@ -7176,6 +7229,9 @@ msgid "show more details about the selected item"
 msgstr ""
 
 msgid "show this help"
+msgstr ""
+
+msgid "shuffled"
 msgstr ""
 
 msgid "sign in (subscriptions, playlists, age-restricted videos)"

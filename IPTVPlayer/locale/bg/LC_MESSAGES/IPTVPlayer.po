@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: IPTVPlayer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-09 20:23+0000\n"
+"POT-Creation-Date: 2026-10-10 23:37+0000\n"
 "PO-Revision-Date: 2026-10-08 20:17+0000\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: Bulgarian\n"
@@ -71,12 +71,24 @@ msgid "\"Web\" streams player"
 msgstr "Плейър за \"Web\" потоци"
 
 #, python-format
+msgid "%d added, %d skipped."
+msgstr ""
+
+#, python-format
 msgid "%d duplicate entries removed."
 msgstr "Премахнати са %d дублирани записа."
 
 #, python-format
 msgid "%d duplicate entry removed."
 msgstr "Премахнат е %d дублиран запис."
+
+#, python-format
+msgid "%d items added to the download queue, %d skipped."
+msgstr ""
+
+#, python-format
+msgid "%d of %d downloaded"
+msgstr ""
 
 #, python-format
 msgid "%d parts"
@@ -89,6 +101,10 @@ msgstr "%d предавания"
 #, python-format
 msgid "%d recitations"
 msgstr "%d рецитации"
+
+#, python-format
+msgid "%d removed, %d skipped."
+msgstr ""
 
 #, python-format
 msgid "%d videos"
@@ -159,10 +175,6 @@ msgid "%s posts"
 msgstr "%s публикации"
 
 #, python-format
-msgid "%s recitations"
-msgstr "%s рецитации"
-
-#, python-format
 msgid "%s refused the download. Please set your login and password in the configuration."
 msgstr "%s отказа изтеглянето. Въведете потребителско име и парола в настройките."
 
@@ -209,6 +221,10 @@ msgstr "%s зрители"
 #, python-format
 msgid "%s views"
 msgstr "%s преглеждания"
+
+#, python-format
+msgid "%s: decrypting the stream, this can take a while (%d s)"
+msgstr ""
 
 #, python-format
 msgid "(%d YouTube channel(s) could not be read)"
@@ -448,6 +464,10 @@ msgstr "Актьори"
 msgid "Actors:"
 msgstr "Актьори:"
 
+#, python-format
+msgid "Add %d items to the download queue?"
+msgstr ""
+
 msgid "Add channel name to downloaded file"
 msgstr "Добавяне на името на канала към изтегления файл"
 
@@ -460,6 +480,10 @@ msgstr "Добавяне на записа към любими"
 
 msgid "Add item to group"
 msgstr "Добавяне на записа към група"
+
+#, python-format
+msgid "Add marked items to favourites (%d)"
+msgstr ""
 
 msgid "Add new entry"
 msgstr "Добавяне на нов запис"
@@ -1179,9 +1203,6 @@ msgstr "Потвърдете заглавието на филма"
 msgid "Confirmation error."
 msgstr "Грешка при потвърждението."
 
-msgid "Connection to server failed!"
-msgstr "Връзката със сървъра е неуспешна!"
-
 msgid "Connection to the weeb.tv server failed."
 msgstr "Връзката със сървъра на weeb.tv е неуспешна."
 
@@ -1580,6 +1601,9 @@ msgstr "Изтегляне (готово след %d секунди)"
 msgid "Download again"
 msgstr "Повторно изтегляне"
 
+msgid "Download all items of this page"
+msgstr ""
+
 msgid "Download already exists"
 msgstr "Изтеглянето вече съществува"
 
@@ -1614,6 +1638,10 @@ msgstr "Мениджър на изтеглянията"
 
 msgid "Download manager is not initialized"
 msgstr "Мениджърът на изтеглянията не е инициализиран"
+
+#, python-format
+msgid "Download marked items (%d)"
+msgstr ""
 
 msgid "Download new version"
 msgstr "Изтегляне на новата версия"
@@ -1908,9 +1936,6 @@ msgstr "Въведете текста"
 msgid "Entertainment"
 msgstr "Развлечения"
 
-msgid "Entitlement parsing error."
-msgstr "Грешка при анализа на правата за достъп."
-
 #, python-format
 msgid "Entries: %d | Sort: %s | Status: %s | Jump target: %s"
 msgstr "Записи: %d | Сортиране: %s | Състояние: %s | Цел на прехода: %s"
@@ -2199,6 +2224,12 @@ msgstr "Файлът не може да бъде изтеглен. Проток�
 
 msgid "File format of DASH (MPD) downloads"
 msgstr "Файлов формат на DASH (MPD) изтеглянията"
+
+msgid "File format of HLS (M3U8) downloads"
+msgstr ""
+
+msgid "File format of single video files (FFmpeg)"
+msgstr ""
 
 #, python-format
 msgid "File might be corrupted (size: %d bytes)."
@@ -2913,9 +2944,6 @@ msgstr "Потребителят \"%s\" в Last.fm не е намерен."
 msgid "Last.fm user name:"
 msgstr "Потребителско име в Last.fm:"
 
-msgid "Lastest"
-msgstr "Най-нови"
-
 msgid "Latest"
 msgstr "Най-нови"
 
@@ -3196,9 +3224,6 @@ msgstr "MP3Quran радио на живо"
 msgid "Main"
 msgstr "Основно"
 
-msgid "Main menu"
-msgstr "Главно меню"
-
 #, python-format
 msgid "Make directory [%s]"
 msgstr "Създаване на директория [%s]"
@@ -3259,9 +3284,6 @@ msgstr "Военни"
 
 msgid "Mini series"
 msgstr "Минисериали"
-
-msgid "Missed"
-msgstr "Пропуснати"
 
 msgid "Missed the show?"
 msgstr "Пропуснахте предаването?"
@@ -3705,6 +3727,9 @@ msgstr "OFFLINE"
 msgid "OK"
 msgstr "OK"
 
+msgid "OK marks an item, BLUE shows what can be done with the marked items."
+msgstr ""
+
 msgid "OMDb API key (free at omdbapi.com)"
 msgstr "OMDb API ключ (безплатен от omdbapi.com)"
 
@@ -3897,6 +3922,9 @@ msgstr "Патологични визитации"
 msgid "Patriotism"
 msgstr "Патриотизъм"
 
+msgid "Pause between the batch lookups of one host [s]"
+msgstr ""
+
 #, python-format
 msgid "Peak: %s"
 msgstr ""
@@ -3931,6 +3959,13 @@ msgstr "Защита с ПИН код за плъгина"
 msgid "Pin protection for this host"
 msgstr "Защита с ПИН код за този хост"
 
+msgid "Play all from here"
+msgstr ""
+
+#, python-format
+msgid "Play marked items (%d)"
+msgstr ""
+
 msgid "Play torrents with TorrServer"
 msgstr ""
 
@@ -3941,19 +3976,8 @@ msgstr "Възпроизвеждане с плейър [%s]"
 msgid "Playback UHD :"
 msgstr "Възпроизвеждане UHD :"
 
-#, python-format
-msgid "Player %s"
-msgstr "Плейър %s"
-
-#, python-format
-msgid "Player %s: %s"
-msgstr "Плейър %s: %s"
-
 msgid "Player Skin"
 msgstr "Скин на плейъра"
-
-msgid "Player data parsing error."
-msgstr "Грешка при анализ на данните на плейъра."
 
 msgid "Playing on the TV is not possible (no enigma2 session)."
 msgstr "Възпроизвеждането на телевизора не е възможно (няма enigma2 сесия)."
@@ -4367,6 +4391,10 @@ msgstr "Премахване"
 msgid "Remove \"%s\" item"
 msgstr "Премахване на записа \"%s\""
 
+#, python-format
+msgid "Remove %d items from the favourites?"
+msgstr ""
+
 msgid "Remove file"
 msgstr "Изтриване на файла"
 
@@ -4378,6 +4406,10 @@ msgstr "Премахване на групата"
 
 msgid "Remove item"
 msgstr "Премахване на записа"
+
+#, python-format
+msgid "Remove marked items from favourites (%d)"
+msgstr ""
 
 msgid "Remove thumbnails"
 msgstr "Изтриване на миниатюрите"
@@ -4632,12 +4664,18 @@ msgstr "Раздел"
 msgid "Sections"
 msgstr "Рубрики"
 
+msgid "Select"
+msgstr ""
+
 #, python-format
 msgid "Select %s"
 msgstr "Изберете %s"
 
 msgid "Select action"
 msgstr "Изберете действие"
+
+msgid "Select all"
+msgstr ""
 
 msgid "Select audio track"
 msgstr "Изберете аудио писта"
@@ -4879,6 +4917,9 @@ msgstr "Показване само на аудио на избрания ези
 
 msgid "Show only best quality of streams:"
 msgstr "Показване само на потоци с най-добро качество:"
+
+msgid "Show playlist"
+msgstr ""
 
 msgid "Show results"
 msgstr "Показване на резултатите"
@@ -6040,6 +6081,12 @@ msgstr "Демонтиране на iso файл"
 msgid "Unable to comply. Search History is empty."
 msgstr "Действието не може да бъде изпълнено. Историята на търсенето е празна."
 
+msgid "Undo reverse"
+msgstr ""
+
+msgid "Undo shuffle"
+msgstr ""
+
 msgid "Unfix jump target"
 msgstr "Освобождаване на целта на прехода"
 
@@ -6066,6 +6113,9 @@ msgstr "Неизвестен парсер на субтитри за форма�
 #, python-format
 msgid "Unrar error code[%s]."
 msgstr "Unrar код на грешка[%s]."
+
+msgid "Unselect all"
+msgstr ""
 
 msgid "Unset watched"
 msgstr "Премахване на отметката за гледано"
@@ -6531,9 +6581,6 @@ msgstr "[HLS/M3U8] потокът на живо започва зад точка
 msgid "[HTTP] buffering"
 msgstr "[HTTP] буфериране"
 
-msgid "[Logged-in-only]"
-msgstr "[Само за влезли потребители]"
-
 msgid "[RTMP] buffering (rtmpdump required)"
 msgstr "[RTMP] буфериране (изисква се rtmpdump)"
 
@@ -6794,6 +6841,9 @@ msgstr "main"
 msgid "manual"
 msgstr "ръчно"
 
+msgid "marked"
+msgstr ""
+
 msgid "maroon"
 msgstr "кестеняво"
 
@@ -6911,6 +6961,9 @@ msgstr "червен"
 msgid "refresh the current list"
 msgstr "опресняване на текущия списък"
 
+msgid "reversed"
+msgstr ""
+
 msgid "rootfs"
 msgstr "rootfs"
 
@@ -6974,6 +7027,9 @@ msgstr "показване на повече подробности за изб�
 
 msgid "show this help"
 msgstr "показване на тази помощ"
+
+msgid "shuffled"
+msgstr ""
 
 msgid "sign in (subscriptions, playlists, age-restricted videos)"
 msgstr "вход (абонаменти, плейлисти, видеа с възрастово ограничение)"

@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: IPTVPlayer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-09 20:23+0000\n"
+"POT-Creation-Date: 2026-10-10 23:37+0000\n"
 "PO-Revision-Date: 2026-02-02 21:43+0100\n"
 "Last-Translator: Snoete\n"
 "Language-Team: Dutch\n"
@@ -72,12 +72,24 @@ msgid "\"Web\" streams player"
 msgstr "Speler voor \"web\"-streams"
 
 #, python-format
+msgid "%d added, %d skipped."
+msgstr ""
+
+#, python-format
 msgid "%d duplicate entries removed."
 msgstr "%d dubbele items verwijderd."
 
 #, python-format
 msgid "%d duplicate entry removed."
 msgstr "%d dubbel item verwijderd."
+
+#, python-format
+msgid "%d items added to the download queue, %d skipped."
+msgstr ""
+
+#, python-format
+msgid "%d of %d downloaded"
+msgstr ""
 
 #, python-format
 msgid "%d parts"
@@ -90,6 +102,10 @@ msgstr "%d programma's"
 #, python-format
 msgid "%d recitations"
 msgstr "%d recitaties"
+
+#, python-format
+msgid "%d removed, %d skipped."
+msgstr ""
 
 #, python-format
 msgid "%d videos"
@@ -160,10 +176,6 @@ msgid "%s posts"
 msgstr "%s berichten"
 
 #, python-format
-msgid "%s recitations"
-msgstr "%s recitaties"
-
-#, python-format
 msgid "%s refused the download. Please set your login and password in the configuration."
 msgstr "%s heeft de download geweigerd. Vul uw gebruikersnaam en wachtwoord in de configuratie in."
 
@@ -210,6 +222,10 @@ msgstr "%s kijkers"
 #, python-format
 msgid "%s views"
 msgstr "%s weergaven"
+
+#, python-format
+msgid "%s: decrypting the stream, this can take a while (%d s)"
+msgstr ""
 
 #, python-format
 msgid "(%d YouTube channel(s) could not be read)"
@@ -449,6 +465,10 @@ msgstr "Acteurs"
 msgid "Actors:"
 msgstr "Acteurs:"
 
+#, python-format
+msgid "Add %d items to the download queue?"
+msgstr ""
+
 msgid "Add channel name to downloaded file"
 msgstr "Kanaalnaam toevoegen aan gedownload bestand"
 
@@ -461,6 +481,10 @@ msgstr "Aan favorieten toevoegen"
 
 msgid "Add item to group"
 msgstr "Aan groep toevoegen"
+
+#, python-format
+msgid "Add marked items to favourites (%d)"
+msgstr ""
 
 msgid "Add new entry"
 msgstr "Nieuw item toevoegen"
@@ -1180,9 +1204,6 @@ msgstr "De titel van de film bevestigen"
 msgid "Confirmation error."
 msgstr "Fout bij het bevestigen."
 
-msgid "Connection to server failed!"
-msgstr "Verbinden met de server mislukt!"
-
 msgid "Connection to the weeb.tv server failed."
 msgstr "Verbinding met de weeb.tv-server is mislukt."
 
@@ -1581,6 +1602,9 @@ msgstr "Download (gereed over %d seconden)"
 msgid "Download again"
 msgstr "Opnieuw downloaden"
 
+msgid "Download all items of this page"
+msgstr ""
+
 msgid "Download already exists"
 msgstr "Download bestaat al"
 
@@ -1615,6 +1639,10 @@ msgstr "Downloadmanager"
 
 msgid "Download manager is not initialized"
 msgstr "De downloadmanager is niet geïnitialiseerd"
+
+#, python-format
+msgid "Download marked items (%d)"
+msgstr ""
 
 msgid "Download new version"
 msgstr "Nieuwe versie downloaden"
@@ -1909,9 +1937,6 @@ msgstr "Voer de tekst in"
 msgid "Entertainment"
 msgstr "Entertainment"
 
-msgid "Entitlement parsing error."
-msgstr "Fout bij het parsen van rechten."
-
 #, python-format
 msgid "Entries: %d | Sort: %s | Status: %s | Jump target: %s"
 msgstr "Items: %d | Sorteren: %s | Status: %s | Sprongdoel: %s"
@@ -2200,6 +2225,12 @@ msgstr "Bestand kan niet worden gedownload. Protocol [%s] wordt niet ondersteund
 
 msgid "File format of DASH (MPD) downloads"
 msgstr "Bestandsformaat van DASH-downloads (MPD)"
+
+msgid "File format of HLS (M3U8) downloads"
+msgstr ""
+
+msgid "File format of single video files (FFmpeg)"
+msgstr ""
 
 #, python-format
 msgid "File might be corrupted (size: %d bytes)."
@@ -2914,9 +2945,6 @@ msgstr "Last.fm-gebruiker \"%s\" niet gevonden."
 msgid "Last.fm user name:"
 msgstr "Last.fm-gebruikersnaam:"
 
-msgid "Lastest"
-msgstr "Nieuwste"
-
 msgid "Latest"
 msgstr "Nieuwste"
 
@@ -3197,9 +3225,6 @@ msgstr "MP3Quran liveradio"
 msgid "Main"
 msgstr "Hoofdpagina"
 
-msgid "Main menu"
-msgstr "Hoofdmenu"
-
 #, python-format
 msgid "Make directory [%s]"
 msgstr "Map [%s] aanmaken"
@@ -3260,9 +3285,6 @@ msgstr "Militair"
 
 msgid "Mini series"
 msgstr "Miniseries"
-
-msgid "Missed"
-msgstr "Gemist"
 
 msgid "Missed the show?"
 msgstr "Uitzending gemist?"
@@ -3706,6 +3728,9 @@ msgstr "OFFLINE"
 msgid "OK"
 msgstr "OK"
 
+msgid "OK marks an item, BLUE shows what can be done with the marked items."
+msgstr ""
+
 msgid "OMDb API key (free at omdbapi.com)"
 msgstr "OMDb API-sleutel (gratis op omdbapi.com)"
 
@@ -3898,6 +3923,9 @@ msgstr "Pathologiebesprekingen"
 msgid "Patriotism"
 msgstr "Patriottisme"
 
+msgid "Pause between the batch lookups of one host [s]"
+msgstr ""
+
 #, python-format
 msgid "Peak: %s"
 msgstr ""
@@ -3932,6 +3960,13 @@ msgstr "Pincodebeveiliging voor plugin"
 msgid "Pin protection for this host"
 msgstr "Pincodebeveiliging voor deze host"
 
+msgid "Play all from here"
+msgstr ""
+
+#, python-format
+msgid "Play marked items (%d)"
+msgstr ""
+
 msgid "Play torrents with TorrServer"
 msgstr ""
 
@@ -3942,19 +3977,8 @@ msgstr "Afspelen met speler [%s]"
 msgid "Playback UHD :"
 msgstr "Afspelen UHD :"
 
-#, python-format
-msgid "Player %s"
-msgstr "Speler %s"
-
-#, python-format
-msgid "Player %s: %s"
-msgstr "Speler %s: %s"
-
 msgid "Player Skin"
 msgstr "Spelerskin"
-
-msgid "Player data parsing error."
-msgstr "Fout bij het parsen van spelergegevens."
 
 msgid "Playing on the TV is not possible (no enigma2 session)."
 msgstr "Afspelen op de tv is niet mogelijk (geen enigma2-sessie)."
@@ -4368,6 +4392,10 @@ msgstr "Verwijderen"
 msgid "Remove \"%s\" item"
 msgstr "Item \"%s\" verwijderen"
 
+#, python-format
+msgid "Remove %d items from the favourites?"
+msgstr ""
+
 msgid "Remove file"
 msgstr "Bestand verwijderen"
 
@@ -4379,6 +4407,10 @@ msgstr "Groep verwijderen"
 
 msgid "Remove item"
 msgstr "Item verwijderen"
+
+#, python-format
+msgid "Remove marked items from favourites (%d)"
+msgstr ""
 
 msgid "Remove thumbnails"
 msgstr "Miniaturen verwijderen"
@@ -4633,12 +4665,18 @@ msgstr "Sectie"
 msgid "Sections"
 msgstr "Rubrieken"
 
+msgid "Select"
+msgstr ""
+
 #, python-format
 msgid "Select %s"
 msgstr "Kies %s"
 
 msgid "Select action"
 msgstr "Selecteer actie"
+
+msgid "Select all"
+msgstr ""
 
 msgid "Select audio track"
 msgstr "Selecteer een audiospoor"
@@ -4880,6 +4918,9 @@ msgstr "Alleen audio in de gekozen taal tonen:"
 
 msgid "Show only best quality of streams:"
 msgstr "Alleen streams met de beste kwaliteit tonen:"
+
+msgid "Show playlist"
+msgstr ""
 
 msgid "Show results"
 msgstr "Resultaten tonen"
@@ -6041,6 +6082,12 @@ msgstr "ISO-bestand ontkoppelen"
 msgid "Unable to comply. Search History is empty."
 msgstr "Dit is niet mogelijk. De zoekgeschiedenis is leeg."
 
+msgid "Undo reverse"
+msgstr ""
+
+msgid "Undo shuffle"
+msgstr ""
+
 msgid "Unfix jump target"
 msgstr "Sprongdoel losmaken"
 
@@ -6067,6 +6114,9 @@ msgstr "Onbekende ondertitelparser voor formaat \"%s\"."
 #, python-format
 msgid "Unrar error code[%s]."
 msgstr "Unrar-foutcode[%s]."
+
+msgid "Unselect all"
+msgstr ""
 
 msgid "Unset watched"
 msgstr "Bekeken-markering verwijderen"
@@ -6532,9 +6582,6 @@ msgstr "[HLS/M3U8] livestream start achter het livepunt"
 msgid "[HTTP] buffering"
 msgstr "[HTTP] bufferen"
 
-msgid "[Logged-in-only]"
-msgstr "[Alleen aangemeld]"
-
 msgid "[RTMP] buffering (rtmpdump required)"
 msgstr "[RTMP] bufferen (rtmpdump vereist)"
 
@@ -6795,6 +6842,9 @@ msgstr "hoofd"
 msgid "manual"
 msgstr "handmatig"
 
+msgid "marked"
+msgstr ""
+
 msgid "maroon"
 msgstr "kastanjebruin"
 
@@ -6912,6 +6962,9 @@ msgstr "rood"
 msgid "refresh the current list"
 msgstr "de huidige lijst vernieuwen"
 
+msgid "reversed"
+msgstr ""
+
 msgid "rootfs"
 msgstr "rootfs"
 
@@ -6975,6 +7028,9 @@ msgstr "meer details over het geselecteerde item tonen"
 
 msgid "show this help"
 msgstr "deze help tonen"
+
+msgid "shuffled"
+msgstr ""
 
 msgid "sign in (subscriptions, playlists, age-restricted videos)"
 msgstr "aanmelden (abonnementen, afspeellijsten, video's met leeftijdsbeperking)"

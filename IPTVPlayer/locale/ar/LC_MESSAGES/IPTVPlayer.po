@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-04 21:08+0000\n"
+"POT-Creation-Date: 2026-10-10 23:37+0000\n"
 "PO-Revision-Date: 2026-10-05 15:43+0300\n"
 "Last-Translator: Mohamed Elsafty [angel_heart150@yahoo.com]\n"
 "Language-Team: \n"
@@ -75,12 +75,24 @@ msgid "\"Web\" streams player"
 msgstr "مشغل البث عبر الويب"
 
 #, python-format
+msgid "%d added, %d skipped."
+msgstr ""
+
+#, python-format
 msgid "%d duplicate entries removed."
 msgstr "تمت إزالة %d من الإدخالات المكررة."
 
 #, python-format
 msgid "%d duplicate entry removed."
 msgstr "تمت إزالة إدخال مكرر واحد من أصل %d."
+
+#, python-format
+msgid "%d items added to the download queue, %d skipped."
+msgstr ""
+
+#, python-format
+msgid "%d of %d downloaded"
+msgstr ""
 
 #, python-format
 msgid "%d parts"
@@ -93,6 +105,10 @@ msgstr "%d برامج"
 #, python-format
 msgid "%d recitations"
 msgstr "%d تلاوات"
+
+#, python-format
+msgid "%d removed, %d skipped."
+msgstr ""
 
 #, python-format
 msgid "%d videos"
@@ -113,6 +129,7 @@ msgstr "%s يحظر اتصال جهاز الاستقبال (HTTP 403). لا يع
 #, python-format
 msgid "%s blocks the connection of the receiver (HTTP 403). Please choose another server."
 msgstr "%s يحظر اتصال جهاز الاستقبال (HTTP 403). يُرجى اختيار سيرفر آخر."
+
 #, python-format
 msgid "%s buffering..."
 msgstr "جارٍ التخزين المؤقت لـ %s..."
@@ -162,10 +179,6 @@ msgid "%s posts"
 msgstr "%s منشور"
 
 #, python-format
-msgid "%s recitations"
-msgstr "%s تلاوة"
-
-#, python-format
 msgid "%s refused the download. Please set your login and password in the configuration."
 msgstr "رفض %s عملية التنزيل. يرجى ضبط اسم المستخدم وكلمة المرور في الإعدادات."
 
@@ -212,6 +225,10 @@ msgstr "%s مشاهد"
 #, python-format
 msgid "%s views"
 msgstr "%s مشاهدة"
+
+#, python-format
+msgid "%s: decrypting the stream, this can take a while (%d s)"
+msgstr ""
 
 #, python-format
 msgid "(%d YouTube channel(s) could not be read)"
@@ -451,6 +468,10 @@ msgstr "الممثلون"
 msgid "Actors:"
 msgstr "الممثلون:"
 
+#, python-format
+msgid "Add %d items to the download queue?"
+msgstr ""
+
 msgid "Add channel name to downloaded file"
 msgstr "إضافة إلى مدير التنزيل"
 
@@ -463,6 +484,10 @@ msgstr "إضافة العنصر إلى المفضلة"
 
 msgid "Add item to group"
 msgstr "إضافة العنصر إلى المجموعة"
+
+#, python-format
+msgid "Add marked items to favourites (%d)"
+msgstr ""
 
 msgid "Add new entry"
 msgstr "إضافة مجموعة جديدة"
@@ -1182,9 +1207,6 @@ msgstr "تأكيد عنوان الفيلم"
 msgid "Confirmation error."
 msgstr "خطأ في التأكيد."
 
-msgid "Connection to server failed!"
-msgstr "فشل الاتصال بالخادم!"
-
 msgid "Connection to the weeb.tv server failed."
 msgstr "فشل الاتصال بخادم weeb.tv."
 
@@ -1583,6 +1605,9 @@ msgstr "تحميل (جاهز خلال %d ثانية)"
 msgid "Download again"
 msgstr "إعادة التحميل"
 
+msgid "Download all items of this page"
+msgstr ""
+
 msgid "Download already exists"
 msgstr "الملف \"%s\" موجود بالفعل"
 
@@ -1617,6 +1642,10 @@ msgstr "مدير التحميل"
 
 msgid "Download manager is not initialized"
 msgstr "لم يتم تهيئة مدير التحميل"
+
+#, python-format
+msgid "Download marked items (%d)"
+msgstr ""
 
 msgid "Download new version"
 msgstr "تحميل الإصدار الجديد"
@@ -1911,9 +1940,6 @@ msgstr "أدخل النص"
 msgid "Entertainment"
 msgstr "ترفيه"
 
-msgid "Entitlement parsing error."
-msgstr "خطأ في تحليل بيانات الصلاحيات."
-
 #, python-format
 msgid "Entries: %d | Sort: %s | Status: %s | Jump target: %s"
 msgstr "الإدخالات: %d | الترتيب: %s | الحالة: %s | هدف الانتقال: %s"
@@ -2202,6 +2228,12 @@ msgstr "لا يمكن تحميل الملف. البروتوكول [%s] غير م
 
 msgid "File format of DASH (MPD) downloads"
 msgstr "تنسيق ملفات تنزيل DASH (MPD)"
+
+msgid "File format of HLS (M3U8) downloads"
+msgstr ""
+
+msgid "File format of single video files (FFmpeg)"
+msgstr ""
 
 #, python-format
 msgid "File might be corrupted (size: %d bytes)."
@@ -2916,9 +2948,6 @@ msgstr "لم يتم العثور على مستخدم Last.fm \"%s\"."
 msgid "Last.fm user name:"
 msgstr "اسم مستخدم Last.fm:"
 
-msgid "Lastest"
-msgstr "الأحدث"
-
 msgid "Latest"
 msgstr "الأحدث"
 
@@ -3199,9 +3228,6 @@ msgstr "إذاعة MP3Quran المباشرة"
 msgid "Main"
 msgstr "الرئيسية"
 
-msgid "Main menu"
-msgstr "القائمة الرئيسية"
-
 #, python-format
 msgid "Make directory [%s]"
 msgstr "إنشاء مجلد [%s]"
@@ -3262,9 +3288,6 @@ msgstr "عسكري"
 
 msgid "Mini series"
 msgstr "مسلسلات قصيرة"
-
-msgid "Missed"
-msgstr "فاتك"
 
 msgid "Missed the show?"
 msgstr "فاتك العرض؟"
@@ -3708,6 +3731,9 @@ msgstr "غير متصل"
 msgid "OK"
 msgstr "موافق"
 
+msgid "OK marks an item, BLUE shows what can be done with the marked items."
+msgstr ""
+
 msgid "OMDb API key (free at omdbapi.com)"
 msgstr "مفتاح OMDb API (مجاني من omdbapi.com)"
 
@@ -3900,6 +3926,9 @@ msgstr "جولات علم الأمراض"
 msgid "Patriotism"
 msgstr "الوطنية"
 
+msgid "Pause between the batch lookups of one host [s]"
+msgstr ""
+
 #, python-format
 msgid "Peak: %s"
 msgstr "الذروة: %s"
@@ -3934,6 +3963,13 @@ msgstr "حماية الإضافة برمز PIN"
 msgid "Pin protection for this host"
 msgstr "الحماية برمز PIN لهذا الهوست"
 
+msgid "Play all from here"
+msgstr ""
+
+#, python-format
+msgid "Play marked items (%d)"
+msgstr ""
+
 msgid "Play torrents with TorrServer"
 msgstr "تشغيل التورنت باستخدام TorrServer"
 
@@ -3944,19 +3980,8 @@ msgstr "تشغيل باستخدام المشغل [%s]"
 msgid "Playback UHD :"
 msgstr "تشغيل UHD:"
 
-#, python-format
-msgid "Player %s"
-msgstr "المشغل %s"
-
-#, python-format
-msgid "Player %s: %s"
-msgstr "المشغل %s: %s"
-
 msgid "Player Skin"
 msgstr "سكين المشغل"
-
-msgid "Player data parsing error."
-msgstr "خطأ في تحليل بيانات المشغل."
 
 msgid "Playing on the TV is not possible (no enigma2 session)."
 msgstr "التشغيل على التلفزيون غير ممكن (لا توجد جلسة Enigma2)."
@@ -4098,8 +4123,8 @@ msgid "Portal %d - %s (optional, from the MAG box):"
 msgstr "البوابة %d - %s (اختياري، من جهاز MAG):"
 
 #, python-format
-msgid "Portal %d - MAC address (00:1A:79...):"
-msgstr "البوابة %d - عنوان MAC (00:1A:79...):"
+msgid "Portal %d - MAC address (00:1A:79:...):"
+msgstr ""
 
 #, python-format
 msgid "Portal %d - name (optional):"
@@ -4370,6 +4395,10 @@ msgstr "إزالة"
 msgid "Remove \"%s\" item"
 msgstr "إزالة العنصر \"%s\""
 
+#, python-format
+msgid "Remove %d items from the favourites?"
+msgstr ""
+
 msgid "Remove file"
 msgstr "إزالة الملف"
 
@@ -4381,6 +4410,10 @@ msgstr "إزالة المجموعة"
 
 msgid "Remove item"
 msgstr "إزالة العنصر"
+
+#, python-format
+msgid "Remove marked items from favourites (%d)"
+msgstr ""
 
 msgid "Remove thumbnails"
 msgstr "إزالة الصور المصغرة"
@@ -4635,12 +4668,18 @@ msgstr "القسم"
 msgid "Sections"
 msgstr "الأقسام"
 
+msgid "Select"
+msgstr ""
+
 #, python-format
 msgid "Select %s"
 msgstr "اختر %s"
 
 msgid "Select action"
 msgstr "اختر الإجراء"
+
+msgid "Select all"
+msgstr ""
 
 msgid "Select audio track"
 msgstr "اختر المسار الصوتي"
@@ -4882,6 +4921,9 @@ msgstr "عرض الصوت باللغة المحددة فقط:"
 
 msgid "Show only best quality of streams:"
 msgstr "عرض أفضل جودة للبث فقط:"
+
+msgid "Show playlist"
+msgstr ""
 
 msgid "Show results"
 msgstr "عرض النتائج"
@@ -6053,6 +6095,12 @@ msgstr "إلغاء تحميل ملف ISO"
 msgid "Unable to comply. Search History is empty."
 msgstr "تعذر تنفيذ العملية. سجل البحث فارغ."
 
+msgid "Undo reverse"
+msgstr ""
+
+msgid "Undo shuffle"
+msgstr ""
+
 msgid "Unfix jump target"
 msgstr "إلغاء تثبيت هدف الانتقال"
 
@@ -6079,6 +6127,9 @@ msgstr "محلل ترجمة غير معروف للتنسيق \"%s\"."
 #, python-format
 msgid "Unrar error code[%s]."
 msgstr "رمز خطأ فك الضغط Unrar [%s]."
+
+msgid "Unselect all"
+msgstr ""
 
 msgid "Unset watched"
 msgstr "إلغاء تعيين كمشاهد"
@@ -6544,9 +6595,6 @@ msgstr "[HLS/M3U8] يبدأ البث المباشر متأخرًا عن البث
 msgid "[HTTP] buffering"
 msgstr "تخزين مؤقت [HTTP]"
 
-msgid "[Logged-in-only]"
-msgstr "[يتطلب تسجيل الدخول]"
-
 msgid "[RTMP] buffering (rtmpdump required)"
 msgstr "تخزين مؤقت [RTMP] (يتطلب rtmpdump)"
 
@@ -6807,6 +6855,9 @@ msgstr "رئيسي"
 msgid "manual"
 msgstr "يدوي"
 
+msgid "marked"
+msgstr ""
+
 msgid "maroon"
 msgstr "خمري"
 
@@ -6924,6 +6975,9 @@ msgstr "أحمر"
 msgid "refresh the current list"
 msgstr "تحديث القائمة الحالية"
 
+msgid "reversed"
+msgstr ""
+
 msgid "rootfs"
 msgstr "rootfs"
 
@@ -6987,6 +7041,9 @@ msgstr "عرض المزيد من التفاصيل حول العنصر المحد
 
 msgid "show this help"
 msgstr "عرض هذه المساعدة"
+
+msgid "shuffled"
+msgstr ""
 
 msgid "sign in (subscriptions, playlists, age-restricted videos)"
 msgstr "تسجيل الدخول (الاشتراكات، قوائم التشغيل، الفيديوهات المقيّدة بالعمر)"

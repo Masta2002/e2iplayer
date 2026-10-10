@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: IPTVPlayer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-09 20:23+0000\n"
+"POT-Creation-Date: 2026-10-10 23:37+0000\n"
 "PO-Revision-Date: 2026-10-09 23:09+0300\n"
 "Last-Translator: \n"
 "Language-Team: giorbak\n"
@@ -77,12 +77,24 @@ msgid "\"Web\" streams player"
 msgstr "Πρόγραμμα αναπαραγωγής ροών \"Ιστού\""
 
 #, python-format
+msgid "%d added, %d skipped."
+msgstr ""
+
+#, python-format
 msgid "%d duplicate entries removed."
 msgstr "Αφαιρέθηκαν %d διπλότυπες καταχωρήσεις."
 
 #, python-format
 msgid "%d duplicate entry removed."
 msgstr "Αφαιρέθηκε %d διπλότυπη καταχώρηση."
+
+#, python-format
+msgid "%d items added to the download queue, %d skipped."
+msgstr ""
+
+#, python-format
+msgid "%d of %d downloaded"
+msgstr ""
 
 #, python-format
 msgid "%d parts"
@@ -95,6 +107,10 @@ msgstr "%d προγράμματα"
 #, python-format
 msgid "%d recitations"
 msgstr "%d απαγγελίες"
+
+#, python-format
+msgid "%d removed, %d skipped."
+msgstr ""
 
 #, python-format
 msgid "%d videos"
@@ -165,10 +181,6 @@ msgid "%s posts"
 msgstr "%s αναρτήσεις"
 
 #, python-format
-msgid "%s recitations"
-msgstr "%s απαγγελίες"
-
-#, python-format
 msgid "%s refused the download. Please set your login and password in the configuration."
 msgstr "Το %s αρνήθηκε τη λήψη. Παρακαλώ ορίστε το όνομα χρήστη και τον κωδικό πρόσβασης στις ρυθμίσεις."
 
@@ -215,6 +227,10 @@ msgstr "%s θεατές"
 #, python-format
 msgid "%s views"
 msgstr "%s προβολές"
+
+#, python-format
+msgid "%s: decrypting the stream, this can take a while (%d s)"
+msgstr ""
 
 #, python-format
 msgid "(%d YouTube channel(s) could not be read)"
@@ -454,6 +470,10 @@ msgstr "Ηθοποιοί"
 msgid "Actors:"
 msgstr "Ηθοποιοί:"
 
+#, python-format
+msgid "Add %d items to the download queue?"
+msgstr ""
+
 msgid "Add channel name to downloaded file"
 msgstr "Προσθήκη ονόματος καναλιού στο ληφθέν αρχείο"
 
@@ -466,6 +486,10 @@ msgstr "Προσθήκη στοιχείου στα αγαπημένα"
 
 msgid "Add item to group"
 msgstr "Προσθήκη στοιχείου στην ομάδα"
+
+#, python-format
+msgid "Add marked items to favourites (%d)"
+msgstr ""
 
 msgid "Add new entry"
 msgstr "Προσθήκη νέας καταχώρησης"
@@ -1185,9 +1209,6 @@ msgstr "Επιβεβαίωση τίτλου ταινίας"
 msgid "Confirmation error."
 msgstr "Σφάλμα επιβεβαίωσης."
 
-msgid "Connection to server failed!"
-msgstr "Αποτυχία σύνδεσης με τον διακομιστή!"
-
 msgid "Connection to the weeb.tv server failed."
 msgstr "Η σύνδεση με τον διακομιστή weeb.tv απέτυχε."
 
@@ -1586,6 +1607,9 @@ msgstr "Λήψη (έτοιμη σε %d δευτερόλεπτα)"
 msgid "Download again"
 msgstr "Λήψη ξανά"
 
+msgid "Download all items of this page"
+msgstr ""
+
 msgid "Download already exists"
 msgstr "Η λήψη υπάρχει ήδη"
 
@@ -1620,6 +1644,10 @@ msgstr "Διαχείριση λήψεων"
 
 msgid "Download manager is not initialized"
 msgstr "Η Διαχείριση λήψεων δεν έχει αρχικοποιηθεί"
+
+#, python-format
+msgid "Download marked items (%d)"
+msgstr ""
 
 msgid "Download new version"
 msgstr "Λήψη νέας έκδοσης"
@@ -1914,9 +1942,6 @@ msgstr "Εισάγετε το κείμενο"
 msgid "Entertainment"
 msgstr "Ψυχαγωγία"
 
-msgid "Entitlement parsing error."
-msgstr "Σφάλμα ανάλυσης δικαιώματος."
-
 #, python-format
 msgid "Entries: %d | Sort: %s | Status: %s | Jump target: %s"
 msgstr "Καταχωρήσεις: %d | Ταξινόμηση: %s | Κατάσταση: %s | Προορισμός μετάβασης: %s"
@@ -2205,6 +2230,12 @@ msgstr "Δεν είναι δυνατή η λήψη του αρχείου. Το �
 
 msgid "File format of DASH (MPD) downloads"
 msgstr "Μορφή αρχείων λήψεων DASH (MPD)"
+
+msgid "File format of HLS (M3U8) downloads"
+msgstr ""
+
+msgid "File format of single video files (FFmpeg)"
+msgstr ""
 
 #, python-format
 msgid "File might be corrupted (size: %d bytes)."
@@ -2919,9 +2950,6 @@ msgstr "Ο χρήστης του Last.fm \"%s\" δεν βρέθηκε."
 msgid "Last.fm user name:"
 msgstr "Όνομα χρήστη Last.fm:"
 
-msgid "Lastest"
-msgstr "Τελευταία"
-
 msgid "Latest"
 msgstr "Τελευταία"
 
@@ -3202,9 +3230,6 @@ msgstr "Ζωντανό ραδιόφωνο MP3Quran"
 msgid "Main"
 msgstr "Κύριο"
 
-msgid "Main menu"
-msgstr "Κύριο μενού"
-
 #, python-format
 msgid "Make directory [%s]"
 msgstr "Δημιουργία καταλόγου [%s]"
@@ -3265,9 +3290,6 @@ msgstr "Στρατιωτικά"
 
 msgid "Mini series"
 msgstr "Μίνι σειρές"
-
-msgid "Missed"
-msgstr "Χαμένα"
 
 msgid "Missed the show?"
 msgstr "Χάσατε την εκπομπή;"
@@ -3711,6 +3733,9 @@ msgstr "ΕΚΤΟΣ ΣΥΝΔΕΣΗΣ"
 msgid "OK"
 msgstr "ΕΝΤΑΞΕΙ"
 
+msgid "OK marks an item, BLUE shows what can be done with the marked items."
+msgstr ""
+
 msgid "OMDb API key (free at omdbapi.com)"
 msgstr "Κλειδί API OMDb (δωρεάν στο omdbapi.com)"
 
@@ -3903,6 +3928,9 @@ msgstr "Κύκλοι παθολογίας"
 msgid "Patriotism"
 msgstr "Πατριωτισμός"
 
+msgid "Pause between the batch lookups of one host [s]"
+msgstr ""
+
 #, python-format
 msgid "Peak: %s"
 msgstr "Κορυφή: %s"
@@ -3937,6 +3965,13 @@ msgstr "Προστασία pin για το πρόσθετο"
 msgid "Pin protection for this host"
 msgstr "Προστασία αυτού του host με pin"
 
+msgid "Play all from here"
+msgstr ""
+
+#, python-format
+msgid "Play marked items (%d)"
+msgstr ""
+
 msgid "Play torrents with TorrServer"
 msgstr ""
 
@@ -3947,19 +3982,8 @@ msgstr "Αναπαραγωγή με το πρόγραμμα αναπαραγωγ
 msgid "Playback UHD :"
 msgstr "Αναπαραγωγή UHD:"
 
-#, python-format
-msgid "Player %s"
-msgstr "Πρόγραμμα αναπαραγωγής %s"
-
-#, python-format
-msgid "Player %s: %s"
-msgstr "Πρόγραμμα αναπαραγωγής %s: %s"
-
 msgid "Player Skin"
 msgstr "Θέμα προγράμματος αναπαραγωγής"
-
-msgid "Player data parsing error."
-msgstr "Σφάλμα ανάλυσης δεδομένων προγράμματος αναπαραγωγής."
 
 msgid "Playing on the TV is not possible (no enigma2 session)."
 msgstr "Η αναπαραγωγή στην TV δεν είναι δυνατή (δεν υπάρχει συνεδρία enigma2)."
@@ -4373,6 +4397,10 @@ msgstr "Αφαίρεση"
 msgid "Remove \"%s\" item"
 msgstr "Αφαίρεση στοιχείου \"%s\""
 
+#, python-format
+msgid "Remove %d items from the favourites?"
+msgstr ""
+
 msgid "Remove file"
 msgstr "Αφαίρεση αρχείου"
 
@@ -4384,6 +4412,10 @@ msgstr "Αφαίρεση ομάδας"
 
 msgid "Remove item"
 msgstr "Αφαίρεση στοιχείου"
+
+#, python-format
+msgid "Remove marked items from favourites (%d)"
+msgstr ""
 
 msgid "Remove thumbnails"
 msgstr "Αφαίρεση μικρογραφιών"
@@ -4638,12 +4670,18 @@ msgstr "Ενότητα"
 msgid "Sections"
 msgstr "Ενότητες"
 
+msgid "Select"
+msgstr ""
+
 #, python-format
 msgid "Select %s"
 msgstr "Επιλογή %s"
 
 msgid "Select action"
 msgstr "Επιλογή ενέργειας"
+
+msgid "Select all"
+msgstr ""
 
 msgid "Select audio track"
 msgstr "Επιλογή κομματιού ήχου"
@@ -4885,6 +4923,9 @@ msgstr "Εμφάνιση μόνο ήχου στην επιλεγμένη γλώ�
 
 msgid "Show only best quality of streams:"
 msgstr "Εμφάνιση μόνο καλύτερης ποιότητας ροών:"
+
+msgid "Show playlist"
+msgstr ""
 
 msgid "Show results"
 msgstr "Εμφάνιση αποτελεσμάτων"
@@ -6049,6 +6090,12 @@ msgstr "Αποπροσάρτηση αρχείου iso"
 msgid "Unable to comply. Search History is empty."
 msgstr "Αδυναμία συμμόρφωσης. Το ιστορικό αναζήτησης είναι κενό."
 
+msgid "Undo reverse"
+msgstr ""
+
+msgid "Undo shuffle"
+msgstr ""
+
 msgid "Unfix jump target"
 msgstr "Αναίρεση διόρθωσης προορισμού μετάβασης"
 
@@ -6075,6 +6122,9 @@ msgstr "Άγνωστος αναλυτής υποτίτλων για μορφή \
 #, python-format
 msgid "Unrar error code[%s]."
 msgstr "Unrar κωδικός σφάλματος[%s]."
+
+msgid "Unselect all"
+msgstr ""
 
 msgid "Unset watched"
 msgstr "Αφαίρεση επισήμανσης ως προβληθέν"
@@ -6540,9 +6590,6 @@ msgstr "Η ζωντανή ροή [HLS/M3U8] ξεκινά μετά από το ζ
 msgid "[HTTP] buffering"
 msgstr "Προσωρινή αποθήκευση [HTTP]"
 
-msgid "[Logged-in-only]"
-msgstr "[Μόνο για συνδεδεμένους χρήστες]"
-
 msgid "[RTMP] buffering (rtmpdump required)"
 msgstr "Προσωρινή αποθήκευση [RTMP] (απαιτείται rtmpdump)"
 
@@ -6803,6 +6850,9 @@ msgstr "κύριο"
 msgid "manual"
 msgstr "χειροκίνητα"
 
+msgid "marked"
+msgstr ""
+
 msgid "maroon"
 msgstr "καφέ-μπορντώ"
 
@@ -6920,6 +6970,9 @@ msgstr "κόκκινο"
 msgid "refresh the current list"
 msgstr "ανανέωση της τρέχουσας λίστας"
 
+msgid "reversed"
+msgstr ""
+
 msgid "rootfs"
 msgstr "rootfs"
 
@@ -6983,6 +7036,9 @@ msgstr "εμφάνιση περισσότερων λεπτομερειών γι�
 
 msgid "show this help"
 msgstr "εμφάνιση αυτής της βοήθειας"
+
+msgid "shuffled"
+msgstr ""
 
 msgid "sign in (subscriptions, playlists, age-restricted videos)"
 msgstr "σύνδεση (εγγραφές, λίστες αναπαραγωγής, βίντεο με περιορισμό ηλικίας)"
