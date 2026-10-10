@@ -485,7 +485,8 @@ class IPTVActionChoiceBoxList(IPTVMainNavigatorList):
     # hostfavourites.py's own near-identical logic both always use
     # privateData == {'action': 'set_watched_flag'/'unset_watched_flag',
     # ...}; the favourites host adds its YouTube sort switch
-    # ({'action': 'yt_sort_newest'/'yt_sort_reset'}). Anything else (e.g. hostlocalmedia.py's own {'action':
+    # ({'action': 'yt_sort_newest'/'yt_sort_reset'}); a host with favourites of its own (hostxxx: favourite
+    # sites) uses {'action': 'host_fav_add'/'host_fav_remove'}. Anything else (e.g. hostlocalmedia.py's own {'action':
     # 'paste_file', ...}) isn't a known pattern, so it falls back to no
     # icon - same plain look this screen had before this class existed.
     ICON_MAP = {
@@ -498,6 +499,8 @@ class IPTVActionChoiceBoxList(IPTVMainNavigatorList):
         'unset_watched_flag': 'MovieUnwatchedItem.png',
         'yt_sort_newest': 'SortByNameItem.png',
         'yt_sort_reset': 'ResetGroupItem.png',
+        'host_fav_add': 'BookmarkPlusItem.png',
+        'host_fav_remove': 'BookmarkMinusItem.png',
     }
 
     def __init__(self):

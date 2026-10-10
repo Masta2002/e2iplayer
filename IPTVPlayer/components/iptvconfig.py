@@ -89,6 +89,10 @@ config.plugins.iptvplayer.IPTVDMShowNotification = ConfigYesNo(default=True)
 config.plugins.iptvplayer.http_downloader = ConfigSelection(default="wget", choices=[("wget", "wget"), ("curl", "curl")])
 # container of DASH (MPD) downloads, which ffmpeg muxes; a host may still set its own (ff_out_container)
 config.plugins.iptvplayer.dash_out_container = ConfigSelection(default="matroska", choices=[("matroska", "MKV"), ("mp4", "MP4"), ("mpegts", "TS")])
+# container of HLS (M3U8) downloads, hlsdl or ffmpeg, and of single files ffmpeg downloads (iptv_use_ffmpeg);
+# auto = the one the site delivers
+config.plugins.iptvplayer.hls_out_container = ConfigSelection(default="auto", choices=[("auto", _("Automatic")), ("matroska", "MKV"), ("mp4", "MP4"), ("mpegts", "TS")])
+config.plugins.iptvplayer.file_out_container = ConfigSelection(default="auto", choices=[("auto", _("Automatic")), ("matroska", "MKV"), ("mp4", "MP4"), ("mpegts", "TS")])
 # same seconds-choices pattern as extplayer_infobar_timeout above - 5s
 # matches the fixed duration IPTVDMNotification.showNotify() used before
 # this was configurable

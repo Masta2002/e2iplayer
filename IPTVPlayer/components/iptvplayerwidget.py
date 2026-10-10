@@ -3061,7 +3061,8 @@ class E2iPlayerWidget(Screen):
                         dmItem = DMItem(url, fullFilePath)
                         try:
                             hostName, itemUrl = self._getRowSource(self.currItem.itemIdx, self.currItem)
-                            dmItem.itemKey = iptvdownloaded.getItemKey(hostName, itemUrl, self.currItem.name)
+                            # a live row (M4 Sport live, a radio station ...) gets no downloaded marker
+                            dmItem.itemKey = batchdownload.recordingMarkerKey(self._getBatchRawRow(self.currItem), getattr(url, 'meta', {}), iptvdownloaded.getItemKey(hostName, itemUrl, self.currItem.name))
                         except Exception:
                             printExc()
                         ret = gDownloadManager.addToDQueue(dmItem)
@@ -3710,18 +3711,20 @@ class E2iPlayerWidget(Screen):
             favKeys = frozenset()
             if 'favourites' != self.hostName and config.plugins.iptvplayer.hostfavourites.value and config.plugins.iptvplayer.mark_favourite_items.value:
                 favKeys = getFavouritesIdentityKeys(GetFavouritesDir())
+            markFavourites = config.plugins.iptvplayer.mark_favourite_items.value
             markDownloads = config.plugins.iptvplayer.mark_downloaded_items.value
             activeKeys = gDownloadManager.getActiveItemKeys() if None is not gDownloadManager else set()
             for idx in range(len(self.currList)):
                 item = self.currList[idx]
                 if not isinstance(item, CDisplayListItem):
                     continue
-                item.isFavourite = False
+                # a host with favourites of its own (hostxxx: favourite sites) sets hostFavourite on the row
+                item.isFavourite = bool(markFavourites and getattr(item, 'hostFavourite', False))
                 item.downloadState = ''
                 if favKeys and (item.isGoodForFavourites or item.type in self.hostFavTypes):
                     data = self.host.getFavouriteDataOfRow(idx)
                     if data is not None:
-                        item.isFavourite = IPTVFavourites.getItemIdentityKey(self.hostName, self.hostName, data) in favKeys
+                        item.isFavourite = item.isFavourite or IPTVFavourites.getItemIdentityKey(self.hostName, self.hostName, data) in favKeys
                 if markDownloads and self.isDownloadableType(item.type):
                     hostName, url = self._getRowSource(idx, item)
                     item.downloadState = iptvdownloaded.getState(iptvdownloaded.getItemKey(hostName, url, item.name), activeKeys)

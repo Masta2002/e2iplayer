@@ -59,7 +59,7 @@ class _Console(object):
 @pytest.fixture
 def ff():
     saved = dict(sys.modules)
-    cfg = types.SimpleNamespace(plugins=types.SimpleNamespace(iptvplayer=types.SimpleNamespace(dash_out_container=_Value("matroska"))))
+    cfg = types.SimpleNamespace(plugins=types.SimpleNamespace(iptvplayer=types.SimpleNamespace(dash_out_container=_Value("matroska"), hls_out_container=_Value("auto"), file_out_container=_Value("auto"))))
     written = {}
     for pkg in ("Components", "Tools", "Plugins", "Plugins.Extensions", "Plugins.Extensions.IPTVPlayer",
                 "Plugins.Extensions.IPTVPlayer.tools", "Plugins.Extensions.IPTVPlayer.iptvdm",
@@ -104,14 +104,45 @@ def test_dash_download_uses_setting(ff):
         assert _dl(ff, "merge://audio_url|video_url", {"audio_url": "https://cdn/a.mpd", "video_url": "https://cdn/v.mpd"})._outContainer() == value
 
 
-def test_host_container_wins_and_others_stay_matroska(ff):
+def test_host_container_wins_and_playback_stays_matroska(ff):
     ff.cfg.dash_out_container.value = "mp4"
+    ff.cfg.file_out_container.value = "mp4"
     assert _dl(ff, "https://cdn/x/manifest.mpd", {"ff_out_container": "mpegts"})._outContainer() == "mpegts"
+    assert _dl(ff, "https://cdn/x/video.mp4", {"ff_out_container": "matroska"})._outContainer() == "matroska"
     # buffered playback keeps Matroska: the player holds the file under its name
     assert _dl(ff, "https://cdn/x/manifest.mpd", download=False)._outContainer() == "matroska"
-    # not DASH: HLS via ffmpeg, merge of HLS parts
-    assert _dl(ff, "https://cdn/x/index.m3u8")._outContainer() == "matroska"
+    assert _dl(ff, "https://cdn/x/video.mp4", download=False)._outContainer() == "matroska"
+
+
+def test_auto_follows_the_source(ff):
+    assert _dl(ff, "https://www.porntrex.com/get_file/19/ab/3359675_1080p.mp4/")._outContainer() == "mp4"
+    assert _dl(ff, "https://cdn/x/clip.webm?token=1")._outContainer() == "webm"
+    assert _dl(ff, "https://cdn/x/index.m3u8")._outContainer() == "mpegts"
+    assert _dl(ff, "https://cdn/x/play", {"iptv_proto": "m3u8", "iptv_livestream": True})._outContainer() == "mpegts"
+    # separate audio/video parts, a live single file and unknown sources stay Matroska
     assert _dl(ff, "merge://audio_url|video_url", {"audio_url": "https://cdn/a.m3u8", "video_url": "https://cdn/v.m3u8"})._outContainer() == "matroska"
+    assert _dl(ff, "https://cdn/x/live.mp4", {"iptv_livestream": True})._outContainer() == "matroska"
+    assert _dl(ff, "https://cdn/x/play?id=5")._outContainer() == "matroska"
+
+
+def test_fixed_settings_per_source(ff):
+    hlsMerge = {"audio_url": "https://cdn/a.m3u8", "video_url": "https://cdn/v.m3u8"}
+    for value in ("matroska", "mp4", "mpegts"):
+        # single files follow the file setting, HLS (also a merge of HLS parts) the HLS setting
+        ff.cfg.file_out_container.value = value
+        ff.cfg.hls_out_container.value = "auto"
+        assert _dl(ff, "https://cdn/x/video.mp4")._outContainer() == value
+        assert _dl(ff, "https://cdn/x/index.m3u8")._outContainer() == "mpegts"
+        assert _dl(ff, "merge://audio_url|video_url", hlsMerge)._outContainer() == "matroska"
+        ff.cfg.file_out_container.value = "auto"
+        ff.cfg.hls_out_container.value = value
+        assert _dl(ff, "https://cdn/x/video.mp4")._outContainer() == "mp4"
+        assert _dl(ff, "https://cdn/x/index.m3u8")._outContainer() == value
+        assert _dl(ff, "https://cdn/x/play", {"iptv_proto": "m3u8"})._outContainer() == value
+        assert _dl(ff, "merge://audio_url|video_url", hlsMerge)._outContainer() == value
+    # DASH keeps its own setting
+    ff.cfg.dash_out_container.value = "matroska"
+    assert _dl(ff, "https://cdn/x/manifest.mpd")._outContainer() == "matroska"
 
 
 def test_command_line(ff):

@@ -256,6 +256,15 @@ def test_live_row(env):
     assert not env.batch.isLiveRow(None)
 
 
+def test_recording_marker_key(env):
+    # GREEN on a live row: the recording is saved, but the row gets no downloaded marker
+    key = env.batch.recordingMarkerKey
+    assert key({'live': True}, {}, 'h|live') == ''
+    assert key(None, {'iptv_livestream': True}, 'h|cam') == ''
+    assert key({'url': 'x'}, {'iptv_livestream': False}, 'h|1') == 'h|1'
+    assert key(None, None, 'h|2') == 'h|2'
+
+
 def test_skip_rules(env):
     rows = [{'title': 'ok 1', 'key': 'h|1', 'source': ('h', 'd')},
             {'title': 'no key', 'key': '', 'source': ('h', 'd')},
