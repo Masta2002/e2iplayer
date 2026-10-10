@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: IPTVPlayer\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-10 23:37+0000\n"
-"PO-Revision-Date: 2026-10-09 22:35+0200\n"
+"PO-Revision-Date: 2026-10-11 01:42+0200\n"
 "Last-Translator: Masta2002\n"
 "Language-Team: oATV Team\n"
 "Language: de_DE\n"
@@ -75,7 +75,7 @@ msgstr "\"Web\" Streams Player"
 
 #, python-format
 msgid "%d added, %d skipped."
-msgstr ""
+msgstr "%d hinzugefügt, %d übersprungen."
 
 #, python-format
 msgid "%d duplicate entries removed."
@@ -87,11 +87,11 @@ msgstr "%d doppelter Eintrag entfernt."
 
 #, python-format
 msgid "%d items added to the download queue, %d skipped."
-msgstr ""
+msgstr "%d Einträge zur Download-Warteschlange hinzugefügt, %d übersprungen."
 
 #, python-format
 msgid "%d of %d downloaded"
-msgstr ""
+msgstr "%d von %d heruntergeladen"
 
 #, python-format
 msgid "%d parts"
@@ -107,7 +107,7 @@ msgstr "%d Rezitationen"
 
 #, python-format
 msgid "%d removed, %d skipped."
-msgstr ""
+msgstr "%d entfernt, %d übersprungen."
 
 #, python-format
 msgid "%d videos"
@@ -227,7 +227,7 @@ msgstr "%s Aufrufe"
 
 #, python-format
 msgid "%s: decrypting the stream, this can take a while (%d s)"
-msgstr ""
+msgstr "%s: Der Stream wird entschlüsselt, das kann eine Weile dauern (%d s)"
 
 #, python-format
 msgid "(%d YouTube channel(s) could not be read)"
@@ -469,7 +469,7 @@ msgstr "Darsteller:"
 
 #, python-format
 msgid "Add %d items to the download queue?"
-msgstr ""
+msgstr "%d Einträge zur Download-Warteschlange hinzufügen?"
 
 msgid "Add channel name to downloaded file"
 msgstr "Kanalnamen zur heruntergeladenen Datei hinzufügen"
@@ -486,7 +486,7 @@ msgstr "In Gruppe kopieren"
 
 #, python-format
 msgid "Add marked items to favourites (%d)"
-msgstr ""
+msgstr "Markierte Einträge zu Favoriten hinzufügen (%d)"
 
 msgid "Add new entry"
 msgstr "Neuen Eintrag hinzufügen"
@@ -1605,7 +1605,7 @@ msgid "Download again"
 msgstr "Erneut herunterladen"
 
 msgid "Download all items of this page"
-msgstr ""
+msgstr "Alle Einträge dieser Seite herunterladen"
 
 msgid "Download already exists"
 msgstr "Download existiert bereits"
@@ -1644,7 +1644,7 @@ msgstr "Downloadverwaltung ist nicht initialisiert"
 
 #, python-format
 msgid "Download marked items (%d)"
-msgstr ""
+msgstr "Markierte Einträge herunterladen (%d)"
 
 msgid "Download new version"
 msgstr "Neue Version herunterladen"
@@ -2229,10 +2229,10 @@ msgid "File format of DASH (MPD) downloads"
 msgstr "Dateiformat für DASH-Downloads (MPD)"
 
 msgid "File format of HLS (M3U8) downloads"
-msgstr ""
+msgstr "Dateiformat für HLS-Downloads (M3U8)"
 
 msgid "File format of single video files (FFmpeg)"
-msgstr ""
+msgstr "Dateiformat für einzelne Videodateien (FFmpeg)"
 
 #, python-format
 msgid "File might be corrupted (size: %d bytes)."
@@ -3731,7 +3731,7 @@ msgid "OK"
 msgstr "OK"
 
 msgid "OK marks an item, BLUE shows what can be done with the marked items."
-msgstr ""
+msgstr "OK markiert einen Eintrag, BLAU zeigt, was mit den markierten Einträgen möglich ist."
 
 msgid "OMDb API key (free at omdbapi.com)"
 msgstr "OMDb API-Schlüssel (kostenlos bei omdbapi.com)"
@@ -3926,7 +3926,7 @@ msgid "Patriotism"
 msgstr "Patriotismus"
 
 msgid "Pause between the batch lookups of one host [s]"
-msgstr ""
+msgstr "Pause zwischen den Sammelabfragen eines Hosts [s]"
 
 #, python-format
 msgid "Peak: %s"
@@ -3963,11 +3963,11 @@ msgid "Pin protection for this host"
 msgstr "PIN-Schutz für diesen Host"
 
 msgid "Play all from here"
-msgstr ""
+msgstr "Alle ab hier abspielen"
 
 #, python-format
 msgid "Play marked items (%d)"
-msgstr ""
+msgstr "Markierte Einträge abspielen (%d)"
 
 msgid "Play torrents with TorrServer"
 msgstr "Torrents mit TorrServer abspielen"
@@ -4396,7 +4396,7 @@ msgstr "Entferne \"%s\" Eintrag"
 
 #, python-format
 msgid "Remove %d items from the favourites?"
-msgstr ""
+msgstr "%d Einträge aus den Favoriten entfernen?"
 
 msgid "Remove file"
 msgstr "Datei löschen"
@@ -4412,7 +4412,7 @@ msgstr "Eintrag entfernen"
 
 #, python-format
 msgid "Remove marked items from favourites (%d)"
-msgstr ""
+msgstr "Markierte Einträge aus Favoriten entfernen (%d)"
 
 msgid "Remove thumbnails"
 msgstr "Lösche Vorschaubilder"
@@ -4668,7 +4668,7 @@ msgid "Sections"
 msgstr "Rubriken"
 
 msgid "Select"
-msgstr ""
+msgstr "Auswählen"
 
 #, python-format
 msgid "Select %s"
@@ -4678,7 +4678,7 @@ msgid "Select action"
 msgstr "Operation auswählen"
 
 msgid "Select all"
-msgstr ""
+msgstr "Alle auswählen"
 
 msgid "Select audio track"
 msgstr "Wähle Tonspur"
@@ -4922,7 +4922,7 @@ msgid "Show only best quality of streams:"
 msgstr "Nur Streams in bester Qualität anzeigen:"
 
 msgid "Show playlist"
-msgstr ""
+msgstr "Playlist anzeigen"
 
 msgid "Show results"
 msgstr "Ergebnisse anzeigen"
@@ -6095,10 +6095,10 @@ msgid "Unable to comply. Search History is empty."
 msgstr "Kann nicht erfüllt werden. Der Suchverlauf ist leer."
 
 msgid "Undo reverse"
-msgstr ""
+msgstr "Umkehren rückgängig machen"
 
 msgid "Undo shuffle"
-msgstr ""
+msgstr "Mischen rückgängig machen"
 
 msgid "Unfix jump target"
 msgstr "Sprungziel aufheben"
@@ -6128,7 +6128,7 @@ msgid "Unrar error code[%s]."
 msgstr "Unrar Fehler-Code[%s]."
 
 msgid "Unselect all"
-msgstr ""
+msgstr "Alle abwählen"
 
 msgid "Unset watched"
 msgstr "Als gesehen entmarkieren"
@@ -6855,7 +6855,7 @@ msgid "manual"
 msgstr "manuell"
 
 msgid "marked"
-msgstr ""
+msgstr "markiert"
 
 msgid "maroon"
 msgstr "kastanienbraun"
@@ -6975,7 +6975,7 @@ msgid "refresh the current list"
 msgstr "aktuelle Liste neu laden"
 
 msgid "reversed"
-msgstr ""
+msgstr "umgekehrt"
 
 msgid "rootfs"
 msgstr "rootfs"
@@ -7042,7 +7042,7 @@ msgid "show this help"
 msgstr "diese Hilfe anzeigen"
 
 msgid "shuffled"
-msgstr ""
+msgstr "gemischt"
 
 msgid "sign in (subscriptions, playlists, age-restricted videos)"
 msgstr "anmelden (Abonnements, Playlists, altersbeschränkte Videos)"
