@@ -197,6 +197,28 @@ class IPTVFavourites:
                     found.append((group['group_id'], group.get('title', ''), idx))
         return found
 
+    def findItemsOfKeys(self, keys):
+        # -> [(group_id, item index, identity key)] of the stored favourites whose identity key
+        # (getItemIdentityKey) is one of keys - in every group
+        found = []
+        for group in self.groups:
+            for idx, item in enumerate(group.get('items', [])):
+                key = self.getItemIdentityKey(item.hostName, item.resolver, item.data)
+                if key in keys:
+                    found.append((group['group_id'], idx, key))
+        return found
+
+    def delGroupItems(self, entries):
+        # deletes several favourites at once, entries: [(group_id, item index)]. The highest index first, so the
+        # indexes of the others stay valid; one named twice or one that is not there is left out. -> number deleted
+        count = 0
+        for group_id, itemIdx in sorted(set(entries), key=lambda entry: entry[1], reverse=True):
+            groupIdx = self._getGroupIdx(group_id)
+            if -1 != groupIdx and 0 <= itemIdx < len(self.groups[groupIdx].get('items', [])):
+                del self.groups[groupIdx]['items'][itemIdx]
+                count += 1
+        return count
+
     def delGroupItem(self, itemIdx, group_id):
         idx = self._getGroupIdx(group_id)
         if -1 != idx:

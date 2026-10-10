@@ -27,6 +27,8 @@ from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT
 from Plugins.Extensions.IPTVPlayer.components.iptvsubdownloader import IPTVSubDownloaderWidget
 from Plugins.Extensions.IPTVPlayer.components.iptvsubsimpledownloader import IPTVSubSimpleDownloaderWidget
 from Plugins.Extensions.IPTVPlayer.components.iptvchoicebox import IPTVChoiceBoxWidget, IPTVChoiceBoxItem
+from Plugins.Extensions.IPTVPlayer.components.iptvlist import IPTVPlaylistChoiceBoxList
+from Plugins.Extensions.IPTVPlayer.tools import listselection
 from Plugins.Extensions.IPTVPlayer.components.iptvdirbrowser import IPTVFileSelectorWidget
 from Plugins.Extensions.IPTVPlayer.components.configextmovieplayer import ConfigExtMoviePlayerBase, ConfigExtMoviePlayer
 from Plugins.Extensions.IPTVPlayer.components import skinchrome
@@ -311,6 +313,7 @@ class IPTVExtMoviePlayer(Screen):
                     <widget name="lengthTimeLabel"    noWrap="1" position="540,100"       size="200,40"   zPosition="3" transparent="1" foregroundColor="#999999"   backgroundColor="#251f1f1f" font="Regular;30" halign="center" valign="top"/>
                     <widget name="remainedLabel"      noWrap="1" position="860,100"       size="200,40"   zPosition="3" transparent="1" foregroundColor="#66ccff"   backgroundColor="#251f1f1f" font="Regular;30" halign="right"  valign="top"/>
                     <widget name="videoInfo"          noWrap="1" position="560,20"        size="500,30"   zPosition="3" transparent="1" foregroundColor="#999999"   backgroundColor="#251f1f1f" font="Regular;24" halign="right"  valign="top"/>
+                    <widget name="playlistInfo"       noWrap="1" position="220,20"        size="330,30"   zPosition="3" transparent="1" foregroundColor="#999999"   backgroundColor="#251f1f1f" font="Regular;24" halign="left"   valign="top"/>
 
                     %s
 
@@ -613,6 +616,9 @@ class IPTVExtMoviePlayer(Screen):
         # CH+/CH- (and >|/|<) close the player with 'zap_next'/'zap_prev', the list (E2iPlayerWidget.zapToItem)
         # then starts the next/previous playable item; only set by the list, not for the download manager
         self.zapEnabled = additionalParams.get('zap_enabled', False)
+        # a run of the autoplay sequencer of the list (tools/listselection.buildPlaylist): "Playlist 3/10" in the
+        # infobar and "Show playlist" in the MENU, whose entries close the player like a zap ('zap_to', ...)
+        self.playlist = additionalParams.get('playlist') if self.zapEnabled else None
 
         # screensaver over audio-only playback (iptvscreensaver.py), see _screenSaverWanted()
         from Plugins.Extensions.IPTVPlayer.components.iptvscreensaver import IPTVAudioScreenSaver
@@ -690,6 +696,9 @@ class IPTVExtMoviePlayer(Screen):
         self['remainedLabel'] = Label("-0:00:00")
         self['lengthTimeLabel'] = Label("0:00:00")
         self['videoInfo'] = Label(" ")
+        # empty without a playlist. Every playerskin.xml must declare it: initGuiComponentsPos() moves each
+        # widget of the infobar (guiElemNames) and needs its instance
+        self['playlistInfo'] = Label(listselection.playlistInfoText(self.playlist, _('Playlist'), _('marked'), _('shuffled'), _('reversed')))
         if self.clockFormat:
             self['clockTime'] = Label(" ")
         self['pleaseWait'] = Label(_("Opening. Please wait..."))
@@ -776,7 +785,7 @@ class IPTVExtMoviePlayer(Screen):
         # show hide info bar functionality
         self.goToSeekRepeatCount = 0
         self.goToSeekStep = 0
-        self.playbackInfoBar = {'visible': False, 'blocked': False, 'guiElemNames': ['playbackInfoBaner', 'progressBar', 'bufferingCBar', 'bufferingBar', 'goToSeekPointer', 'goToSeekLabel', 'infoBarTitle', 'currTimeLabel', 'remainedLabel', 'lengthTimeLabel', 'videoInfo', 'statusIcon', 'loopIcon', 'logoIcon']}
+        self.playbackInfoBar = {'visible': False, 'blocked': False, 'guiElemNames': ['playbackInfoBaner', 'progressBar', 'bufferingCBar', 'bufferingBar', 'goToSeekPointer', 'goToSeekLabel', 'infoBarTitle', 'currTimeLabel', 'remainedLabel', 'lengthTimeLabel', 'videoInfo', 'playlistInfo', 'statusIcon', 'loopIcon', 'logoIcon']}
         if self.clockFormat:
             self.playbackInfoBar['guiElemNames'].append('clockTime')
             self.playbackInfoBar['clock_timer'] = eTimer()
@@ -836,6 +845,8 @@ class IPTVExtMoviePlayer(Screen):
         if len(self.playback['AudioTracks']):
             options.append(IPTVChoiceBoxItem(_("Audio tracks"), "", "audio_tracks"))
         options.append(IPTVChoiceBoxItem(_("Video options"), "", "video_options"))
+        if self.playlist:
+            options.append(IPTVChoiceBoxItem(_("Show playlist"), "", "playlist"))
 
         if self.isDownladManagerAvailable and self.downloader:
             options.append(IPTVChoiceBoxItem(_("Stop playback with buffer save"), "", "close_with_buffer_save"))
@@ -855,8 +866,31 @@ class IPTVExtMoviePlayer(Screen):
             self.selectAudioTrack()
         elif "video_options" == ret.privateData:
             self.selectVideoOptions()
+        elif "playlist" == ret.privateData:
+            self.showPlaylist()
         elif "close_with_buffer_save" == ret.privateData:
             self.key_stop("save_buffer")
+
+    def showPlaylist(self):
+        # the rows of the sequencer's run in play order over the video (playback goes on): the current one
+        # preselected, the played ones ticked; OK on another one closes the player like a zap to it
+        if not self.playlist:
+            return
+        options = []
+        for pos, entry in enumerate(self.playlist['entries']):
+            item = IPTVChoiceBoxItem(entry['title'], "", entry, used=entry.get('played', False))
+            if pos == self.playlist['current']:
+                item.type = IPTVChoiceBoxItem.TYPE_ON
+            options.append(item)
+        title = self['playlistInfo'].getText() or _('Playlist')
+        self.openChild(boundFunction(self.childClosed, self.showPlaylistCallback), IPTVChoiceBoxWidget, {'width': 800, 'height': self._getChoiceBoxHeight(min(len(options), 10)), 'current_idx': self.playlist['current'], 'title': title, 'options': options, 'list_class': IPTVPlaylistChoiceBoxList, 'chrome': True, 'footerMargin': 136})
+
+    def showPlaylistCallback(self, ret=None):
+        printDBG("showPlaylistCallback ret[%r]" % [ret])
+        if not isinstance(ret, IPTVChoiceBoxItem) or not isinstance(ret.privateData, dict) or IPTVChoiceBoxItem.TYPE_ON == ret.type:
+            return
+        if self.zapEnabled and not self.isClosing:
+            self.key_stop(listselection.zapToAnswer(ret.privateData))
 
     def runConfigMoviePlayer(self):
         printDBG("runConfigMoviePlayerCallback")

@@ -2,6 +2,11 @@
 # Last Modified: 2026-07-26 - Updated blue_pressed() and blue_pressed_next(), added YouTube user links actions in the blue menu, and fixed deleteFavouriteItem(); fixed missing key_green label display by correcting the Halidri1080p1 playlist.xml key_green binding and set default green button text to "Download".
 # 2026-10-10 - batch download: BLUE menu "Download all items of this page" / "Select items to download" (OK marks rows);
 #              playVideo()'s folder / free space check moved into _checkDestinationDir(), shared with it.
+# 2026-10-10 - list selection + playlist functions (tools/listselection.py): BLUE menu "Play all from here",
+#              "Select" / "Select all" (OK marks rows; play / download / add to favourites the marked rows),
+#              shuffle / reverse as toggles that can be undone, shown in the header.
+# 2026-10-11 - playlist of a run of the sequencer in the movie player (_takePlaylistForPlayer: info line, MENU
+#              "Show playlist"; an entry chosen there comes back as ('zap_to', ...) -> zapToRow()).
 # IplaPlayer based on SHOUTcast
 #
 #  $Id$
@@ -9,7 +14,6 @@
 #
 
 from os import path as os_path
-from random import shuffle as random_shuffle
 import sys
 import time
 import traceback
@@ -67,6 +71,7 @@ from Plugins.Extensions.IPTVPlayer.components.iptvhostpin import AskHostPin, Cle
 from Plugins.Extensions.IPTVPlayer.iptvdm.iptvbuffui import E2iPlayerBufferingWidget
 from Plugins.Extensions.IPTVPlayer.iptvdm.iptvdmapi import IPTVDMApi, DMItem
 from Plugins.Extensions.IPTVPlayer.iptvdm import batchdownload
+from Plugins.Extensions.IPTVPlayer.tools import listselection
 
 from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT as _, GetIPTVPlayerLastHostError, GetIPTVNotify, GetIPTVSleep
 
@@ -409,8 +414,13 @@ class E2iPlayerWidget(Screen):
             self._usingBuiltinSkin = False
 
         self.recorderMode = False  # j00zek
-        # batch download: OK marks / unmarks rows instead of opening them (BLUE menu "Select items to download")
-        self.batchSelectMode = False
+        # selection mode: OK marks / unmarks rows instead of opening them (BLUE menu "Select" / "Select all")
+        self.selectMode = False
+        # shuffle / reverse of the playable rows (tools/listselection.arrangeRows): the list as the host gave it
+        # while the order is changed (None: the order is the original one), the shuffle and the reverse step
+        self.listOrderOriginal = None
+        self.listShuffleOrder = None
+        self.listReversed = False
         self.hostLogoPath = None
 
         self.currentService = self.session.nav.getCurrentlyPlayingServiceReference()
@@ -764,8 +774,13 @@ class E2iPlayerWidget(Screen):
         self._currentLinkVideoKey = ''
         # Auto playing sequencer
         self.autoPlaySeqStarted = False
-        # zapToItem() direction waiting for the MarkItemAsViewed answer (leaveMoviePlayer)
-        self.pendingZapDirection = 0
+        # "Play marked items": the sequencer plays only the rows marked in the selection mode
+        self.autoPlayMarkedOnly = False
+        # rows (_getRowIdentity) the running sequencer has played: ticked in the player's playlist overlay
+        self.autoPlayPlayedKeys = set()
+        # zap waiting for the MarkItemAsViewed answer (leaveMoviePlayer): zapToItem() direction or the
+        # player's ('zap_to', ...) answer of its playlist overlay (zapToRow)
+        self.pendingZap = 0
         # a zapped item is starting while live TV is off (restoreLiveAfterZap)
         self.zapLivePending = False
         # idle screensaver over every E2iPlayer screen (iptvscreensaver.py), started in onStart()
@@ -1241,7 +1256,7 @@ class E2iPlayerWidget(Screen):
 
         canAddUserLink = False
         try:
-            currSelIndex = self.getSelIndex()
+            currSelIndex = self._getSelHostIndex()
             if currSelIndex > -1 and hasattr(self.host, 'canAddToUserLinks') and self.host.canAddToUserLinks(currSelIndex):
                 canAddUserLink = True
         except Exception:
@@ -1272,9 +1287,12 @@ class E2iPlayerWidget(Screen):
             title = _('Set active movie player')
         options.append((title, "SetActiveMoviePlayer"))
 
-        if self.canRandomizeList and self.visible and len(self.currList) and not self.isInWorkThread():
-            options.append((_('Randomize a playlist'), "RandomizePlayableItems"))
-            options.append((_('Reverse a playlist'), "ReversePlayableItems"))
+        # list functions: play from here, selection mode (OK marks rows) and what to do with the marked rows,
+        # shuffle / reverse (toggles), batch download
+        try:
+            options.extend(self._getListFunctionOptions())
+        except Exception:
+            printExc()
 
         self._hostActions = []
         # every host has settings: at least its PIN protection
@@ -1289,18 +1307,6 @@ class E2iPlayerWidget(Screen):
             printExc()
         if hasattr(self.host.host, 'history'):
             options.append((_("Edit search history"), "EditSearchHistory"))
-        # batch download: all downloadable rows of the page at once, or the rows marked with OK
-        try:
-            if self.batchSelectMode:
-                numMarked = len(self._getBatchMarkedRows())
-                if numMarked:
-                    options.append((_("Download marked items (%d)") % numMarked, "BATCH_MARKED"))
-                options.append((_("Clear marks"), "BATCH_CLEAR"))
-            elif len(self._getBatchCandidateRows()) > 1:
-                options.append((_("Download all items of this page"), "BATCH_ALL"))
-                options.append((_("Select items to download"), "BATCH_SELECT"))
-        except Exception:
-            printExc()
         options.append((_("Download manager"), "IPTVDM"))
         # free-text jump inside the list currently on screen (a browsing aid
         # like the T9 letter-jump, but matches anywhere in the title) - never
@@ -1327,9 +1333,12 @@ class E2iPlayerWidget(Screen):
         printDBG('pause_pressed')
         self.stopAutoPlaySequencer()
 
-    def startAutoPlaySequencer(self):
+    def startAutoPlaySequencer(self, markedOnly=False):
+        # markedOnly: "Play marked items" - only the rows marked in the selection mode, in the list order
         if not self.autoPlaySeqStarted:
             self.autoPlaySeqStarted = True
+            self.autoPlayMarkedOnly = markedOnly
+            self.autoPlayPlayedKeys = set()
             self.autoPlaySequencerNext(False)
 
     def stopAutoPlaySequencer(self):
@@ -1343,6 +1352,8 @@ class E2iPlayerWidget(Screen):
             self.autoPlaySeqTimer.stop()
             self["sequencer"].setText("")
             self.autoPlaySeqStarted = False
+            self.autoPlayMarkedOnly = False
+            self.autoPlayPlayedKeys = set()
             return True
         return False
 
@@ -1359,16 +1370,36 @@ class E2iPlayerWidget(Screen):
                 if config.plugins.iptvplayer.autoplay_start_delay.value == 0:
                     self.hideWindow()
 
-            while idx < len(self.currList):
-                if self.currList[idx].type in [CDisplayListItem.TYPE_VIDEO, CDisplayListItem.TYPE_AUDIO, CDisplayListItem.TYPE_PICTURE, CDisplayListItem.TYPE_MORE] and not self._itemNeedsPin(self.currList[idx]):
-                    break
-                else:
-                    idx += 1
-            if idx < len(self.currList):
+            idx = listselection.nextPlayRow(self.currList, idx, self._canSequencerPlay, self.autoPlayMarkedOnly)
+            if -1 != idx:
                 self["list"].moveToIndex(idx)
                 self.sequencerPressOK()
                 return
         self.stopAutoPlaySequencer()
+
+    def _canSequencerPlay(self, item):
+        # a row the sequencer opens (MORE: it loads the next items and goes on with them)
+        return item.type in (CDisplayListItem.TYPE_VIDEO, CDisplayListItem.TYPE_AUDIO, CDisplayListItem.TYPE_PICTURE, CDisplayListItem.TYPE_MORE) and not self._itemNeedsPin(item)
+
+    def _isPlaylistRow(self, item):
+        # a row of the player's playlist: what the sequencer plays on this page (MORE only loads the next one)
+        return item.type != CDisplayListItem.TYPE_MORE and self._canSequencerPlay(item)
+
+    def _takePlaylistForPlayer(self):
+        # during a run of the sequencer: the playlist the movie player shows (info line, playlist overlay -
+        # tools/listselection.buildPlaylist), and the row starting now counts as played from here on.
+        # None outside a run: the player looks as without the sequencer.
+        if not self.autoPlaySeqStarted:
+            return None
+        playlist = None
+        idx = self.getSelIndex()
+        if -1 < idx:
+            try:
+                playlist = listselection.buildPlaylist(self.currList, idx, self._isPlaylistRow, self._getRowIdentity, self.autoPlayMarkedOnly, self.listShuffleOrder is not None, self.listReversed, self.autoPlayPlayedKeys)
+                self.autoPlayPlayedKeys.add(self._getRowIdentity(self.currList[idx]))
+            except Exception:
+                printExc()
+        return playlist
 
     def sequencerPressOK(self):
         self.autoPlaySeqTimerValue = config.plugins.iptvplayer.autoplay_start_delay.value
@@ -1468,7 +1499,7 @@ class E2iPlayerWidget(Screen):
                 self.session.openWithCallback(self.deleteFavouriteItem, MessageBox, _('Definitely remove from favorites?'), type=MessageBox.TYPE_YESNO, timeout=10)
             elif ret[1] == 'ADD_USER_LINK':
                 try:
-                    currSelIndex = self.getSelIndex()
+                    currSelIndex = self._getSelHostIndex()
                     if currSelIndex > -1 and hasattr(self.host, 'addToUserLinks'):
                         self.host.addToUserLinks(self.session, currSelIndex)
                 except Exception:
@@ -1479,10 +1510,8 @@ class E2iPlayerWidget(Screen):
                         self.host.editUserLinks(self.session)
                 except Exception:
                     printExc()
-            elif ret[1] == 'RandomizePlayableItems':
-                self.randomizePlayableItems()
-            elif ret[1] == 'ReversePlayableItems':
-                self.reversePlayableItems()
+            elif ret[1] in self.LIST_FUNCTION_IDS:
+                self._runListFunction(ret[1])
             elif ret[1] == 'EditSearchHistory':
                 try:
                     historyFile = self.host.host.history.PATH_FILE
@@ -1495,19 +1524,6 @@ class E2iPlayerWidget(Screen):
                     self.session.open(MessageBox, _('Search history is not available for this host.'), type=MessageBox.TYPE_ERROR, timeout=5)
             elif ret[1] == 'FIND_ENTRY':
                 self._openFindEntry()
-            elif ret[1] == 'BATCH_ALL':
-                rows = self._getBatchCandidateRows()
-                if rows:
-                    self.session.openWithCallback(boundFunction(self._startBatchDownloadConfirmed, rows), MessageBox, _("Add %d items to the download queue?") % len(rows), type=MessageBox.TYPE_YESNO)
-            elif ret[1] == 'BATCH_SELECT':
-                self.batchSelectMode = True
-                self.session.open(MessageBox, _("OK marks an item, BLUE downloads the marked items."), type=MessageBox.TYPE_INFO, timeout=5)
-            elif ret[1] == 'BATCH_MARKED':
-                rows = self._getBatchMarkedRows()
-                self._endBatchSelect()
-                self.startBatchDownload(rows)
-            elif ret[1] == 'BATCH_CLEAR':
-                self._endBatchSelect()
             elif ret[1].startswith("HostAction:"):
                 try:
                     idx = int(ret[1].split(":")[1])
@@ -1605,15 +1621,7 @@ class E2iPlayerWidget(Screen):
                     return
 
                 groups = helper.getGroups()
-
-                def _norm(txt):
-                    try:
-                        txt = str(txt).strip().lower()
-                    except Exception:
-                        return ''
-                    txt = txt.replace('_', ' ')
-                    txt = ' '.join(txt.split())
-                    return txt
+                _norm = self._normFavouriteGroupName
 
                 if not groupId:
                     selItem = self.getSelItem()
@@ -1667,76 +1675,124 @@ class E2iPlayerWidget(Screen):
                     self.updateDownloadButton()
                     return
 
-                realGroupId = ''
-                for group in groups:
-                    if not isinstance(group, dict):
-                        continue
-
-                    tmpGroupId = group.get('group_id', '')
-                    tmpTitle = group.get('title', '')
-
-                    if tmpGroupId == groupId:
-                        realGroupId = tmpGroupId
-                        break
-                    if tmpTitle == groupId:
-                        realGroupId = tmpGroupId
-                        break
-                    if _norm(tmpTitle) == _norm(groupId):
-                        realGroupId = tmpGroupId
-                        break
-                    if _norm(tmpGroupId) == _norm(groupId):
-                        realGroupId = tmpGroupId
-                        break
-
+                realGroupId = self._getFavouritesGroupId(groups, groupId)
                 if not realGroupId:
                     self.session.open(MessageBox, _('Favorite group not found.'), type=MessageBox.TYPE_ERROR, timeout=5)
                     return
 
-                sts, groupItems = helper.getGroupItems(realGroupId)
-                if not sts:
-                    self.session.open(MessageBox, _('Favorite group not found.'), type=MessageBox.TYPE_ERROR, timeout=5)
-                    return
-
-                # the row position is not the storage position once the group is shown sorted or
-                # carries the virtual "newest videos" row - ask the host which stored favourite it is
-                storageIdx = currSelIndex
-                favHost = getattr(self.host, 'host', None)
-                if hasattr(favHost, 'getGroupItemIdx'):
-                    storageIdx = favHost.getGroupItemIdx(currSelIndex)
-                if storageIdx < 0 or storageIdx >= len(groupItems):
-                    self.session.open(MessageBox, _('Favorite item not found.'), type=MessageBox.TYPE_ERROR, timeout=5)
-                    return
-
-                helper.delGroupItem(storageIdx, realGroupId)
-
-                if not helper.save():
-                    self.session.open(MessageBox, _('Error saving favorites.'), type=MessageBox.TYPE_ERROR, timeout=5)
-                    return
-
-                # see comment above - keep the host's helper state in sync with the file
-                try:
-                    if hasattr(self.host, 'host') and hasattr(self.host.host, 'helper'):
-                        self.host.host.helper.load()
-                except Exception:
-                    printExc()
-
-                # keep the host's raw rows (row position + storage position) in step with the display list
-                if hasattr(favHost, 'onGroupItemDeleted'):
-                    favHost.onGroupItemDeleted(currSelIndex, storageIdx)
-
-                del self.currList[currSelIndex]
-                self["list"].setList([(x,) for x in self.currList])
-
-                if len(self.currList) <= currSelIndex:
-                    currSelIndex = len(self.currList) - 1
-                if currSelIndex >= 0:
-                    self["list"].moveToIndex(currSelIndex)
-
-                self.changeBottomPanel()
-                self.updateDownloadButton()
+                self._deleteFavouriteRows(helper, realGroupId, [self.currList[currSelIndex]])
             except Exception:
                 printExc()
                 self.session.open(MessageBox, _('Error deleting favorite item.'), type=MessageBox.TYPE_ERROR, timeout=5)
+
+    @staticmethod
+    def _normFavouriteGroupName(txt):
+        try:
+            txt = str(txt).strip().lower()
+        except Exception:
+            return ''
+        txt = txt.replace('_', ' ')
+        txt = ' '.join(txt.split())
+        return txt
+
+    @classmethod
+    def _getFavouritesGroupId(cls, groups, groupId):
+        # the stored group id of the group that is open (favouritesCurrentGroupId may be its title), '' if unknown
+        _norm = cls._normFavouriteGroupName
+        for group in groups:
+            if not isinstance(group, dict):
+                continue
+
+            tmpGroupId = group.get('group_id', '')
+            tmpTitle = group.get('title', '')
+
+            if tmpGroupId == groupId or tmpTitle == groupId:
+                return tmpGroupId
+            if _norm(tmpTitle) == _norm(groupId) or _norm(tmpGroupId) == _norm(groupId):
+                return tmpGroupId
+        return ''
+
+    def _getRowHostIndex(self, row, pos):
+        # the row's index in the host list - not its place pos in a shuffled / reversed list
+        hostIdx = getattr(row, 'itemIdx', -1)
+        return hostIdx if -1 < hostIdx else pos
+
+    def _deleteFavouriteRows(self, helper, realGroupId, rows):
+        # removes the stored favourites of rows (rows of the current list inside a favourites group) from the
+        # group realGroupId of the loaded helper, saves and drops the rows from the list.
+        # "Remove from favorites" (one row) and "Remove marked items from favourites". -> number removed, -1 on error
+        sts, groupItems = helper.getGroupItems(realGroupId)
+        if not sts:
+            self.session.open(MessageBox, _('Favorite group not found.'), type=MessageBox.TYPE_ERROR, timeout=5)
+            return -1
+
+        # the row position is not the storage position once the group is shown sorted or
+        # carries the virtual "newest videos" row - ask the host which stored favourite it is
+        favHost = getattr(self.host, 'host', None)
+        entries = []  # (storage position, row)
+        for row in rows:
+            pos = self._getListPos(row)
+            if pos < 0:
+                continue
+            storageIdx = self._getRowHostIndex(row, pos)
+            if hasattr(favHost, 'getGroupItemIdx'):
+                storageIdx = favHost.getGroupItemIdx(storageIdx)
+            if 0 <= storageIdx < len(groupItems) and storageIdx not in [entry[0] for entry in entries]:
+                entries.append((storageIdx, row))
+        if not entries:
+            self.session.open(MessageBox, _('Favorite item not found.'), type=MessageBox.TYPE_ERROR, timeout=5)
+            return -1
+
+        # highest storage position first: the positions of the others stay valid (in the file and in the host's rows)
+        entries.sort(key=lambda entry: entry[0], reverse=True)
+        helper.delGroupItems([(realGroupId, entry[0]) for entry in entries])
+
+        if not helper.save():
+            self.session.open(MessageBox, _('Error saving favorites.'), type=MessageBox.TYPE_ERROR, timeout=5)
+            return -1
+
+        # the active host object (Favourites in hostfavourites.py) keeps its own helper instance loaded once at
+        # entry - keep its state in sync with the file
+        try:
+            if hasattr(self.host, 'host') and hasattr(self.host.host, 'helper'):
+                self.host.host.helper.load()
+        except Exception:
+            printExc()
+
+        selPos = self.getSelIndex()
+        selRow = self.currList[selPos] if 0 <= selPos < len(self.currList) else None
+        for storageIdx, row in entries:
+            pos = self._getListPos(row)
+            if pos < 0:
+                continue
+            # keep the host's raw rows (row position + storage position) in step with the display list; the
+            # host index is read again for every row: _removeListRow() moves up the rows behind a removed one
+            if hasattr(favHost, 'onGroupItemDeleted'):
+                favHost.onGroupItemDeleted(self._getRowHostIndex(row, pos), storageIdx)
+            self._removeListRow(pos)
+        self["list"].setList([(x,) for x in self.currList])
+
+        # the selected row where it still is, else the row that took its place
+        newPos = selPos
+        if selRow is not None:
+            selRowPos = self._getListPos(selRow)
+            if -1 < selRowPos:
+                newPos = selRowPos
+        if len(self.currList) <= newPos:
+            newPos = len(self.currList) - 1
+        if newPos >= 0:
+            self["list"].moveToIndex(newPos)
+
+        self.changeBottomPanel()
+        self.updateDownloadButton()
+        return len(entries)
+
+    def _getListPos(self, row):
+        # place of the row object in the current list, -1 when it is not there (any more)
+        for pos, item in enumerate(self.currList):
+            if item is row:
+                return pos
+        return -1
 
     def editFavouritesCallback(self, ret=False):
         if ret and 'favourites' == self.hostName:  # we must reload host
@@ -1876,9 +1932,9 @@ class E2iPlayerWidget(Screen):
     def back_pressed(self):
         if self.stopAutoPlaySequencer() and self.autoPlaySeqTimerValue:
             return
-        if self.batchSelectMode and self.visible:
-            # EXIT leaves the selection mode of the batch download first (the marks are dropped)
-            self._endBatchSelect()
+        if self.selectMode and self.visible:
+            # EXIT leaves the selection mode first (the marks are dropped)
+            self._endSelectMode()
             return
         try:
             if self.isInWorkThread():
@@ -2095,9 +2151,10 @@ class E2iPlayerWidget(Screen):
         self.ok_pressed(useAlternativePlayer=True)
 
     def ok_pressed(self, eventFrom='remote', useAlternativePlayer=False):
-        if self.batchSelectMode and 'remote' == eventFrom and self.visible:
-            # selection mode of the batch download: OK marks / unmarks the row
-            self._toggleBatchMark()
+        if self.selectMode and 'remote' == eventFrom and self.visible:
+            # selection mode: OK marks / unmarks the row (and stops a waiting sequencer, like every OK)
+            self.stopAutoPlaySequencer()
+            self._toggleSelectMark()
             return
         self.useAlternativePlayer = useAlternativePlayer
         if eventFrom != 'green':
@@ -3017,6 +3074,8 @@ class E2iPlayerWidget(Screen):
         self["list"].show()
 
         if url != '' and CDisplayListItem.TYPE_PICTURE == self.currItem.type:
+            # the picture player shows no playlist, the picture is ticked as played in the next player's one
+            self._takePlaylistForPlayer()
             self.session.openWithCallback(self.leavePicturePlayer, IPTVPicturePlayerWidget, url, config.plugins.iptvplayer.bufferingPath.value, self.currItem.name, {'seq_mode': self.autoPlaySeqStarted})
         elif url != '' and self.isDownloadableType(self.currItem.type):
             printDBG("playVideo url[%s]" % url)
@@ -3090,7 +3149,8 @@ class E2iPlayerWidget(Screen):
                 # this is the only place that marks the item "started"
                 try:
                     if hasattr(self.host, 'markItemAsStarted'):
-                        self.host.markItemAsStarted(self["list"].getCurrentIndex())
+                        # the index in the host list (a shuffled / reversed list shows the rows in another order)
+                        self.host.markItemAsStarted(self._getSelHostIndex())
                 except Exception:
                     printExc()
 
@@ -3112,6 +3172,11 @@ class E2iPlayerWidget(Screen):
                     gstAdditionalParams['iframe_file_start'] = config.plugins.iptvplayer.iframe_file.value
                     gstAdditionalParams['iframe_file_end'] = config.plugins.iptvplayer.clear_iframe_file.value
                     gstAdditionalParams['iframe_continue'] = False
+                # a run of the sequencer: info line + playlist overlay in the player (also through the buffering
+                # widget, which hands these params on); the mini / standard player get none of these params
+                playlist = self._takePlaylistForPlayer()
+                if playlist:
+                    gstAdditionalParams['playlist'] = playlist
 
                 self.writeCurrentTitleToFile(titleOfMovie)
                 self.zapLivePending = False
@@ -3152,31 +3217,41 @@ class E2iPlayerWidget(Screen):
             printDBG("Restore previus video mode")
             SetE2VideoMode(self.prevVideoMode)
 
-        # CH+/CH- in the player: go on with the next/previous playable item of this list
-        zapDirection = {'zap_next': 1, 'zap_prev': -1}.get(answer, 0)
+        # CH+/CH- in the player: go on with the next/previous playable item of this list; an entry chosen in the
+        # playlist overlay of a run of the sequencer: ('zap_to', row, key), go on with that row (zapToRow)
+        if listselection.isZapToAnswer(answer):
+            zap = answer
+        else:
+            zap = {'zap_next': 1, 'zap_prev': -1}.get(answer, 0)
         try:
-            if answer is not None and not zapDirection:
+            if answer is not None and not zap:
                 self.stopAutoPlaySequencer()
         except Exception:
             printExc()
 
-        if not config.plugins.iptvplayer.disable_live.value and not self.autoPlaySeqStarted and not zapDirection:
+        if not config.plugins.iptvplayer.disable_live.value and not self.autoPlaySeqStarted and not zap:
             self.session.nav.playService(self.currentService)
 
         if lastPosition is not None and clipLength is not None and clipLength > 0:
             try:
                 if config.plugins.iptvplayer.favourites_use_watched_flag.value and (lastPosition * 100 / clipLength) > 95 and hasattr(self.host, 'markItemAsViewed'):
                     currSelIndex = self["list"].getCurrentIndex()
-                    self.pendingZapDirection = zapDirection
+                    self.pendingZap = zap
                     self.requestListFromHost('MarkItemAsViewed', currSelIndex)
                     return
             except Exception:
                 printExc()
 
-        if zapDirection:
-            self.zapToItem(zapDirection)
+        if zap:
+            self._zapFromPlayer(zap)
         else:
             self.checkAutoPlaySequencer()
+
+    def _zapFromPlayer(self, zap):
+        if listselection.isZapToAnswer(zap):
+            self.zapToRow(zap)
+        else:
+            self.zapToItem(zap)
 
     def getScreenSaverInfo(self):
         # title and pictures of the black menu screensaver: the open host, else E2iPlayer itself
@@ -3190,7 +3265,9 @@ class E2iPlayerWidget(Screen):
         if -1 != idx:
             idx += direction
             while 0 <= idx < len(self.currList):
-                if self.currList[idx].type in [CDisplayListItem.TYPE_VIDEO, CDisplayListItem.TYPE_AUDIO] and not self._itemNeedsPin(self.currList[idx]):
+                row = self.currList[idx]
+                # a run of "Play marked items" zaps only between the marked rows
+                if row.type in [CDisplayListItem.TYPE_VIDEO, CDisplayListItem.TYPE_AUDIO] and not self._itemNeedsPin(row) and (not self.autoPlayMarkedOnly or listselection.isMarked(row)):
                     self["list"].moveToIndex(idx)
                     # live TV stays off between the items; restoreLiveAfterZap() if this one does not start
                     self.zapLivePending = True
@@ -3203,6 +3280,20 @@ class E2iPlayerWidget(Screen):
         self.showWindow()
         message = _("There is no next item in this list.") if direction > 0 else _("There is no previous item in this list.")
         self.session.open(MessageBox, message, type=MessageBox.TYPE_INFO, timeout=5)
+
+    def zapToRow(self, answer):
+        # an entry chosen in the playlist overlay of the player (only offered in a run of the sequencer): that row
+        # starts like a zap (zapToItem), the sequencer keeps running (also "Play marked items") and goes on from it
+        idx = listselection.findZapToRow(self.currList, answer, self._getRowIdentity)
+        if -1 != idx:
+            self["list"].moveToIndex(idx)
+            self.zapLivePending = True
+            self.ok_pressed('zap')
+            return
+        # the row is not in the list any more: back to the list as after a normal stop
+        if not self.stopAutoPlaySequencer() and not config.plugins.iptvplayer.disable_live.value:
+            self.session.nav.playService(self.currentService)
+        self.showWindow()
 
     def restoreLiveAfterZap(self):
         # the zapped item did not start (no valid link, link selection left): live TV back as after a normal stop
@@ -3408,48 +3499,120 @@ class E2iPlayerWidget(Screen):
     def configCallback(self):
         self.selectHost()
 
-    def randomizePlayableItems(self, randomize=True):
+    # shuffle / reverse of the playable rows: toggles ("Undo shuffle" / "Undo reverse"), both can be on at once.
+    # The list as the host gave it is kept at the first change and the order is always built from it
+    # (tools/listselection.arrangeRows), so undoing one keeps the other; marks are attributes of the rows and move
+    # with them. A new list (reloadList) starts in the original order again.
+    def _isOrderMovableRow(self, item):
+        return isinstance(item, CDisplayListItem) and self.isPlayableType(item.type)
+
+    def _canChangeListOrder(self):
+        return self.visible and len(self.currList) > 1 and not self.isInWorkThread()
+
+    def randomizePlayableItems(self):
         printDBG("randomizePlayableItems")
         self.stopAutoPlaySequencer()
-        if self.visible and len(self.currList) > 1 and not self.isInWorkThread():
-            randList = []
-            for item in self.currList:
-                if isinstance(item, CDisplayListItem) and self.isPlayableType(item.type):
-                    randList.append(item)
-            if randomize:
-                random_shuffle(randList)
-            reloadList = False
-            if len(self.currList) == len(randList):
-                randList.reverse()
-                self.currList = randList
-                reloadList = True
-            elif len(randList) > 1:
-                newList = []
-                for item in self.currList:
-                    if isinstance(item, CDisplayListItem) and self.isPlayableType(item.type):
-                        newList.append(randList.pop())
-                    else:
-                        newList.append(item)
-                reloadList = True
-                self.currList = newList
-            if reloadList:
-                self["list"].setList([(x,) for x in self.currList])
+        if not self._canChangeListOrder():
+            return
+        if self.listShuffleOrder is None:
+            original = self.currList if self.listOrderOriginal is None else self.listOrderOriginal
+            self.listShuffleOrder = listselection.newShuffleOrder(len([item for item in original if self._isOrderMovableRow(item)]))
+        else:
+            self.listShuffleOrder = None
+        self._applyListOrder()
 
     def reversePlayableItems(self):
         printDBG("reversePlayableItems")
-        self.randomizePlayableItems(False)
+        self.stopAutoPlaySequencer()
+        if not self._canChangeListOrder():
+            return
+        self.listReversed = not self.listReversed
+        self._applyListOrder()
+
+    def _applyListOrder(self):
+        if self.listOrderOriginal is None:
+            self.listOrderOriginal = self.currList
+        self.currList = listselection.arrangeRows(self.listOrderOriginal, self._isOrderMovableRow, self.listShuffleOrder, self.listReversed)
+        if self.listShuffleOrder is None and not self.listReversed:
+            self.listOrderOriginal = None
+        self["list"].setList([(x,) for x in self.currList])
+        self.setHeaderText()
+
+    def _resetListOrder(self):
+        self.listOrderOriginal = None
+        self.listShuffleOrder = None
+        self.listReversed = False
+
+    def _getListOrderMarker(self):
+        # shown at the end of the header while the order of the list is changed
+        labels = []
+        if self.listShuffleOrder is not None:
+            labels.append(_('shuffled'))
+        if self.listReversed:
+            labels.append(_('reversed'))
+        if labels:
+            return '  (%s)' % ', '.join(labels)
+        return ''
+
+    def _restoreListState(self, keptState):
+        # the sequencer's refresh brought the same rows again (in the host's order): marks, selection mode and
+        # the changed order go over to them, and the row the sequencer goes on from is looked up in that order
+        oldRows, selectMode, shuffleOrder, reverse = keptState
+        if not listselection.carryMarks(oldRows, self.currList, self._getRowIdentity):
+            return
+        self.selectMode = selectMode
+        if shuffleOrder is None and not reverse:
+            return
+        self.listOrderOriginal = self.currList
+        self.listShuffleOrder = shuffleOrder
+        self.listReversed = reverse
+        self.currList = listselection.arrangeRows(self.listOrderOriginal, self._isOrderMovableRow, shuffleOrder, reverse)
+        # nextSelIndex is the row's index in the host list (requestListFromHost('Refresh'))
+        for pos, item in enumerate(self.currList):
+            if getattr(item, 'itemIdx', -1) == self.nextSelIndex:
+                self.nextSelIndex = pos
+                break
+
+    def _getSelHostIndex(self):
+        # the selected row's index in the host list - not its place in a shuffled / reversed list
+        idx = self.getSelIndex()
+        if -1 < idx and -1 < getattr(self.currList[idx], 'itemIdx', -1):
+            return self.currList[idx].itemIdx
+        return idx
+
+    def _removeListRow(self, pos):
+        # a row the host dropped from its list as well (a removed favourite): also out of the remembered original
+        # order of a shuffled / reversed list, the rows behind it get their new index in the host list. In place:
+        # the original list is the host's own one (the favourites' cachedRet), it must lose the row too.
+        row = self.currList[pos]
+        if self.listOrderOriginal is None:
+            listselection.removeRow(self.currList, row, self._isOrderMovableRow)
+        else:
+            self.listOrderOriginal, self.listShuffleOrder = listselection.removeRow(self.listOrderOriginal, row, self._isOrderMovableRow, self.listShuffleOrder)
+            del self.currList[pos]
+
+    @staticmethod
+    def _getRowIdentity(item):
+        # what a row is for _restoreListState(): its place in the host list alone would let a refreshed list of
+        # other rows with the same length take the marks and the order
+        return (getattr(item, 'itemIdx', -1), str(getattr(item, 'type', '')), str(getattr(item, 'name', '')))
 
     def reloadList(self, params):
         printDBG("reloadList")
         # suppresses _rememberHistorySelection() while the list below is being
         # (re)built and its selection moved around programmatically
         self._isLoadingList = True
-        # the marks of a batch download belong to the rows of the list that is replaced now
-        self.batchSelectMode = False
         refresh = params['add_param'].get('refresh', 0)
         selIndex = params['add_param'].get('selIndex', -1)
         ret = params['ret']
         printDBG("> E2iPlayerWidget.reloadList refresh[%s], selIndex[%s]" % (refresh, selIndex))
+        # the marks and the changed order belong to the rows of the list that is replaced now - only a refresh
+        # in the middle of a run of the sequencer (e.g. the watched flag of a favourite) keeps them, see below
+        keptState = None
+        if 1 == refresh and self.autoPlaySeqStarted and ret.status == RetHost.OK:
+            keptState = (self.currList if self.listOrderOriginal is None else self.listOrderOriginal, self.selectMode, self.listShuffleOrder, self.listReversed)
+        self.selectMode = False
+        self._resetListOrder()
         if 0 < refresh and -1 < selIndex:
             self.nextSelIndex = selIndex
         # ToDo: check ret.status if not OK do something :P
@@ -3469,6 +3632,11 @@ class E2iPlayerWidget(Screen):
             self.canRandomizeList = True
 
         self.currList = ret.value
+        if keptState is not None:
+            self._restoreListState(keptState)
+        else:
+            # a host may hand out its cached rows again (WatchedFlagHostMixin.getCurrentList): no old marks on them
+            listselection.clearMarks(self.currList)
         self._updateRowMarkers()
         self["list"].setList([(x,) for x in self.currList])
 
@@ -3513,10 +3681,12 @@ class E2iPlayerWidget(Screen):
 
     def setHeaderText(self):
         # the header is one line high: long names (a video title, a search phrase) are shortened until
-        # the path fits, measured on the label so it works with every skin
+        # the path fits, measured on the label so it works with every skin. A shuffled / reversed list says so
+        # at the end (_getListOrderMarker).
         label = self["headertext"]
+        marker = self._getListOrderMarker()
         for maxLen in (0, 60, 40, 25, 15):
-            label.setText(self.getCategoryPath(maxLen))
+            label.setText(self.getCategoryPath(maxLen) + marker)
             try:
                 if label.instance.calculateSize().height() <= label.instance.size().height():
                     break
@@ -3534,6 +3704,8 @@ class E2iPlayerWidget(Screen):
         self.currList = []
         self.currItem = CDisplayListItem()
         self.favouritesCurrentGroupId = ''
+        self.selectMode = False
+        self._resetListOrder()
         self.setHeaderText()
         self.requestListFromHost('Initial')
 
@@ -3550,16 +3722,12 @@ class E2iPlayerWidget(Screen):
         return IPTVPlayerLCDScreen
 
     def canByAddedToFavourites(self):
-        try:
-            favouritesHostActive = config.plugins.iptvplayer.hostfavourites.value
-        except Exception:
-            favouritesHostActive = False
         cItem = None
         index = -1
         # we need to check if fav is available
-        if not self.isInWorkThread() and favouritesHostActive and self.visible:
+        if not self.isInWorkThread() and self.visible:
             cItem = self.getSelItem()
-            if None is not cItem and (cItem.isGoodForFavourites or cItem.type in self.hostFavTypes):
+            if self._canAddRowToFavourites(cItem):
                 index = self.getSelIndex()
             else:
                 cItem = None
@@ -3574,13 +3742,17 @@ class E2iPlayerWidget(Screen):
         self["list"].show()
         if ret.status == RetHost.OK and isinstance(ret.value, list) and 1 == len(ret.value) and isinstance(ret.value[0], CFavItem):
             favItem = ret.value[0]
-            if CFavItem.RESOLVER_SELF == favItem.resolver:
-                favItem.resolver = self.hostName
-            if '' == favItem.hostName:
-                favItem.hostName = self.hostName
+            self._completeFavItem(favItem)
             self.session.openWithCallback(self.refreshRowMarkers, IPTVFavouritesAddItemWidget, favItem)
         else:
             self.session.open(MessageBox, _("No valid links available."), type=MessageBox.TYPE_INFO, timeout=10)
+
+    def _completeFavItem(self, favItem):
+        # a favourite of the current host: its own name where the host left it open
+        if CFavItem.RESOLVER_SELF == favItem.resolver:
+            favItem.resolver = self.hostName
+        if '' == favItem.hostName:
+            favItem.hostName = self.hostName
 
     def _getMenuOptions(self):
         # shared by menu_pressed() and the footer's key_menu visibility
@@ -3714,10 +3886,11 @@ class E2iPlayerWidget(Screen):
             markFavourites = config.plugins.iptvplayer.mark_favourite_items.value
             markDownloads = config.plugins.iptvplayer.mark_downloaded_items.value
             activeKeys = gDownloadManager.getActiveItemKeys() if None is not gDownloadManager else set()
-            for idx in range(len(self.currList)):
-                item = self.currList[idx]
+            for pos, item in enumerate(self.currList):
                 if not isinstance(item, CDisplayListItem):
                     continue
+                # the row's index in the host list: a shuffled / reversed list shows the rows in another order
+                idx = item.itemIdx if -1 < item.itemIdx else pos
                 # a host with favourites of its own (hostxxx: favourite sites) sets hostFavourite on the row
                 item.isFavourite = bool(markFavourites and getattr(item, 'hostFavourite', False))
                 item.downloadState = ''
@@ -3807,13 +3980,7 @@ class E2iPlayerWidget(Screen):
 
     def _canBatchDownload(self):
         # the current list can be offered for a batch download at all
-        if None is gDownloadManager or None is self.host or not self.visible or self.isInWorkThread():
-            return False
-        try:
-            if not self["list"].getVisible():
-                return False
-        except Exception:
-            printExc()
+        if None is gDownloadManager or not self._canSelectRows():
             return False
         if 'favourites' == self.hostName:
             return True
@@ -3851,17 +4018,123 @@ class E2iPlayerWidget(Screen):
         return [item for item in self.currList if self._isBatchRow(item)]
 
     def _getBatchMarkedRows(self):
-        return [item for item in self._getBatchCandidateRows() if getattr(item, 'batchMarked', False)]
+        # the marked rows the batch download takes (only these are checked, not the whole page)
+        if not self._canBatchDownload():
+            return []
+        return [item for item in self.currList if listselection.isMarked(item) and self._isBatchRow(item)]
 
-    def _toggleBatchMark(self):
+    ###################################################
+    # list functions of the BLUE menu: play from here, selection mode (OK marks rows; play / download / add to
+    # or remove from the favourites the marked rows), shuffle / reverse. Each action takes the marked rows it can handle.
+    ###################################################
+    LIST_FUNCTION_IDS = ('PLAY_FROM_HERE', 'SELECT_START', 'SELECT_ALL', 'SELECT_CLEAR', 'PLAY_MARKED', 'BATCH_MARKED',
+                         'FAV_MARKED', 'FAV_REMOVE_MARKED', 'BATCH_ALL','RandomizePlayableItems', 'ReversePlayableItems', 'UndoRandomize',
+                         'UndoReverse')
+    # rows the selection mode marks: what the sequencer plays
+    SELECTABLE_TYPES = (CDisplayListItem.TYPE_VIDEO, CDisplayListItem.TYPE_AUDIO, CDisplayListItem.TYPE_PICTURE)
+
+    def _getListFunctionOptions(self):
+        options = []
+        if self.selectMode:
+            marked = self._getMarkedRows() if self._canSelectRows() else []
+            numPlay = len([item for item in marked if self._canSequencerPlay(item)])
+            if numPlay:
+                options.append((_("Play marked items (%d)") % numPlay, "PLAY_MARKED"))
+            numDownload = len(self._getBatchMarkedRows())
+            if numDownload:
+                options.append((_("Download marked items (%d)") % numDownload, "BATCH_MARKED"))
+            numFavourites = len([item for item in marked if self._canAddRowToFavourites(item)])
+            if numFavourites:
+                options.append((_("Add marked items to favourites (%d)") % numFavourites, "FAV_MARKED"))
+            numRemove = len(self._getMarkedFavouriteRows(marked))
+            if numRemove:
+                options.append((_("Remove marked items from favourites (%d)") % numRemove, "FAV_REMOVE_MARKED"))
+            options.append((_("Unselect all"), "SELECT_CLEAR"))
+        elif len(self._getSelectableRows()) > 1:
+            options.append((_("Play all from here"), "PLAY_FROM_HERE"))
+            options.append((_("Select"), "SELECT_START"))
+            options.append((_("Select all"), "SELECT_ALL"))
+        if self.canRandomizeList and self._canChangeListOrder():
+            # toggles: the "Undo" ids only pick the undo icon (IPTVPlayerSelectOptionChoiceBoxList)
+            if self.listShuffleOrder is None:
+                options.append((_('Randomize a playlist'), "RandomizePlayableItems"))
+            else:
+                options.append((_('Undo shuffle'), "UndoRandomize"))
+            if not self.listReversed:
+                options.append((_('Reverse a playlist'), "ReversePlayableItems"))
+            else:
+                options.append((_('Undo reverse'), "UndoReverse"))
+        # batch download: all downloadable rows of the page at once
+        if not self.selectMode and len(self._getBatchCandidateRows()) > 1:
+            options.append((_("Download all items of this page"), "BATCH_ALL"))
+        return options
+
+    def _runListFunction(self, action):
+        if action == 'PLAY_FROM_HERE':
+            self.startAutoPlaySequencer()
+        elif action == 'SELECT_START':
+            self.selectMode = True
+            self.session.open(MessageBox, _("OK marks an item, BLUE shows what can be done with the marked items."), type=MessageBox.TYPE_INFO, timeout=5)
+        elif action == 'SELECT_ALL':
+            for item in self._getSelectableRows():
+                listselection.setMarked(item, True)
+            self.selectMode = True
+            self._redrawSelectMarks()
+        elif action == 'SELECT_CLEAR':
+            self._endSelectMode()
+        elif action == 'PLAY_MARKED':
+            # from the first marked row in the current order; the marks stay for the run
+            self["list"].moveToIndex(0)
+            self.startAutoPlaySequencer(True)
+        elif action == 'BATCH_MARKED':
+            marked = self._getMarkedRows()
+            rows = self._getBatchMarkedRows()
+            self._endSelectMode()
+            self.startBatchDownload(rows, len(marked) - len(rows))
+        elif action == 'FAV_MARKED':
+            self.addMarkedToFavourites()
+        elif action == 'FAV_REMOVE_MARKED':
+            self.removeMarkedFromFavourites()
+        elif action == 'BATCH_ALL':
+            rows = self._getBatchCandidateRows()
+            if rows:
+                self.session.openWithCallback(boundFunction(self._startBatchDownloadConfirmed, rows), MessageBox, _("Add %d items to the download queue?") % len(rows), type=MessageBox.TYPE_YESNO)
+        elif action in ('RandomizePlayableItems', 'UndoRandomize'):
+            self.randomizePlayableItems()
+        elif action in ('ReversePlayableItems', 'UndoReverse'):
+            self.reversePlayableItems()
+
+    def _canSelectRows(self):
+        if None is self.host or not self.visible or self.isInWorkThread():
+            return False
+        try:
+            return self["list"].getVisible()
+        except Exception:
+            printExc()
+        return False
+
+    def _isSelectableRow(self, item):
+        # cheap: no network, no disk; a live row is never marked
+        return isinstance(item, CDisplayListItem) and item.type in self.SELECTABLE_TYPES and not batchdownload.isLiveRow(self._getBatchRawRow(item))
+
+    def _getSelectableRows(self):
+        if not self._canSelectRows():
+            return []
+        return [item for item in self.currList if self._isSelectableRow(item)]
+
+    def _getMarkedRows(self):
+        # in the current order of the list
+        return [item for item in self.currList if listselection.isMarked(item)]
+
+    def _toggleSelectMark(self):
         idx = self.getSelIndex()
         item = self.getSelItem()
-        if item is None or not self._isBatchRow(item):
-            printDBG("batch mark: row %d can not be marked" % idx)
+        if item is None or not self._isSelectableRow(item):
+            printDBG("select mark: row %d can not be marked" % idx)
             return
-        item.batchMarked = not getattr(item, 'batchMarked', False)
-        printDBG("batch mark: row %d [%s] -> %s, %d marked" % (idx, item.name, item.batchMarked, len(self._getBatchMarkedRows())))
-        self._redrawBatchMarks(idx)
+        listselection.setMarked(item, not listselection.isMarked(item))
+        printDBG("select mark: row %d [%s] -> %s, %d marked" % (idx, item.name, listselection.isMarked(item), len(self._getMarkedRows())))
+        self._redrawSelectMarks(idx)
         # next row, so a run of episodes is marked with OK, OK, OK
         try:
             if -1 < idx < len(self.currList) - 1:
@@ -3869,7 +4142,7 @@ class E2iPlayerWidget(Screen):
         except Exception:
             printExc()
 
-    def _redrawBatchMarks(self, idx=-1):
+    def _redrawSelectMarks(self, idx=-1):
         # the row markers are drawn by the list's build function: the changed row is redrawn on its own, the
         # whole list as well (an image whose invalidate() does not rebuild the visible entries gets them anyway)
         try:
@@ -3882,19 +4155,167 @@ class E2iPlayerWidget(Screen):
         except Exception:
             printExc()
 
-    def _endBatchSelect(self):
-        self.batchSelectMode = False
-        for item in self.currList:
-            if getattr(item, 'batchMarked', False):
-                item.batchMarked = False
-        self._redrawBatchMarks()
+    def _endSelectMode(self):
+        self.selectMode = False
+        listselection.clearMarks(self.currList)
+        self._redrawSelectMarks()
+
+    def _canAddRowToFavourites(self, item):
+        # a row "Add item to favorites" (canByAddedToFavourites) and "Add marked items to favourites" take
+        try:
+            if not config.plugins.iptvplayer.hostfavourites.value:
+                return False
+        except Exception:
+            return False
+        return isinstance(item, CDisplayListItem) and (item.isGoodForFavourites or item.type in self.hostFavTypes)
+
+    def addMarkedToFavourites(self):
+        # the CFavItem of each marked row comes from the host in a worker thread (like the single add), then the
+        # favourites group is asked once for all of them
+        marked = self._getMarkedRows()
+        rows = [item for item in marked if self._canAddRowToFavourites(item)]
+        if not rows or self.isInWorkThread():
+            return
+        self["list"].hide()
+        self.setStatusTex(_("Loading"))
+        try:
+            self.workThread = asynccall.AsyncMethod(self._getFavouriteItemsOfRows, boundFunction(self._markedFavouriteItemsCallback, len(marked)), True)([item.itemIdx for item in rows])
+            self.showSpinner()
+        except Exception:
+            printExc()
+            self.setStatusTex("")
+            self["list"].show()
+
+    def _getFavouriteItemsOfRows(self, indexes):
+        # worker thread: host.getFavouriteItem() of each row (index in the host list); a row without one is left out
+        favItems = []
+        for idx in indexes:
+            try:
+                ret = self.host.getFavouriteItem(idx)
+                if ret.status == RetHost.OK and isinstance(ret.value, list) and 1 == len(ret.value) and isinstance(ret.value[0], CFavItem):
+                    favItems.append(ret.value[0])
+            except Exception:
+                printExc()
+        return favItems
+
+    def _markedFavouriteItemsCallback(self, numMarked, thread, favItems):
+        asynccall.gMainFunctionsQueueTab[0].addToQueue("handleMarkedFavouriteItems", [thread, (numMarked, favItems)])
+
+    def handleMarkedFavouriteItems(self, ret):
+        numMarked, favItems = ret
+        self.setStatusTex("")
+        self["list"].show()
+        if not favItems:
+            self.session.open(MessageBox, _("%d added, %d skipped.") % (0, numMarked), type=MessageBox.TYPE_INFO, timeout=5)
+            return
+        for favItem in favItems:
+            self._completeFavItem(favItem)
+        self.session.openWithCallback(boundFunction(self._markedFavouritesAdded, numMarked), IPTVFavouritesAddItemWidget, favItems)
+
+    def _markedFavouritesAdded(self, numMarked, added=None):
+        # added: how many went into the picked group (the others were there already), None: no group picked
+        if added is None:
+            return
+        self.refreshRowMarkers()
+        self.session.open(MessageBox, _("%d added, %d skipped.") % (added, numMarked - added), type=MessageBox.TYPE_INFO, timeout=5)
+
+    def _getRowFavouriteKey(self, item):
+        # identity key of a row of a host list in the favourites - the one the favourite marker is looked up with
+        # (_updateRowMarkers) -, None for a row that can not be a favourite
+        if not self._canAddRowToFavourites(item):
+            return None
+        data = self.host.getFavouriteDataOfRow(self._getRowHostIndex(item, self._getListPos(item)))
+        if data is None:
+            return None
+        return IPTVFavourites.getItemIdentityKey(self.hostName, self.hostName, data)
+
+    def _getMarkedFavouriteRows(self, marked=None):
+        # the marked rows "Remove marked items from favourites" takes: inside a favourites group its stored
+        # favourites, in a host list the rows that are in the favourites (in any group, like the favourite marker)
+        if marked is None:
+            marked = self._getMarkedRows()
+        if not marked:
+            return []
+        try:
+            if 'favourites' == self.hostName:
+                # not the virtual "newest videos" rows and not the lists of a guest host (see _canDeleteFavourite)
+                favHost = getattr(self.host, 'host', None)
+                if not self.favouritesCurrentGroupId or not hasattr(favHost, 'getGroupItemIdx'):
+                    return []
+                return [item for item in marked if favHost.getGroupItemIdx(self._getRowHostIndex(item, self._getListPos(item))) >= 0]
+            if not config.plugins.iptvplayer.hostfavourites.value:
+                return []
+            favKeys = getFavouritesIdentityKeys(GetFavouritesDir())
+            if not favKeys:
+                return []
+            return [item for item in marked if self._getRowFavouriteKey(item) in favKeys]
+        except Exception:
+            printExc()
+        return []
+
+    def removeMarkedFromFavourites(self):
+        rows = self._getMarkedFavouriteRows()
+        if rows and not self.isInWorkThread():
+            self.session.openWithCallback(boundFunction(self._removeMarkedFavouritesConfirmed, rows), MessageBox, _("Remove %d items from the favourites?") % len(rows), type=MessageBox.TYPE_YESNO)
+
+    def _removeMarkedFavouritesConfirmed(self, rows, confirmed=False):
+        if not confirmed or not self.visible or self.isInWorkThread():
+            return
+        # the list may have been replaced while the question was open
+        rows = [item for item in rows if -1 < self._getListPos(item)]
+        if not rows:
+            return
+        try:
+            if 'favourites' == self.hostName:
+                removed = self._removeMarkedGroupFavourites(rows)
+            else:
+                removed = self._removeMarkedHostFavourites(rows)
+        except Exception:
+            printExc()
+            self.session.open(MessageBox, _('Error deleting favorite item.'), type=MessageBox.TYPE_ERROR, timeout=5)
+            return
+        if removed < 0:
+            return  # the error was shown
+        # the selection mode stays; the marks of rows removed from the list are gone with them
+        self.session.open(MessageBox, _("%d removed, %d skipped.") % (removed, len(rows) - removed), type=MessageBox.TYPE_INFO, timeout=5)
+
+    def _removeMarkedGroupFavourites(self, rows):
+        # inside a favourites group: the same way as "Remove from favorites" of one row -> number removed, -1 on error
+        helper = IPTVFavourites(GetFavouritesDir())
+        if not helper.load():
+            self.session.open(MessageBox, _('Error loading favorites.'), type=MessageBox.TYPE_ERROR, timeout=5)
+            return -1
+        realGroupId = self._getFavouritesGroupId(helper.getGroups(), self.favouritesCurrentGroupId)
+        if not realGroupId:
+            self.session.open(MessageBox, _('Favorite group not found.'), type=MessageBox.TYPE_ERROR, timeout=5)
+            return -1
+        return self._deleteFavouriteRows(helper, realGroupId, rows)
+
+    def _removeMarkedHostFavourites(self, rows):
+        # in a host list: every stored favourite of the rows, in every group it is in (looked up again in the
+        # current files, like removeFavouriteOfHostItem) -> number of rows removed, -1 on error
+        rowKeys = [self._getRowFavouriteKey(item) for item in rows]
+        helper = IPTVFavourites(GetFavouritesDir())
+        if not helper.load():
+            self.session.open(MessageBox, _('Error loading favorites.'), type=MessageBox.TYPE_ERROR, timeout=5)
+            return -1
+        found = helper.findItemsOfKeys(set(key for key in rowKeys if key is not None))
+        if found:
+            helper.delGroupItems([(entry[0], entry[1]) for entry in found])
+            if not helper.save():
+                self.session.open(MessageBox, _('Error saving favorites.'), type=MessageBox.TYPE_ERROR, timeout=5)
+                return -1
+        foundKeys = set(entry[2] for entry in found)
+        self.refreshRowMarkers()
+        return len([key for key in rowKeys if key in foundKeys])
 
     def _startBatchDownloadConfirmed(self, rows, confirmed=False):
         if confirmed:
             self.startBatchDownload(rows)
 
-    def startBatchDownload(self, rows):
-        # rows: CDisplayListItems of the current list -> deferred items in the download manager
+    def startBatchDownload(self, rows, skipped=0):
+        # rows: CDisplayListItems of the current list -> deferred items in the download manager;
+        # skipped: marked rows that can not be downloaded at all, counted in the message
         if None is gDownloadManager:
             self.session.open(MessageBox, _("File can not be downloaded. Download manager is not available."), type=MessageBox.TYPE_ERROR, timeout=10)
             return
@@ -3919,7 +4340,8 @@ class E2iPlayerWidget(Screen):
                             'pin': self._itemNeedsPin(item),
                             'live': batchdownload.isLiveRow(self._getBatchRawRow(item))})
         activeKeys = gDownloadManager.getActiveItemKeys()
-        accepted, skipped = batchdownload.selectBatchRows(entries, activeKeys, lambda key: iptvdownloaded.getState(key) == iptvdownloaded.STATE_DONE)
+        accepted, skippedRows = batchdownload.selectBatchRows(entries, activeKeys, lambda key: iptvdownloaded.getState(key) == iptvdownloaded.STATE_DONE)
+        skipped += skippedRows
 
         dmItems = []
         for entry in accepted:
@@ -3948,7 +4370,7 @@ class E2iPlayerWidget(Screen):
         favHost = getattr(self.host, 'host', None)
         if not self.favouritesCurrentGroupId or not hasattr(favHost, 'getGroupItemIdx'):
             return True
-        return favHost.getGroupItemIdx(self.getSelIndex()) >= 0
+        return favHost.getGroupItemIdx(self._getSelHostIndex()) >= 0
 
     def menu_pressed(self):
         printDBG("E2iPlayerWidget.menu_pressed")
@@ -4002,10 +4424,10 @@ class E2iPlayerWidget(Screen):
         printDBG("E2iPlayerWidget.handleMarkItemAsViewedCallback")
         self.setStatusTex("")
         self["list"].show()
-        zapDirection, self.pendingZapDirection = self.pendingZapDirection, 0
-        if zapDirection:
+        zap, self.pendingZap = self.pendingZap, 0
+        if zap:
             # the watched marker shows when the list is loaded again; a refresh now would lose the zap
-            self.zapToItem(zapDirection)
+            self._zapFromPlayer(zap)
         elif ret.status == RetHost.OK and isinstance(ret.value, list) and 1 == len(ret.value) and 'refresh' in ret.value:
            self.getRefreshedCurrList()
         elif ret.status == RetHost.ERROR and isinstance(ret.value, list) and 1 == len(ret.value) and isinstance(ret.value[0], str):
