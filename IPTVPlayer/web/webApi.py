@@ -457,7 +457,9 @@ def apiSearchStop(req, params):
 
 
 _STATUS = {DMHelper.STS.WAITING: 'waiting', DMHelper.STS.DOWNLOADING: 'downloading', DMHelper.STS.DOWNLOADED: 'downloaded',
-		DMHelper.STS.INTERRUPTED: 'interrupted', DMHelper.STS.ERROR: 'error', DMHelper.STS.POSTPROCESSING: 'postprocessing'}
+		DMHelper.STS.INTERRUPTED: 'interrupted', DMHelper.STS.ERROR: 'error', DMHelper.STS.POSTPROCESSING: 'postprocessing',
+		# batch download item whose links are looked up: it holds a download slot, the page offers "Stop download"
+		DMHelper.STS.RESOLVING: 'downloading'}
 
 
 def _dmItem(item):

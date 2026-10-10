@@ -172,6 +172,7 @@ class IPTVMainNavigatorList(IPTVListComponentBase):
         self.favouriteMarkerPIX = None
         self.downloadedMarkerPIX = None
         self.downloadingMarkerPIX = None
+        self.batchMarkerPIX = None
 
         # item icon box (imageType pixmap) and the watched/started overlay
         # drawn on top of it, sized to the row's own itemHeight instead of
@@ -217,6 +218,7 @@ class IPTVMainNavigatorList(IPTVListComponentBase):
         self.favouriteMarkerPIX = None
         self.downloadedMarkerPIX = None
         self.downloadingMarkerPIX = None
+        self.batchMarkerPIX = None
 
     def onCreate(self):
         self._nullPIX()
@@ -242,6 +244,8 @@ class IPTVMainNavigatorList(IPTVListComponentBase):
         self.favouriteMarkerPIX = self._loadIcon('FavouriteItem.png')
         self.downloadedMarkerPIX = self._loadIcon('DownloadedItem.png')
         self.downloadingMarkerPIX = self._loadIcon('DownloadingItem.png')
+        # overlay on the item icon of a row marked for a batch download (E2iPlayerWidget selection mode)
+        self.batchMarkerPIX = self._loadIcon('CheckBadge.png')
 
     def onDestroy(self):
         self._nullPIX()
@@ -284,6 +288,11 @@ class IPTVMainNavigatorList(IPTVListComponentBase):
         if icon is not None:
             x, y, w, h = fitPixmapInBox(icon, self.ICON_X, self.ICON_Y, self.ICON_W, self.ICON_H)
             res.append(MultiContentEntryPixmapAlphaBlend(pos=(x, y), size=(w, h), png=icon, flags=BT_SCALE))
+        # overlays on the item icon: the batch download mark (its tick sits top right in the picture) and the
+        # watched / started badge (bottom right) - both can show at once
+        if getattr(item, 'batchMarked', False) and self.batchMarkerPIX is not None:
+            x, y, w, h = fitPixmapInBox(self.batchMarkerPIX, self.BADGE_X, self.BADGE_Y, self.BADGE_W, self.BADGE_H)
+            res.append(MultiContentEntryPixmapAlphaBlend(pos=(x, y), size=(w, h), png=self.batchMarkerPIX, flags=BT_SCALE))
         if getattr(item, 'isWatched', False) and self.watchedBadgePIX is not None:
             x, y, w, h = fitPixmapInBox(self.watchedBadgePIX, self.BADGE_X, self.BADGE_Y, self.BADGE_W, self.BADGE_H)
             res.append(MultiContentEntryPixmapAlphaBlend(pos=(x, y), size=(w, h), png=self.watchedBadgePIX, flags=BT_SCALE))
@@ -639,6 +648,11 @@ class IPTVPlayerSelectOptionChoiceBoxList(IPTVMainNavigatorList):
         'ReversePlayableItems': 'ReverseItem.png',
         'HELP': 'HelpItem.png',
         'CLOSE': 'ExitItem.png',
+        # batch download: the "downloading" row marker, the mark of a selected row, "Remove item" of the download manager
+        'BATCH_ALL': 'DownloadingItem.png',
+        'BATCH_MARKED': 'DownloadingItem.png',
+        'BATCH_SELECT': 'CheckBadge.png',
+        'BATCH_CLEAR': 'RemoveItem.png',
     }
     # dynamic per-host rows ("HostAction:0", "HostAction:1", ...) all
     # share this one fallback icon instead of getting their own entries
