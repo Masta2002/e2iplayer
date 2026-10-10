@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: E2iPlayer OE-Mirrors Version\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-09 20:23+0000\n"
+"POT-Creation-Date: 2026-10-10 23:37+0000\n"
 "PO-Revision-Date: 2026-10-05 20:00+0200\n"
 "Last-Translator: polinene\n"
 "Language-Team: polinene\n"
@@ -79,12 +79,24 @@ msgid "\"Web\" streams player"
 msgstr "Reproductor de transmisiones \"web\""
 
 #, python-format
+msgid "%d added, %d skipped."
+msgstr ""
+
+#, python-format
 msgid "%d duplicate entries removed."
 msgstr "%d entradas duplicadas eliminadas."
 
 #, python-format
 msgid "%d duplicate entry removed."
 msgstr "%d entrada duplicada eliminada."
+
+#, python-format
+msgid "%d items added to the download queue, %d skipped."
+msgstr ""
+
+#, python-format
+msgid "%d of %d downloaded"
+msgstr ""
 
 #, python-format
 msgid "%d parts"
@@ -97,6 +109,10 @@ msgstr "%d programas"
 #, python-format
 msgid "%d recitations"
 msgstr "%d recitaciones"
+
+#, python-format
+msgid "%d removed, %d skipped."
+msgstr ""
 
 #, python-format
 msgid "%d videos"
@@ -167,10 +183,6 @@ msgid "%s posts"
 msgstr "%s publicaciones"
 
 #, python-format
-msgid "%s recitations"
-msgstr "%s recitaciones"
-
-#, python-format
 msgid "%s refused the download. Please set your login and password in the configuration."
 msgstr "%s rechazó la descarga. Configure su usuario y contraseña en la configuración."
 
@@ -217,6 +229,10 @@ msgstr "%s espectadores"
 #, python-format
 msgid "%s views"
 msgstr "%s vistas"
+
+#, python-format
+msgid "%s: decrypting the stream, this can take a while (%d s)"
+msgstr ""
 
 #, python-format
 msgid "(%d YouTube channel(s) could not be read)"
@@ -456,6 +472,10 @@ msgstr "Actores"
 msgid "Actors:"
 msgstr "Actores:"
 
+#, python-format
+msgid "Add %d items to the download queue?"
+msgstr ""
+
 msgid "Add channel name to downloaded file"
 msgstr "Añadir nombre del canal al archivo descargado"
 
@@ -468,6 +488,10 @@ msgstr "Añadir elemento a Favoritos"
 
 msgid "Add item to group"
 msgstr "Añadir elemento a grupo"
+
+#, python-format
+msgid "Add marked items to favourites (%d)"
+msgstr ""
 
 msgid "Add new entry"
 msgstr "Añadir nueva entrada"
@@ -1187,9 +1211,6 @@ msgstr "Confirmar el título de la película"
 msgid "Confirmation error."
 msgstr "Error de confirmación."
 
-msgid "Connection to server failed!"
-msgstr "Fallo en la conexión al servidor!"
-
 msgid "Connection to the weeb.tv server failed."
 msgstr "Falló la conexión con el servidor de weeb.tv."
 
@@ -1588,6 +1609,9 @@ msgstr "Descargar (listo en %d segundos)"
 msgid "Download again"
 msgstr "Descargar de nuevo"
 
+msgid "Download all items of this page"
+msgstr ""
+
 msgid "Download already exists"
 msgstr "La descarga ya existe"
 
@@ -1622,6 +1646,10 @@ msgstr "Administrador de descargas"
 
 msgid "Download manager is not initialized"
 msgstr "Gestor de descargas sin iniciar"
+
+#, python-format
+msgid "Download marked items (%d)"
+msgstr ""
 
 msgid "Download new version"
 msgstr "Descargar nueva versión"
@@ -1916,9 +1944,6 @@ msgstr "Introduce texto"
 msgid "Entertainment"
 msgstr "Entretenimiento"
 
-msgid "Entitlement parsing error."
-msgstr "Error de análisis de derechos."
-
 #, python-format
 msgid "Entries: %d | Sort: %s | Status: %s | Jump target: %s"
 msgstr "Entradas: %d | Orden: %s | Estado: %s | Destino de salto: %s"
@@ -2207,6 +2232,12 @@ msgstr "Archivo no puede descargarse. Protocolo [%s] incompatible"
 
 msgid "File format of DASH (MPD) downloads"
 msgstr "Formato de archivo de las descargas DASH (MPD)"
+
+msgid "File format of HLS (M3U8) downloads"
+msgstr ""
+
+msgid "File format of single video files (FFmpeg)"
+msgstr ""
 
 #, python-format
 msgid "File might be corrupted (size: %d bytes)."
@@ -2922,9 +2953,6 @@ msgstr "Usuario de Last.fm \"%s\" no encontrado."
 msgid "Last.fm user name:"
 msgstr "Nombre de usuario de Last.fm:"
 
-msgid "Lastest"
-msgstr "Última"
-
 msgid "Latest"
 msgstr "Último"
 
@@ -3205,9 +3233,6 @@ msgstr "Radio en vivo MP3Quran"
 msgid "Main"
 msgstr "Principal"
 
-msgid "Main menu"
-msgstr "Menú principal"
-
 #, python-format
 msgid "Make directory [%s]"
 msgstr "Hacer directorio [%s]"
@@ -3268,9 +3293,6 @@ msgstr "Militar"
 
 msgid "Mini series"
 msgstr "Miniseries"
-
-msgid "Missed"
-msgstr "Perdido"
 
 msgid "Missed the show?"
 msgstr "¿Se perdió el vídeo?"
@@ -3716,6 +3738,9 @@ msgstr "SIN CONEXIÓN"
 msgid "OK"
 msgstr "OK"
 
+msgid "OK marks an item, BLUE shows what can be done with the marked items."
+msgstr ""
+
 msgid "OMDb API key (free at omdbapi.com)"
 msgstr "Clave API de OMDb (gratis en omdbapi.com)"
 
@@ -3908,6 +3933,9 @@ msgstr "Rondas de patología"
 msgid "Patriotism"
 msgstr "Patriotismo"
 
+msgid "Pause between the batch lookups of one host [s]"
+msgstr ""
+
 #, python-format
 msgid "Peak: %s"
 msgstr ""
@@ -3942,6 +3970,13 @@ msgstr "Pin de Protección para plugin"
 msgid "Pin protection for this host"
 msgstr ""
 
+msgid "Play all from here"
+msgstr ""
+
+#, python-format
+msgid "Play marked items (%d)"
+msgstr ""
+
 msgid "Play torrents with TorrServer"
 msgstr ""
 
@@ -3952,19 +3987,8 @@ msgstr "Reproducir con [%s]"
 msgid "Playback UHD :"
 msgstr "Reproducción UHD:"
 
-#, python-format
-msgid "Player %s"
-msgstr "Reproductor %s"
-
-#, python-format
-msgid "Player %s: %s"
-msgstr "Reproductor %s: %s"
-
 msgid "Player Skin"
 msgstr "Apariencia del reproductor"
-
-msgid "Player data parsing error."
-msgstr "Error de concordancia en el reproductor."
 
 msgid "Playing on the TV is not possible (no enigma2 session)."
 msgstr "No es posible reproducir en el televisor (no hay sesión de enigma2)."
@@ -4378,6 +4402,10 @@ msgstr "Eliminar"
 msgid "Remove \"%s\" item"
 msgstr "Eliminar el elemento \"%s\""
 
+#, python-format
+msgid "Remove %d items from the favourites?"
+msgstr ""
+
 msgid "Remove file"
 msgstr "Eliminar archivo"
 
@@ -4389,6 +4417,10 @@ msgstr "Eliminar el grupo"
 
 msgid "Remove item"
 msgstr "Eliminar elemento"
+
+#, python-format
+msgid "Remove marked items from favourites (%d)"
+msgstr ""
 
 msgid "Remove thumbnails"
 msgstr "Eliminar miniaturas"
@@ -4639,12 +4671,18 @@ msgstr "Sección"
 msgid "Sections"
 msgstr "Secciones"
 
+msgid "Select"
+msgstr ""
+
 #, python-format
 msgid "Select %s"
 msgstr "Seleccionar %s"
 
 msgid "Select action"
 msgstr "Seleccionar acción"
+
+msgid "Select all"
+msgstr ""
 
 msgid "Select audio track"
 msgstr "Seleccione pista de audio"
@@ -4884,6 +4922,9 @@ msgstr "Mostrar solo audio en el lenguaje seleccionado:"
 
 msgid "Show only best quality of streams:"
 msgstr "Mostrar sólo la mejor calidad de los streams:"
+
+msgid "Show playlist"
+msgstr ""
 
 msgid "Show results"
 msgstr "Mostrar resultados"
@@ -6043,6 +6084,12 @@ msgstr "Desmontar archivo iso"
 msgid "Unable to comply. Search History is empty."
 msgstr "No se puede cumplir. Historial de búsqueda vacío."
 
+msgid "Undo reverse"
+msgstr ""
+
+msgid "Undo shuffle"
+msgstr ""
+
 msgid "Unfix jump target"
 msgstr "Desfijar destino de salto"
 
@@ -6069,6 +6116,9 @@ msgstr "Formato desconocido en analizador de subtítulos \"%s\"."
 #, python-format
 msgid "Unrar error code[%s]."
 msgstr "Código de error descomprimir [%s]."
+
+msgid "Unselect all"
+msgstr ""
 
 msgid "Unset watched"
 msgstr "Desmarcar como visto"
@@ -6534,9 +6584,6 @@ msgstr "[HLS/M3U8] el stream en directo empieza por detrás del directo"
 msgid "[HTTP] buffering"
 msgstr "[HTTP] búfer"
 
-msgid "[Logged-in-only]"
-msgstr "[Solo para usuarios con sesión iniciada]"
-
 msgid "[RTMP] buffering (rtmpdump required)"
 msgstr "[RTMP] búfer (requiere rtmpdump)"
 
@@ -6797,6 +6844,9 @@ msgstr "principal"
 msgid "manual"
 msgstr "manual"
 
+msgid "marked"
+msgstr ""
+
 msgid "maroon"
 msgstr "marrón"
 
@@ -6914,6 +6964,9 @@ msgstr "rojo"
 msgid "refresh the current list"
 msgstr "actualizar la lista actual"
 
+msgid "reversed"
+msgstr ""
+
 msgid "rootfs"
 msgstr "rootfs"
 
@@ -6977,6 +7030,9 @@ msgstr "mostrar más detalles del elemento seleccionado"
 
 msgid "show this help"
 msgstr "mostrar esta ayuda"
+
+msgid "shuffled"
+msgstr ""
 
 msgid "sign in (subscriptions, playlists, age-restricted videos)"
 msgstr "iniciar sesión (suscripciones, listas de reproducción, videos con restricción de edad)"

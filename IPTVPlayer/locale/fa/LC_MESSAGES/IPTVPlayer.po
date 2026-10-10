@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: IPTVPlayer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-09 20:23+0000\n"
+"POT-Creation-Date: 2026-10-10 23:37+0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Persian Prince <persianpros@gmail.com>\n"
 "Language-Team: IPTVPlayer\n"
@@ -74,12 +74,24 @@ msgid "\"Web\" streams player"
 msgstr "پخش‌کنندهٔ جریان‌های «وب»"
 
 #, python-format
+msgid "%d added, %d skipped."
+msgstr ""
+
+#, python-format
 msgid "%d duplicate entries removed."
 msgstr "%d مورد تکراری حذف شد."
 
 #, python-format
 msgid "%d duplicate entry removed."
 msgstr "%d مورد تکراری حذف شد."
+
+#, python-format
+msgid "%d items added to the download queue, %d skipped."
+msgstr ""
+
+#, python-format
+msgid "%d of %d downloaded"
+msgstr ""
 
 #, python-format
 msgid "%d parts"
@@ -92,6 +104,10 @@ msgstr "%d برنامه"
 #, python-format
 msgid "%d recitations"
 msgstr "%d تلاوت"
+
+#, python-format
+msgid "%d removed, %d skipped."
+msgstr ""
 
 #, python-format
 msgid "%d videos"
@@ -162,10 +178,6 @@ msgid "%s posts"
 msgstr "%s پست"
 
 #, python-format
-msgid "%s recitations"
-msgstr "%s تلاوت"
-
-#, python-format
 msgid "%s refused the download. Please set your login and password in the configuration."
 msgstr "%s دانلود را رد کرد. لطفاً نام کاربری و رمز عبور خود را در تنظیمات وارد کنید."
 
@@ -212,6 +224,10 @@ msgstr "%s بیننده"
 #, python-format
 msgid "%s views"
 msgstr "%s بازدید"
+
+#, python-format
+msgid "%s: decrypting the stream, this can take a while (%d s)"
+msgstr ""
 
 #, python-format
 msgid "(%d YouTube channel(s) could not be read)"
@@ -451,6 +467,10 @@ msgstr "بازیگران"
 msgid "Actors:"
 msgstr "بازیگران:"
 
+#, python-format
+msgid "Add %d items to the download queue?"
+msgstr ""
+
 msgid "Add channel name to downloaded file"
 msgstr "افزودن نام کانال به فایل دانلودشده"
 
@@ -463,6 +483,10 @@ msgstr "افزودن مورد به علاقه‌مندی‌ها"
 
 msgid "Add item to group"
 msgstr "افزودن مورد به گروه"
+
+#, python-format
+msgid "Add marked items to favourites (%d)"
+msgstr ""
 
 msgid "Add new entry"
 msgstr "افزودن مورد جدید"
@@ -1182,9 +1206,6 @@ msgstr "عنوان فیلم را تأیید کنید"
 msgid "Confirmation error."
 msgstr "خطای تأیید."
 
-msgid "Connection to server failed!"
-msgstr "اتصال به سرور ناموفق بود!"
-
 msgid "Connection to the weeb.tv server failed."
 msgstr "اتصال به سرور weeb.tv ناموفق بود."
 
@@ -1583,6 +1604,9 @@ msgstr "دانلود (آماده تا %d ثانیه دیگر)"
 msgid "Download again"
 msgstr "دانلود دوباره"
 
+msgid "Download all items of this page"
+msgstr ""
+
 msgid "Download already exists"
 msgstr "دانلود از قبل وجود دارد"
 
@@ -1617,6 +1641,10 @@ msgstr "مدیریت دانلود"
 
 msgid "Download manager is not initialized"
 msgstr "مدیریت دانلود راه‌اندازی نشده است"
+
+#, python-format
+msgid "Download marked items (%d)"
+msgstr ""
 
 msgid "Download new version"
 msgstr "دانلود نسخه جدید"
@@ -1911,9 +1939,6 @@ msgstr "متن را وارد کنید"
 msgid "Entertainment"
 msgstr "سرگرمی"
 
-msgid "Entitlement parsing error."
-msgstr "خطا در تجزیه مجوز دسترسی."
-
 #, python-format
 msgid "Entries: %d | Sort: %s | Status: %s | Jump target: %s"
 msgstr "موارد: %d | مرتب‌سازی: %s | وضعیت: %s | مقصد پرش: %s"
@@ -2202,6 +2227,12 @@ msgstr "فایل قابل دانلود نیست. پروتکل [%s] پشتیبا�
 
 msgid "File format of DASH (MPD) downloads"
 msgstr "قالب فایل دانلودهای DASH (MPD)"
+
+msgid "File format of HLS (M3U8) downloads"
+msgstr ""
+
+msgid "File format of single video files (FFmpeg)"
+msgstr ""
 
 #, python-format
 msgid "File might be corrupted (size: %d bytes)."
@@ -2916,9 +2947,6 @@ msgstr "کاربر Last.fm \"%s\" یافت نشد."
 msgid "Last.fm user name:"
 msgstr "نام کاربری Last.fm:"
 
-msgid "Lastest"
-msgstr "جدیدترین"
-
 msgid "Latest"
 msgstr "جدیدترین"
 
@@ -3199,9 +3227,6 @@ msgstr "رادیوی زنده MP3Quran"
 msgid "Main"
 msgstr "اصلی"
 
-msgid "Main menu"
-msgstr "منوی اصلی"
-
 #, python-format
 msgid "Make directory [%s]"
 msgstr "ایجاد پوشه [%s]"
@@ -3262,9 +3287,6 @@ msgstr "نظامی"
 
 msgid "Mini series"
 msgstr "مینی‌سریال"
-
-msgid "Missed"
-msgstr "از دست رفته"
 
 msgid "Missed the show?"
 msgstr "برنامه را از دست دادید؟"
@@ -3708,6 +3730,9 @@ msgstr "آفلاین"
 msgid "OK"
 msgstr "OK"
 
+msgid "OK marks an item, BLUE shows what can be done with the marked items."
+msgstr ""
+
 msgid "OMDb API key (free at omdbapi.com)"
 msgstr "کلید API سایت OMDb (رایگان در omdbapi.com)"
 
@@ -3900,6 +3925,9 @@ msgstr "راندهای آسیب‌شناسی"
 msgid "Patriotism"
 msgstr "میهن‌دوستی"
 
+msgid "Pause between the batch lookups of one host [s]"
+msgstr ""
+
 #, python-format
 msgid "Peak: %s"
 msgstr ""
@@ -3934,6 +3962,13 @@ msgstr "محافظت با PIN برای افزونه"
 msgid "Pin protection for this host"
 msgstr "محافظت با PIN برای این میزبان"
 
+msgid "Play all from here"
+msgstr ""
+
+#, python-format
+msgid "Play marked items (%d)"
+msgstr ""
+
 msgid "Play torrents with TorrServer"
 msgstr ""
 
@@ -3944,19 +3979,8 @@ msgstr "پخش با پخش‌کننده [%s]"
 msgid "Playback UHD :"
 msgstr "پخش UHD :"
 
-#, python-format
-msgid "Player %s"
-msgstr "پخش‌کننده %s"
-
-#, python-format
-msgid "Player %s: %s"
-msgstr "پخش‌کننده %s: %s"
-
 msgid "Player Skin"
 msgstr "پوسته پخش‌کننده"
-
-msgid "Player data parsing error."
-msgstr "خطا در تجزیه داده‌های پخش‌کننده."
 
 msgid "Playing on the TV is not possible (no enigma2 session)."
 msgstr "پخش روی تلویزیون امکان‌پذیر نیست (نشست enigma2 وجود ندارد)."
@@ -4370,6 +4394,10 @@ msgstr "حذف"
 msgid "Remove \"%s\" item"
 msgstr "حذف مورد \"%s\""
 
+#, python-format
+msgid "Remove %d items from the favourites?"
+msgstr ""
+
 msgid "Remove file"
 msgstr "حذف فایل"
 
@@ -4381,6 +4409,10 @@ msgstr "حذف گروه"
 
 msgid "Remove item"
 msgstr "حذف مورد"
+
+#, python-format
+msgid "Remove marked items from favourites (%d)"
+msgstr ""
 
 msgid "Remove thumbnails"
 msgstr "حذف تصاویر بندانگشتی"
@@ -4635,12 +4667,18 @@ msgstr "بخش"
 msgid "Sections"
 msgstr "بخش‌ها"
 
+msgid "Select"
+msgstr ""
+
 #, python-format
 msgid "Select %s"
 msgstr "انتخاب %s"
 
 msgid "Select action"
 msgstr "انتخاب عملیات"
+
+msgid "Select all"
+msgstr ""
 
 msgid "Select audio track"
 msgstr "انتخاب ترک صوتی"
@@ -4882,6 +4920,9 @@ msgstr "فقط صدا به زبان انتخاب‌شده نمایش داده ش
 
 msgid "Show only best quality of streams:"
 msgstr "فقط بهترین کیفیت جریان‌ها نمایش داده شود:"
+
+msgid "Show playlist"
+msgstr ""
 
 msgid "Show results"
 msgstr "نمایش نتایج"
@@ -6043,6 +6084,12 @@ msgstr "جدا کردن فایل iso"
 msgid "Unable to comply. Search History is empty."
 msgstr "امکان انجام نیست. تاریخچه جستجو خالی است."
 
+msgid "Undo reverse"
+msgstr ""
+
+msgid "Undo shuffle"
+msgstr ""
+
 msgid "Unfix jump target"
 msgstr "لغو تثبیت مقصد پرش"
 
@@ -6069,6 +6116,9 @@ msgstr "تجزیه‌گر زیرنویس برای قالب «%s» ناشناخت
 #, python-format
 msgid "Unrar error code[%s]."
 msgstr "کد خطای Unrar [%s]."
+
+msgid "Unselect all"
+msgstr ""
 
 msgid "Unset watched"
 msgstr "حذف علامت دیده‌شده"
@@ -6534,9 +6584,6 @@ msgstr "[HLS/M3U8] پخش زنده کمی عقب‌تر از زمان واقعی
 msgid "[HTTP] buffering"
 msgstr "[HTTP] بافر"
 
-msgid "[Logged-in-only]"
-msgstr "[فقط برای کاربران واردشده]"
-
 msgid "[RTMP] buffering (rtmpdump required)"
 msgstr "[RTMP] بافر (rtmpdump لازم است)"
 
@@ -6797,6 +6844,9 @@ msgstr "اصلی"
 msgid "manual"
 msgstr "دستی"
 
+msgid "marked"
+msgstr ""
+
 msgid "maroon"
 msgstr "زرشکی"
 
@@ -6914,6 +6964,9 @@ msgstr "قرمز"
 msgid "refresh the current list"
 msgstr "تازه‌سازی فهرست فعلی"
 
+msgid "reversed"
+msgstr ""
+
 msgid "rootfs"
 msgstr "rootfs"
 
@@ -6977,6 +7030,9 @@ msgstr "نمایش جزئیات بیشتر درباره مورد انتخاب‌
 
 msgid "show this help"
 msgstr "نمایش این راهنما"
+
+msgid "shuffled"
+msgstr ""
 
 msgid "sign in (subscriptions, playlists, age-restricted videos)"
 msgstr "ورود (اشتراک‌ها، فهرست‌های پخش، ویدیوهای دارای محدودیت سنی)"

@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: IPTVPlayer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-09 20:23+0000\n"
+"POT-Creation-Date: 2026-10-10 23:37+0000\n"
 "PO-Revision-Date: 2026-10-09 22:35+0200\n"
 "Last-Translator: Masta2002\n"
 "Language-Team: oATV Team\n"
@@ -74,12 +74,24 @@ msgid "\"Web\" streams player"
 msgstr "\"Web\" Streams Player"
 
 #, python-format
+msgid "%d added, %d skipped."
+msgstr ""
+
+#, python-format
 msgid "%d duplicate entries removed."
 msgstr "%d doppelte Einträge wurden entfernt."
 
 #, python-format
 msgid "%d duplicate entry removed."
 msgstr "%d doppelter Eintrag entfernt."
+
+#, python-format
+msgid "%d items added to the download queue, %d skipped."
+msgstr ""
+
+#, python-format
+msgid "%d of %d downloaded"
+msgstr ""
 
 #, python-format
 msgid "%d parts"
@@ -92,6 +104,10 @@ msgstr "%d Sendungen"
 #, python-format
 msgid "%d recitations"
 msgstr "%d Rezitationen"
+
+#, python-format
+msgid "%d removed, %d skipped."
+msgstr ""
 
 #, python-format
 msgid "%d videos"
@@ -162,10 +178,6 @@ msgid "%s posts"
 msgstr "%s Beiträge"
 
 #, python-format
-msgid "%s recitations"
-msgstr "%s Rezitationen"
-
-#, python-format
 msgid "%s refused the download. Please set your login and password in the configuration."
 msgstr "%s hat den Download abgelehnt. Bitte tragen Sie Login und Passwort in der Konfiguration ein."
 
@@ -212,6 +224,10 @@ msgstr "%s Zuschauer"
 #, python-format
 msgid "%s views"
 msgstr "%s Aufrufe"
+
+#, python-format
+msgid "%s: decrypting the stream, this can take a while (%d s)"
+msgstr ""
 
 #, python-format
 msgid "(%d YouTube channel(s) could not be read)"
@@ -338,12 +354,8 @@ msgstr "0-9"
 msgid "1 minute"
 msgstr "1 Minute"
 
-msgid ""
-"1. On a phone or PC in the same network, open the address shown in the captcha window (or scan its QR code) in a browser with the MyE2i extension installed. If it asks for a code, you find it in "
-"the title of the captcha window."
-msgstr ""
-"1. Öffnen Sie auf einem Handy oder PC im selben Netzwerk die im Captcha-Fenster angezeigte Adresse (oder scannen Sie den QR-Code) in einem Browser mit installierter MyE2i-Erweiterung. Wird ein "
-"Code verlangt, steht er im Titel des Captcha-Fensters."
+msgid "1. On a phone or PC in the same network, open the address shown in the captcha window (or scan its QR code) in a browser with the MyE2i extension installed. If it asks for a code, you find it in the title of the captcha window."
+msgstr "1. Öffnen Sie auf einem Handy oder PC im selben Netzwerk die im Captcha-Fenster angezeigte Adresse (oder scannen Sie den QR-Code) in einem Browser mit installierter MyE2i-Erweiterung. Wird ein Code verlangt, steht er im Titel des Captcha-Fensters."
 
 msgid "12 hour format"
 msgstr "12-Stunden-Format"
@@ -455,6 +467,10 @@ msgstr "Darsteller"
 msgid "Actors:"
 msgstr "Darsteller:"
 
+#, python-format
+msgid "Add %d items to the download queue?"
+msgstr ""
+
 msgid "Add channel name to downloaded file"
 msgstr "Kanalnamen zur heruntergeladenen Datei hinzufügen"
 
@@ -467,6 +483,10 @@ msgstr "Eintrag zu Favoriten hinzufügen"
 
 msgid "Add item to group"
 msgstr "In Gruppe kopieren"
+
+#, python-format
+msgid "Add marked items to favourites (%d)"
+msgstr ""
 
 msgid "Add new entry"
 msgstr "Neuen Eintrag hinzufügen"
@@ -1102,12 +1122,8 @@ msgstr "Schließen"
 msgid "Close an unused torrent after"
 msgstr "Unbenutzten Torrent schließen nach"
 
-msgid ""
-"Closes the host opened in the web interface, clears the search results and stops what the web interface still runs in the background. Use it when a page keeps loading. Settings, downloads and "
-"the E2iPlayer on the TV are not touched."
-msgstr ""
-"Schließt den im Web-Interface geöffneten Host, leert die Suchergebnisse und beendet, was das Web-Interface noch im Hintergrund ausführt. Verwenden Sie dies, wenn eine Seite nicht fertig lädt. "
-"Einstellungen, Downloads und der E2iPlayer auf dem Fernseher bleiben unberührt."
+msgid "Closes the host opened in the web interface, clears the search results and stops what the web interface still runs in the background. Use it when a page keeps loading. Settings, downloads and the E2iPlayer on the TV are not touched."
+msgstr "Schließt den im Web-Interface geöffneten Host, leert die Suchergebnisse und beendet, was das Web-Interface noch im Hintergrund ausführt. Verwenden Sie dies, wenn eine Seite nicht fertig lädt. Einstellungen, Downloads und der E2iPlayer auf dem Fernseher bleiben unberührt."
 
 msgid "Closing. Please wait..."
 msgstr "Wird geschlossen. Bitte warten..."
@@ -1162,8 +1178,7 @@ msgstr "Konfiguration"
 
 #, python-format
 msgid "Config folder \"%s\" could not be created. Some data (host order, search history, favourites, movie player preferences, ...) may not be saved."
-msgstr ""
-"Das Konfigurationsverzeichnis \"%s\" konnte nicht erstellt werden. Einige Daten (Host-Reihenfolge, Suchverlauf, Favoriten, Movie-Player-Einstellungen, ...) werden eventuell nicht gespeichert."
+msgstr "Das Konfigurationsverzeichnis \"%s\" konnte nicht erstellt werden. Einige Daten (Host-Reihenfolge, Suchverlauf, Favoriten, Movie-Player-Einstellungen, ...) werden eventuell nicht gespeichert."
 
 msgid "Configuration"
 msgstr "Konfiguration"
@@ -1190,9 +1205,6 @@ msgstr "Bestätigen Sie den Titel des Films"
 
 msgid "Confirmation error."
 msgstr "Fehler bei Bestätigung."
-
-msgid "Connection to server failed!"
-msgstr "Verbindung zum Server fehlgeschlagen!"
 
 msgid "Connection to the weeb.tv server failed."
 msgstr "Verbindung zum weeb.tv-Server ist fehlgeschlagen."
@@ -1544,12 +1556,8 @@ msgstr "Zeige Vorschaubilder"
 msgid "Do you really want to delete ALL cache data now? This includes cookies, subtitles, movie metadata and thumbnails, and cannot be undone."
 msgstr "Möchten Sie jetzt wirklich ALLE Cache-Daten löschen? Das umfasst Cookies, Untertitel, Film-Metadaten und Vorschaubilder und kann nicht rückgängig gemacht werden."
 
-msgid ""
-"Do you really want to delete ALL config data now? This is real user data, not just cache - it includes favourites, watched status, search history, movie player preferences and host order/groups, "
-"and cannot be undone."
-msgstr ""
-"Möchten Sie jetzt wirklich ALLE Konfigurationsdaten löschen? Das sind echte Benutzerdaten, nicht nur Cache - dazu gehören Favoriten, Gesehen-Status, Suchverlauf, Movie-Player-Einstellungen sowie "
-"Host-Reihenfolge und Gruppen. Das kann nicht rückgängig gemacht werden."
+msgid "Do you really want to delete ALL config data now? This is real user data, not just cache - it includes favourites, watched status, search history, movie player preferences and host order/groups, and cannot be undone."
+msgstr "Möchten Sie jetzt wirklich ALLE Konfigurationsdaten löschen? Das sind echte Benutzerdaten, nicht nur Cache - dazu gehören Favoriten, Gesehen-Status, Suchverlauf, Movie-Player-Einstellungen sowie Host-Reihenfolge und Gruppen. Das kann nicht rückgängig gemacht werden."
 
 msgid "Do you really want to delete ALL favourites and watched status now? This is real user data, not just cache, and cannot be undone."
 msgstr "Möchten Sie jetzt wirklich ALLE Favoriten und den Gesehen-Status löschen? Das sind echte Benutzerdaten, nicht nur Cache, und es kann nicht rückgängig gemacht werden."
@@ -1596,6 +1604,9 @@ msgstr "Download (bereit in %d Sekunden)"
 msgid "Download again"
 msgstr "Erneut herunterladen"
 
+msgid "Download all items of this page"
+msgstr ""
+
 msgid "Download already exists"
 msgstr "Download existiert bereits"
 
@@ -1630,6 +1641,10 @@ msgstr "Downloadverwaltung"
 
 msgid "Download manager is not initialized"
 msgstr "Downloadverwaltung ist nicht initialisiert"
+
+#, python-format
+msgid "Download marked items (%d)"
+msgstr ""
 
 msgid "Download new version"
 msgstr "Neue Version herunterladen"
@@ -1924,9 +1939,6 @@ msgstr "Text eingeben"
 msgid "Entertainment"
 msgstr "Unterhaltung"
 
-msgid "Entitlement parsing error."
-msgstr "Fehler beim Parsen des Entitlements."
-
 #, python-format
 msgid "Entries: %d | Sort: %s | Status: %s | Jump target: %s"
 msgstr "Einträge: %d | Sortieren: %s | Status: %s | Sprungziel: %s"
@@ -2215,6 +2227,12 @@ msgstr "Datei kann nicht heruntergeladen werden. Protokoll [%s] wird nicht unter
 
 msgid "File format of DASH (MPD) downloads"
 msgstr "Dateiformat für DASH-Downloads (MPD)"
+
+msgid "File format of HLS (M3U8) downloads"
+msgstr ""
+
+msgid "File format of single video files (FFmpeg)"
+msgstr ""
 
 #, python-format
 msgid "File might be corrupted (size: %d bytes)."
@@ -2929,9 +2947,6 @@ msgstr "Last.fm-Benutzer \"%s\" nicht gefunden."
 msgid "Last.fm user name:"
 msgstr "Last.fm-Benutzername:"
 
-msgid "Lastest"
-msgstr "Neueste"
-
 msgid "Latest"
 msgstr "Neueste"
 
@@ -3212,9 +3227,6 @@ msgstr "MP3Quran Live-Radio"
 msgid "Main"
 msgstr "Hauptseite"
 
-msgid "Main menu"
-msgstr "Hauptmenü"
-
 #, python-format
 msgid "Make directory [%s]"
 msgstr "Erstelle Verzeichnis [%s]"
@@ -3275,9 +3287,6 @@ msgstr "Militär"
 
 msgid "Mini series"
 msgstr "Miniserien"
-
-msgid "Missed"
-msgstr "Verpasst"
 
 msgid "Missed the show?"
 msgstr "Sendung verpasst?"
@@ -3484,12 +3493,8 @@ msgstr ""
 msgid "Name:"
 msgstr "Name:"
 
-msgid ""
-"Needs extension v1.18+. Opens the page in this browser, waits until it is fully rendered (Cloudflare challenge included, solve it if it shows up) and sends the rendered HTML, the fetch/XHR calls "
-"and the cookie names to the box debug log."
-msgstr ""
-"Benötigt die Erweiterung ab v1.18. Öffnet die Seite in diesem Browser, wartet, bis sie vollständig dargestellt ist (inklusive Cloudflare-Prüfung - lösen Sie diese, falls sie erscheint) und "
-"sendet das gerenderte HTML, die fetch/XHR-Aufrufe und die Cookie-Namen an das Debug-Log der Box."
+msgid "Needs extension v1.18+. Opens the page in this browser, waits until it is fully rendered (Cloudflare challenge included, solve it if it shows up) and sends the rendered HTML, the fetch/XHR calls and the cookie names to the box debug log."
+msgstr "Benötigt die Erweiterung ab v1.18. Öffnet die Seite in diesem Browser, wartet, bis sie vollständig dargestellt ist (inklusive Cloudflare-Prüfung - lösen Sie diese, falls sie erscheint) und sendet das gerenderte HTML, die fetch/XHR-Aufrufe und die Cookie-Namen an das Debug-Log der Box."
 
 msgid "Netflix movies"
 msgstr "Netflix-Filme"
@@ -3725,6 +3730,9 @@ msgstr "OFFLINE"
 msgid "OK"
 msgstr "OK"
 
+msgid "OK marks an item, BLUE shows what can be done with the marked items."
+msgstr ""
+
 msgid "OMDb API key (free at omdbapi.com)"
 msgstr "OMDb API-Schlüssel (kostenlos bei omdbapi.com)"
 
@@ -3785,9 +3793,7 @@ msgid "OpenSubtitles.com login failed for user \"%s\". Please check your login a
 msgstr "OpenSubtitles.com-Anmeldung für Benutzer \"%s\" fehlgeschlagen. Bitte prüfen Sie Benutzername und Passwort."
 
 msgid "OpenSubtitles.com needs an API key. Create a free API consumer at https://www.opensubtitles.com/consumers and enter its key in the E2iPlayer settings (Subtitles)."
-msgstr ""
-"OpenSubtitles.com benötigt einen API-Schlüssel. Legen Sie unter https://www.opensubtitles.com/consumers kostenlos einen API-Consumer an und tragen Sie dessen Schlüssel in den E2iPlayer-"
-"Einstellungen (Untertitel) ein."
+msgstr "OpenSubtitles.com benötigt einen API-Schlüssel. Legen Sie unter https://www.opensubtitles.com/consumers kostenlos einen API-Consumer an und tragen Sie dessen Schlüssel in den E2iPlayer-Einstellungen (Untertitel) ein."
 
 #, python-format
 msgid "OpenSubtitles.com rejected the request (HTTP %s). Please check the API key in the E2iPlayer settings."
@@ -3919,6 +3925,9 @@ msgstr "Pathologierunden"
 msgid "Patriotism"
 msgstr "Patriotismus"
 
+msgid "Pause between the batch lookups of one host [s]"
+msgstr ""
+
 #, python-format
 msgid "Peak: %s"
 msgstr "Höchste Platzierung: %s"
@@ -3953,6 +3962,13 @@ msgstr "PIN-Schutz für Plugin"
 msgid "Pin protection for this host"
 msgstr "PIN-Schutz für diesen Host"
 
+msgid "Play all from here"
+msgstr ""
+
+#, python-format
+msgid "Play marked items (%d)"
+msgstr ""
+
 msgid "Play torrents with TorrServer"
 msgstr "Torrents mit TorrServer abspielen"
 
@@ -3963,19 +3979,8 @@ msgstr "Wiedergeben mit [%s]"
 msgid "Playback UHD :"
 msgstr "Wiedergabe UHD :"
 
-#, python-format
-msgid "Player %s"
-msgstr "Player %s"
-
-#, python-format
-msgid "Player %s: %s"
-msgstr "Player %s: %s"
-
 msgid "Player Skin"
 msgstr "Player Skin"
-
-msgid "Player data parsing error."
-msgstr "Player-Daten Parsing Fehler."
 
 msgid "Playing on the TV is not possible (no enigma2 session)."
 msgstr "Wiedergabe auf dem Fernseher nicht möglich (keine enigma2-Sitzung)."
@@ -4389,6 +4394,10 @@ msgstr "Entferne"
 msgid "Remove \"%s\" item"
 msgstr "Entferne \"%s\" Eintrag"
 
+#, python-format
+msgid "Remove %d items from the favourites?"
+msgstr ""
+
 msgid "Remove file"
 msgstr "Datei löschen"
 
@@ -4400,6 +4409,10 @@ msgstr "Gruppe entfernen"
 
 msgid "Remove item"
 msgstr "Eintrag entfernen"
+
+#, python-format
+msgid "Remove marked items from favourites (%d)"
+msgstr ""
 
 msgid "Remove thumbnails"
 msgstr "Lösche Vorschaubilder"
@@ -4654,12 +4667,18 @@ msgstr "Abschnitt"
 msgid "Sections"
 msgstr "Rubriken"
 
+msgid "Select"
+msgstr ""
+
 #, python-format
 msgid "Select %s"
 msgstr "Wähle %s"
 
 msgid "Select action"
 msgstr "Operation auswählen"
+
+msgid "Select all"
+msgstr ""
 
 msgid "Select audio track"
 msgstr "Wähle Tonspur"
@@ -4901,6 +4920,9 @@ msgstr "Nur Audio in der ausgewählten Sprache anzeigen:"
 
 msgid "Show only best quality of streams:"
 msgstr "Nur Streams in bester Qualität anzeigen:"
+
+msgid "Show playlist"
+msgstr ""
 
 msgid "Show results"
 msgstr "Ergebnisse anzeigen"
@@ -5563,17 +5585,13 @@ msgstr "Die Anfrage hat keine gültige Länge."
 msgid ""
 "The resolvers 'VidCore', 'VidUp' and 'VidFast' cannot decrypt their links on the receiver.\n"
 "\n"
-"With this option ON, every time you open one of them E2iPlayer sends the site's encrypted stream token - which contains the TMDb id of the movie or episode you are opening - to the third-party "
-"web service enc-dec.app (operated by a private individual). That server then sees the id and your IP address on each play. Nothing else is transmitted, and it is only used for these three "
-"resolvers.\n"
+"With this option ON, every time you open one of them E2iPlayer sends the site's encrypted stream token - which contains the TMDb id of the movie or episode you are opening - to the third-party web service enc-dec.app (operated by a private individual). That server then sees the id and your IP address on each play. Nothing else is transmitted, and it is only used for these three resolvers.\n"
 "\n"
 "Leave this OFF if you do not want that. The other resolvers (VidEasy, VidLink, Peachify, vidrock, VidNest, ...) decrypt their links on the receiver and are not affected."
 msgstr ""
 "Die Resolver 'VidCore', 'VidUp' und 'VidFast' können ihre Links nicht auf dem Receiver entschlüsseln.\n"
 "\n"
-"Ist diese Option EIN, sendet E2iPlayer bei jedem Öffnen eines dieser Resolver den verschlüsselten Stream-Token der Seite - er enthält die TMDb-ID des geöffneten Films bzw. der Episode - an den "
-"fremden Webdienst enc-dec.app (betrieben von einer Privatperson). Dieser Server sieht dann bei jeder Wiedergabe die ID und Ihre IP-Adresse. Sonst wird nichts übertragen, und es wird nur für "
-"diese drei Resolver verwendet.\n"
+"Ist diese Option EIN, sendet E2iPlayer bei jedem Öffnen eines dieser Resolver den verschlüsselten Stream-Token der Seite - er enthält die TMDb-ID des geöffneten Films bzw. der Episode - an den fremden Webdienst enc-dec.app (betrieben von einer Privatperson). Dieser Server sieht dann bei jeder Wiedergabe die ID und Ihre IP-Adresse. Sonst wird nichts übertragen, und es wird nur für diese drei Resolver verwendet.\n"
 "\n"
 "Lassen Sie die Option AUS, wenn Sie das nicht möchten. Die anderen Resolver (VidEasy, VidLink, Peachify, vidrock, VidNest, ...) entschlüsseln ihre Links auf dem Receiver und sind nicht betroffen."
 
@@ -5617,12 +5635,8 @@ msgstr "Die Browserprüfung der Seite konnte nicht bestanden werden."
 msgid "The site's catalogue could not be loaded."
 msgstr "Der Katalog der Seite konnte nicht geladen werden."
 
-msgid ""
-"The support package holds the versions, the system information, the enabled hosts and the end of the debug log in one text file for a problem report. Look through it before posting it - the log "
-"can contain addresses of the sites you opened."
-msgstr ""
-"Das Support-Paket enthält die Versionen, die Systeminformationen, die aktivierten Hosts und das Ende des Debug-Logs in einer Textdatei für eine Problemmeldung. Sehen Sie es vor dem "
-"Veröffentlichen durch - das Log kann Adressen der von Ihnen geöffneten Seiten enthalten."
+msgid "The support package holds the versions, the system information, the enabled hosts and the end of the debug log in one text file for a problem report. Look through it before posting it - the log can contain addresses of the sites you opened."
+msgstr "Das Support-Paket enthält die Versionen, die Systeminformationen, die aktivierten Hosts und das Ende des Debug-Logs in einer Textdatei für eine Problemmeldung. Sehen Sie es vor dem Veröffentlichen durch - das Log kann Adressen der von Ihnen geöffneten Seiten enthalten."
 
 msgid "The user link could not be deleted."
 msgstr "Der Benutzerlink konnte nicht gelöscht werden."
@@ -5971,14 +5985,11 @@ msgstr ""
 "Schalten Sie \"Torrents mit TorrServer abspielen\" in den E2iPlayer-Einstellungen (Torrent-Konfiguration) ein."
 
 msgid ""
-"Torrents are peer-to-peer: while a torrent plays, the receiver connects to other users and your IP address is visible to them. Depending on your country, downloading or sharing copyrighted "
-"content through torrents may be illegal - you alone are responsible for what you play. Upload to other peers stays off unless you switch it on.\n"
+"Torrents are peer-to-peer: while a torrent plays, the receiver connects to other users and your IP address is visible to them. Depending on your country, downloading or sharing copyrighted content through torrents may be illegal - you alone are responsible for what you play. Upload to other peers stays off unless you switch it on.\n"
 "\n"
 "TorrServer itself is not part of E2iPlayer, it has to be installed separately."
 msgstr ""
-"Torrents sind Peer-to-Peer: Während ein Torrent läuft, verbindet sich der Receiver mit anderen Nutzern, und Ihre IP-Adresse ist für diese sichtbar. Je nach Land kann das Herunterladen oder "
-"Teilen urheberrechtlich geschützter Inhalte über Torrents illegal sein - Sie allein sind dafür verantwortlich, was Sie abspielen. Der Upload an andere Peers bleibt aus, solange Sie ihn nicht "
-"einschalten.\n"
+"Torrents sind Peer-to-Peer: Während ein Torrent läuft, verbindet sich der Receiver mit anderen Nutzern, und Ihre IP-Adresse ist für diese sichtbar. Je nach Land kann das Herunterladen oder Teilen urheberrechtlich geschützter Inhalte über Torrents illegal sein - Sie allein sind dafür verantwortlich, was Sie abspielen. Der Upload an andere Peers bleibt aus, solange Sie ihn nicht einschalten.\n"
 "\n"
 "TorrServer selbst ist nicht Teil von E2iPlayer und muss separat installiert werden."
 
@@ -6083,6 +6094,12 @@ msgstr "Iso-Datei aushängen"
 msgid "Unable to comply. Search History is empty."
 msgstr "Kann nicht erfüllt werden. Der Suchverlauf ist leer."
 
+msgid "Undo reverse"
+msgstr ""
+
+msgid "Undo shuffle"
+msgstr ""
+
 msgid "Unfix jump target"
 msgstr "Sprungziel aufheben"
 
@@ -6109,6 +6126,9 @@ msgstr "Unbekannter Untertitel-Parser für das Format \"%s\"."
 #, python-format
 msgid "Unrar error code[%s]."
 msgstr "Unrar Fehler-Code[%s]."
+
+msgid "Unselect all"
+msgstr ""
 
 msgid "Unset watched"
 msgstr "Als gesehen entmarkieren"
@@ -6574,9 +6594,6 @@ msgstr "[HLS/M3U8] Livestream startet hinter dem Live-Punkt"
 msgid "[HTTP] buffering"
 msgstr "[HTTP] puffern"
 
-msgid "[Logged-in-only]"
-msgstr "[Nur eingeloggt]"
-
 msgid "[RTMP] buffering (rtmpdump required)"
 msgstr "[RTMP] puffern (rtmpdump benötigt)"
 
@@ -6837,6 +6854,9 @@ msgstr "main"
 msgid "manual"
 msgstr "manuell"
 
+msgid "marked"
+msgstr ""
+
 msgid "maroon"
 msgstr "kastanienbraun"
 
@@ -6954,6 +6974,9 @@ msgstr "rot"
 msgid "refresh the current list"
 msgstr "aktuelle Liste neu laden"
 
+msgid "reversed"
+msgstr ""
+
 msgid "rootfs"
 msgstr "rootfs"
 
@@ -7017,6 +7040,9 @@ msgstr "weitere Details zum ausgewählten Eintrag anzeigen"
 
 msgid "show this help"
 msgstr "diese Hilfe anzeigen"
+
+msgid "shuffled"
+msgstr ""
 
 msgid "sign in (subscriptions, playlists, age-restricted videos)"
 msgstr "anmelden (Abonnements, Playlists, altersbeschränkte Videos)"
@@ -7167,12 +7193,8 @@ msgstr "warte %s Sekunde"
 msgid "wait %s seconds"
 msgstr "warte %s Sekunden"
 
-msgid ""
-"wants you to solve a captcha. Only after solving this captcha, you are allowed to continue with your downloads. E2iPlayer is not able to auto-solve these captchas, so we need to pass the captcha "
-"to you."
-msgstr ""
-"möchte, dass Sie ein Captcha lösen. Erst nach dem Lösen dieses Captchas dürfen Sie mit Ihren Downloads fortfahren. E2iPlayer kann diese Captchas nicht automatisch lösen, daher müssen wir das "
-"Captcha an Sie weitergeben."
+msgid "wants you to solve a captcha. Only after solving this captcha, you are allowed to continue with your downloads. E2iPlayer is not able to auto-solve these captchas, so we need to pass the captcha to you."
+msgstr "möchte, dass Sie ein Captcha lösen. Erst nach dem Lösen dieses Captchas dürfen Sie mit Ihren Downloads fortfahren. E2iPlayer kann diese Captchas nicht automatisch lösen, daher müssen wir das Captcha an Sie weitergeben."
 
 #, python-format
 msgid "weeb.tv did not return a valid stream (error %s)."

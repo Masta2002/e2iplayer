@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: IPTVPlayer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-09 20:23+0000\n"
+"POT-Creation-Date: 2026-10-10 23:37+0000\n"
 "PO-Revision-Date: 2026-10-08 20:17+0000\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: Romanian\n"
@@ -71,12 +71,24 @@ msgid "\"Web\" streams player"
 msgstr "Player pentru streamuri \"Web\""
 
 #, python-format
+msgid "%d added, %d skipped."
+msgstr ""
+
+#, python-format
 msgid "%d duplicate entries removed."
 msgstr "%d intrări duplicate au fost eliminate."
 
 #, python-format
 msgid "%d duplicate entry removed."
 msgstr "%d intrare duplicată eliminată."
+
+#, python-format
+msgid "%d items added to the download queue, %d skipped."
+msgstr ""
+
+#, python-format
+msgid "%d of %d downloaded"
+msgstr ""
 
 #, python-format
 msgid "%d parts"
@@ -89,6 +101,10 @@ msgstr "%d emisiuni"
 #, python-format
 msgid "%d recitations"
 msgstr "%d recitări"
+
+#, python-format
+msgid "%d removed, %d skipped."
+msgstr ""
 
 #, python-format
 msgid "%d videos"
@@ -159,10 +175,6 @@ msgid "%s posts"
 msgstr "%s postări"
 
 #, python-format
-msgid "%s recitations"
-msgstr "%s recitări"
-
-#, python-format
 msgid "%s refused the download. Please set your login and password in the configuration."
 msgstr "%s a refuzat descărcarea. Introduceți numele de utilizator și parola în configurare."
 
@@ -209,6 +221,10 @@ msgstr "%s spectatori"
 #, python-format
 msgid "%s views"
 msgstr "%s vizualizări"
+
+#, python-format
+msgid "%s: decrypting the stream, this can take a while (%d s)"
+msgstr ""
 
 #, python-format
 msgid "(%d YouTube channel(s) could not be read)"
@@ -448,6 +464,10 @@ msgstr "Actori"
 msgid "Actors:"
 msgstr "Actori:"
 
+#, python-format
+msgid "Add %d items to the download queue?"
+msgstr ""
+
 msgid "Add channel name to downloaded file"
 msgstr "Adăugați numele canalului la fișierul descărcat"
 
@@ -460,6 +480,10 @@ msgstr "Adăugați elementul la favorite"
 
 msgid "Add item to group"
 msgstr "Adăugați elementul în grup"
+
+#, python-format
+msgid "Add marked items to favourites (%d)"
+msgstr ""
 
 msgid "Add new entry"
 msgstr "Adăugați o intrare nouă"
@@ -1179,9 +1203,6 @@ msgstr "Confirmați titlul filmului"
 msgid "Confirmation error."
 msgstr "Eroare de confirmare."
 
-msgid "Connection to server failed!"
-msgstr "Conectarea la server a eșuat!"
-
 msgid "Connection to the weeb.tv server failed."
 msgstr "Conectarea la serverul weeb.tv a eșuat."
 
@@ -1580,6 +1601,9 @@ msgstr "Descărcare (gata în %d secunde)"
 msgid "Download again"
 msgstr "Descărcați din nou"
 
+msgid "Download all items of this page"
+msgstr ""
+
 msgid "Download already exists"
 msgstr "Descărcarea există deja"
 
@@ -1614,6 +1638,10 @@ msgstr "Manager de descărcări"
 
 msgid "Download manager is not initialized"
 msgstr "Managerul de descărcări nu este inițializat"
+
+#, python-format
+msgid "Download marked items (%d)"
+msgstr ""
 
 msgid "Download new version"
 msgstr "Descărcați versiunea nouă"
@@ -1908,9 +1936,6 @@ msgstr "Introduceți textul"
 msgid "Entertainment"
 msgstr "Divertisment"
 
-msgid "Entitlement parsing error."
-msgstr "Eroare la analiza drepturilor de acces."
-
 #, python-format
 msgid "Entries: %d | Sort: %s | Status: %s | Jump target: %s"
 msgstr "Intrări: %d | Sortare: %s | Stare: %s | Țintă salt: %s"
@@ -2199,6 +2224,12 @@ msgstr "Fișierul nu poate fi descărcat. Protocolul [%s] nu este acceptat"
 
 msgid "File format of DASH (MPD) downloads"
 msgstr "Formatul fișierului pentru descărcările DASH (MPD)"
+
+msgid "File format of HLS (M3U8) downloads"
+msgstr ""
+
+msgid "File format of single video files (FFmpeg)"
+msgstr ""
 
 #, python-format
 msgid "File might be corrupted (size: %d bytes)."
@@ -2913,9 +2944,6 @@ msgstr "Utilizatorul Last.fm \"%s\" nu a fost găsit."
 msgid "Last.fm user name:"
 msgstr "Nume de utilizator Last.fm:"
 
-msgid "Lastest"
-msgstr "Cele mai noi"
-
 msgid "Latest"
 msgstr "Cele mai noi"
 
@@ -3196,9 +3224,6 @@ msgstr "Radio live MP3Quran"
 msgid "Main"
 msgstr "Principal"
 
-msgid "Main menu"
-msgstr "Meniu principal"
-
 #, python-format
 msgid "Make directory [%s]"
 msgstr "Creare director [%s]"
@@ -3259,9 +3284,6 @@ msgstr "Militar"
 
 msgid "Mini series"
 msgstr "Miniserii"
-
-msgid "Missed"
-msgstr "Ratate"
 
 msgid "Missed the show?"
 msgstr "Ați ratat emisiunea?"
@@ -3705,6 +3727,9 @@ msgstr "OFFLINE"
 msgid "OK"
 msgstr "OK"
 
+msgid "OK marks an item, BLUE shows what can be done with the marked items."
+msgstr ""
+
 msgid "OMDb API key (free at omdbapi.com)"
 msgstr "Cheie API OMDb (gratuită la omdbapi.com)"
 
@@ -3897,6 +3922,9 @@ msgstr "Vizite de patologie"
 msgid "Patriotism"
 msgstr "Patriotism"
 
+msgid "Pause between the batch lookups of one host [s]"
+msgstr ""
+
 #, python-format
 msgid "Peak: %s"
 msgstr ""
@@ -3931,6 +3959,13 @@ msgstr "Protecție cu PIN pentru plugin"
 msgid "Pin protection for this host"
 msgstr "Protecție cu PIN pentru acest host"
 
+msgid "Play all from here"
+msgstr ""
+
+#, python-format
+msgid "Play marked items (%d)"
+msgstr ""
+
 msgid "Play torrents with TorrServer"
 msgstr ""
 
@@ -3941,19 +3976,8 @@ msgstr "Redați cu playerul [%s]"
 msgid "Playback UHD :"
 msgstr "Redare UHD :"
 
-#, python-format
-msgid "Player %s"
-msgstr "Player %s"
-
-#, python-format
-msgid "Player %s: %s"
-msgstr "Player %s: %s"
-
 msgid "Player Skin"
 msgstr "Skin player"
-
-msgid "Player data parsing error."
-msgstr "Eroare la parsarea datelor playerului."
 
 msgid "Playing on the TV is not possible (no enigma2 session)."
 msgstr "Redarea pe televizor nu este posibilă (nicio sesiune enigma2)."
@@ -4367,6 +4391,10 @@ msgstr "Eliminați"
 msgid "Remove \"%s\" item"
 msgstr "Eliminați elementul \"%s\""
 
+#, python-format
+msgid "Remove %d items from the favourites?"
+msgstr ""
+
 msgid "Remove file"
 msgstr "Ștergeți fișierul"
 
@@ -4378,6 +4406,10 @@ msgstr "Eliminați grupul"
 
 msgid "Remove item"
 msgstr "Eliminați elementul"
+
+#, python-format
+msgid "Remove marked items from favourites (%d)"
+msgstr ""
 
 msgid "Remove thumbnails"
 msgstr "Eliminați miniaturile"
@@ -4632,12 +4664,18 @@ msgstr "Secțiune"
 msgid "Sections"
 msgstr "Secțiuni"
 
+msgid "Select"
+msgstr ""
+
 #, python-format
 msgid "Select %s"
 msgstr "Selectați %s"
 
 msgid "Select action"
 msgstr "Selectați acțiunea"
+
+msgid "Select all"
+msgstr ""
 
 msgid "Select audio track"
 msgstr "Selectați pista audio"
@@ -4879,6 +4917,9 @@ msgstr "Afișați doar audio în limba selectată:"
 
 msgid "Show only best quality of streams:"
 msgstr "Afișați doar cea mai bună calitate a streamurilor:"
+
+msgid "Show playlist"
+msgstr ""
 
 msgid "Show results"
 msgstr "Afișați rezultatele"
@@ -6040,6 +6081,12 @@ msgstr "Demontare fișier ISO"
 msgid "Unable to comply. Search History is empty."
 msgstr "Operațiune imposibilă. Istoricul căutărilor este gol."
 
+msgid "Undo reverse"
+msgstr ""
+
+msgid "Undo shuffle"
+msgstr ""
+
 msgid "Unfix jump target"
 msgstr "Anulare fixare țintă salt"
 
@@ -6066,6 +6113,9 @@ msgstr "Parser de subtitrări necunoscut pentru formatul \"%s\"."
 #, python-format
 msgid "Unrar error code[%s]."
 msgstr "Cod de eroare Unrar[%s]."
+
+msgid "Unselect all"
+msgstr ""
 
 msgid "Unset watched"
 msgstr "Anulare marcaj vizionat"
@@ -6531,9 +6581,6 @@ msgstr "[HLS/M3U8] streamul live pornește în urma punctului live"
 msgid "[HTTP] buffering"
 msgstr "[HTTP] buffer"
 
-msgid "[Logged-in-only]"
-msgstr "[Doar cu autentificare]"
-
 msgid "[RTMP] buffering (rtmpdump required)"
 msgstr "[RTMP] buffer (necesită rtmpdump)"
 
@@ -6794,6 +6841,9 @@ msgstr "main"
 msgid "manual"
 msgstr "manual"
 
+msgid "marked"
+msgstr ""
+
 msgid "maroon"
 msgstr "grena"
 
@@ -6911,6 +6961,9 @@ msgstr "roșu"
 msgid "refresh the current list"
 msgstr "reîmprospătare listă curentă"
 
+msgid "reversed"
+msgstr ""
+
 msgid "rootfs"
 msgstr "rootfs"
 
@@ -6974,6 +7027,9 @@ msgstr "afișare mai multe detalii despre elementul selectat"
 
 msgid "show this help"
 msgstr "afișare acest ajutor"
+
+msgid "shuffled"
+msgstr ""
 
 msgid "sign in (subscriptions, playlists, age-restricted videos)"
 msgstr "conectare (abonamente, playlisturi, videoclipuri cu restricție de vârstă)"

@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: IPTVPlayer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-09 20:23+0000\n"
+"POT-Creation-Date: 2026-10-10 23:37+0000\n"
 "PO-Revision-Date: 2026-10-08 20:17+0000\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: Danish\n"
@@ -71,12 +71,24 @@ msgid "\"Web\" streams player"
 msgstr "Afspiller til \"Web\"-streams"
 
 #, python-format
+msgid "%d added, %d skipped."
+msgstr ""
+
+#, python-format
 msgid "%d duplicate entries removed."
 msgstr "%d dublerede poster fjernet."
 
 #, python-format
 msgid "%d duplicate entry removed."
 msgstr "%d dubleret post fjernet."
+
+#, python-format
+msgid "%d items added to the download queue, %d skipped."
+msgstr ""
+
+#, python-format
+msgid "%d of %d downloaded"
+msgstr ""
 
 #, python-format
 msgid "%d parts"
@@ -89,6 +101,10 @@ msgstr "%d programmer"
 #, python-format
 msgid "%d recitations"
 msgstr "%d recitationer"
+
+#, python-format
+msgid "%d removed, %d skipped."
+msgstr ""
 
 #, python-format
 msgid "%d videos"
@@ -159,10 +175,6 @@ msgid "%s posts"
 msgstr "%s indlæg"
 
 #, python-format
-msgid "%s recitations"
-msgstr "%s recitationer"
-
-#, python-format
 msgid "%s refused the download. Please set your login and password in the configuration."
 msgstr "%s afviste downloadet. Angiv dit login og din adgangskode i indstillingerne."
 
@@ -209,6 +221,10 @@ msgstr "%s seere"
 #, python-format
 msgid "%s views"
 msgstr "%s visninger"
+
+#, python-format
+msgid "%s: decrypting the stream, this can take a while (%d s)"
+msgstr ""
 
 #, python-format
 msgid "(%d YouTube channel(s) could not be read)"
@@ -448,6 +464,10 @@ msgstr "Skuespillere"
 msgid "Actors:"
 msgstr "Skuespillere:"
 
+#, python-format
+msgid "Add %d items to the download queue?"
+msgstr ""
+
 msgid "Add channel name to downloaded file"
 msgstr "Tilføj kanalnavn til den downloadede fil"
 
@@ -460,6 +480,10 @@ msgstr "Tilføj element til favoritter"
 
 msgid "Add item to group"
 msgstr "Tilføj element til gruppe"
+
+#, python-format
+msgid "Add marked items to favourites (%d)"
+msgstr ""
 
 msgid "Add new entry"
 msgstr "Tilføj ny post"
@@ -1179,9 +1203,6 @@ msgstr "Bekræft filmens titel"
 msgid "Confirmation error."
 msgstr "Bekræftelsesfejl."
 
-msgid "Connection to server failed!"
-msgstr "Forbindelse til serveren mislykkedes!"
-
 msgid "Connection to the weeb.tv server failed."
 msgstr "Forbindelse til weeb.tv-serveren mislykkedes."
 
@@ -1580,6 +1601,9 @@ msgstr "Download (klar om %d sekunder)"
 msgid "Download again"
 msgstr "Download igen"
 
+msgid "Download all items of this page"
+msgstr ""
+
 msgid "Download already exists"
 msgstr "Download findes allerede"
 
@@ -1614,6 +1638,10 @@ msgstr "Downloadhåndtering"
 
 msgid "Download manager is not initialized"
 msgstr "Downloadhåndtering er ikke initialiseret"
+
+#, python-format
+msgid "Download marked items (%d)"
+msgstr ""
 
 msgid "Download new version"
 msgstr "Download ny version"
@@ -1908,9 +1936,6 @@ msgstr "Indtast teksten"
 msgid "Entertainment"
 msgstr "Underholdning"
 
-msgid "Entitlement parsing error."
-msgstr "Fejl ved fortolkning af rettigheder."
-
 #, python-format
 msgid "Entries: %d | Sort: %s | Status: %s | Jump target: %s"
 msgstr "Poster: %d | Sortering: %s | Status: %s | Springmål: %s"
@@ -2199,6 +2224,12 @@ msgstr "Filen kan ikke downloades. Protokollen [%s] understøttes ikke"
 
 msgid "File format of DASH (MPD) downloads"
 msgstr "Filformat for DASH-downloads (MPD)"
+
+msgid "File format of HLS (M3U8) downloads"
+msgstr ""
+
+msgid "File format of single video files (FFmpeg)"
+msgstr ""
 
 #, python-format
 msgid "File might be corrupted (size: %d bytes)."
@@ -2913,9 +2944,6 @@ msgstr "Last.fm-brugeren \"%s\" blev ikke fundet."
 msgid "Last.fm user name:"
 msgstr "Last.fm-brugernavn:"
 
-msgid "Lastest"
-msgstr "Nyeste"
-
 msgid "Latest"
 msgstr "Nyeste"
 
@@ -3196,9 +3224,6 @@ msgstr "MP3Quran live-radio"
 msgid "Main"
 msgstr "Hovedside"
 
-msgid "Main menu"
-msgstr "Hovedmenu"
-
 #, python-format
 msgid "Make directory [%s]"
 msgstr "Opret mappe [%s]"
@@ -3259,9 +3284,6 @@ msgstr "Militær"
 
 msgid "Mini series"
 msgstr "Miniserier"
-
-msgid "Missed"
-msgstr "Gået glip af"
 
 msgid "Missed the show?"
 msgstr "Gik du glip af udsendelsen?"
@@ -3705,6 +3727,9 @@ msgstr "OFFLINE"
 msgid "OK"
 msgstr "OK"
 
+msgid "OK marks an item, BLUE shows what can be done with the marked items."
+msgstr ""
+
 msgid "OMDb API key (free at omdbapi.com)"
 msgstr "OMDb API-nøgle (gratis på omdbapi.com)"
 
@@ -3897,6 +3922,9 @@ msgstr "Patologirunder"
 msgid "Patriotism"
 msgstr "Patriotisme"
 
+msgid "Pause between the batch lookups of one host [s]"
+msgstr ""
+
 #, python-format
 msgid "Peak: %s"
 msgstr ""
@@ -3931,6 +3959,13 @@ msgstr "PIN-beskyttelse af plugin"
 msgid "Pin protection for this host"
 msgstr "PIN-beskyttelse af denne host"
 
+msgid "Play all from here"
+msgstr ""
+
+#, python-format
+msgid "Play marked items (%d)"
+msgstr ""
+
 msgid "Play torrents with TorrServer"
 msgstr ""
 
@@ -3941,19 +3976,8 @@ msgstr "Afspil med [%s]-afspiller"
 msgid "Playback UHD :"
 msgstr "Afspilning UHD :"
 
-#, python-format
-msgid "Player %s"
-msgstr "Afspiller %s"
-
-#, python-format
-msgid "Player %s: %s"
-msgstr "Afspiller %s: %s"
-
 msgid "Player Skin"
 msgstr "Afspiller-skin"
-
-msgid "Player data parsing error."
-msgstr "Fejl ved fortolkning af afspillerdata."
 
 msgid "Playing on the TV is not possible (no enigma2 session)."
 msgstr "Afspilning på tv'et er ikke mulig (ingen enigma2-session)."
@@ -4367,6 +4391,10 @@ msgstr "Fjern"
 msgid "Remove \"%s\" item"
 msgstr "Fjern elementet \"%s\""
 
+#, python-format
+msgid "Remove %d items from the favourites?"
+msgstr ""
+
 msgid "Remove file"
 msgstr "Fjern fil"
 
@@ -4378,6 +4406,10 @@ msgstr "Fjern gruppe"
 
 msgid "Remove item"
 msgstr "Fjern element"
+
+#, python-format
+msgid "Remove marked items from favourites (%d)"
+msgstr ""
 
 msgid "Remove thumbnails"
 msgstr "Fjern miniaturebilleder"
@@ -4632,12 +4664,18 @@ msgstr "Sektion"
 msgid "Sections"
 msgstr "Sektioner"
 
+msgid "Select"
+msgstr ""
+
 #, python-format
 msgid "Select %s"
 msgstr "Vælg %s"
 
 msgid "Select action"
 msgstr "Vælg handling"
+
+msgid "Select all"
+msgstr ""
 
 msgid "Select audio track"
 msgstr "Vælg lydspor"
@@ -4879,6 +4917,9 @@ msgstr "Vis kun lyd på det valgte sprog:"
 
 msgid "Show only best quality of streams:"
 msgstr "Vis kun streams i bedste kvalitet:"
+
+msgid "Show playlist"
+msgstr ""
 
 msgid "Show results"
 msgstr "Vis resultater"
@@ -6040,6 +6081,12 @@ msgstr "Afmonter iso-fil"
 msgid "Unable to comply. Search History is empty."
 msgstr "Kan ikke udføres. Søgehistorikken er tom."
 
+msgid "Undo reverse"
+msgstr ""
+
+msgid "Undo shuffle"
+msgstr ""
+
 msgid "Unfix jump target"
 msgstr "Frigør springmål"
 
@@ -6066,6 +6113,9 @@ msgstr "Ukendt undertekst-parser for formatet \"%s\"."
 #, python-format
 msgid "Unrar error code[%s]."
 msgstr "Unrar-fejlkode[%s]."
+
+msgid "Unselect all"
+msgstr ""
 
 msgid "Unset watched"
 msgstr "Fjern markering som set"
@@ -6531,9 +6581,6 @@ msgstr "[HLS/M3U8] livestream starter bag live-punktet"
 msgid "[HTTP] buffering"
 msgstr "[HTTP] buffering"
 
-msgid "[Logged-in-only]"
-msgstr "[Kun for indloggede]"
-
 msgid "[RTMP] buffering (rtmpdump required)"
 msgstr "[RTMP] buffering (kræver rtmpdump)"
 
@@ -6794,6 +6841,9 @@ msgstr "main"
 msgid "manual"
 msgstr "manuel"
 
+msgid "marked"
+msgstr ""
+
 msgid "maroon"
 msgstr "rødbrun"
 
@@ -6911,6 +6961,9 @@ msgstr "rød"
 msgid "refresh the current list"
 msgstr "opdater den aktuelle liste"
 
+msgid "reversed"
+msgstr ""
+
 msgid "rootfs"
 msgstr "rootfs"
 
@@ -6974,6 +7027,9 @@ msgstr "vis flere detaljer om det valgte element"
 
 msgid "show this help"
 msgstr "vis denne hjælp"
+
+msgid "shuffled"
+msgstr ""
 
 msgid "sign in (subscriptions, playlists, age-restricted videos)"
 msgstr "log ind (abonnementer, playlister, aldersbegrænsede videoer)"

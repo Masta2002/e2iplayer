@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: IPTVPlayer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-09 20:23+0000\n"
+"POT-Creation-Date: 2026-10-10 23:37+0000\n"
 "PO-Revision-Date: 2026-10-08 20:17+0000\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: Serbian (Latin)\n"
@@ -71,12 +71,24 @@ msgid "\"Web\" streams player"
 msgstr "Plejer za \"Web\" strimove"
 
 #, python-format
+msgid "%d added, %d skipped."
+msgstr ""
+
+#, python-format
 msgid "%d duplicate entries removed."
 msgstr "Uklonjeno je %d duplih stavki."
 
 #, python-format
 msgid "%d duplicate entry removed."
 msgstr "Uklonjena je %d dupla stavka."
+
+#, python-format
+msgid "%d items added to the download queue, %d skipped."
+msgstr ""
+
+#, python-format
+msgid "%d of %d downloaded"
+msgstr ""
 
 #, python-format
 msgid "%d parts"
@@ -89,6 +101,10 @@ msgstr "%d emisija"
 #, python-format
 msgid "%d recitations"
 msgstr "%d recitacija"
+
+#, python-format
+msgid "%d removed, %d skipped."
+msgstr ""
 
 #, python-format
 msgid "%d videos"
@@ -159,10 +175,6 @@ msgid "%s posts"
 msgstr "%s objava"
 
 #, python-format
-msgid "%s recitations"
-msgstr "%s recitacija"
-
-#, python-format
 msgid "%s refused the download. Please set your login and password in the configuration."
 msgstr "%s je odbio preuzimanje. Unesite korisničko ime i lozinku u konfiguraciji."
 
@@ -209,6 +221,10 @@ msgstr "%s gledalaca"
 #, python-format
 msgid "%s views"
 msgstr "%s pregleda"
+
+#, python-format
+msgid "%s: decrypting the stream, this can take a while (%d s)"
+msgstr ""
 
 #, python-format
 msgid "(%d YouTube channel(s) could not be read)"
@@ -448,6 +464,10 @@ msgstr "Glumci"
 msgid "Actors:"
 msgstr "Glumci:"
 
+#, python-format
+msgid "Add %d items to the download queue?"
+msgstr ""
+
 msgid "Add channel name to downloaded file"
 msgstr "Dodaj naziv kanala preuzetoj datoteci"
 
@@ -460,6 +480,10 @@ msgstr "Dodaj stavku u omiljene"
 
 msgid "Add item to group"
 msgstr "Dodaj stavku u grupu"
+
+#, python-format
+msgid "Add marked items to favourites (%d)"
+msgstr ""
 
 msgid "Add new entry"
 msgstr "Dodaj novu stavku"
@@ -1179,9 +1203,6 @@ msgstr "Potvrdite naslov filma"
 msgid "Confirmation error."
 msgstr "Greška pri potvrdi."
 
-msgid "Connection to server failed!"
-msgstr "Povezivanje sa serverom nije uspelo!"
-
 msgid "Connection to the weeb.tv server failed."
 msgstr "Povezivanje sa weeb.tv serverom nije uspelo."
 
@@ -1580,6 +1601,9 @@ msgstr "Preuzmi (spremno za %d sekundi)"
 msgid "Download again"
 msgstr "Preuzmi ponovo"
 
+msgid "Download all items of this page"
+msgstr ""
+
 msgid "Download already exists"
 msgstr "Preuzimanje već postoji"
 
@@ -1614,6 +1638,10 @@ msgstr "Menadžer preuzimanja"
 
 msgid "Download manager is not initialized"
 msgstr "Menadžer preuzimanja nije inicijalizovan"
+
+#, python-format
+msgid "Download marked items (%d)"
+msgstr ""
 
 msgid "Download new version"
 msgstr "Preuzmi novu verziju"
@@ -1908,9 +1936,6 @@ msgstr "Unesite tekst"
 msgid "Entertainment"
 msgstr "Zabava"
 
-msgid "Entitlement parsing error."
-msgstr "Greška pri parsiranju prava pristupa."
-
 #, python-format
 msgid "Entries: %d | Sort: %s | Status: %s | Jump target: %s"
 msgstr "Unosi: %d | Sortiranje: %s | Status: %s | Cilj skoka: %s"
@@ -2199,6 +2224,12 @@ msgstr "Datoteka ne može da se preuzme. Protokol [%s] nije podržan"
 
 msgid "File format of DASH (MPD) downloads"
 msgstr "Format datoteke za DASH (MPD) preuzimanja"
+
+msgid "File format of HLS (M3U8) downloads"
+msgstr ""
+
+msgid "File format of single video files (FFmpeg)"
+msgstr ""
 
 #, python-format
 msgid "File might be corrupted (size: %d bytes)."
@@ -2913,9 +2944,6 @@ msgstr "Last.fm korisnik \"%s\" nije pronađen."
 msgid "Last.fm user name:"
 msgstr "Last.fm korisničko ime:"
 
-msgid "Lastest"
-msgstr "Najnovije"
-
 msgid "Latest"
 msgstr "Najnovije"
 
@@ -3196,9 +3224,6 @@ msgstr "MP3Quran radio uživo"
 msgid "Main"
 msgstr "Glavno"
 
-msgid "Main menu"
-msgstr "Glavni meni"
-
 #, python-format
 msgid "Make directory [%s]"
 msgstr "Napravi direktorijum [%s]"
@@ -3259,9 +3284,6 @@ msgstr "Vojska"
 
 msgid "Mini series"
 msgstr "Mini serije"
-
-msgid "Missed"
-msgstr "Propušteno"
 
 msgid "Missed the show?"
 msgstr "Propustili ste emisiju?"
@@ -3705,6 +3727,9 @@ msgstr "OFFLINE"
 msgid "OK"
 msgstr "OK"
 
+msgid "OK marks an item, BLUE shows what can be done with the marked items."
+msgstr ""
+
 msgid "OMDb API key (free at omdbapi.com)"
 msgstr "OMDb API ključ (besplatno na omdbapi.com)"
 
@@ -3897,6 +3922,9 @@ msgstr "Patološke vizite"
 msgid "Patriotism"
 msgstr "Patriotizam"
 
+msgid "Pause between the batch lookups of one host [s]"
+msgstr ""
+
 #, python-format
 msgid "Peak: %s"
 msgstr ""
@@ -3931,6 +3959,13 @@ msgstr "PIN zaštita za dodatak"
 msgid "Pin protection for this host"
 msgstr "PIN zaštita za ovaj host"
 
+msgid "Play all from here"
+msgstr ""
+
+#, python-format
+msgid "Play marked items (%d)"
+msgstr ""
+
 msgid "Play torrents with TorrServer"
 msgstr ""
 
@@ -3941,19 +3976,8 @@ msgstr "Reprodukuj pomoću plejera [%s]"
 msgid "Playback UHD :"
 msgstr "Reprodukcija UHD :"
 
-#, python-format
-msgid "Player %s"
-msgstr "Plejer %s"
-
-#, python-format
-msgid "Player %s: %s"
-msgstr "Plejer %s: %s"
-
 msgid "Player Skin"
 msgstr "Skin plejera"
-
-msgid "Player data parsing error."
-msgstr "Greška pri raščlanjivanju podataka plejera."
 
 msgid "Playing on the TV is not possible (no enigma2 session)."
 msgstr "Reprodukcija na televizoru nije moguća (nema enigma2 sesije)."
@@ -4367,6 +4391,10 @@ msgstr "Ukloni"
 msgid "Remove \"%s\" item"
 msgstr "Ukloni stavku \"%s\""
 
+#, python-format
+msgid "Remove %d items from the favourites?"
+msgstr ""
+
 msgid "Remove file"
 msgstr "Ukloni datoteku"
 
@@ -4378,6 +4406,10 @@ msgstr "Ukloni grupu"
 
 msgid "Remove item"
 msgstr "Ukloni stavku"
+
+#, python-format
+msgid "Remove marked items from favourites (%d)"
+msgstr ""
 
 msgid "Remove thumbnails"
 msgstr "Ukloni sličice"
@@ -4632,12 +4664,18 @@ msgstr "Odeljak"
 msgid "Sections"
 msgstr "Odeljci"
 
+msgid "Select"
+msgstr ""
+
 #, python-format
 msgid "Select %s"
 msgstr "Izaberite %s"
 
 msgid "Select action"
 msgstr "Izaberite radnju"
+
+msgid "Select all"
+msgstr ""
 
 msgid "Select audio track"
 msgstr "Izaberite audio zapis"
@@ -4879,6 +4917,9 @@ msgstr "Prikaži samo zvuk na izabranom jeziku:"
 
 msgid "Show only best quality of streams:"
 msgstr "Prikaži samo strimove najboljeg kvaliteta:"
+
+msgid "Show playlist"
+msgstr ""
 
 msgid "Show results"
 msgstr "Prikaži rezultate"
@@ -6040,6 +6081,12 @@ msgstr "Demontiraj iso datoteku"
 msgid "Unable to comply. Search History is empty."
 msgstr "Nije moguće izvršiti. Istorija pretrage je prazna."
 
+msgid "Undo reverse"
+msgstr ""
+
+msgid "Undo shuffle"
+msgstr ""
+
 msgid "Unfix jump target"
 msgstr "Ukloni fiksiranje cilja skoka"
 
@@ -6066,6 +6113,9 @@ msgstr "Nepoznat parser titlova za format \"%s\"."
 #, python-format
 msgid "Unrar error code[%s]."
 msgstr "Unrar kod greške[%s]."
+
+msgid "Unselect all"
+msgstr ""
 
 msgid "Unset watched"
 msgstr "Ukloni oznaku pogledano"
@@ -6531,9 +6581,6 @@ msgstr "[HLS/M3U8] prenos uživo počinje iza tačke uživo"
 msgid "[HTTP] buffering"
 msgstr "[HTTP] baferovanje"
 
-msgid "[Logged-in-only]"
-msgstr "[Samo za prijavljene]"
-
 msgid "[RTMP] buffering (rtmpdump required)"
 msgstr "[RTMP] baferovanje (potreban rtmpdump)"
 
@@ -6794,6 +6841,9 @@ msgstr "main"
 msgid "manual"
 msgstr "ručno"
 
+msgid "marked"
+msgstr ""
+
 msgid "maroon"
 msgstr "kestenjasta"
 
@@ -6911,6 +6961,9 @@ msgstr "crvena"
 msgid "refresh the current list"
 msgstr "osveži trenutnu listu"
 
+msgid "reversed"
+msgstr ""
+
 msgid "rootfs"
 msgstr "rootfs"
 
@@ -6974,6 +7027,9 @@ msgstr "prikaži više detalja o izabranoj stavci"
 
 msgid "show this help"
 msgstr "prikaži ovu pomoć"
+
+msgid "shuffled"
+msgstr ""
 
 msgid "sign in (subscriptions, playlists, age-restricted videos)"
 msgstr "prijava (pretplate, plejliste, video snimci sa starosnim ograničenjem)"
