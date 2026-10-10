@@ -18,6 +18,7 @@ from Plugins.Extensions.IPTVPlayer.iptvdm.iptvdownloadercreator import Downloade
 from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT as _
 from Plugins.Extensions.IPTVPlayer.components.cover import Cover3
 from Plugins.Extensions.IPTVPlayer.components import skinchrome
+from Plugins.Extensions.IPTVPlayer.tools.listselection import isZapToAnswer
 ###################################################
 
 ###################################################
@@ -312,8 +313,8 @@ class E2iPlayerBufferingWidget(Screen):
 
         if 'save_buffer' == ret:
             self.moveToDownloadManager()
-        elif ret in ['zap_next', 'zap_prev']:
-            # CH+/CH- in the player: stop buffering, the list starts the next/previous item
+        elif ret in ['zap_next', 'zap_prev'] or isZapToAnswer(ret):
+            # CH+/CH- in the player (or an entry of its playlist overlay): stop buffering, the list starts that item
             self.iptvDoClose()
         elif ret in ['key_exit', None]:
             if DMHelper.STS.DOWNLOADING == self.downloader.getStatus():

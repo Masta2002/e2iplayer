@@ -94,7 +94,11 @@ class IPTVFavouritesAddItemWidget(Screen):
 
         self.onShown.append(self.onStart)
         self.started = False
-        self.result = False
+        # favItem: one CFavItem (result True when added), or a list of them - the marked rows of a list, all
+        # added to the one group picked (result: how many were added, the others were in it already; None when
+        # no group was picked or saving failed)
+        self.isBatch = isinstance(favItem, list)
+        self.result = None if self.isBatch else False
 
         self.favItem = favItem
         if None is not favourites:
@@ -129,7 +133,9 @@ class IPTVFavouritesAddItemWidget(Screen):
 
     def addFavouriteToGroup(self, retArg):
         if retArg is not None:
-            if None is not retArg.privateData:
+            if None is not retArg.privateData and self.isBatch:
+                self.addFavouritesToGroup(retArg.privateData)
+            elif None is not retArg.privateData:
                 sts = self.favourites.loadGroupItems(retArg.privateData, force=False)
                 if sts:
                     sts = self.favourites.addGroupItem(self.favItem, retArg.privateData)
@@ -145,6 +151,22 @@ class IPTVFavouritesAddItemWidget(Screen):
                 self.session.openWithCallback(self.addNewFavouriteGroup, IPTVFavouritesAddNewGroupWidget, self.favourites)
         else:
             self.iptvDoFinish()
+
+    def addFavouritesToGroup(self, groupId):
+        # every item that is not in the group yet (addGroupItem refuses the same item twice), saved once
+        sts = self.favourites.loadGroupItems(groupId, force=False)
+        added = 0
+        if sts:
+            for favItem in self.favItem:
+                if self.favourites.addGroupItem(favItem, groupId):
+                    added += 1
+            if added:
+                sts = self.favourites.saveGroupItems(groupId)
+        if sts:
+            self.result = added
+            self.iptvDoFinish()
+        else:
+            self.session.openWithCallback(self.iptvDoFinish, MessageBox, self.favourites.getLastError(), type=MessageBox.TYPE_ERROR, timeout=10)
 
     def addNewFavouriteGroup(self, group):
         if None is not group:

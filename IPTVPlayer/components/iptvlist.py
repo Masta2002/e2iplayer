@@ -11,6 +11,7 @@
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, GetIconDir, eConnectCallback
 from Plugins.Extensions.IPTVPlayer.components.ihost import CDisplayListItem
 from Plugins.Extensions.IPTVPlayer.tools.iptvdownloaded import STATE_ACTIVE, STATE_DONE
+from Plugins.Extensions.IPTVPlayer.tools.listselection import isMarked
 ###################################################
 
 ###################################################
@@ -172,7 +173,7 @@ class IPTVMainNavigatorList(IPTVListComponentBase):
         self.favouriteMarkerPIX = None
         self.downloadedMarkerPIX = None
         self.downloadingMarkerPIX = None
-        self.batchMarkerPIX = None
+        self.selectMarkerPIX = None
 
         # item icon box (imageType pixmap) and the watched/started overlay
         # drawn on top of it, sized to the row's own itemHeight instead of
@@ -218,7 +219,7 @@ class IPTVMainNavigatorList(IPTVListComponentBase):
         self.favouriteMarkerPIX = None
         self.downloadedMarkerPIX = None
         self.downloadingMarkerPIX = None
-        self.batchMarkerPIX = None
+        self.selectMarkerPIX = None
 
     def onCreate(self):
         self._nullPIX()
@@ -244,8 +245,8 @@ class IPTVMainNavigatorList(IPTVListComponentBase):
         self.favouriteMarkerPIX = self._loadIcon('FavouriteItem.png')
         self.downloadedMarkerPIX = self._loadIcon('DownloadedItem.png')
         self.downloadingMarkerPIX = self._loadIcon('DownloadingItem.png')
-        # overlay on the item icon of a row marked for a batch download (E2iPlayerWidget selection mode)
-        self.batchMarkerPIX = self._loadIcon('CheckBadge.png')
+        # overlay on the item icon of a row marked in the selection mode of E2iPlayerWidget (tools/listselection.py)
+        self.selectMarkerPIX = self._loadIcon('CheckBadge.png')
 
     def onDestroy(self):
         self._nullPIX()
@@ -288,11 +289,11 @@ class IPTVMainNavigatorList(IPTVListComponentBase):
         if icon is not None:
             x, y, w, h = fitPixmapInBox(icon, self.ICON_X, self.ICON_Y, self.ICON_W, self.ICON_H)
             res.append(MultiContentEntryPixmapAlphaBlend(pos=(x, y), size=(w, h), png=icon, flags=BT_SCALE))
-        # overlays on the item icon: the batch download mark (its tick sits top right in the picture) and the
+        # overlays on the item icon: the selection mark (its tick sits top right in the picture) and the
         # watched / started badge (bottom right) - both can show at once
-        if getattr(item, 'batchMarked', False) and self.batchMarkerPIX is not None:
-            x, y, w, h = fitPixmapInBox(self.batchMarkerPIX, self.BADGE_X, self.BADGE_Y, self.BADGE_W, self.BADGE_H)
-            res.append(MultiContentEntryPixmapAlphaBlend(pos=(x, y), size=(w, h), png=self.batchMarkerPIX, flags=BT_SCALE))
+        if self.selectMarkerPIX is not None and isMarked(item):
+            x, y, w, h = fitPixmapInBox(self.selectMarkerPIX, self.BADGE_X, self.BADGE_Y, self.BADGE_W, self.BADGE_H)
+            res.append(MultiContentEntryPixmapAlphaBlend(pos=(x, y), size=(w, h), png=self.selectMarkerPIX, flags=BT_SCALE))
         if getattr(item, 'isWatched', False) and self.watchedBadgePIX is not None:
             x, y, w, h = fitPixmapInBox(self.watchedBadgePIX, self.BADGE_X, self.BADGE_Y, self.BADGE_W, self.BADGE_H)
             res.append(MultiContentEntryPixmapAlphaBlend(pos=(x, y), size=(w, h), png=self.watchedBadgePIX, flags=BT_SCALE))
@@ -415,6 +416,38 @@ class IPTVLinkChoiceBoxList(IPTVRadioButtonList):
         elif used and self.checkBadgePIX is not None:
             x, y, w, h = fitPixmapInBox(self.checkBadgePIX, self.BADGE_X, self.BADGE_Y, self.BADGE_W, self.BADGE_H)
             res.append(MultiContentEntryPixmapAlphaBlend(pos=(x, y), size=(w, h), png=self.checkBadgePIX, flags=BT_SCALE))
+        return res
+
+
+class IPTVPlaylistChoiceBoxList(IPTVMainNavigatorList):
+    # the playlist overlay of the movie player (IPTVExtMoviePlayer.showPlaylist) during a run of the autoplay
+    # sequencer: item.privateData is an entry of tools/listselection.buildPlaylist(). The row's type icon as in
+    # the list, the played ones (item.used) with the watched tick and dimmed text, the current one
+    # (item.type == "on", literal for the same reason as IPTVMoviePlayerChoiceBoxList) in the highlight colour.
+    CURRENT_TEXT_COLOR = "#66CCFF"
+    PLAYED_TEXT_COLOR = "#A0A0A0"
+
+    def buildEntry(self, item):
+        width = self.l.getItemSize().width()
+        height = self.l.getItemSize().height()
+        textX = self.ICON_X + self.ICON_W + 5
+        played = getattr(item, 'used', False)
+        textArgs = (eListboxPythonMultiContent.TYPE_TEXT, textX, 0, width - textX, height, 1, RT_HALIGN_LEFT | RT_VALIGN_CENTER, item.name)
+        color = self.CURRENT_TEXT_COLOR if item.type == 'on' else (self.PLAYED_TEXT_COLOR if played else None)
+        if color:
+            try:
+                textArgs = textArgs + (parseColor(color).argb(),)
+            except Exception:
+                pass
+        res = [None, textArgs]
+        entry = item.privateData if isinstance(item.privateData, dict) else {}
+        icon = self.dictPIX.get(entry.get('type'), None)
+        if icon is not None:
+            x, y, w, h = fitPixmapInBox(icon, self.ICON_X, self.ICON_Y, self.ICON_W, self.ICON_H)
+            res.append(MultiContentEntryPixmapAlphaBlend(pos=(x, y), size=(w, h), png=icon, flags=BT_SCALE))
+        if played and self.watchedBadgePIX is not None:
+            x, y, w, h = fitPixmapInBox(self.watchedBadgePIX, self.BADGE_X, self.BADGE_Y, self.BADGE_W, self.BADGE_H)
+            res.append(MultiContentEntryPixmapAlphaBlend(pos=(x, y), size=(w, h), png=self.watchedBadgePIX, flags=BT_SCALE))
         return res
 
 
@@ -647,15 +680,24 @@ class IPTVPlayerSelectOptionChoiceBoxList(IPTVMainNavigatorList):
         'SetActiveMoviePlayer': 'PlayerItem.png',
         'ADD_USER_LINK': 'LinkItem.png',
         'EDIT_USER_LINKS': 'LinkEditItem.png',
-        'RandomizePlayableItems': 'RandomizeItem.png',
-        'ReversePlayableItems': 'ReverseItem.png',
         'HELP': 'HelpItem.png',
         'CLOSE': 'ExitItem.png',
-        # batch download: the "downloading" row marker, the mark of a selected row, "Remove item" of the download manager
+        # list functions: shuffle / reverse and their undo (an undo badge), "Download all items of this page" the
+        # "downloading" row marker, "Add marked items to favourites" the add-favourite star; "Play / Download
+        # marked items" carry a tick badge, "Unselect all" is the "Select all" list with a cross badge
+        'RandomizePlayableItems': 'RandomizeItem.png',
+        'ReversePlayableItems': 'ReverseItem.png',
+        'UndoRandomize': 'RandomizeUndoItem.png',
+        'UndoReverse': 'ReverseUndoItem.png',
         'BATCH_ALL': 'DownloadingItem.png',
-        'BATCH_MARKED': 'DownloadingItem.png',
-        'BATCH_SELECT': 'CheckBadge.png',
-        'BATCH_CLEAR': 'RemoveItem.png',
+        'BATCH_MARKED': 'DownloadMarkedItem.png',
+        'SELECT_START': 'SelectItem.png',
+        'SELECT_ALL': 'SelectAllItem.png',
+        'SELECT_CLEAR': 'UnselectAllItem.png',
+        'PLAY_FROM_HERE': 'PlayItem.png',
+        'PLAY_MARKED': 'PlayMarkedItem.png',
+        'FAV_MARKED': 'BookmarkPlusItem.png',
+        'FAV_REMOVE_MARKED': 'BookmarkMinusItem.png',
     }
     # dynamic per-host rows ("HostAction:0", "HostAction:1", ...) all
     # share this one fallback icon instead of getting their own entries

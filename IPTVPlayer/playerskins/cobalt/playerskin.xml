@@ -16,6 +16,7 @@
                     <widget name="lengthTimeLabel"    noWrap="1" position="540,115"       size="200,40"   zPosition="3" transparent="1" foregroundColor="#adceff"   backgroundColor="#251f1f1f" font="Regular;30" halign="center" valign="top"/>
                     <widget name="remainedLabel"      noWrap="1" position="860,100"       size="200,40"   zPosition="3" transparent="1" foregroundColor="#66ccff"   backgroundColor="#251f1f1f" font="Regular;27" halign="right"  valign="top"/>
                     <widget name="videoInfo"          noWrap="1" position="732,12"        size="500,30"   zPosition="3" transparent="1" foregroundColor="#66ccff"   backgroundColor="#251f1f1f" font="Regular;20" halign="right"  valign="top"/>
+                    <widget name="playlistInfo"       noWrap="1" position="440,12"        size="290,30"   zPosition="3" transparent="1" foregroundColor="#66ccff"   backgroundColor="#251f1f1f" font="Regular;20" halign="left"   valign="top"/>
                     
                     %s
                     
