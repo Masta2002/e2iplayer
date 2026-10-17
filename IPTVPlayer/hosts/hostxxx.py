@@ -3817,6 +3817,9 @@ class Host(CBaseHostClass, XXXParser):
 						# one broken site must not end the search over all sites (and is asked again next time)
 						printExc()
 						valtemp = None
+					if isinstance(valtemp, list) and all(getattr(item, 'imageType', '') in PAGER_ORDER for item in valtemp):
+						# nothing found but the site's pager rows ("Next page" of an empty search, hclips / txxx ...): no result
+						valtemp = None
 					if isinstance(valtemp, list) and valtemp:
 						cached[Name] = [copy.copy(item) for item in valtemp]
 				if valtemp:
@@ -9719,7 +9722,7 @@ class Host(CBaseHostClass, XXXParser):
 				return ''
 			try:
 				result = byteify(json.loads(data))
-				for item in result["videos"]:
+				for item in result.get("videos") or []:  # a search without results has no "videos"
 					phTitle = str(item["title"])
 					video_id = str(item["video_id"])
 					scr = str(item["scr"])
@@ -10662,7 +10665,7 @@ class Host(CBaseHostClass, XXXParser):
 				return ''
 			try:
 				result = byteify(json.loads(data))
-				for item in result["videos"]:
+				for item in result.get("videos") or []:  # a search without results has no "videos"
 					phTitle = str(item["title"])
 					video_id = str(item["video_id"])
 					scr = str(item["scr"])
@@ -10710,7 +10713,7 @@ class Host(CBaseHostClass, XXXParser):
 				return ''
 			try:
 				result = byteify(json.loads(data))
-				for item in result["videos"]:
+				for item in result.get("videos") or []:  # a search without results has no "videos"
 					phTitle = str(item["title"])
 					video_id = str(item["video_id"])
 					scr = str(item["scr"])
@@ -20900,7 +20903,7 @@ class Host(CBaseHostClass, XXXParser):
 			try:
 				result = byteify(json.loads(data))
 				pages = int(result.get('pages') or 0)
-				for item in result["videos"]:
+				for item in result.get("videos") or []:  # a search without results has no "videos"
 					phTitle = str(item["title"])
 					video_id = str(item["video_id"])
 					scr = str(item["scr"])
@@ -21830,10 +21833,11 @@ class Host(CBaseHostClass, XXXParser):
 			if current:
 				printDBG('CURRENT: ' + str(current))
 			match = re.search('pagination-item(.*)arrow-right', data, re.S)
+			max = max_number = ''  # no pager (one page, a search without results): no Jump
 			if match:
-				max = re.findall('href=["]([^"@#]+?)["]', match.group(1), re.S)
-				if max:
-					max = max[-2]
+				links = re.findall('href=["]([^"@#]+?)["]', match.group(1), re.S)
+				if len(links) > 1 and links[-2].count('/') >= 2:
+					max = links[-2]
 					max_number = max.split('/')[-2]
 			data = data.split('class="card thumb_rel item "')
 			if len(data):
@@ -24169,22 +24173,19 @@ class Host(CBaseHostClass, XXXParser):
 				current = 1
 			printDBG('CURRENT: ' + str(current))
 			next = self.cm.ph.getSearchGroups(data, r'href=["]([^"]+?)["]\stitle="Next"', 1, True)[0]
-			if 'search' in url:
-				next_number = next.split('/')[-3]
-			else:
-				next_number = next.split('/')[-2]
+			# the page number in the pager link (search: .../<term>/<page>/); none without a pager (a search without results)
+			pagePart = -3 if 'search' in url else -2
+			next_number = next.split('/')[pagePart] if next.count('/') >= -pagePart else ''
 			printDBG('NEXT: ' + next_number)
 			max = self.cm.ph.getSearchGroups(data, r'next"\shref=["]([^"]+?)["]\stitle="Next\s([0-9]+)', 1, True)[0]
 			if not max or max == '':
 				max = self.cm.ph.getSearchGroups(data, r'next"\shref=["]([^"]+?)["]\sdata=.{,105}title="Next', 1, True)[0]
+			max_number = ''
 			if max:
-				if 'search' in url:
-					max_number = max.split('/')[-3]
-				else:
-					max_number = max.split('/')[-2]
+				max_number = max.split('/')[pagePart] if max.count('/') >= -pagePart else ''
 				if not max_number and int(current) >= 3:
 					max_number = current
-			if int(approx_number) > int(max_number):
+			if int(approx_number) > int(max_number or 0):
 				max_number = approx_number
 			printDBG('MAX NUMBER: ' + str(max_number))
 			data = self.cm.ph.getDataBeetwenMarkers(data, 'class="thumbs-list">', 'class="bottom', False)[1]
@@ -26456,7 +26457,7 @@ class Host(CBaseHostClass, XXXParser):
 				return self.showNotFoundMessage(name)
 			printDBG('ROOT URL: ' + root)
 			next = self.cm.ph.getSearchGroups(data, r'href=["]([^"^#]+?)["].{,10}Next\sPage', 1, True)[0]
-			next_number = next.split('/')[-2]
+			next_number = next.split('/')[-2] if '/' in next else ''  # no pager (a search without results): no next page
 			current = self.cm.ph.getSearchGroups(data, r'active\sitem.{,20}[>]([0-9]+?)[<]', 1, True)[0]
 			if not current:
 				current = 1
@@ -28641,6 +28642,7 @@ class Host(CBaseHostClass, XXXParser):
 			if not sts or data is None or data == '':
 				return self.showNotFoundMessage(name)
 			mainUrl = self.cm.ph.getSearchGroups(data, r'href=["]([^"]+?)["]\sclass="btn\sactive', 1, True)[0].replace('&amp;', '&')
+			root, current = url, 1  # a page without the sort buttons (a search without results)
 			if mainUrl:
 				mainUrl = self.cm.ph.getSearchGroups(mainUrl, '(/[^"]+?)[&|?]sort', 1, True)[0]
 				root = self.MAIN_URL + mainUrl
