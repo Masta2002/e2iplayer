@@ -3001,6 +3001,7 @@ class IPTVHost(IHost):
 			return RetHost(RetHost.OK, value=self.currList)
 		self.prevIndex.append(Index)
 		self.prevList.append(self.currList)
+		self.host.searchPartial = None  # a search that ended with an error before shows nothing on a later EXIT
 		self.currList = self.markWatchedRows(self.host.getListForItem(Index, refresh, selItem), rebuild=False)
 		printDBG("getListForItem end")
 		return RetHost(RetHost.OK, value=self.currList)
@@ -3142,9 +3143,25 @@ class IPTVHost(IHost):
 		printDBG("getSearchResults pattern: " + pattern)
 		self.prevIndex.append(0)
 		self.prevList.append(self.currList)
+		self.host.searchPartial = None
 		self.currList = self.markWatchedRows(self.host.getSearchResults(pattern, searchType))
 		printDBG("getSearchResults end")
 		return RetHost(RetHost.OK, value=self.currList)
+
+	def getAbortedList(self):
+		# EXIT cut the list call off (components/iptvplayerwidget.py): a global / favorites search lists the results of
+		# the sites asked until then - the level getSearchResults() / getListForItem() opened stays, EXIT goes back as
+		# from the finished search. ERROR: nothing to show (no search, nothing found yet), the widget keeps its message
+		partial, self.host.searchPartial = self.host.searchPartial, None
+		if not partial or not partial[0]:
+			return RetHost(RetHost.ERROR, value=[])
+		rows, searchProc = partial
+		self.host.MAIN_URL = ''
+		self.host.SEARCH_proc = searchProc
+		self.currList = fixListImages(list(rows))
+		self.host.currList = self.currList
+		printDBG("getAbortedList: %d rows of the search cut off" % len(self.currList))
+		return RetHost(RetHost.OK, value=self.markWatchedRows(self.currList, rebuild=False))
 
 ###################################################
 # Additional functions on class IPTVHost
@@ -3473,7 +3490,7 @@ class _SelfTestSession(object):
 
 
 class Host(CBaseHostClass, XXXParser):
-	XXXversion = "2026.10.17.1"
+	XXXversion = "2026.10.17.2"
 	currList = []
 	MAIN_URL = ''
 	SEARCH_proc = ''
@@ -3501,6 +3518,9 @@ class Host(CBaseHostClass, XXXParser):
 		# terms (searchSites())
 		self.searchCache = {}
 		self.searchCacheTerms = []
+		# the rows a global / favorites search found so far and the search menu it ran from, while it runs: EXIT cuts
+		# the search off and the widget shows these (IPTVHost.getAbortedList()); None when no search runs
+		self.searchPartial = None
 		# video URL -> site address of the rows of the last global / favorites search (getResolvedURL() reads it)
 		self.searchSiteMain = {}
 		# the main menu shown and the favorites folder built last: a favorite switch updates their rows in place
@@ -3776,6 +3796,8 @@ class Host(CBaseHostClass, XXXParser):
 			onlyKept = choice == 'show'
 		else:
 			cached.pop(SEARCH_DONE, None)
+		# the menu the search ran from: the sites' own search handlers change SEARCH_proc while they run
+		self.searchPartial = (valTab, self.SEARCH_proc)
 		fromCache = 0
 		savedSession = self.sessionEx
 		self.sessionEx = _SelfTestSession()
@@ -3800,11 +3822,12 @@ class Host(CBaseHostClass, XXXParser):
 				if valtemp:
 					nextPageLast(valtemp)  # the site's "Next page" directly below its own results
 					self.tagSearchResults(valtemp, Name, baseUrl)
-					valTab = valTab + valtemp
+					valTab.extend(valtemp)  # in place: searchPartial holds the rows found so far
 			if not onlyKept:
 				cached[SEARCH_DONE] = True  # all sites asked: the same search again asks nothing first
 		finally:
 			self.sessionEx = savedSession
+		self.searchPartial = None
 		self.MAIN_URL = ''
 		if fromCache:
 			desc = _('The results of %d of %d sites are from the last search for "%s" - this asks all sites again') % (fromCache, len(hosts), pattern)
