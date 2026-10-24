@@ -75,6 +75,7 @@ from Plugins.Extensions.IPTVPlayer.iptvdm.iptvbuffui import E2iPlayerBufferingWi
 from Plugins.Extensions.IPTVPlayer.iptvdm.iptvdmapi import IPTVDMApi, DMItem
 from Plugins.Extensions.IPTVPlayer.iptvdm import batchdownload
 from Plugins.Extensions.IPTVPlayer.tools import listselection
+from Plugins.Extensions.IPTVPlayer.tools import linkpicker
 from Plugins.Extensions.IPTVPlayer.tools import iptvpaging
 
 from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT as _, GetIPTVPlayerLastHostError, GetIPTVNotify, GetIPTVSleep
@@ -776,6 +777,10 @@ class E2iPlayerWidget(Screen):
         # whenever a fresh mirror list is fetched from the host.
         self._currentLinkOptions = None
         self._resolvingLinkItem = None
+        # "Select link automatically": the mirrors still to try when resolving the current one
+        # fails, and how many the run started with (status line "Trying link 2 of 5")
+        self._autoLinkQueue = []
+        self._autoLinkTotal = 0
         # keys of the mirrors chosen / failed to resolve since the host was opened (the
         # list is fetched anew each time): the picker shows them with a check badge and
         # dimmed text / red with the error badge. Cleared in loadHost(). See _linkMarkKeys().
@@ -2499,6 +2504,13 @@ class E2iPlayerWidget(Screen):
 
         resolvingLink = self._resolvingLinkItem
         self._resolvingLinkItem = None
+        if 0 == len(linkList) and resolvingLink is not None and self._autoLinkQueue:
+            # "Select link automatically": mark this mirror and quietly go on with the next one
+            resolvingLink.failed = True
+            self._failedLinkUrls.update(self._linkMarkKeys(resolvingLink))
+            self._startAutoLink(self._autoLinkQueue.pop(0))
+            return
+        self._autoLinkQueue = []
         # only reopen the picker on failure when there was genuinely a choice of
         # several mirrors to begin with - for a single mirror (or the non-interactive
         # autoplay sequencer, which always auto-picks the first one) reopening would
@@ -2520,8 +2532,18 @@ class E2iPlayerWidget(Screen):
         parentKey = self._linkMarkKeys(resolvingLink)[1] if resolvingLink is not None else ''
         self.selectLinkForCurrVideo(linkList, parentKey)
 
+    def _isLinkFailed(self, link):
+        return link.failed or not self._failedLinkUrls.isdisjoint(self._linkMarkKeys(link))
+
+    def _startAutoLink(self, link):
+        self.selectLinksCallback(IPTVChoiceBoxItem(" ", "", link))
+        if self._autoLinkTotal > 1 and str(link.urlNeedsResolve) == '1':
+            # replaces the "Loading" of the resolve request just started
+            self.setStatusTex(_("Trying link %d of %d") % (self._autoLinkTotal - len(self._autoLinkQueue), self._autoLinkTotal))
+
     def _reopenLinkPickerAfterFailure(self, ret=None):
-        self.selectLinkForCurrVideo(self._currentLinkOptions)
+        # all mirrors failed: the list for a choice by hand, not another automatic run
+        self.selectLinkForCurrVideo(self._currentLinkOptions, allowAuto=False)
 
     def getSelIndex(self):
         currSelIndex = self["list"].getCurrentIndex()
@@ -3071,7 +3093,7 @@ class E2iPlayerWidget(Screen):
         self.getInitialList()
     # end selectHostCallback(self, ret):
 
-    def selectLinkForCurrVideo(self, customUrlItems=None, parentLinkKey=''):
+    def selectLinkForCurrVideo(self, customUrlItems=None, parentLinkKey='', allowAuto=True):
         if not self.visible and not (self.autoPlaySeqStarted and
            config.plugins.iptvplayer.autoplay_start_delay.value == 0):
             self.setStatusTex("")
@@ -3092,6 +3114,7 @@ class E2iPlayerWidget(Screen):
 
         # There is no free links for current video
         numOfLinks = len(links)
+        self._autoLinkQueue = []
         if 0 == numOfLinks:
             self._currentLinkOptions = None
             if not self.checkAutoPlaySequencer():
@@ -3105,13 +3128,27 @@ class E2iPlayerWidget(Screen):
                 self.restoreLiveAfterZap()
                 self.session.open(MessageBox, message, type=MessageBox.TYPE_INFO, timeout=10)
             return
-        elif 1 == numOfLinks or self.autoPlaySeqStarted:
+        elif 1 == numOfLinks:
             # call manualy selectLinksCallback - start VIDEO without links selection
             self._currentLinkOptions = links
             self.selectLinksCallback(IPTVChoiceBoxItem(" ", "", links[0]))  # name of item - not displayed so empty
             return
 
         self._currentLinkOptions = links
+        if allowAuto:
+            preferred = config.plugins.iptvplayer.preferred_quality.value
+            if config.plugins.iptvplayer.auto_select_link.value or self.autoPlaySeqStarted:
+                # the sequencer never asks either; a mirror that fails to resolve hands over to the next one
+                queue = linkpicker.autoOrder(links, preferred, self._isLinkFailed)
+                self._autoLinkTotal = len(queue)
+                self._autoLinkQueue = queue[1:]
+                self._startAutoLink(queue[0])
+                return
+            link = linkpicker.pickByQuality(links, preferred)
+            if link is not None:
+                self.selectLinksCallback(IPTVChoiceBoxItem(" ", "", link))
+                return
+
         options = []
         for link in links:
             printDBG("selectLinkForCurrVideo: |%s| |%s|" % (link.name, link.url))
