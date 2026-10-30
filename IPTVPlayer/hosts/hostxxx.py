@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
-LAST_MODIFIED = "25.10.2026"
+LAST_MODIFIED = "31.10.2026"
 ###################################################
 from Plugins.Extensions.IPTVPlayer.components.ihost import IHost, CDisplayListItem, RetHost, CUrlItem, CBaseHostClass, ArticleContent
 from Plugins.Extensions.IPTVPlayer.libs import ph
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, GetCookieDir, GetConfigSubDir, GetCacheSubDir, byteify
 from Plugins.Extensions.IPTVPlayer.libs.urlparser import urlparser
+from Plugins.Extensions.IPTVPlayer.libs.urlmetahelper import buildSidecarFromItem, decorateUrl as decorateDownloadUrl
+from Plugins.Extensions.IPTVPlayer.components.iptvconfigmenu import IsSidecarEnabled
 from Plugins.Extensions.IPTVPlayer.libs.pCommon import common
 from Plugins.Extensions.IPTVPlayer.tools.iptvfilehost import IPTVFileHost
 from Plugins.Extensions.IPTVPlayer.tools.iptvwatchedhelper import IPTVWatchedHelper
@@ -111,6 +113,7 @@ config.plugins.iptvplayer.xxxselftest_stream = ConfigYesNo(default=True)
 config.plugins.iptvplayer.xxxselftest_report = ConfigSelection(default="/tmp/", choices=[("/tmp/", "/tmp/xxxselftest.txt"), ("/hdd/", "/hdd/xxxselftest.txt"),
 	("/home/root/logs/", "/home/root/logs/xxxselftest.txt"), ("config", _("E2iPlayer config folder"))])
 config.plugins.iptvplayer.best_quality = ConfigYesNo(default=True)
+config.plugins.iptvplayer.xxxmkv = ConfigYesNo(default=False)
 # not "fotka": that is the name of the site switch of FOTKA-PL-KAMERKI (SITEDATA_CAMS, a Yes/No) and replaced this one
 config.plugins.iptvplayer.fotka_stream = ConfigSelection(default="0", choices=[("0", _("https")), ("1", _("rtmp"))])
 config.plugins.iptvplayer.some = ConfigSelection(default="0", choices=[("0", _("Best")), ("1", _("Latest")), ("2", _("Most Popular")), ("3", _("Longest"))])
@@ -707,6 +710,18 @@ SITEDATA = {
 'RUPORNO': ('https://wvw.ruporno.net', '', ''),
 'FUQSTER': ('https://fuqster.com', '', ''),
 'CUMDRINKINGCLIPS': ('https://cumdrinkingclips.com', '', ''),
+'WANKTUBE': ('https://wanktube.tv/categories', '', ''),
+'ANALPORNVIDS': ('https://analpornvids.com/categories/', '', ''),
+'MYPORNTAPE': ('https://myporntape.com', '', ''),
+'TEREBON': ('https://b.terebon.net', '', ''),
+'MIXPORN': ('https://r14.mixporn.space', '', ''),
+'HOTMOVS': ('https://hotmovs.com', '', ''),
+'VJAV': ('https://vjav.com', '', ''),
+'ANALEGG': ('https://www.analegg.com', '', ''),
+'JAVMIX': ('https://javmix.com', '', ''),
+'AREA51': ('https://area51.porn', '', ''),
+'IKISODA': ('https://ikisoda.com', '', ''),
+'PORNO1': ('https://porno1.hu', '', ''),
 }
 
 # sites of the txxx network, they all share the same JSON API
@@ -714,12 +729,15 @@ TXXX_NETWORK = {
 	'UPORNIA': 'https://upornia.com',
 	'HDZOG': 'https://hdzog.com',
 	'VXXX': 'https://vxxx.com',
+	'HOTMOVS': 'https://hotmovs.com',
+	'VJAV': 'https://vjav.com',
 }
 
 # plain KVS (Kernel Video Sharing) sites: list pages /<path>/<page>/, categories /categories/<slug>/,
 # the resolver is the shared KVS one in xxxparser.py (KVS_SITES); numericCategories: the site serves categories named
 # by a number (/categories/69/) - elsewhere that address is page 69 of the categories overview, so they are left out;
-# catPage / catPath: the categories overview and the path of its links when they are not /categories/
+# catPage / catPath: the categories overview and the path of its links when they are not /categories/;
+# videoPath: the path of the video links when they are not /video(s)/ (a regex part, like catPath)
 KVS_NETWORK = {
 	'FRESHPORNO': {'url': 'https://freshporno.org', 'sorts': (('Latest', '/latest-updates/'), ('Most popular', '/most-popular/'), ('Top rated', '/top-rated/')), 'search': None},
 	'FREEPORNVIDEOS': {'url': 'https://www.freepornvideos.xxx', 'sorts': (('Latest', '/latest-updates/'), ('Most popular', '/most-popular/'), ('Top rated', '/top-rated/')), 'search': '/search/%s/', 'numericCategories': True},
@@ -746,6 +764,15 @@ KVS_NETWORK = {
 	'YABUCHKA': {'url': 'https://www1.yabuchka.xyz', 'sorts': (('Latest', '/latest-updates/'), ('Most popular', '/most-popular/'), ('Top rated', '/top-rated/')), 'search': '/search/%s/'},
 	'FULLEROTICMOVIES': {'url': 'https://www.fulleroticmovies.net', 'sorts': (('Latest', '/videos/'), ('Most viewed', '/most-viewed/'), ('Top rated', '/top-rated/')), 'search': '/search/%s/', 'catPath': 'category'},
 	'RUPORNO': {'url': 'https://wvw.ruporno.net', 'sorts': (('Latest', '/latest-updates/'), ('Most popular', '/most-popular/'), ('Top rated', '/top-rated/')), 'search': '/search/%s/', 'catPage': '/category/'},
+	'MYPORNTAPE': {'url': 'https://myporntape.com', 'sorts': (('Latest', '/latest-updates/'), ('Most popular', '/most-popular/'), ('Top rated', '/top-rated/')), 'search': None},
+	'TEREBON': {'url': 'https://b.terebon.net', 'sorts': (('Latest', '/latest-updates/'), ('Most popular', '/most-popular/'), ('Top rated', '/top-rated/')), 'search': '/search/%s/'},
+	'MIXPORN': {'url': 'https://r14.mixporn.space', 'sorts': (('Latest', '/latest-updates/'), ('Most popular', '/most-popular/'), ('Top rated', '/top-rated/')), 'search': '/search/%s/', 'catPage': '/category/'},
+	'ANALEGG': {'url': 'https://www.analegg.com', 'sorts': (('Latest', '/latest-updates/'), ('Most popular', '/most-popular/'), ('Top rated', '/top-rated/')), 'search': '/search/%s/'},
+	'JAVMIX': {'url': 'https://javmix.com', 'sorts': (('Latest', '/latest-updates/'), ('Most popular', '/most-popular/'), ('Top rated', '/top-rated/')), 'search': '/search/%s/'},
+	'AREA51': {'url': 'https://area51.porn', 'sorts': (('Latest', '/videos/'), ('Most popular', '/most-popular/'), ('Top rated', '/top-rated/')), 'search': '/search/%s/', 'catPage': '/category/', 'catPath': 'category', 'videoPath': 'view'},
+	# (ikisoda.com: every address redirects to the language of the visitor and loses its parameters, /de/ keeps them)
+	'IKISODA': {'url': 'https://ikisoda.com', 'sorts': (('Latest', '/de/videos/?videos_per_page=30&sort_by=post_date'), ('Most viewed', '/de/videos/?videos_per_page=30&sort_by=video_viewed'), ('Top rated', '/de/videos/?videos_per_page=30&sort_by=rating')), 'search': '/de/search/%s/', 'catPath': '(?:[a-z]{2}/)?categories', 'videoPath': '(?:[a-z]{2}/)?videos?'},
+	'PORNO1': {'url': 'https://porno1.hu', 'sorts': (('Latest', '/friss-porno/'), ('Most popular', '/nepszeru-szexvideok/'), ('Top rated', '/legjobb-szexvideok/')), 'search': '/kereses/%s/', 'catPage': '/kategoriak/', 'catPath': 'kategoriak', 'videoPath': 'szexvideo'},
 	'FUQSTER': {'url': 'https://fuqster.com', 'sorts': (('Latest', '/latest-updates/'), ('Most popular', '/most-popular/'), ('Top rated', '/top-rated/')), 'search': '/search/%s/'},
 }
 
@@ -974,6 +1001,7 @@ SEARCH_URL = {
 	'AMATEURRED': ('https://amateur.red/search/videos/{q}', '-'),
 	'AMAZINGCUCKOLD': ('https://www.amazingcuckold.com/search?mode=async&function=get_block&block_id=list_videos_videos_list_search_result&q={q}&category_ids=&sort_by=&from_videos=1&from_albums=1', '-'),
 	'ANALDIN': ('https://www.analdin.com/search/{q}/', '+'),
+	'ANALPORNVIDS': ('https://analpornvids.com/?s={q}', '+'),
 	'ANALMEDIA': ('https://anal.media/?s={q}', '%20'),
 	'ANALPORNOSEX': ('https://analpornosex.com/?s={q}', '+'),
 	'anybunny': ('https://anybunny.org/top/{q}', '+'),
@@ -1214,6 +1242,7 @@ SEARCH_URL = {
 	'W1MP': ('https://w1mp.com/search/{q}/', '-'),
 	'W4NKR': ('https://w4nkr.com/search/{q}/', '-'),
 	'WANKGALORE': ('https://wankgalore.com/search?query={q}', '+'),
+	'WANKTUBE': ('https://wanktube.tv/browse/{q}', '%20'),
 	'WANKOZ': ('https://www.wankoz.com/tags/{q}/', '-'),  # /search/ is behind a Cloudflare challenge: its tags
 	'WARDDOGS': ('https://warddogs.com/?s={q}', '+'),
 	'WATCHMYGF': ('https://www.watchmygf.me/search/{q}/', '+'),
@@ -1268,6 +1297,7 @@ def GetConfigList():
 	optionList.append(getConfigListEntry(_("Keep global search results :"), config.plugins.iptvplayer.xxxsearchhours))
 	optionList.append(getConfigListEntry(_("Playback UHD :"), config.plugins.iptvplayer.xxx4k))
 	optionList.append(getConfigListEntry(_("Use the best quality :"), config.plugins.iptvplayer.best_quality))
+	optionList.append(getConfigListEntry(_("Create MKV") + " :", config.plugins.iptvplayer.xxxmkv))
 	if config.plugins.iptvplayer.favourites_use_watched_flag.value:
 		optionList.append(getConfigListEntry(_("Allow watched flag to be set") + " :", config.plugins.iptvplayer.xxxwatched))
 	optionList.append(getConfigListEntry(_("----- XXXList Configuration -----"),))
@@ -3415,6 +3445,21 @@ class IPTVHost(IHost):
 		info = ensure_str_deep(info)  # Py2: a unicode title made eLabel.setText fail while the screen opened and froze the GUI
 		return RetHost(RetHost.OK, value=[ArticleContent(title=info['title'], text=info['text'], images=info['images'], richDescParams=info['rich'])])
 
+	def downloadMeta(self, url, link):
+		# the link of a video row for the downloader: its .txt / .jpg beside the video and "Create MKV"; not for a live room
+		try:
+			link = urlparser.decorateUrl(link, dict(getattr(link, 'meta', {})))
+			if link.meta.get('iptv_livestream'):
+				return link
+			page = ('%s' % url).split('#')[0]
+			for row in self.currList:
+				if self.rowUrl(row).split('#')[0] == page:
+					sidecar = buildSidecarFromItem({'desc': row.description, 'icon': row.iconimage}, IsSidecarEnabled(), metaQuery={})
+					return decorateDownloadUrl(link, sidecar=sidecar, mkvEnabled=config.plugins.iptvplayer.xxxmkv.value)
+		except Exception:
+			printExc()
+		return link
+
 	def getResolvedURL(self, url):
 		printDBG("getResolvedURL begin")
 		if url is not None and url != '':
@@ -3431,12 +3476,12 @@ class IPTVHost(IHost):
 			choices = qualityChoices(ret, offers) if ret and offers else []
 			if choices:
 				printDBG("getResolvedURL qualities: %d" % len(choices))
-				return RetHost(RetHost.OK, value=[CUrlItem(label, link, 0) for label, link in choices])
+				return RetHost(RetHost.OK, value=[CUrlItem(label, self.downloadMeta(url, link), 0) for label, link in choices])
 			# many parser branches return [] (not '') on failure - that is no link either
 			if ret:
 				printDBG("getResolvedURL ret: " + str(ret))
 				printDBG("getResolvedURL end OK")
-				return RetHost(RetHost.OK, value=[ret])
+				return RetHost(RetHost.OK, value=[self.downloadMeta(url, ret)])
 			else:
 				printDBG("getResolvedURL end")
 				return RetHost(RetHost.NOT_IMPLEMENTED, value=[])
@@ -3810,7 +3855,7 @@ class _SelfTestSession(object):
 
 
 class Host(CBaseHostClass, XXXParser):
-	XXXversion = "2026.10.25.1"
+	XXXversion = "2026.10.31.1"
 	# a Host of a helper thread of the global search (newSearchWorker()): no retries, no "not found" menu
 	searchWorker = False
 	# while the site self-test runs: the time the current site's requests stop (SELFTEST_SITE_SECONDS), 0 otherwise
@@ -4262,7 +4307,14 @@ class Host(CBaseHostClass, XXXParser):
 		siteMain = self.searchSiteMain.get('%s' % url, '')
 		if siteMain:
 			self.MAIN_URL = siteMain
-		return XXXParser.getResolvedURL(self, url)
+		try:
+			return XXXParser.getResolvedURL(self, url)
+		except Exception:
+			# a page without what the site's parser looks for (CAMHUB: dead embed, Kamikaze24 29.10.2026) is no link,
+			# not a crash of the whole host
+			printExc()
+			SetIPTVPlayerLastHostError(_('Video link not found.'))
+			return ''
 
 	def getSearchResults(self, pattern, searchType=None):
 		printDBG("Host getSearchResults begin")
@@ -15977,6 +16029,107 @@ class Host(CBaseHostClass, XXXParser):
 				valTab.append(self.getFirstItem('', root, name))
 			return valTab
 
+		if 'WANKTUBE' == name:
+			# the platform of 24PORN (data-card-feed-id cards, vcdn player data); categories, channels and pornstars are
+			# the same kind of card
+			self.MAIN_URL = 'https://wanktube.tv'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='Firefox')
+			self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'return_data': True, 'timeout': 10}
+			sts, data = self.getPageWithCFBypass(url)
+			if not sts:
+				return valTab
+			next = self.cm.ph.getSearchGroups(data, r'<link rel="next" href=["]([^"]+?)["]', 1, True)[0]
+			data = data.split('data-card-feed-id')
+			if len(data):
+				del data[0]
+			for item in data:
+				phUrl = urljoin(self.MAIN_URL + '/', self.cm.ph.getSearchGroups(item, r'href=["]([^"]+?)["]', 1, True)[0])
+				phTitle = self.cm.ph.getSearchGroups(item, r'\stitle=["]([^"]+?)["]', 1, True)[0]
+				# .webp thumbnails: the same address with .jpg answers with a JPEG (as on 24PORN)
+				phImage = re.sub(r'\.webp$', '.jpg', self.cm.ph.getSearchGroups(item, r'<img\ssrc=["]([^"]+?)["]', 1, True)[0])
+				Videos = self.cm.ph.getSearchGroups(item, r'u-card-chip[^>]*?[>]([0-9,.KkMm\s]+?)[<]', 1, True)[0]
+				valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle) + '\n' + Videos + ' videos', CDisplayListItem.TYPE_CATEGORY, [phUrl], 'WANKTUBE-clips', phImage, None))
+			if url.endswith('/categories'):
+				valTab.sort(key=lambda poz: poz.name)
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Channels')), _('Channels'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/channels'], 'WANKTUBE', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Pornstars')), _('Pornstars'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/pornstars'], 'WANKTUBE', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/newest'], 'WANKTUBE-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/'], 'WANKTUBE-clips', siteLogo, None))
+				valTab = searchItems(valTab, True)
+			if next:
+				valTab.append(self.getMoreCatsItem(next.split('=')[-1], next, name))
+			return valTab
+
+		if 'WANKTUBE-clips' == name:
+			self.MAIN_URL = 'https://wanktube.tv'
+			sts, data = self.getPageWithCFBypass(url)
+			if not sts or not data:
+				return self.showNotFoundMessage(name)
+			next = self.cm.ph.getSearchGroups(data, r'<link rel="next" href=["]([^"]+?)["]', 1, True)[0]
+			data = data.split('data-card-feed-id')
+			if len(data):
+				del data[0]
+			for item in data:
+				phUrl = urljoin(self.MAIN_URL + '/', self.cm.ph.getSearchGroups(item, r'href=["]([^"]+?)["]', 1, True)[0])
+				phTitle = self.cm.ph.getSearchGroups(item, r'\stitle=["]([^"]+?)["]', 1, True)[0]
+				phImage = re.sub(r'\.webp$', '.jpg', self.cm.ph.getSearchGroups(item, r'<img\ssrc=["]([^"]+?)["]', 1, True)[0])
+				Time = self.cm.ph.getSearchGroups(item, r'u-card-chip[^>]*?[>]([0-9:]+?)[<]', 1, True)[0]
+				Views = self.cm.ph.getSearchGroups(item, r'u-meta-right[^>]*?[>](?:\s*<svg.*?</svg>)?\s*([0-9.,KkMm]+?)\s*[<]', 1, True)[0]
+				Added = self.cm.ph.getSearchGroups(item, r'[>]([^<>"]+?ago)[<]/time', 1, True)[0]
+				# a card without a duration is an advert or a channel
+				if Time:
+					valTab.append(CDisplayListItem(decodeHtml(phTitle), '[' + Time + '] ' + decodeHtml(phTitle) + '\nViews: ' + Views + '\nAdded: ' + Added, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', phUrl, 1)], '', phImage, None))
+			if next:
+				valTab.append(self.getNextItem(next.split('=')[-1], next, name))
+			return valTab
+
+		if 'ANALPORNVIDS' == name:
+			# categories and pornstars are the same kind of card (WordPress theme, thumbnail as a background image)
+			self.MAIN_URL = 'https://analpornvids.com'
+			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='Firefox')
+			self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'return_data': True, 'timeout': 10}
+			sts, data = self.getPageWithCFBypass(url)
+			if not sts:
+				return valTab
+			next = self.cm.ph.getSearchGroups(data, r'href=["]([^"]+?)["]\s+class="next"', 1, True)[0]
+			seen = set()
+			for item in data.split('<div class="item">')[1:]:
+				phUrl = self.cm.ph.getSearchGroups(item, r'href=["]([^"]+?)["]', 1, True)[0]
+				phTitle = self.cm.ph.getSearchGroups(item, r'item-info-performer-name">\s*([^<]+?)\s*<', 1, True)[0]
+				phImage = self.cm.ph.getSearchGroups(item, r'background-image:\s*url\(([^)]+)\)', 1, True)[0]
+				Views = self.cm.ph.getSearchGroups(item, r'videoViews\.svg[^>]*>\s*([0-9.,KkMm]+)\s*<', 1, True)[0]
+				if phUrl and phTitle and phUrl not in seen and ('/category/' in phUrl or '/pornstar/' in phUrl):
+					seen.add(phUrl)
+					valTab.append(CDisplayListItem(decodeHtml(phTitle), decodeHtml(phTitle) + '\nViews: ' + Views, CDisplayListItem.TYPE_CATEGORY, [phUrl], 'ANALPORNVIDS-clips', phImage, None))
+			if url.endswith('/categories/'):
+				valTab.sort(key=lambda poz: poz.name)
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Pornstars')), _('Pornstars'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/pornstars/'], 'ANALPORNVIDS', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('New')), _('New'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/newest/'], 'ANALPORNVIDS-clips', siteLogo, None))
+				valTab.insert(0, CDisplayListItem(menuHeader(_('Popular')), _('Popular'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/'], 'ANALPORNVIDS-clips', siteLogo, None))
+				valTab = searchItems(valTab, True)
+			if next:
+				valTab.append(self.getMoreCatsItem(self.cm.ph.getSearchGroups(next, r'/page/([0-9]+)', 1, True)[0], next, name))
+			return valTab
+
+		if 'ANALPORNVIDS-clips' == name:
+			self.MAIN_URL = 'https://analpornvids.com'
+			sts, data = self.getPageWithCFBypass(url)
+			if not sts or not data:
+				return self.showNotFoundMessage(name)
+			next = self.cm.ph.getSearchGroups(data, r'href=["]([^"]+?)["]\s+class="next"', 1, True)[0]
+			for item in data.split('<div id="post-')[1:]:
+				phUrl = self.cm.ph.getSearchGroups(item, r'href=["]([^"]+?)["]\s+class="clip-link', 1, True)[0]
+				phTitle = self.cm.ph.getSearchGroups(item, r'title-wrap">([^<]+?)<', 1, True)[0]
+				phImage = self.cm.ph.getSearchGroups(item, r'background-image:\s*url\(([^)]+)\)', 1, True)[0]
+				Time = self.cm.ph.getSearchGroups(item, r'video-duration">\s*([0-9:]+)\s*<', 1, True)[0]
+				Views = self.cm.ph.getSearchGroups(item, r'<span>([0-9.,KkMm]+)\sviews</span>', 1, True)[0]
+				Added = self.cm.ph.getSearchGroups(item, r'<span>([^<]+?ago)</span>', 1, True)[0]
+				if phUrl:
+					valTab.append(CDisplayListItem(decodeHtml(phTitle), '[' + Time + '] ' + decodeHtml(phTitle) + '\nViews: ' + Views + '\nAdded: ' + Added, CDisplayListItem.TYPE_VIDEO, [CUrlItem('', phUrl, 1)], '', phImage, None))
+			if next:
+				valTab.append(self.getNextItem(self.cm.ph.getSearchGroups(next, r'/page/([0-9]+)', 1, True)[0], next, name))
+			return valTab
+
 		if 'ADULTXHUB' == name:
 			self.MAIN_URL = 'https://adultxhub.com'
 			self.HTTP_HEADER = self.cm.getDefaultHeader(browser='Firefox')
@@ -22940,13 +23093,18 @@ class Host(CBaseHostClass, XXXParser):
 				return valTab
 			seen = set()
 			# (vipporns.com: /porn-videos/<id>/; yourlesbians.com: a card is over 3000 characters of white space)
-			for m in re.finditer(r'(?s)<a[^>]+href="((?:https?://[^"/]+)?/(?:porn-)?videos?/[^"]+)"([^>]*)>(.{0,6000}?)</a>', data):
+			videoPath = KVS_NETWORK[name[:-6]].get('videoPath', '(?:porn-)?videos?')
+			# (ikisoda.com: an inline placeholder of 15 KB in every card)
+			data = re.sub(r'="\s*data:image/[^"]*"', '=""', data)
+			for m in re.finditer(r'(?s)<a[^>]+href="((?:https?://[^"/]+)?/' + videoPath + r'/[^"]+)"([^>]*)>(.{0,6000}?)</a>', data):
 				phUrl = urljoin(self.MAIN_URL + '/', m.group(1))
 				item = m.group(3)
 				phImage = self.cm.ph.getSearchGroups(item, r'''<img[^>]+?(?:data-original|data-src|src)="([^"]+\.(?:jpg|jpeg|webp|png)[^"]*)"''', 1, True)[0]
 				if phUrl in seen or not phImage:
 					continue
-				phTitle = decodeHtml(self.cm.ph.getSearchGroups(m.group(2), r'title="([^"]+)"', 1, True)[0] or self.cm.ph.getSearchGroups(item, r'<img[^>]+alt="([^"]+)"', 1, True)[0]).strip()
+				# (ikisoda.com: AVIF unless the .jpg address is asked without its parameters; the title only as card text)
+				phImage = re.sub(r'\?format=avif.*$', '', phImage)
+				phTitle = decodeHtml(self.cm.ph.getSearchGroups(m.group(2), r'title="([^"]+)"', 1, True)[0] or self.cm.ph.getSearchGroups(item, r'<img[^>]+alt="([^"]+)"', 1, True)[0] or self.cm.ph.getSearchGroups(item, r'(?s)is-item-title[^>]*>\s*([^<]+?)\s*<', 1, True)[0]).strip()
 				if not phTitle or isBlockedContent(phTitle):
 					continue
 				seen.add(phUrl)
@@ -26507,6 +26665,9 @@ class Host(CBaseHostClass, XXXParser):
 			self.MAIN_URL = 'https://stripchat.com'
 			for title, tag in (('Transsexual', 'trans'), ('Male', 'men'), (_('Couples'), 'couples'), ('Female', 'girls')):
 				valTab.insert(0, CDisplayListItem(menuHeader(title), title, CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/api/front/models?limit=60&offset=0&sortBy=stripRanking&primaryTag=' + tag], 'STRIPCHAT-clips', siteLogo, None))
+			valTab.append(CDisplayListItem(menuHeader(_('Recommended')), _('Recommended'), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/api/front/models?limit=60&offset=0&primaryTag=girls&filterGroupTags=%5B%5B%22recommended%22%5D%5D&sortBy=recommendedScore'], 'STRIPCHAT-clips', siteLogo, None))
+			for title, tag in (('Big Ass', 'specificsBigAss'), ('Big Tits', 'specificsBigTits'), ('Blowjob', 'doBlowjob'), ('Deep Throat', 'doDeepThroat'), ('Dildo Or Vibrator', 'doDildoOrVibrator'), ('Fisting', 'doFisting'), ('Fuck Machine', 'fuckMachine'), ('Hairy', 'specificsHairy'), ('Hardcore', 'doHardcore'), ('Masturbation', 'doMasturbation'), ('Office', 'doOffice'), ('Pregnant', 'specificPregnant'), ('Shaven', 'specificShaven'), ('Small Tits', 'specificSmallTits'), ('Squirt', 'doSquirt')):
+				valTab.append(CDisplayListItem(title, title, CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL + '/api/front/models?limit=60&offset=0&sortBy=stripRanking&primaryTag=girls&filterGroupTags=%5B%5B%22' + tag + '%22%5D%5D'], 'STRIPCHAT-clips', siteLogo, None))
 			return valTab
 
 		if 'STRIPCHAT-clips' == name:
