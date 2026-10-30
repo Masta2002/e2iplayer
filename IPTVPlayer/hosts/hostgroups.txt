@@ -8,6 +8,7 @@
  "worldwide": [
   "youtube",
   "dailymotion",
+  "groupsearch",
   "twitchtv",
   "vimeo",
   "ted",
