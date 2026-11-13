@@ -625,6 +625,7 @@
   "dizibox",
   "hdfilmcehennemi",
   "fullhdfilmizlesene",
+  "dizipal",
   "euronews"
  ],
  "balkans": [
