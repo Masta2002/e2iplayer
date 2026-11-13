@@ -2477,7 +2477,12 @@ class pageParser(CaptchaHelper):
         if vpid == "":
             data = self.getBBCIE()._real_extract(baseUrl)
         else:
-            formats, subtitles = self.getBBCIE()._download_media_selector(vpid)
+            try:
+                formats, subtitles = self.getBBCIE()._download_media_selector(vpid)
+            except Exception as e:
+                # geolocation / selectionunavailable: the extractor already set the message for the user
+                printDBG("parserBBC %s" % e)
+                return []
             data = {"formats": formats, "subtitles": subtitles}
         subtitlesTab = []
         for sub in data.get("subtitles", []):
@@ -2500,8 +2505,11 @@ class pageParser(CaptchaHelper):
         for item in tmpTab:
 
             def __getLinkQuality(itemLink):
+                # the shorter side: a portrait clip (720x1280) is a 720p picture, not 1280p
                 try:
-                    return int(itemLink["height"])
+                    sides = [int(itemLink.get(key) or 0) for key in ("width", "height")]
+                    sides = [side for side in sides if side > 0]
+                    return min(sides) if sides else 0
                 except Exception:
                     return 0
 
@@ -2510,8 +2518,10 @@ class pageParser(CaptchaHelper):
                 continue  # preferred format has no links - fall back to the other one
             if config.plugins.iptvplayer.bbc_use_default_quality.value:
                 videoUrls.append(item[0])
-                break
-            videoUrls.extend(item)
+            else:
+                # the qualities of the preferred protocol only - the other one offers the same pictures again
+                videoUrls.extend(item)
+            break
         if subtitlesTab:
             for idx in range(len(videoUrls)):
                 videoUrls[idx]["url"] = strwithmeta(videoUrls[idx]["url"], {"external_sub_tracks": subtitlesTab})
