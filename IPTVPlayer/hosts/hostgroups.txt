@@ -186,7 +186,8 @@
   "witv",
   "aloula",
   "royatv",
-  "capitanstrims"
+  "capitanstrims",
+  "bbcsport"
  ],
  "live": [
   "webstream",
@@ -223,7 +224,8 @@
   "rakutentv",
   "euronews",
   "francetv",
-  "rtpplay"
+  "rtpplay",
+  "bbciplayer"
  ],
  "news": [
   "euronews",
@@ -376,7 +378,9 @@
   "streamdb",
   "ask4movie",
   "rakutentv",
-  "euronews"
+  "euronews",
+  "bbciplayer",
+  "bbcsport"
  ],
  "german": [
   "youtube",
@@ -625,6 +629,7 @@
   "dizibox",
   "hdfilmcehennemi",
   "fullhdfilmizlesene",
+  "dizipal",
   "euronews"
  ],
  "balkans": [

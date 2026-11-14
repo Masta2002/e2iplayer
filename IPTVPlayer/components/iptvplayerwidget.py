@@ -322,7 +322,7 @@ class E2iPlayerWidget(Screen):
         <screen position="center,center" size="1280,%d" resolution="1280,720" backgroundColor="#34111112" flags="wfNoBorder">
                 %s
                 <widget name="headertext" position="320,70" zPosition="1" size="940,40" font="Regular; 20" transparent="1" halign="left" valign="center" backgroundColor="black" foregroundColor="#178ef5" borderWidth="1" borderColor="black" />
-                <widget name="statustext" position="320,230" zPosition="1" size="940,90" font="Regular;30" halign="center" valign="top" transparent="1" backgroundColor="black" foregroundColor="white" />
+                <widget name="statustext" position="320,230" zPosition="1" size="940,250" font="Regular;30" halign="center" valign="top" transparent="1" backgroundColor="black" foregroundColor="white" />
                 <widget name="list" position="320,110" zPosition="2" size="940,384" itemHeight="32" font="Regular;20" scrollbarMode="showOnDemand" scrollbarSliderBorderWidth="1" scrollbarForegroundColor="#1b5a91" scrollbarBorderColor="#00b6b6b6" enableWrapAround="1" transparent="1" foregroundColor="white" backgroundColor="black" foregroundColorSelected="white" backgroundColorSelected="#1b5a91" borderWidth="1" borderColor="black" />
                 <widget name="console" position="20,500" zPosition="1" size="1240,154" font="Regular;20" transparent="1" foregroundColor="white" backgroundColor="black" borderWidth="1" borderColor="black" halign="left" valign="center" />
                 <widget name="sequencer" position="0,0" zPosition="6" size="1280,%d" font="Regular;160" halign="center" valign="center" transparent="1" backgroundColor="#00000000" />
@@ -4226,17 +4226,19 @@ class E2iPlayerWidget(Screen):
             self.categoryList[-1].page, self.categoryList[-1].last, self.categoryList[-1].lastPage = ListPage(self.categoryList[-1], previousPage, self.currList)
         self.setHeaderText()
         if len(self.currList) <= 0:
-            disMessage = _("No item to display. \nPress OK to refresh.\n")
-            if ret.message and ret.message != '':
-                disMessage += ret.message
+            # one line per part, no empty line between them: the host's reason was the 4th line and fell off
+            # the status box (2 lines high in most skins)
+            lines = [_("No item to display. \nPress OK to refresh.\n").strip()]
+            if ret.message and ret.message.strip():
+                lines.append(ret.message.strip())
             lastErrorMsg = GetIPTVPlayerLastHostError()
             if lastErrorMsg != '':
-                disMessage += "\n" + _('Last error: "%s"') % lastErrorMsg
+                lines.append(_('Last error: "%s"') % lastErrorMsg)
             lastExcMSG = getExcMSG(True)
             if lastExcMSG != '':
-                disMessage += "\n" + _('Last Exception error: "%s"') % lastExcMSG
+                lines.append(_('Last Exception error: "%s"') % lastExcMSG)
 
-            self.setStatusTex(disMessage)
+            self.setStatusTex("\n".join(lines))
             self["list"].hide()
         else:
             # restor previus selection
