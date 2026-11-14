@@ -41,7 +41,7 @@ LARGE_LCD_MIN_HEIGHT = 176
 LCD_FONT = 'Regular'
 # setting "LCD font size" in the list / info screens: factor on their normal font sizes (the player layout has its own
 # sizes per setting); a text that does not fit gets smaller again
-LCD_FONT_SCALE = {'normal': 1.0, 'large': 1.3, 'xlarge': 1.6}
+LCD_FONT_SCALE = {'normal': 1.0, 'large': 1.3, 'xlarge': 1.6, 'xxlarge': 2.0}
 # progress bar: the colour of the fill and of the frame come from the settings lcd_bar_color and lcd_bar_frame; the
 # values below are used when a setting does not exist (older setup file). The frame gets thicker with the display
 # height (1 px up to 3 px)
@@ -466,9 +466,10 @@ class IPTVExtMoviePlayerColorSummary(Screen):
         timePct = timePct or LCD_POSTER_TIME_DEFAULT
         titlePct = titlePct or LCD_POSTER_TITLE_DEFAULT
         percentColumn = mode == 'normal'
-        titleFactor = {'normal': 100, 'large': 115, 'xlarge': 130}.get(mode, 115)
-        barDiv = {'normal': 12, 'large': 14, 'xlarge': 16}.get(mode, 14)
-        charEm = 0.5 if mode == 'xlarge' else cls.CHAR_EM
+        titleFactor = {'normal': 100, 'large': 115, 'xlarge': 130, 'xxlarge': 150}.get(mode, 115)
+        barDiv = {'normal': 12, 'large': 14, 'xlarge': 16, 'xxlarge': 18}.get(mode, 14)
+        # the times are as large as the width allows already; the two big sizes assume narrower digits
+        charEm = 0.5 if mode in ('xlarge', 'xxlarge') else cls.CHAR_EM
         x0 = ml
         y0 = mt
         uw = w - ml - mr   # usable width
