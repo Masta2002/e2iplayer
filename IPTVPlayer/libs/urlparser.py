@@ -996,12 +996,12 @@ class urlparser:
             "vidsrc.bz": self.pp.parserVIDSRC,
             "vidsrc.cc": self.pp.parserMEGAFILES,
             "vidsrc.do": self.pp.parserVIDSRC,
-            "vidsrc.fyi": self.pp.parserVIDSRCMOV,
+            "vidsrc.fyi": self.pp.parserVIDSRC,
             "vidsrc.gd": self.pp.parserVIDSRC,
             "vidsrc.io": self.pp.parserVIDSRC,
             "vidsrc.me": self.pp.parserVIDSRC,
             "vidsrc.mn": self.pp.parserVIDSRC,
-            "vidsrc.mov": self.pp.parserVIDSRCMOV,
+            "vidsrc.mov": self.pp.parserVIDSRC,
             "vidsrc.pm": self.pp.parserVIDSRC,
             "vidsrc.sh": self.pp.parserVIDSRC,
             "vidsrc.to": self.pp.parserVIDSRC,
@@ -6069,19 +6069,6 @@ class pageParser(CaptchaHelper):
             tk = ""
             fromCache = False
         return urltab
-
-    def parserVIDSRCMOV(self, baseUrl):  # add 240826
-        printDBG("parserVIDSRCMOV baseUrl[%s]" % baseUrl)
-        HTTP_HEADER = self.cm.getDefaultHeader()
-        sts, data = self.cm.getPage(baseUrl, {"header": HTTP_HEADER})
-        if not sts:
-            return []
-        inner = re.search(r'<iframe[^>]+src=["\']([^"\']+)["\']', data)
-        if not inner:
-            return []
-        innerUrl = inner.group(1)
-        innerUrl = "https:" + innerUrl if innerUrl.startswith("//") else innerUrl
-        return self.parserVIDSRC(innerUrl)
 
     def parserMEINECLOUD(self, baseUrl):  # add 270926
         # meinecloud.click / devideosrc.co ("DeVideoSRC") player page -> its hoster embeds (libs/meinecloud.py) -> each resolved
