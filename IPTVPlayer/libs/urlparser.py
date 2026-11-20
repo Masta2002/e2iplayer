@@ -1033,7 +1033,7 @@ class urlparser:
             "vinovo.si": self.pp.parserVINOVO,
             "vinovo.to": self.pp.parserVINOVO,
             "vixcloud.cc": self.pp.parserVIXSRC,  # add 291026 (StreamingCommunity embeds)
-            "vixeo.io": self.pp.parserVIXEO,
+            "vixeo.io": self.pp.parserVIDSONIC,
             "vixsrc.to": self.pp.parserVIXSRC,
             "vk.com": self.pp.parserVK,
             "vk.ru": self.pp.parserVK,
@@ -6623,32 +6623,13 @@ class pageParser(CaptchaHelper):
             urltab.append({"name": urlparser.getDomain(baseUrl), "url": url})
         return urltab
 
-    def parserVIDSONIC(self, baseUrl):
-        printDBG("parserVIDSONIC baseUrl[%s]" % baseUrl)
-        urltab = []
-        subTracks = []
-        host = urlparser.getDomain(baseUrl, False)
-        HTTP_HEADER = self.cm.getDefaultHeader()
-        sts, data = self.cm.getPage(baseUrl, {"header": HTTP_HEADER})
-        if not sts:
-            return []
-        match = re.search(r"""const\s+_0x1\s*=\s*'([^']+)';""", data)
-        if not match:
-            return []
-        clean = match.group(1).replace("|", "")
-        url = "".join(chr(int(clean[i: i + 2], 16)) for i in range(0, len(clean), 2))
-        sub = re.search(r'data-subtitles\s*=\s*(["\'])(?P<content>.*?)\1', data)
-        if sub:
-            raw_content = sub.group("content").replace("&quot;", '"')
-            var = re.findall(r'"lang":"([^"]+)","path":"([^"]+)', raw_content)
-            for label, src in var:
-                subTracks.append({"title": "", "url": "https:" + src if src.startswith("//") else src, "lang": label})
-        url = urlparser.decorateUrl(url[::-1], {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": host, "Origin": host[:-1], "external_sub_tracks": subTracks})
-        urltab.extend(getDirectM3U8Playlist(url))
-        return urltab
+    VIDSONIC_MIRROR = "https://vixeo.io/e/%s"
 
-    def parserVIXEO(self, baseUrl):  # add 020926 - vixeo.io (filmpalast "Vixeo HD"), a vidsonic.net front
-        printDBG("parserVIXEO baseUrl[%s]" % baseUrl)
+    def parserVIDSONIC(self, baseUrl, mirrorTried=False):  # update 201126 - vidsonic.net / vsonic.click / vixeo.io: one platform, shared file ids
+        # the stream url is "|"-separated hex, hex-decoded and reversed: vixeo.io has it in data-config (base64 json,
+        # "source"), vidsonic.net / vsonic.click in "const _0x1". vidsonic.net gives only a relative /uploads/<id>.mp4
+        # there (404, 11.2026) - the same id plays on vixeo.io, so that mirror is the fallback
+        printDBG("parserVIDSONIC baseUrl[%s]" % baseUrl)
         urltab = []
         subTracks = []
         host = urlparser.getDomain(baseUrl, False)
@@ -6656,25 +6637,39 @@ class pageParser(CaptchaHelper):
         HTTP_HEADER["Referer"] = baseUrl
         sts, data = self.cm.getPage(baseUrl, {"header": HTTP_HEADER})
         if not sts:
-            return []
+            data = ""
+        src = ""
         m = re.search(r'data-config=(["\'])([A-Za-z0-9+/=_-]+)\1', data)
-        if not m:
-            return []
-        blob = m.group(2).replace("-", "+").replace("_", "/").rstrip("=")
+        if m:
+            blob = m.group(2).replace("-", "+").replace("_", "/").rstrip("=")
+            try:
+                cfg = json_loads(base64.b64decode(blob + "=" * (-len(blob) % 4)).decode())
+            except Exception:
+                printExc()
+                cfg = {}
+            src = str(cfg.get("source", "") or "")
+            for sub in (cfg.get("subtitles") or []):
+                surl = sub.get("url") or sub.get("src") or sub.get("file") or ""
+                if surl:
+                    subTracks.append({"title": "", "url": "https:" + surl if surl.startswith("//") else surl, "lang": sub.get("label") or sub.get("lang") or ""})
+        else:
+            src = ph.search(data, r"""const\s+_0x1\s*=\s*'([^']+)';""")[0]
+            sub = re.search(r'data-subtitles\s*=\s*(["\'])(?P<content>.*?)\1', data)
+            if sub:
+                for label, surl in re.findall(r'"lang":"([^"]+)","path":"([^"]+)', sub.group("content").replace("&quot;", '"')):
+                    subTracks.append({"title": "", "url": "https:" + surl if surl.startswith("//") else surl, "lang": label})
+        src = src.replace("|", "")
+        url = ""
         try:
-            cfg = json_loads(base64.b64decode(blob + "=" * (-len(blob) % 4)).decode())
-        except Exception:
+            url = "".join(chr(int(src[i:i + 2], 16)) for i in range(0, len(src), 2))[::-1]
+        except ValueError:
             printExc()
+        if not self.cm.isValidUrl(url):
+            fileId = ph.search(baseUrl, r"/(?:e|d|v|embed)/([0-9a-zA-Z]+)")[0]
+            if not mirrorTried and fileId and "vixeo.io" not in host:
+                printDBG("parserVIDSONIC no stream url [%s] -> vixeo.io mirror" % url[:80])
+                return self.parserVIDSONIC(strwithmeta(self.VIDSONIC_MIRROR % fileId, getattr(baseUrl, "meta", {})), True)
             return []
-        # cfg["source"] is "|"-separated hex; concatenated, hex-decoded and byte-reversed it yields the stream url
-        src = str(cfg.get("source", "") or "").replace("|", "")
-        if not src:
-            return []
-        url = "".join(chr(int(src[i:i + 2], 16)) for i in range(0, len(src), 2))[::-1]
-        for sub in (cfg.get("subtitles") or []):
-            surl = sub.get("url") or sub.get("src") or sub.get("file") or ""
-            if surl:
-                subTracks.append({"title": "", "url": "https:" + surl if surl.startswith("//") else surl, "lang": sub.get("label") or sub.get("lang") or ""})
         url = urlparser.decorateUrl(url, {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": host, "Origin": host[:-1], "external_sub_tracks": subTracks})
         if ".m3u8" in url:
             urltab.extend(getDirectM3U8Playlist(url))
