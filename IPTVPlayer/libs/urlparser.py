@@ -750,6 +750,7 @@ class urlparser:
             "rubyvid.com": self.pp.parserJWPLAYER,  # add 061026
             "rubyvidhub.com": self.pp.parserJWPLAYER,
             "rumble.com": self.pp.parserRUMBLE,  # add 241026 (docchi, lycoris.cafe)
+            "rutube.ru": self.pp.parserRUTUBE,  # add 201126 (ritsatv, geoarabic)
             "ryderjet.com": self.pp.parserJWPLAYER,
             # s
             "s3taku.pro": self.pp.parserJWPLAYER,
@@ -4577,6 +4578,41 @@ class pageParser(CaptchaHelper):
             url = urlparser.decorateUrl(url, {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": host, "Origin": host[:-1]})
             urltab.extend(getDirectM3U8Playlist(url))
         return urltab
+
+    def parserRUTUBE(self, baseUrl):  # add 201126
+        printDBG("parserRUTUBE baseUrl[%s]" % baseUrl)
+        # rutube.ru/video/<id>/, /play/embed/<id>, /shorts/<id>, /video/private/<id>/?p=<key> (ritsatv, geoarabic):
+        # the player options API gives the HLS master (video_balancer) or, for a live channel, live_streams
+        baseUrl = strwithmeta(baseUrl)
+        videoId = ph.search(baseUrl, r"rutube\.ru/(?:play/embed|video(?:/private)?|shorts)/([0-9a-zA-Z]+)")[0]
+        if not videoId:
+            return []
+        HTTP_HEADER = self.cm.getDefaultHeader()
+        HTTP_HEADER["Referer"] = baseUrl.meta.get("Referer", "https://rutube.ru/")
+        apiUrl = "https://rutube.ru/api/play/options/%s/?format=json&no_404=true" % videoId
+        key = ph.search(baseUrl, r"[?&]p=([^&#]+)")[0]
+        if key:
+            apiUrl += "&p=" + key
+        sts, data = self.cm.getPage(apiUrl, {"header": HTTP_HEADER})
+        try:
+            js = json_loads(data) if sts else {}
+        except Exception:
+            printExc()
+            js = {}
+        hls = (js.get("video_balancer") or {}).get("m3u8", "")
+        if not hls:
+            for item in (js.get("live_streams") or {}).get("hls") or []:
+                hls = item.get("url", "")
+                if hls:
+                    break
+        if not self.cm.isValidUrl(hls):
+            # e.g. {"detail": {"languages": [{"lang": "eng", "title": "Incorrect link"}, ...]}}
+            detail = js.get("detail")
+            msg = [lang.get("title", "") for lang in detail.get("languages") or [] if lang.get("lang") == "eng"] if isinstance(detail, dict) else []
+            SetIPTVPlayerLastHostError(msg[0] if msg and msg[0] else _("No stream available"))
+            return []
+        meta = {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": "https://rutube.ru/", "Origin": "https://rutube.ru"}
+        return getDirectM3U8Playlist(urlparser.decorateUrl(hls, meta), checkContent=True, sortWithMaxBitrate=99999999)
 
     BYSE_ACCESS = {}  # parserBYSE: player domain -> (valid until, fingerprint, captcha token)
 
