@@ -27,7 +27,6 @@ from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads, dump
 from Plugins.Extensions.IPTVPlayer.libs.ecdsa import NIST256p as ECDSA_NIST256p, SigningKey as ECDSA_SigningKey
 from Plugins.Extensions.IPTVPlayer.libs.jsunpack import get_packed_data
 from Plugins.Extensions.IPTVPlayer.libs.pCommon import common
-from Plugins.Extensions.IPTVPlayer.libs.recaptcha_v2 import UnCaptchaReCaptcha
 from Plugins.Extensions.IPTVPlayer.libs.secretbox import secretbox as nacl_secretbox
 from Plugins.Extensions.IPTVPlayer.libs.torrserver import isTorrentLink
 from Plugins.Extensions.IPTVPlayer.libs.urlparserhelper import altchaPayload, captchaParser, decorateUrl, getDirectM3U8Playlist, getImpersonateM3U8Playlist, getMPDLinksWithMeta, requireDownloaderForDisguisedHls, unpackJSPlayerParams, VIDUPME_decryptPlayerParams, safeEvalExpression
@@ -37,7 +36,7 @@ from Plugins.Extensions.IPTVPlayer.p2p3.pVer import isPY2
 from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote, urllib_unquote, urllib_urlencode
 from Plugins.Extensions.IPTVPlayer.p2p3.UrlParse import parse_qs, urljoin, urlparse
 from Plugins.Extensions.IPTVPlayer.tools.e2ijs import QJS_PATH, js_execute, js_execute_ext, quickjs_available
-from Plugins.Extensions.IPTVPlayer.tools.iptvtools import CSelOneLink, GetCookieDir, GetDefaultLang, GetJSCacheDir, GetJSScriptFile, GetTmpDir, Which, b64urlEncode, printDBG, printExc, rm
+from Plugins.Extensions.IPTVPlayer.tools.iptvtools import CSelOneLink, GetCookieDir, GetJSCacheDir, GetJSScriptFile, GetTmpDir, Which, b64urlEncode, printDBG, printExc, rm
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 
 if not isPY2():
@@ -400,7 +399,6 @@ class urlparser:
             "file-upload.com": self.pp.parserJWPLAYER,  # add 061026
             "file-upload.in": self.pp.parserJWPLAYER,  # add 061026
             "file-upload.org": self.pp.parserJWPLAYER,
-            "filecloud.io": self.pp.parserFILECLOUDIO,
             "filedecrypt.link": self.pp.parserSBS,  # add 061026
             "filefactory.com": self.pp.parserFILEFACTORYCOM,
             "filelions.co": self.pp.parserJWPLAYER,  # add 061026
@@ -1216,7 +1214,7 @@ class urlparser:
         return ret
 
     def isHostsNotSupported(self, host):
-        return host in ["rapidgator.net", "oboom.com"]
+        return host in ["rapidgator.net"]
 
     def getMegamaxMirrors(self, url):
         # the hoster mirrors of a Megamax link, unresolved ([] for any other link): hosts list them as own servers
@@ -2192,42 +2190,6 @@ class pageParser(CaptchaHelper):
         # media playlist without variants; the extensionless segments 302 to <cdn>/....html serving MPEG-TS
         # (text/plain) -> hlsdl buffering
         return requireDownloaderForDisguisedHls(getDirectM3U8Playlist(url, checkExt=False, variantCheck=False, checkContent=True, sortWithMaxBitrate=99999999))
-
-    def parserFILECLOUDIO(self, baseUrl):  # Need test
-        printDBG("parserFILECLOUDIO baseUrl[%s]" % baseUrl)
-        baseUrl = strwithmeta(baseUrl)
-        referer = baseUrl.meta.get("Referer", baseUrl)
-        HTTP_HEADER = self.cm.getDefaultHeader()
-        if referer != "":
-            HTTP_HEADER["Referer"] = referer
-        paramsUrl = {"header": HTTP_HEADER, "with_metadata": True}
-        sts, data = self.cm.getPage(baseUrl, paramsUrl)
-        if not sts:
-            return False
-        cUrl = data.meta["url"]
-        sitekey = self.cm.ph.getSearchGroups(data, r"""['"]?sitekey['"]?\s*?:\s*?['"]([^"^']+?)['"]""")[0]
-        if sitekey != "":
-            obj = UnCaptchaReCaptcha(lang=GetDefaultLang())
-            obj.HTTP_HEADER.update({"Referer": cUrl, "User-Agent": HTTP_HEADER["User-Agent"]})
-            token = obj.processCaptcha(sitekey)
-            if token == "":
-                return False
-        else:
-            token = ""
-        requestUrl = self.cm.ph.getSearchGroups(data, r"""requestUrl\s*?=\s*?['"]([^'^"]+?)['"]""", ignoreCase=True)[0]
-        requestUrl = self.cm.getFullUrl(requestUrl, self.cm.getBaseUrl(cUrl))
-        data = self.cm.ph.getDataBeetwenMarkers(data, "$.ajax(", ")", caseSensitive=False)[1]
-        data = self.cm.ph.getSearchGroups(data, r"""data['"]?:\s*?(\{[^\}]+?\})""", ignoreCase=True)[0]
-        data = data.replace("response", '"%s"' % token).replace("'", '"')
-        post_data = json_loads(data)
-        paramsUrl["header"].update({"Referer": cUrl, "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8", "X-Requested-With": "XMLHttpRequest"})
-        sts, data = self.cm.getPage(requestUrl, paramsUrl, post_data)
-        if not sts:
-            return False
-        data = json_loads(data)
-        if self.cm.isValidUrl(data["downloadUrl"]):
-            return strwithmeta(data["downloadUrl"], {"Referer": cUrl, "User-Agent": HTTP_HEADER["User-Agent"]})
-        return False
 
     def parserGOOGLE(self, baseUrl):  # fix 171026 - Google Drive files (geoarabic and others)
         # drive/docs.google.com/file/d/<id>, .../uc?id=<id>: Drive no longer has the fmt_stream_map player data;
