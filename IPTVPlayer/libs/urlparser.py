@@ -305,6 +305,7 @@ class urlparser:
             "d000d.xyz": self.pp.parserDOOD,  # add 081026
             "d00ds.site": self.pp.parserJWPLAYER,  # add 061026
             "d0o0d.com": self.pp.parserDOOD,
+            "dai.ly": self.pp.parserDAILYMOTION,  # add 201126 (short links dai.ly/<id>)
             "dailymotion.com": self.pp.parserDAILYMOTION,
             "dancima.shop": self.pp.parserJWPLAYER,
             "darkibox.com": self.pp.parserJWPLAYER,
@@ -767,6 +768,7 @@ class urlparser:
             "sevstar933krop.com": self.pp.parserCOLLAPS,  # add 131126 (Collaps / HDVB vid<n>. player, kinogo; other domains: COLLAPS_IFRAME_RE)
             "sfastwish.com": self.pp.parserJWPLAYER,
             "shadwo.pro": self.pp.parserALBAPLAYER,  # add 181026 (w.shadwo.pro/albaplayer/ -> anaplayer.online, aflamfree series)
+            "shanelocaldog.com": self.pp.parserVOESX,  # add 201126
             "shannoncoldalready.com": self.pp.parserVOESX,  # add 041126
             "shannonpersonalcost.com": self.pp.parserVOESX,  # add 061026
             "share4max.com": self.pp.parserMEGAMAX,  # add 031026
@@ -963,6 +965,7 @@ class urlparser:
             "vidmatrixa.com": self.pp.parserSTREAMUP,
             "vidmoly.biz": self.pp.parserVIDMOLYME,
             "vidmoly.cam": self.pp.parserHQQ,  # add 061026
+            "vidmoly.cc": self.pp.parserSBS,  # add 201126 (upns-style /#<id> player, not the vidmoly.me family)
             "vidmoly.me": self.pp.parserVIDMOLYME,
             "vidmoly.net": self.pp.parserVIDMOLYME,
             "vidmoly.org": self.pp.parserVIDMOLYME,
@@ -1642,7 +1645,7 @@ class pageParser(CaptchaHelper):
         COOKIE_FILE = self.COOKIE_PATH + "dailymotion.cookie"
         HTTP_HEADER = self.cm.getDefaultHeader(browser="chrome") if embedder else self.cm.getDefaultHeader()
         httpParams = {"header": HTTP_HEADER, "use_cookie": True, "save_cookie": True, "load_cookie": True, "cookiefile": COOKIE_FILE, "collect_all_headers": True}
-        video_id = re.search(r"(?:video=|/video/)([A-Za-z0-9]+)", baseUrl)
+        video_id = re.search(r"(?:video=|/video/|//dai\.ly/)([A-Za-z0-9]+)", baseUrl)
         if not video_id:
             printDBG("parserDAILYMOTION -- Video id not found")
             return []
