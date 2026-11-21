@@ -511,6 +511,7 @@ class urlparser:
             "hydraxcdn.biz": self.pp.parserABYSS,
             # i
             "ianrequireadult.com": self.pp.parserVOESX,  # add 061026
+            "iimag.top": self.pp.parserIIMAG,  # add 211126 (stardima: /embed2/?id=<hoster url>)
             "incvideo1.online": self.pp.parserSST,  # add 061026
             "iosbgaigo.com": self.pp.parserSTREAMUP,  # add 061026 (/api/stream like vidara, kokoflix redirect in movix)
             "iplayerhls.com": self.pp.parserJWPLAYER,
@@ -1329,6 +1330,9 @@ FILELIONS_DEAD_DOMAINS = frozenset((
     "dinisglows.com", "dintezuvio.com",
 ))
 FILELIONS_LIVE_HOST = "callistanise.com"
+# add 211126: LuluStream domains without DNS (survey 21.11.2026); the same file ids play on lulustream.com
+LULU_DEAD_DOMAINS = frozenset(("lulust.com", "luluvdo.com", "luluvdoo.com", "luluvid.com", "luluvido.com"))
+LULU_LIVE_HOST = "lulustream.com"
 # vidsp.net (parserVIDSP): the /dl answer {"file", "seed"} is XTEA-CBC encrypted, the key is an XTEA-CBC hash of
 # the seed; seed and plain text have the digits 0<->5, 1<->6, 2<->7 swapped. Key and IV of the hash: "abcd" "bcde" ...
 VIDSP_DIGIT_SWAP = {"0": "5", "1": "6", "2": "7", "5": "0", "6": "1", "7": "2"}
@@ -4655,6 +4659,15 @@ class pageParser(CaptchaHelper):
             urltab.extend(getDirectM3U8Playlist(url))
         return urltab
 
+    def parserIIMAG(self, baseUrl):  # add 211126
+        printDBG("parserIIMAG baseUrl[%s]" % baseUrl)
+        # iimag.top/embed2/?id=<url-encoded hoster url> (stardima "Lulustream"): a frame around the hoster page
+        baseUrl = strwithmeta(baseUrl)
+        inner = urllib_unquote(ph.search(baseUrl, r"[?&]id=([^&#]+)")[0])
+        if not self.cm.isValidUrl(inner) or "iimag.top" in inner:
+            return []
+        return urlparser().getVideoLinkExt(strwithmeta(inner, {"Referer": urlparser.getDomain(baseUrl, False)}))
+
     def parserRUTUBE(self, baseUrl):  # add 201126
         printDBG("parserRUTUBE baseUrl[%s]" % baseUrl)
         # rutube.ru/video/<id>/, /play/embed/<id>, /shorts/<id>, /video/private/<id>/?p=<key> (ritsatv, geoarabic):
@@ -5492,6 +5505,14 @@ class pageParser(CaptchaHelper):
         elif hostOnly in FILELIONS_DEAD_DOMAINS:
             # add 061026 (after ResolveURL filelions.py): dead FileLions / VidHide domains, same path on the live host
             baseUrl = strwithmeta(baseUrl.replace(urlparse(baseUrl).netloc, FILELIONS_LIVE_HOST, 1), baseUrl.meta)
+        elif hostOnly in LULU_DEAD_DOMAINS:
+            # add 211126: dead LuluStream domains (aflamfree, aflamtop, goojara, movizhome, xalaflix, mlblive), same path
+            # on lulustream.com
+            baseUrl = strwithmeta(baseUrl.replace(urlparse(baseUrl).netloc, LULU_LIVE_HOST, 1), baseUrl.meta)
+            COOKIE_FILE = GetCookieDir("%s.cookie" % LULU_LIVE_HOST)
+            urlParams["cookiefile"] = COOKIE_FILE
+            if not baseUrl.meta.get("Referer"):
+                HTTP_HEADER["Referer"] = "https://%s/" % LULU_LIVE_HOST
         if "savefiles.com/" in baseUrl or "streamhls.to/" in baseUrl:
             # add 041026: streamhls.to is savefiles too - its /e/ page is only a click-to-play form;
             # download links /d/<id>_n play as /<id> (only the quality suffix right after the id goes)
