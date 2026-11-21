@@ -147,6 +147,7 @@ class urlparser:
             "1azayf9w.xyz": self.pp.parserBYSE,
             "1fichier.com": self.pp.parser1FICHIERCOM,
             "1vid.xyz": self.pp.parserJWPLAYER,
+            "2embed.cc": self.pp.parser2EMBED,  # add 211126 (filma365: server list, StreamWish first)
             "20demidistance9elongations.com": self.pp.parserVOESX,  # add 061026
             "222i8x.lol": self.pp.parserBYSE,
             "26efp.com": self.pp.parserJWPLAYER,
@@ -881,6 +882,7 @@ class urlparser:
             "toxitabellaeatrebates306.com": self.pp.parserVOESX,  # add 061026
             "tpead.net": self.pp.parserSTREAMTAPE,  # add 061026
             "tracylocalschool.com": self.pp.parserVOESX,  # add 061026
+            "trakx.lol": self.pp.parserTRAKX,  # add 211126 (cpasmieux: redirect to Dood / BYSE ...)
             "trgsfjll.sbs": self.pp.parserJWPLAYER,  # add 061026
             "tryzendm.com": self.pp.parserJWPLAYER,  # add 061026
             "tuborstb.co": self.pp.parserJWPLAYER,  # add 061026
@@ -4679,6 +4681,52 @@ class pageParser(CaptchaHelper):
         if not self.cm.isValidUrl(inner) or "iimag.top" in inner:
             return []
         return urlparser().getVideoLinkExt(strwithmeta(inner, {"Referer": urlparser.getDomain(baseUrl, False)}))
+
+    def parserTRAKX(self, baseUrl):  # add 211126
+        printDBG("parserTRAKX baseUrl[%s]" % baseUrl)
+        # trakx.lol/<doodz|moon2|...>/newPlayer.php?id=<uuid> (cpasmieux): a redirect to the real hoster page
+        # (playmogo.com = Dood, bysebuho.com = BYSE ...), which goes back to urlparser
+        baseUrl = strwithmeta(baseUrl)
+        HTTP_HEADER = self.cm.getDefaultHeader(browser="chrome")
+        HTTP_HEADER["Referer"] = baseUrl.meta.get("Referer", "https://www.cpasmieux.is/")
+        sts, _data = self.cm.getPage(baseUrl, {"header": HTTP_HEADER})
+        landed = self.cm.meta.get("url", "") if sts else ""
+        if not self.cm.isValidUrl(landed) or "trakx." in urlparser.getDomain(landed):
+            printDBG("parserTRAKX no redirect [%s]" % landed)
+            return []
+        return urlparser().getVideoLinkExt(strwithmeta(landed, {"Referer": urlparser.getDomain(baseUrl, False)}))
+
+    def parser2EMBED(self, baseUrl):  # add 211126
+        printDBG("parser2EMBED baseUrl[%s]" % baseUrl)
+        # 2embed.cc/embed/<tmdb|imdb> (filma365): the page (or its /embed/tt... frame) lists servers as go('<url>');
+        # "swish?id=<id>" is a StreamWish file (parserJWPLAYER finds the live mirror), the others when urlparser knows them
+        baseUrl = strwithmeta(baseUrl)
+        HTTP_HEADER = self.cm.getDefaultHeader(browser="chrome")
+        HTTP_HEADER["Referer"] = baseUrl.meta.get("Referer", "https://www.2embed.cc/")
+        pageUrl = str(baseUrl)
+        servers = []
+        for _step in range(2):
+            sts, data = self.cm.getPage(pageUrl, {"header": HTTP_HEADER})
+            if not sts:
+                return []
+            servers = re.findall(r"""go\(['"](https?://[^'"]+)['"]\)""", data)
+            frame = ph.search(data, r"""<iframe[^>]+src=['"](https?://(?:www\.)?2embed\.[a-z]+/embed/[^'"]+)""")[0]
+            if servers or not frame or frame == pageUrl:
+                break
+            HTTP_HEADER["Referer"], pageUrl = pageUrl, frame
+        urltab = []
+        for server in servers:
+            swish = ph.search(server, r"/swish\?id=([0-9a-zA-Z]+)")[0]
+            target = "https://streamwish.to/e/%s" % swish if swish else server
+            if urlparser().getParser(target) is None:
+                continue
+            links = urlparser().getVideoLinkExt(strwithmeta(target, {"Referer": pageUrl}))
+            for item in links:
+                item["name"] = "%s %s" % ("StreamWish" if swish else urlparser.getDomain(server), item.get("name", ""))
+            urltab.extend(links)
+            if urltab:
+                break  # the first server that plays - each further one costs a full resolve
+        return urltab
 
     def parserEMBEDORIGIN(self, baseUrl):  # add 211126
         printDBG("parserEMBEDORIGIN baseUrl[%s]" % baseUrl)
