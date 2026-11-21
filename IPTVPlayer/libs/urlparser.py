@@ -888,7 +888,7 @@ class urlparser:
             "tuktuk.upns.one": self.pp.parserSBS,
             "tuktukcimamulti.buzz": self.pp.parserJWPLAYER,  # add 061026
             "tuktukcinema.store": self.pp.parserJWPLAYER,  # add 061026
-            "turboembed.com": self.pp.parserJWPLAYER,  # add 211126 (StreamWish mirror, e.g. pornbusy)
+            "turboembed.com": self.pp.parserVSEMBED,  # add 211126 (StreamWish mirror, e.g. pornbusy; short ids = new player, /e/ ids -> JW)
             "turboviplay.com": self.pp.parserJWPLAYER,
             "tusfiles.com": self.pp.parserUSERSCLOUDCOM,
             "tusfiles.net": self.pp.parserUSERSCLOUDCOM,
@@ -1066,6 +1066,7 @@ class urlparser:
             "vortexvisionworks.com": self.pp.parserVORTEXVISION,  # add 131126
             "vrra.top": self.pp.parserVRRATOP,
             "vrrstream.ru": self.pp.parserVRRATOP,
+            "vsembed.com": self.pp.parserVSEMBED,  # add 211126 (StreamWish's new player - not vsembed.ru/.su = vidsrc)
             "vsembed.ru": self.pp.parserVIDSRC,
             "vsembed.su": self.pp.parserVIDSRC,
             "vsonic.click": self.pp.parserVIDSONIC,  # add 061026
@@ -4732,6 +4733,57 @@ class pageParser(CaptchaHelper):
         links = getDirectM3U8Playlist(strwithmeta(src, meta), checkExt=False, checkContent=True, sortWithMaxBitrate=99999999)
         return links or [{"name": "HLS", "url": strwithmeta(src, dict(meta, iptv_proto="m3u8"))}]
 
+    # add 211126: StreamWish's new player (vsembed.com/<id>, turboembed.com/<id>); its index-*.js "simpleCrypto":
+    # AES-CBC, key = hex code points of these letters (cut to 32 hex digits, so the day number it appends never
+    # counts), IV = hex code points of the emojis + the host name as hex, cut / padded to 32 hex digits
+    VSEMBED_KEY_CHARS = (0x1D54A, 0x1D53C, 0x1D56E, 0x1D681, 0x1D53C, 0x1D683, 0x1D4DA, 0x1D4D4, 0x1D4E8, 0x1D7D9, 0x1D7DA, 0x1D7DB)
+    VSEMBED_SALT_CHARS = (0x1F510, 0x1F5DD, 0x1F511, 0x1F6AA, 0x1F6E1, 0x26A1)
+    VSEMBED_HOSTS = ("vsembed.com", "turboembed.com")
+
+    def parserVSEMBED(self, baseUrl):  # add 211126
+        printDBG("parserVSEMBED baseUrl[%s]" % baseUrl)
+        # the page is an app; GET /api/stream/tracking?c=<id encrypted> answers 204 with the encrypted JSON in the
+        # "x-tracking" header: {"stream": {"hls": master, "tiktok": master (segments as PNG on the TikTok CDN), ...}}
+        baseUrl = strwithmeta(baseUrl)
+        m = re.search(r"//(?:www\.)?([^/]+)/(?:e/)?([0-9a-zA-Z]+)(?:[/?#.]|$)", baseUrl)
+        if not m:
+            return []
+        host, fileId = m.group(1).lower(), m.group(2)
+        key = unhexlify(("".join("%x" % c for c in self.VSEMBED_KEY_CHARS))[:32].ljust(32, "0"))
+        iv = unhexlify(("".join("%x" % c for c in self.VSEMBED_SALT_CHARS) + hexlify(ensure_binary(host)).decode())[:32].ljust(32, "0"))
+        encrypter = pyaes.Encrypter(pyaes.AESModeOfOperationCBC(key, iv))
+        token = hexlify(encrypter.feed(ensure_binary(fileId)) + encrypter.feed()).decode()
+        HTTP_HEADER = self.cm.getDefaultHeader(browser="chrome")
+        HTTP_HEADER["Referer"] = "https://%s/%s" % (host, fileId)
+        sts, _data = self.cm.getPage("https://%s/api/stream/tracking?c=%s&ld=1" % (host, token), {"header": HTTP_HEADER, "collect_all_headers": True})
+        tracking = self.cm.meta.get("x-tracking", "") if sts else ""
+        try:
+            decrypter = pyaes.Decrypter(pyaes.AESModeOfOperationCBC(key, iv))
+            js = json_loads((decrypter.feed(unhexlify(tracking)) + decrypter.feed()).decode("utf-8")) if tracking else {}
+        except Exception:
+            printExc()
+            js = {}
+        stream = js.get("stream") or {}
+        meta = {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": "https://%s/" % host, "Origin": "https://%s" % host}
+        urltab = []
+        # the segments are disguised (.woff2 fMP4 / PNG-wrapped TS) - like playmate they need the HLS buffering (hlsdl)
+        for key_, name in (("hls", "HLS"), ("tiktok", "HLS (TikTok CDN)"), ("direct", "MP4")):
+            src = stream.get(key_, "")
+            if not self.cm.isValidUrl(src):
+                continue
+            if key_ == "direct":
+                urltab.append({"name": name, "url": strwithmeta(src, meta)})
+                continue
+            # the master itself: its playlists end in .txt (no m3u8 by extension) and the audio is a separate
+            # rendition the player picks from the master
+            urltab.append({"name": name, "url": strwithmeta(src, dict(meta, iptv_proto="m3u8"))})
+        if not urltab:
+            printDBG("parserVSEMBED no stream (tracking %d chars)" % len(tracking))
+            if "/e/" in baseUrl and not baseUrl.meta.get("vsembed_from_mirror"):
+                # older turboembed.com/e/<id> links: a plain StreamWish JW page
+                return self.parserJWPLAYER(baseUrl)
+        return urltab
+
     def parserRUTUBE(self, baseUrl):  # add 201126
         printDBG("parserRUTUBE baseUrl[%s]" % baseUrl)
         # rutube.ru/video/<id>/, /play/embed/<id>, /shorts/<id>, /video/private/<id>/?p=<key> (ritsatv, geoarabic):
@@ -5551,6 +5603,11 @@ class pageParser(CaptchaHelper):
             for mirror in mirrors if fileId else ():
                 mirrorUrl = "https://%s/e/%s" % (mirror, fileId)
                 stsM, dataM = self.cm.getPage(mirrorUrl, urlParams)
+                # add 211126: files moved to StreamWish's new player - the mirrors redirect to vsembed.com/<short id>
+                landed = self.cm.meta.get("url", "") if stsM else ""
+                if landed and urlparser.getDomain(landed).replace("www.", "") in self.VSEMBED_HOSTS:
+                    printDBG("parserJWPLAYER StreamWish %s -> %s" % (hostOnly, landed))
+                    return self.parserVSEMBED(strwithmeta(landed, dict(baseUrl.meta, vsembed_from_mirror=True)))
                 # fix 241026: a country block ("Video error: RC2DERC") is the same on every mirror - keep that page
                 # for the message below instead of falling back to the original link (hglink.to: a JS loader page)
                 if stsM and ("p,a,c,k,e" in dataM or "Video error: RC2" in dataM or "Countries are not allowed" in dataM):
