@@ -3925,7 +3925,14 @@ class pageParser(CaptchaHelper):
         if match:
             token = match.group(2)
             sts, data = self.cm.getPage("%s%s" % (host, match.group(1)), urlParams)
-            if not sts:
+            if sts and not data.strip().startswith("http"):
+                # fix 211126: pass_md5 sometimes answers "RELOAD" instead of the CDN base - it became the start of a
+                # relative "url" (survey: d000d.xyz); one more try after a moment, else no link
+                printDBG("parserDOOD pass_md5 answer [%s] - retry" % data.strip()[:40])
+                GetIPTVSleep().Sleep(1)
+                sts, data = self.cm.getPage("%s%s" % (host, match.group(1)), urlParams)
+            if not sts or not data.strip().startswith("http"):
+                SetIPTVPlayerLastHostError(_("No stream available"))
                 return []
             url = data.strip() if "cloudflarestorage." in data else random_seed(10, data) + token + str(int(time.time() * 1000))
             url = urlparser.decorateUrl(url, {"external_sub_tracks": sub_tracks, "User-Agent": urlParams["header"]["User-Agent"], "Referer": baseUrl, "iptv_format": "mp4"})
