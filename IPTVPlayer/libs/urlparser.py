@@ -7044,12 +7044,31 @@ class pageParser(CaptchaHelper):
                     continue
                 hdr = dict(HTTP_HEADER)
                 hdr.update({"Referer": baseUrl, "X-Requested-With": "XMLHttpRequest"})
-                postdata = {"mod": "players3" if "player3" in content else "players", "news_id": news_id.group(1)}
-                sts, js = self.cm.getPage("%sengine/ajax/controller.php" % host, {"header": hdr, "ipv4_only": True}, postdata)
-                try:
-                    js = json_loads(js) if sts else {}
-                except Exception:
-                    js = {}
+                # fix 211126: "player3" is also in the div id "player3_film" of the "players" player - try both mods
+                js = {}
+                for mod in ("players3", "players") if "player3" in content else ("players",):
+                    sts, answer = self.cm.getPage("%sengine/ajax/controller.php" % host, {"header": hdr, "ipv4_only": True}, {"mod": mod, "news_id": news_id.group(1)})
+                    try:
+                        js = json_loads(answer) if sts else {}
+                    except Exception:
+                        js = {}
+                    if isinstance(js, dict) and (js.get("file") or js.get("html5")):
+                        break
+                if isinstance(js, dict) and not js.get("file") and js.get("html5"):
+                    # fix 211126: {"html5": "<script>new Playerjs({file: "#2<base64>"})"} - the base64 carries filler
+                    # blocks "//<base64 text>=" (one can sit inside another); take the innermost out until none is left
+                    encoded = ph.search(js["html5"], r"""file\s*:\s*["'](#2[^"']+)""")[0][2:]
+                    while True:
+                        clean = re.sub(r"//(?:(?!//)[A-Za-z0-9+/])+?={1,2}", "", encoded, count=1)
+                        if clean == encoded:
+                            break
+                        encoded = clean
+                    try:
+                        js = {"file": ensure_str(base64.b64decode(encoded + "=" * (-len(encoded) % 4)))} if encoded else {}
+                    except Exception:
+                        printExc()
+                        js = {}
+                    printDBG("parserCOVERAPI Playerjs file [%s]" % js.get("file", "")[:120])
                 url = (js.get("file") or "").split(" or ")[0].strip() if isinstance(js, dict) else ""
                 if url and (js.get("type") == "serial" or "/playlist" in url):
                     # serial: JSON playlist [{comment: "Season N", playlist: [{comment: "Episode M", file}]}]
