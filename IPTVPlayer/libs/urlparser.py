@@ -289,6 +289,7 @@ class urlparser:
             "cloud.mail.ru": self.pp.parserCOUDMAILRU,
             "cloudorchestranova.com": self.pp.parserVIDSRC,
             "coflix.upn.one": self.pp.parserSBS,
+            "content.st": self.pp.parserCONTENTST,  # add 211126 (moflixstream)
             "coolciima.online": self.pp.parserJWPLAYER,  # add 061026
             "counterclockwisejacky.com": self.pp.parserVOESX,  # add 061026
             "coverapi.store": self.pp.parserCOVERAPI,
@@ -379,6 +380,7 @@ class urlparser:
             "egtpgrvh.sbs": self.pp.parserJWPLAYER,
             "ellenpoliticalfollow.com": self.pp.parserVOESX,  # add 061026
             "embed69.org": self.pp.parserEMBED69,  # add 241026
+            "embedorigin.cc": self.pp.parserEMBEDORIGIN,  # add 211126 (moflixstream)
             "embedplay.upns.ink": self.pp.parserSBS,  # add 061026
             "embedplayabyss.top": self.pp.parserABYSS,
             "embedplayapiupn.upns.xyz": self.pp.parserSBS,  # add 061026
@@ -4667,6 +4669,66 @@ class pageParser(CaptchaHelper):
         if not self.cm.isValidUrl(inner) or "iimag.top" in inner:
             return []
         return urlparser().getVideoLinkExt(strwithmeta(inner, {"Referer": urlparser.getDomain(baseUrl, False)}))
+
+    def parserEMBEDORIGIN(self, baseUrl):  # add 211126
+        printDBG("parserEMBEDORIGIN baseUrl[%s]" % baseUrl)
+        # embedorigin.cc/e/<id> (moflixstream, after ResolveURL streamorigin.py): the page is an app, its player asks
+        # /app/v1/play/<id>?embed=1 -> "hls" (master: the audio is a separate rendition) / "mp4"; 404 {"message": "No file"}
+        baseUrl = strwithmeta(baseUrl)
+        fileId = ph.search(baseUrl, r"/(?:e|v|d)/([0-9a-zA-Z]+)")[0]
+        if not fileId:
+            return []
+        domain = urlparser.getDomain(baseUrl, False)
+        HTTP_HEADER = self.cm.getDefaultHeader(browser="chrome")
+        HTTP_HEADER.update({"Referer": domain, "Accept": "application/json"})
+        sts, data = self.cm.getPage("%sapp/v1/play/%s?embed=1" % (domain, fileId), {"header": HTTP_HEADER})
+        try:
+            js = json_loads(data) if sts else {}
+        except Exception:
+            printExc()
+            js = {}
+        meta = {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": domain, "Origin": domain[:-1]}
+        subTracks = []
+        for sub in js.get("subtitles") or []:
+            surl = (sub.get("file") or sub.get("url") or sub.get("src") or "") if isinstance(sub, dict) else ""
+            if self.cm.isValidUrl(surl):
+                subTracks.append({"title": "", "url": surl, "lang": sub.get("label") or sub.get("lang") or ""})
+        if subTracks:
+            meta["external_sub_tracks"] = subTracks
+        if self.cm.isValidUrl(js.get("hls", "")):
+            # the audio is a separate rendition: getDirectM3U8Playlist pairs it with the video (merge links)
+            links = getDirectM3U8Playlist(strwithmeta(js["hls"], meta), checkExt=False, checkContent=True, sortWithMaxBitrate=99999999)
+            return links or [{"name": "HLS", "url": strwithmeta(js["hls"], dict(meta, iptv_proto="m3u8"))}]
+        if self.cm.isValidUrl(js.get("mp4", "")):
+            return [{"name": "MP4", "url": strwithmeta(js["mp4"], meta)}]
+        if js.get("message"):
+            SetIPTVPlayerLastHostError(str(js["message"]))
+        return []
+
+    def parserCONTENTST(self, baseUrl):  # add 211126
+        printDBG("parserCONTENTST baseUrl[%s]" % baseUrl)
+        # content.st/e/<id> (moflixstream, after ResolveURL content_st.py): the page has src:null, the address comes from
+        # POST /x/k/<id> {"bc": ""} (the result of the client's ad-block check, empty = none) -> {"ok": true, "src": m3u8}
+        baseUrl = strwithmeta(baseUrl)
+        fileId = ph.search(baseUrl, r"/(?:e|v)/([0-9a-zA-Z]+)")[0]
+        if not fileId:
+            return []
+        domain = urlparser.getDomain(baseUrl, False)
+        HTTP_HEADER = self.cm.getDefaultHeader(browser="chrome")
+        HTTP_HEADER.update({"Referer": "%se/%s" % (domain, fileId), "Origin": domain[:-1], "Content-Type": "application/json", "Accept": "application/json"})
+        sts, data = self.cm.getPage("%sx/k/%s" % (domain, fileId), {"header": HTTP_HEADER, "raw_post_data": True}, json_dumps({"bc": ""}))
+        try:
+            js = json_loads(data) if sts else {}
+        except Exception:
+            printExc()
+            js = {}
+        src = js.get("src", "") if js.get("ok") else ""
+        if not self.cm.isValidUrl(src):
+            SetIPTVPlayerLastHostError(_("No stream available"))
+            return []
+        meta = {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": domain}
+        links = getDirectM3U8Playlist(strwithmeta(src, meta), checkExt=False, checkContent=True, sortWithMaxBitrate=99999999)
+        return links or [{"name": "HLS", "url": strwithmeta(src, dict(meta, iptv_proto="m3u8"))}]
 
     def parserRUTUBE(self, baseUrl):  # add 201126
         printDBG("parserRUTUBE baseUrl[%s]" % baseUrl)
