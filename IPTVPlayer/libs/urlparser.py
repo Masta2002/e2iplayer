@@ -6394,6 +6394,11 @@ class pageParser(CaptchaHelper):
             embeds = mc.episodeLinks(imdb, episode.group(1), episode.group(2))
         else:
             embeds = mc.movieLinks(imdb)
+        if not embeds:
+            # fix 211126: {"ok": false, "error": "source_not_found"} for titles the site has no source for yet (new
+            # films) - it ended with 0 links and no word
+            SetIPTVPlayerLastHostError(_("No stream available"))
+            return []
         up = urlparser()
         urltab = []
         for embed in embeds:
