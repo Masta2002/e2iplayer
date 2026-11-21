@@ -1781,7 +1781,7 @@ class pageParser(CaptchaHelper):
             SetIPTVPlayerLastHostError(_("Video with DRM protection."))
         return urlTab
 
-    def parserVK(self, baseUrl):  # Partly work, Login not work
+    def parserVK(self, baseUrl):  # update 211126 - public videos without a login (video.getEmbed); login path unchanged
         printDBG("parserVK url[%s]" % baseUrl)
         COOKIE_FILE = GetCookieDir("vkcom.cookie")
         HTTP_HEADER = {"User-Agent": self.cm.getDefaultUserAgent("chrome")}
@@ -1810,8 +1810,51 @@ class pageParser(CaptchaHelper):
                 return False
             return True
 
+        def _embedApi():
+            # add 211126: the embed page is an app now - the player asks api.vkvideo.ru video.getEmbed with the
+            # anonymous web token of the page; public videos play without a login (files: mp4_<height>, hls_ondemand)
+            ids = re.search(r"[?&]oid=(-?\d+)&(?:amp;)?id=(\d+)", baseUrl) or re.search(r"video(-?\d+)_(\d+)", baseUrl)
+            if not ids:
+                return []
+            videoHash = ph.search(baseUrl, r"[?&](?:amp;)?hash=([0-9a-f]+)")[0]
+            embedUrl = "https://vkvideo.ru/video_ext.php?oid=%s&id=%s" % ids.groups() + ("&hash=" + videoHash if videoHash else "")
+            sts, data = self.cm.getPage(embedUrl, {"header": HTTP_HEADER})
+            token = ph.search(data, r'''webToken\s*:\s*\{\s*"access_token"\s*:\s*"([^"]+)''')[0] if sts else ""
+            if not token:
+                printDBG("parserVK no anonymous web token")
+                return []
+            post = {"owner_id": ids.group(1), "video_id": ids.group(2), "access_token": token}
+            if videoHash:
+                post["hash"] = videoHash
+            header = dict(HTTP_HEADER, Origin="https://vkvideo.ru", Referer="https://vkvideo.ru/")
+            files = {}
+            for attempt in range(3):  # like the player: an answer without files now and then, the next one has them
+                sts, data = self.cm.getPage("https://api.vkvideo.ru/method/video.getEmbed?v=5.289", {"header": header}, post)
+                try:
+                    js = json_loads(data) if sts else {}
+                except Exception:
+                    printExc()
+                    js = {}
+                if js.get("error"):
+                    printDBG("parserVK video.getEmbed error %s" % js["error"])
+                    return []
+                files = ((js.get("response") or {}).get("video") or {}).get("files") or {}
+                if files:
+                    break
+                printDBG("parserVK video.getEmbed without files (attempt %d)" % (attempt + 1))
+            meta = {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": "https://vkvideo.ru/"}
+            links = []
+            for height in sorted((int(k[4:]) for k in files if re.match(r"mp4_\d+$", k)), reverse=True):
+                links.append({"name": "vk.com: %dp" % height, "url": strwithmeta(files["mp4_%d" % height], meta)})
+            if not links and self.cm.isValidUrl(files.get("hls_ondemand", "")):
+                links = getDirectM3U8Playlist(strwithmeta(files["hls_ondemand"], meta), checkExt=False, checkContent=True, sortWithMaxBitrate=999999999)
+            return links
+
         if baseUrl.startswith("http://"):  # NOSONAR
             baseUrl = "https" + baseUrl[4:]
+        movieUrls = _embedApi()
+        if movieUrls:
+            return movieUrls
         sts, data = self.cm.getPage(baseUrl, params)
         if not sts:
             return False
