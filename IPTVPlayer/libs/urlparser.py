@@ -200,6 +200,7 @@ class urlparser:
             "ano.cx": self.pp.parserSTREAMUP,  # add 061026
             "anonmp4.art": self.pp.parserANONMP4,  # add 061026
             "anonmp4.help": self.pp.parserANONMP4,
+            "anonstream.co": self.pp.parserJWPLAYER,  # add 211126 (3seq, moflixstream)
             "antecoxalbobbing1010.com": self.pp.parserVOESX,  # add 061026
             "antiadtape.com": self.pp.parserSTREAMTAPE,
             "apinchcaseation.com": self.pp.parserVOESX,  # add 061026
@@ -372,6 +373,7 @@ class urlparser:
             "edwardarriveoften.com": self.pp.parserVOESX,  # add 061026
             "eghjrutf.sbs": self.pp.parserJWPLAYER,  # add 061026
             "eghzrutw.sbs": self.pp.parserJWPLAYER,  # add 061026
+            "egybestvid.com": self.pp.parserJWPLAYER,  # add 211126 (egybest "CimaBox")
             "egsyxurh.sbs": self.pp.parserJWPLAYER,  # add 061026
             "egsyxutd.sbs": self.pp.parserJWPLAYER,  # add 061026
             "egtpgrvh.sbs": self.pp.parserJWPLAYER,
@@ -700,6 +702,7 @@ class urlparser:
             "ogladaj.me": self.pp.parserVOESX,  # add 041026
             "ok.ru": self.pp.parserOKRU,
             "okhd.site": self.pp.parserJWPLAYER,  # add 031026 (mp4./mp5.okhd.site via the parent domain)
+            "okstream.online": self.pp.parserJWPLAYER,  # add 211126 (egybest, topcinema)
             "onnetwork.tv": self.pp.parserONNETWORK,  # add 131126 (video.onnetwork.tv/embed.php, wpolscepl)
             "ougbas.xyz": self.pp.parserSTREAMUP,  # add 061026
             "oyohd.one": self.pp.parserHQQ,  # add 061026
