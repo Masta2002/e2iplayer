@@ -1810,13 +1810,14 @@ class pageParser(CaptchaHelper):
                 return False
             return True
 
-        def _embedApi():
+        def _hlsOrNothing(hlsUrl, meta):
+            if not self.cm.isValidUrl(hlsUrl):
+                return []
+            return getDirectM3U8Playlist(strwithmeta(hlsUrl, meta), checkExt=False, checkContent=True, sortWithMaxBitrate=999999999)
+
+        def _embedApi(ids, videoHash):
             # add 211126: the embed page is an app now - the player asks api.vkvideo.ru video.getEmbed with the
             # anonymous web token of the page; public videos play without a login (files: mp4_<height>, hls_ondemand)
-            ids = re.search(r"[?&]oid=(-?\d+)&(?:amp;)?id=(\d+)", baseUrl) or re.search(r"video(-?\d+)_(\d+)", baseUrl)
-            if not ids:
-                return []
-            videoHash = ph.search(baseUrl, r"[?&](?:amp;)?hash=([0-9a-f]+)")[0]
             embedUrl = "https://vkvideo.ru/video_ext.php?oid=%s&id=%s" % ids.groups() + ("&hash=" + videoHash if videoHash else "")
             sts, data = self.cm.getPage(embedUrl, {"header": HTTP_HEADER})
             token = ph.search(data, r'''webToken\s*:\s*\{\s*"access_token"\s*:\s*"([^"]+)''')[0] if sts else ""
@@ -1846,15 +1847,44 @@ class pageParser(CaptchaHelper):
             links = []
             for height in sorted((int(k[4:]) for k in files if re.match(r"mp4_\d+$", k)), reverse=True):
                 links.append({"name": "vk.com: %dp" % height, "url": strwithmeta(files["mp4_%d" % height], meta)})
-            if not links and self.cm.isValidUrl(files.get("hls_ondemand", "")):
-                links = getDirectM3U8Playlist(strwithmeta(files["hls_ondemand"], meta), checkExt=False, checkContent=True, sortWithMaxBitrate=999999999)
-            return links
+            return links or _hlsOrNothing(files.get("hls_ondemand", ""), meta)
+
+        def _alVideo(ids):
+            # add 211126: second way without a login, after ResolveURL vk.py - POST al_video.php?act=show: the player
+            # params (url<height>, hls / hls_live / hls_ondemand) in the "payload" list, also for live videos
+            header = dict(HTTP_HEADER, Referer="https://vk.com/", Origin="https://vk.com")
+            header["X-Requested-With"] = "XMLHttpRequest"
+            sts, data = self.cm.getPage("https://vk.com/al_video.php?act=show", {"header": header}, {"act": "show", "al": "1", "video": "%s_%s" % ids.groups()})
+            try:
+                js = json_loads(data[4:] if data.startswith("<!--") else data) if sts else {}
+            except Exception:
+                printExc()
+                js = {}
+            player = {}
+            for item in (js.get("payload") or []) if isinstance(js, dict) else []:
+                for entry in item if isinstance(item, list) else []:
+                    if isinstance(entry, dict) and isinstance(entry.get("player"), dict) and entry["player"].get("params"):
+                        player = entry["player"]["params"][0]
+            if not isinstance(player, dict):
+                return []
+            meta = {"User-Agent": HTTP_HEADER["User-Agent"], "Referer": "https://vk.com/"}
+            links = []
+            for height in sorted((int(k[3:]) for k in player if re.match(r"url\d+$", k)), reverse=True):
+                if self.cm.isValidUrl(player["url%d" % height]):
+                    links.append({"name": "vk.com: %dp" % height, "url": strwithmeta(player["url%d" % height], meta)})
+            return links or _hlsOrNothing(player.get("hls") or player.get("hls_live") or player.get("hls_ondemand") or "", meta)
 
         if baseUrl.startswith("http://"):  # NOSONAR
             baseUrl = "https" + baseUrl[4:]
-        movieUrls = _embedApi()
-        if movieUrls:
-            return movieUrls
+        ids = re.search(r"[?&]oid=(-?\d+)&(?:amp;)?id=(\d+)", baseUrl) or re.search(r"video(-?\d+)_(\d+)", baseUrl)
+        if ids:
+            videoHash = ph.search(baseUrl, r"[?&](?:amp;)?hash=([0-9a-f]+)")[0]
+            movieUrls = _embedApi(ids, videoHash)
+            if not movieUrls:
+                printDBG("parserVK video.getEmbed gave nothing -> al_video.php")
+                movieUrls = _alVideo(ids)
+            if movieUrls:
+                return movieUrls
         sts, data = self.cm.getPage(baseUrl, params)
         if not sts:
             return False
