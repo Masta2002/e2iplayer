@@ -298,6 +298,7 @@ class urlparser:
             "csst.online": self.pp.parserSST,
             "cyamidpulverulence530.com": self.pp.parserVOESX,  # add 061026
             "cybervynx.com": self.pp.parserJWPLAYER,
+            "czzbgnw.com": self.pp.parserSTREAMUP,  # add 211126 (/api/stream like vidara, filmclub)
             # d
             "d-s.io": self.pp.parserDOOD,
             "d.arabseed.top": self.pp.parserJWPLAYER,  # 211126
@@ -682,6 +683,7 @@ class urlparser:
             "mxdrop.sx": self.pp.parserMIXDROP,
             "mxdrop.to": self.pp.parserMIXDROP,
             "mxdrop.top": self.pp.parserMIXDROP,
+            "mxzhxco8dft.com": self.pp.parserSTREAMUP,  # add 211126 (/api/stream like vidara, cpasmieux "Filmoon", movix)
             "mysportzfy.com": self.pp.parserJWPLAYER,
             "myvidplay.com": self.pp.parserDOOD,
             # n
