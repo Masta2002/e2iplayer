@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-LAST_MODIFIED = "28.10.2026"
+LAST_MODIFIED = "28.11.2026"
 # Coding: BY MOHAMED_OS
 # Ported to the python3 framework (06.10.2026):
 #   - TimStreams (tim-streams.com, mirror timst.top - NXDOMAIN since 28.10.2026): the JSON API
@@ -7,7 +7,8 @@ LAST_MODIFIED = "28.10.2026"
 #   - live TV channels per genre (the API's genres, local paging), events (start time converted from
 #     America/New_York to the box time, "Live" once started), replays (VOD, watched flag)
 #   - grandemx.org players: the page evals an XOR-obfuscated script holding SIGNED_URL (HLS) or a
-#     .../p/<token> url that answers the XOR-ed HLS url (28.10.2026) - both decoded here; other stream
+#     .../p/<token> url that answers the XOR-ed HLS url (28.10.2026); shoewiki.click players: the token in
+#     <meta name="tk">, the ticket url fixed in the player bundle (28.11.2026) - all decoded here; other stream
 #     urls (voe.sx ... on replays) go through urlparser; VIP streams are marked
 #   - favourites re-open from the API (stored streams as fallback), INFO with the site's event info
 #   - removed: the unused AES-GCM SECRET_KEY / decrypt_url, the unused *.pages.dev worker url and the
@@ -46,6 +47,8 @@ ROW_CATEGORY = {"channel": "ts_channel", "event": "ts_event", "replay": "ts_repl
 VIDEO_CATEGORIES = tuple(ROW_CATEGORY.values())
 # ((array[i] ^ xor) - sub + 256) % 256 of the grandemx.org player script
 DECODE_RE = re.compile(r"\(\(\s*(\w+)\s*\[\s*\w+\s*\]\s*\^\s*(\w+)\s*\)\s*-\s*(\w+)\s*\+\s*256\s*\)\s*%\s*256")
+# shoewiki.click players: /js/bundle.js asks <meta name="tu"> or this base + <meta name="tk">
+TICKET_URL = "https://tims-001.servehttp.com/p/"
 
 
 def _domain(url):
@@ -264,6 +267,15 @@ class TimStreams(GenericFolderWatchedScraperMixin, CBaseHostClass):
         xorC, subC = int(values[1]), int(values[2])
         return "".join(chr(((int(v) ^ xorC) - subC) % 256) for v in values[0].split(",") if v.strip())
 
+    @staticmethod
+    def _metaContent(data, name):
+        # content of <meta name="..." content="..."> (either attribute order)
+        for tag in re.findall(r"<meta\b[^>]*>", data or "", re.I):
+            if re.search(r"\bname\s*=\s*[\"']%s[\"']" % re.escape(name), tag, re.I):
+                m = re.search(r"\bcontent\s*=\s*[\"']([^\"']*)[\"']", tag, re.I)
+                return m.group(1).strip() if m else ""
+        return ""
+
     def _getBytes(self, url, playerUrl):
         # binary answer: getPage hands back text (pycurl decodes it as UTF-8), the file keeps the bytes
         params = dict(self.defaultParams)
@@ -292,6 +304,12 @@ class TimStreams(GenericFolderWatchedScraperMixin, CBaseHostClass):
         hlsUrl = self.cm.ph.getSearchGroups(script, r"SIGNED_URL\s*=\s*[\"']([^\"']+)[\"']")[0]
         # fix 281026: the script holds a .../p/<token> url instead, its answer is the XOR-ed HLS url
         tokenUrl = "" if hlsUrl else self.cm.ph.getSearchGroups(script, r"[\"'](https?://[^\"']+/p/[^\"'/?#]+)[\"']")[0]
+        if not hlsUrl and not tokenUrl:
+            # fix 281126: shoewiki.click players have no script, the bundle builds the ticket url from the meta tags
+            tokenUrl = self._metaContent(data, "tu")
+            token = self._metaContent(data, "tk")
+            if not tokenUrl and re.match(r"^[0-9a-zA-Z]+$", token):
+                tokenUrl = TICKET_URL + token
         if tokenUrl:
             hlsUrl = _decodeSignedUrl(self._getBytes(tokenUrl, playerUrl), tokenUrl.rsplit("/", 1)[-1])
             printDBG("TimStreams._resolvePlayer token [%s] -> [%s]" % (tokenUrl, hlsUrl))
